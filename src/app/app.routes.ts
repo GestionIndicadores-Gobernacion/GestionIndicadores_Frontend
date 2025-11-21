@@ -36,7 +36,6 @@ export const routes: Routes = [
           import('./features/dashboard/home-dashboard/home-dashboard')
             .then(m => m.HomeDashboardComponent),
       },
-
       // Indicators
       {
         path: 'indicators',

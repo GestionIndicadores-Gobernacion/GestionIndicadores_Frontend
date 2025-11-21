@@ -1,0 +1,114 @@
+/* ================================
+   KPIs
+================================ */
+
+.kpi-card {
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.kpi-number {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-top: 0.25rem;
+}
+
+/* Colores institucionales */
+.kpi-blue {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.kpi-green {
+  background-color: #198754;
+  color: white;
+}
+
+.kpi-orange {
+  background-color: #fd7e14;
+  color: white;
+}
+
+.kpi-purple {
+  background-color: #6f42c1;
+  color: white;
+}
+
+.kpi-red {
+  background-color: #dc3545;
+  color: white;
+}
+
+/* ================================
+   Cards
+================================ */
+
+.card {
+  border-radius: 14px !important;
+}
+
+.card-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.card.shadow-sm {
+  border: none !important;
+}
+
+/* ================================
+   ApexCharts (consistencia visual)
+================================ */
+
+apx-chart {
+  display: block;
+  height: 300px;
+}
+
+/* Ajustes para que las leyendas no revienten el layout */
+.apexcharts-legend {
+  margin-top: 10px !important;
+}
+
+/* ================================
+   Tabla Últimos Registros
+================================ */
+
+table {
+  font-size: 0.9rem;
+}
+
+table tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+  cursor: pointer;
+}
+
+thead th {
+  font-weight: 600;
+}
+
+/* ================================
+   Loading
+================================ */
+
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* ================================
+   Responsive Tweaks
+================================ */
+
+@media (max-width: 768px) {
+  .kpi-number {
+    font-size: 1.8rem;
+  }
+}
