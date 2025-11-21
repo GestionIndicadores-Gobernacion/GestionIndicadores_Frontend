@@ -1,1 +1,21 @@
-<p>dashboard-layout works!</p>
+<div class="dashboard-container">
+
+    <!-- Sidebar -->
+    <app-sidebar></app-sidebar>
+
+    <!-- Main content -->
+    <div class="main-content">
+
+        <!-- Navbar superior -->
+        <app-topbar></app-topbar>
+
+        <!-- Contenido dinámico -->
+        <div class="content-wrapper">
+            <router-outlet></router-outlet>
+        </div>
+
+    </div>
+
+    <!-- Loader global -->
+    <app-loader></app-loader>
+</div>

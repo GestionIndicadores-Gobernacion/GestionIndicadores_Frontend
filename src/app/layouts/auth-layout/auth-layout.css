@@ -1,0 +1,10 @@
+.auth-container {
+  height: 100vh;
+  background-color: #f0f2f5; /* Fondo administrativo institucional */
+}
+
+.auth-content {
+  width: 100%;
+  max-width: 420px;
+  padding: 30px;
+}

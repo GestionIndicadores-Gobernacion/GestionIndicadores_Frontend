@@ -1,0 +1,47 @@
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f8f9fa; /* Color institucional claro */
+}
+
+/* Sidebar */
+app-sidebar {
+  width: 260px;
+  background-color: #0d6efd; /* Azul institucional Bootstrap */
+  min-height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  color: #fff;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 260px; /* misma medida del sidebar */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navbar superior */
+app-topbar {
+  height: 60px;
+  background: #ffffff;
+  border-bottom: 1px solid #dee2e6;
+  display: block;
+}
+
+/* Contenido */
+.content-wrapper {
+  padding: 20px;
+  flex: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  app-sidebar {
+    width: 220px;
+  }
+  .main-content {
+    margin-left: 220px;
+  }
+}
