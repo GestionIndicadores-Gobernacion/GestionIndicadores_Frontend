@@ -6,6 +6,6 @@ import { Component } from '@angular/core';
   templateUrl: './user-form.html',
   styleUrl: './user-form.css',
 })
-export class UserForm {
+export class UserFormComponent {
 
 }

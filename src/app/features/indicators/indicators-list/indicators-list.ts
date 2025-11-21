@@ -6,6 +6,6 @@ import { Component } from '@angular/core';
   templateUrl: './indicators-list.html',
   styleUrl: './indicators-list.css',
 })
-export class IndicatorsList {
+export class IndicatorsListComponent  {
 
 }

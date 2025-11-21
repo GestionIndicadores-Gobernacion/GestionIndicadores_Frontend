@@ -6,6 +6,6 @@ import { Component } from '@angular/core';
   templateUrl: './record-form.html',
   styleUrl: './record-form.css',
 })
-export class RecordForm {
+export class RecordFormComponent {
 
 }

@@ -6,6 +6,6 @@ import { Component } from '@angular/core';
   templateUrl: './filters-bar.html',
   styleUrl: './filters-bar.css',
 })
-export class FiltersBar {
+export class FiltersBarComponent {
 
 }

@@ -6,6 +6,6 @@ import { Component } from '@angular/core';
   templateUrl: './dynamic-population-form.html',
   styleUrl: './dynamic-population-form.css',
 })
-export class DynamicPopulationForm {
+export class DynamicPopulationFormComponent {
 
 }
