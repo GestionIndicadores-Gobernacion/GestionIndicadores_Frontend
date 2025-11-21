@@ -1,43 +1,55 @@
 <div class="sidebar p-3">
-  <h4 class="mb-4">Menu</h4>
+  <h4 class="mb-4 text-white">Menú</h4>
 
   <ul class="nav flex-column">
 
+    <!-- Dashboard -->
     <li class="nav-item">
       <a class="nav-link text-white" routerLink="/dashboard">
-        <i class="bi bi-house-door me-2"></i> Dashboard
+        <i class="bi bi-house-door me-2"></i>
+        Dashboard
       </a>
     </li>
 
+    <!-- Indicadores -->
     <li class="nav-item">
-      <a class="nav-link text-white" routerLink="/indicators">
-        <i class="bi bi-graph-up me-2"></i> Indicadores
+      <a class="nav-link text-white" routerLink="/dashboard/indicators">
+        <i class="bi bi-graph-up-arrow me-2"></i>
+        Indicadores
       </a>
     </li>
 
+    <!-- Componentes Estratégicos -->
     <li class="nav-item">
-      <a class="nav-link text-white" routerLink="/components">
-        <i class="bi bi-diagram-3 me-2"></i> Componentes Estratégicos
+      <a class="nav-link text-white" routerLink="/dashboard/components">
+        <i class="bi bi-diagram-3 me-2"></i>
+        Componentes Estratégicos
       </a>
     </li>
 
+    <!-- Registros -->
     <li class="nav-item">
-      <a class="nav-link text-white" routerLink="/records">
-        <i class="bi bi-clipboard-check me-2"></i> Registros
+      <a class="nav-link text-white" routerLink="/dashboard/records">
+        <i class="bi bi-clipboard-data me-2"></i>
+        Registros
       </a>
     </li>
 
+    <!-- Reportes -->
     <li class="nav-item">
-      <a class="nav-link text-white" routerLink="/reports">
-        <i class="bi bi-file-text me-2"></i> Reportes
+      <a class="nav-link text-white" routerLink="/dashboard/reports">
+        <i class="bi bi-journal-text me-2"></i>
+        Reportes
       </a>
     </li>
 
-    <!-- Solo admin -->
+    <!-- Usuarios (solo admin) -->
     <li class="nav-item" *ngIf="isAdmin">
-      <a class="nav-link text-white" routerLink="/users">
-        <i class="bi bi-people me-2"></i> Usuarios
+      <a class="nav-link text-white" routerLink="/dashboard/users">
+        <i class="bi bi-people-fill me-2"></i>
+        Usuarios
       </a>
     </li>
+
   </ul>
 </div>

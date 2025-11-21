@@ -1,1 +1,56 @@
-<p>user-form works!</p>
+<div class="container-fluid">
+
+  <h3 class="mb-3">
+    {{ isEdit ? "Editar Usuario" : "Crear Usuario" }}
+  </h3>
+
+  <div *ngIf="loading" class="text-center mt-5">
+    <div class="spinner-border text-primary"></div>
+  </div>
+
+  <form *ngIf="!loading" (ngSubmit)="save()">
+
+    <div class="mb-3">
+      <label class="form-label">Nombre completo</label>
+      <input type="text" class="form-control" [(ngModel)]="form.name" name="name" required>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Correo</label>
+      <input type="email" class="form-control" [(ngModel)]="form.email" name="email" required>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Contraseña</label>
+
+      <input 
+        type="password" 
+        class="form-control"
+        [(ngModel)]="form.password" 
+        name="password"
+        [required]="!isEdit"
+        placeholder="{{ isEdit ? 'Dejar en blanco para no modificar' : '' }}"
+      >
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Rol</label>
+      <select class="form-control" [(ngModel)]="form.role_id" name="role_id" required>
+        <option [ngValue]="null" disabled>Seleccionar rol...</option>
+        <option *ngFor="let r of roles" [ngValue]="r.id">
+          {{ r.name }}
+        </option>
+      </select>
+    </div>
+
+    <button class="btn btn-primary" [disabled]="saving">
+      {{ saving ? "Guardando..." : (isEdit ? "Actualizar" : "Crear Usuario") }}
+    </button>
+
+    <button class="btn btn-secondary ms-2" (click)="router.navigate(['/dashboard/users'])" type="button">
+      Cancelar
+    </button>
+
+  </form>
+
+</div>

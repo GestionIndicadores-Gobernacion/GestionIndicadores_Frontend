@@ -21,67 +21,20 @@ export const routes: Routes = [
       { path: '', redirectTo: 'login', pathMatch: 'full' },
     ],
   },
-
-  // APP AREA (PROTEGIDA)  -----------------
   {
     path: '',
     component: DashboardLayoutComponent,
     canActivate: [authGuard],
     children: [
-
-      // Dashboard Home
       {
         path: 'dashboard',
-        loadComponent: () =>
-          import('./features/dashboard/home-dashboard/home-dashboard')
-            .then(m => m.HomeDashboardComponent),
-      },
-      // Indicators
-      {
-        path: 'indicators',
         loadChildren: () =>
-          import('./features/indicators/indicators.routes')
-            .then(m => m.INDICATORS_ROUTES),
+          import('./layouts/dashboard-layout/dashboard-layout.routes')
+            .then(m => m.DASHBOARD_LAYOUT_ROUTES),
       },
-
-      // Components Estratégicos
-      {
-        path: 'components',
-        loadChildren: () =>
-          import('./features/componentes/componentes.routes')
-            .then(m => m.COMPONENTS_ROUTES),
-      },
-
-      // Records
-      {
-        path: 'records',
-        loadChildren: () =>
-          import('./features/records/records.routes')
-            .then(m => m.RECORDS_ROUTES),
-      },
-
-      // Reports
-      {
-        path: 'reports',
-        loadChildren: () =>
-          import('./features/reports/reports.routes')
-            .then(m => m.REPORTS_ROUTES),
-      },
-
-      // Users (Solo Admin)
-      {
-        path: 'users',
-        canActivate: [adminGuard],
-        loadChildren: () =>
-          import('./features/users/users.routes')
-            .then(m => m.USERS_ROUTES),
-      },
-
-      // Default interno
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-    ],
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+    ]
   },
-
   // Not found
   { path: '**', redirectTo: '' },
 ];

@@ -1,34 +1,28 @@
 export interface UserModel {
   id: number;
-  nombre: string;
+  name: string;
   email: string;
-  password?: string; // opcional para no exponerla en listados
   role_id: number;
-  profile_picture?: string;
-  created_at: string;
-  role?: RoleModel;
+  role?: RoleModel;    // viene del backend
 }
 
 export interface RoleModel {
   id: number;
-  nombre: string;
+  name: string;
 }
 
-
 export interface UserCreateRequest {
-  nombre: string;
+  name: string;
   email: string;
   password: string;
   role_id: number;
 }
 
 export interface UserUpdateRequest {
-  id: number;
-  nombre?: string;
+  name?: string;
   email?: string;
-  password?: string;     // editable opcional
+  password?: string;
   role_id?: number;
-  profile_picture?: string;
 }
 
-export interface UserResponse extends UserModel { }
+export interface UserResponse extends UserModel {}

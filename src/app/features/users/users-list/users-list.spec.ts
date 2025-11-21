@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { UsersList } from './users-list';
+import { UsersListComponent } from './users-list';
 
-describe('UsersList', () => {
-  let component: UsersList;
-  let fixture: ComponentFixture<UsersList>;
+describe('UsersListComponent', () => {
+  let component: UsersListComponent;
+  let fixture: ComponentFixture<UsersListComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [UsersList]
+      declarations: [UsersListComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(UsersList);
+    fixture = TestBed.createComponent(UsersListComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });
