@@ -1,46 +1,62 @@
-import { ComponentModel } from "./component.model";
-import { IndicatorModel } from "./indicator.model";
+// core/models/record.model.ts
+
+export interface RecordDetallePoblacion {
+  [tipo: string]: number;
+}
 
 export interface RecordModel {
   id: number;
   component_id: number | null;
   indicator_id: number | null;
   municipio: string;
-  fecha: string;                    // Date como ISO string
-  tipo_poblacion: string;
-  detalle_poblacion?: any;          // JSON dinámico (ej: {"perros": 8})
-  valor?: string;                    // puede ser string o número
-  evidencia_url?: string;
-  creado_por?: string;
-  fecha_registro?: string;
-
-  // Relaciones
-  component?: ComponentModel;
-  indicator?: IndicatorModel;
+  fecha: string;                     // ISO YYYY-MM-DD
+  tipo_poblacion: string[];          // Siempre lista en el frontend
+  detalle_poblacion?: RecordDetallePoblacion | null;
+  valor?: string | null;
+  evidencia_url?: string | null;
+  creado_por?: string | null;
+  fecha_registro?: string;           // datetime ISO
 }
 
+// Para crear
 export interface RecordCreateRequest {
-  component_id: number | null;
-  indicator_id: number | null;
+  component_id: number;
+  indicator_id: number;
   municipio: string;
-  fecha: string;                 // ISO string
-  tipo_poblacion: string;
-  detalle_poblacion?: any;
-  valor?: string;
-  evidencia_url?: string;
-  creado_por?: string;
+  fecha: string;
+  tipo_poblacion: string[] | string;
+  detalle_poblacion?: RecordDetallePoblacion | null;
+  valor?: string | null;
+  evidencia_url?: string | null;
 }
 
-export interface RecordUpdateRequest {
+// Para actualizar
+export interface RecordUpdateRequest extends RecordCreateRequest {
   id: number;
-  component_id?: number | null;
-  indicator_id?: number | null;
-  municipio?: string;
-  fecha?: string;
-  tipo_poblacion?: string;
-  detalle_poblacion?: any;
-  valor?: string;
-  evidencia_url?: string;
 }
 
-export interface RecordResponse extends RecordModel {}
+// Filtros GET /records
+export interface RecordFilterParams {
+  municipio?: string;
+  component_id?: number;
+  indicator_id?: number;
+  tipo_poblacion?: string;
+  fecha_from?: string;
+  fecha_to?: string;
+}
+
+// DTOs stats
+export interface RecordStatsMunicipio {
+  municipio: string;
+  total: number;
+}
+
+export interface RecordStatsMes {
+  mes: string;
+  total: number;
+}
+
+export interface RecordStatsTipoPoblacion {
+  tipo: string;
+  total: number;
+}

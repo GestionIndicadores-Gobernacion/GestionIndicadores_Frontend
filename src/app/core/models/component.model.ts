@@ -1,23 +1,21 @@
-import { IndicatorModel } from "./indicator.model";
-
 export interface ComponentModel {
   id: number;
-  nombre: string;
-  descripcion: string;
-  indicadores?: IndicatorModel[]; // opcional porque puede venir o no
+  name: string;          // antes: nombre
+  description: string;   // antes: descripcion
+  active: boolean;
 }
 
 export interface ComponentCreateRequest {
-  nombre: string;
-  descripcion: string;
-  indicadores_ids?: number[];
+  name: string;
+  description: string;
+  active?: boolean;
 }
 
 export interface ComponentUpdateRequest {
   id: number;
-  nombre?: string;
-  descripcion?: string;
-  indicadores_ids?: number[];
+  name?: string;
+  description?: string;
+  active?: boolean;
 }
 
 export interface ComponentResponse extends ComponentModel {}

@@ -14,15 +14,15 @@ export const RECORDS_ROUTES: Routes = [
         .then(m => m.RecordFormComponent),
   },
   {
-    path: ':id',
-    loadComponent: () =>
-      import('./record-detail/record-detail')
-        .then(m => m.RecordDetailComponent),
-  },
-  {
     path: ':id/edit',
     loadComponent: () =>
       import('./record-form/record-form')
         .then(m => m.RecordFormComponent),
+  },
+  {
+    path: ':id',
+    loadComponent: () =>
+      import('./record-detail/record-detail')
+        .then(m => m.RecordDetailComponent),
   },
 ];

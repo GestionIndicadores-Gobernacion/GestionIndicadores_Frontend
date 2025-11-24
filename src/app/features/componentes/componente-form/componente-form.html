@@ -1,1 +1,64 @@
-<p>componente-form works!</p>
+<div class="container-fluid">
+
+  <h3 class="mb-3">
+    {{ isEdit ? "Editar Componente" : "Crear Componente" }}
+  </h3>
+
+  <div *ngIf="loading" class="text-center mt-5">
+    <div class="spinner-border text-primary"></div>
+  </div>
+
+  <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="submit()">
+
+    <!-- Nombre -->
+    <div class="mb-3">
+      <label class="form-label">Nombre</label>
+      <input
+        type="text"
+        class="form-control"
+        formControlName="name"
+        placeholder="Nombre del componente"
+        required
+      >
+    </div>
+
+    <!-- Descripción -->
+    <div class="mb-3">
+      <label class="form-label">Descripción</label>
+      <textarea
+        class="form-control"
+        rows="3"
+        formControlName="description"
+        placeholder="Descripción del componente"
+      ></textarea>
+    </div>
+
+    <!-- Activo -->
+    <div class="mb-3 form-check">
+      <input
+        type="checkbox"
+        class="form-check-input"
+        id="activeCheck"
+        formControlName="active"
+      >
+      <label class="form-check-label" for="activeCheck">
+        Activo
+      </label>
+    </div>
+
+    <!-- Botones -->
+    <button class="btn btn-primary" [disabled]="saving || form.invalid">
+      {{ saving ? "Guardando..." : (isEdit ? "Actualizar" : "Crear Componente") }}
+    </button>
+
+    <button
+      class="btn btn-secondary ms-2"
+      type="button"
+      [routerLink]="['/dashboard/components']"
+    >
+      Cancelar
+    </button>
+
+  </form>
+
+</div>

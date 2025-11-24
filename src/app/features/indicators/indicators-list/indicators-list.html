@@ -1,1 +1,66 @@
-<p>indicators-list works!</p>
+<div class="container-fluid">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="m-0">Gestión de Indicadores</h3>
+
+    <button class="btn btn-primary" (click)="goCreate()">
+      + Crear Indicador
+    </button>
+  </div>
+
+  <!-- Buscador -->
+  <div class="mb-3">
+    <input
+      type="text"
+      class="form-control"
+      placeholder="Buscar por nombre o tipo..."
+      [(ngModel)]="search"
+      (input)="applyFilter()"
+    >
+  </div>
+
+  <!-- Loading -->
+  <div class="text-center my-5" *ngIf="loading">
+    <div class="spinner-border text-primary"></div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="table-responsive" *ngIf="!loading">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Nombre</th>
+          <th>Tipo de dato</th>
+          <th>Obligatorio</th>
+          <th>Lista</th>
+          <th>Activo</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let i of filteredIndicators">
+          <td>{{ i.name }}</td>
+          <td>{{ i.data_type }}</td>
+          <td>{{ i.required ? 'Sí' : 'No' }}</td>
+          <td>{{ i.use_list ? 'Sí' : 'No' }}</td>
+          <td>
+            <span class="badge" [class.bg-success]="i.active" [class.bg-secondary]="!i.active">
+              {{ i.active ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+
+          <td class="text-center">
+            <button class="btn btn-outline-secondary btn-sm me-2" (click)="goEdit(i.id)">
+              Editar
+            </button>
+            <button class="btn btn-outline-danger btn-sm" (click)="deleteIndicator(i.id)">
+              Eliminar
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>

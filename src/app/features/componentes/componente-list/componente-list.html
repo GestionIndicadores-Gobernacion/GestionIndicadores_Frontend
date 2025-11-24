@@ -1,1 +1,67 @@
-<p>componentes-list works!</p>
+<div class="container-fluid">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="m-0">Gestión de Componentes</h3>
+
+    <button class="btn btn-primary" (click)="goToCreate()">
+      + Crear Componente
+    </button>
+  </div>
+
+  <!-- Buscador -->
+  <div class="mb-3">
+    <input
+      type="text"
+      class="form-control"
+      placeholder="Buscar por nombre o descripción..."
+      [(ngModel)]="search"
+      (input)="applyFilter()"
+    >
+  </div>
+
+  <!-- Loading -->
+  <div class="text-center my-5" *ngIf="loading">
+    <div class="spinner-border text-primary"></div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="table-responsive" *ngIf="!loading">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Activo</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let c of filteredComponents">
+          <td>{{ c?.name }}</td>
+          <td>{{ c?.description }}</td>
+          <td>
+            <span class="badge" [class.bg-success]="c.active" [class.bg-secondary]="!c.active">
+              {{ c.active ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+
+          <td class="text-center">
+
+            <button class="btn btn-outline-secondary btn-sm me-2"
+                    (click)="goToEdit(c.id)">
+              Editar
+            </button>
+
+            <button class="btn btn-outline-danger btn-sm"
+                    (click)="deleteComponent(c.id)">
+              Eliminar
+            </button>
+
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>

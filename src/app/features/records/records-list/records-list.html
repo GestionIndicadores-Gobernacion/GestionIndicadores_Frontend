@@ -1,1 +1,79 @@
-<p>records-list works!</p>
+<div class="container-fluid">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="m-0">Gestión de Registros</h3>
+
+    <button class="btn btn-primary" routerLink="/dashboard/records/create">
+      + Crear Registro
+    </button>
+  </div>
+
+  <!-- Buscador -->
+  <div class="mb-3">
+    <input type="text" class="form-control" placeholder="Buscar por componente, indicador o municipio..."
+      [(ngModel)]="search" (input)="applyFilter()">
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center my-5">
+    <div class="spinner-border text-primary"></div>
+  </div>
+
+  <!-- Tabla -->
+  <div *ngIf="!loading" class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>ID</th>
+          <th>Componente</th>
+          <th>Indicador</th>
+          <th>Municipio</th>
+          <th>Fecha</th>
+          <th>Tipo población</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let r of filteredRecords">
+
+          <td>{{ r.id }}</td>
+
+          <td>
+            {{ componentMap[r.component_id ?? 0] || '—' }}
+          </td>
+
+          <td>
+            {{ indicatorMap[r.indicator_id ?? 0] || '—' }}
+          </td>
+
+          <td>{{ r.municipio }}</td>
+
+          <td>{{ r.fecha | date }}</td>
+
+          <td>
+            <ng-container *ngIf="r.tipo_poblacion as tp">
+              <span *ngIf="tp.length">{{ tp.join(', ') }}</span>
+            </ng-container>
+          </td>
+
+          <td class="text-center">
+            <button class="btn btn-outline-secondary btn-sm me-2" [routerLink]="['/dashboard/records', r.id]">
+              Ver
+            </button>
+
+            <button class="btn btn-outline-primary btn-sm me-2" [routerLink]="['/dashboard/records', r.id, 'edit']">
+              Editar
+            </button>
+
+            <button class="btn btn-outline-danger btn-sm" (click)="deleteRecord(r.id)">
+              Eliminar
+            </button>
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>

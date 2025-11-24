@@ -14,15 +14,15 @@ export const COMPONENTS_ROUTES: Routes = [
         .then(m => m.ComponentesFormComponent),
   },
   {
-    path: ':id',
-    loadComponent: () =>
-      import('./componente-detail/componente-detail')
-        .then(m => m.ComponenteDetailComponent),
-  },
-  {
     path: ':id/edit',
     loadComponent: () =>
       import('./componente-form/componente-form')
         .then(m => m.ComponentesFormComponent),
+  },
+  {
+    path: ':id',
+    loadComponent: () =>
+      import('./componente-detail/componente-detail')
+        .then(m => m.ComponenteDetailComponent),
   },
 ];

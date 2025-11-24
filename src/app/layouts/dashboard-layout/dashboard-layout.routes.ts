@@ -37,11 +37,4 @@ export const DASHBOARD_LAYOUT_ROUTES: Routes = [
       import('../../features/records/records.routes')
         .then(m => m.RECORDS_ROUTES),
   },
-
-  {
-    path: 'reports',
-    loadChildren: () =>
-      import('../../features/reports/reports.routes')
-        .then(m => m.REPORTS_ROUTES),
-  },
 ];
