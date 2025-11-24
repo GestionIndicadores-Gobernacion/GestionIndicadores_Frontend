@@ -1,45 +1,20 @@
-<div class="card shadow-sm p-4">
-
-  <h3 class="text-center mb-3">Iniciar Sesión</h3>
+<div class="login-card">
+  <h2>Gestión de Indicadores</h2>
+  <p class="subtitle">Iniciar sesión</p>
 
   <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)">
-
-    <!-- Email -->
-    <div class="mb-3">
-      <label class="form-label">Correo</label>
-      <input
-        type="email"
-        class="form-control"
-        name="email"
-        [(ngModel)]="email"
-        required
-      />
+    
+    <div class="field">
+      <label>Correo</label>
+      <input type="email" name="email" [(ngModel)]="email" required />
     </div>
 
-    <!-- Password -->
-    <div class="mb-3">
-      <label class="form-label">Contraseña</label>
-      <input
-        type="password"
-        class="form-control"
-        name="password"
-        [(ngModel)]="password"
-        required
-      />
+    <div class="field">
+      <label>Contraseña</label>
+      <input type="password" name="password" [(ngModel)]="password" required />
     </div>
 
-    <!-- Error -->
-    <div *ngIf="errorMessage" class="alert alert-danger py-2">
-      {{ errorMessage }}
-    </div>
-
-    <button 
-      class="btn btn-primary w-100 mt-3"
-      type="submit"
-      [disabled]="loading">
-      <span *ngIf="!loading">Ingresar</span>
-      <div *ngIf="loading" class="spinner-border spinner-border-sm"></div>
-    </button>
+    <button class="btn" type="submit">Ingresar</button>
 
   </form>
 </div>
