@@ -1,47 +1,31 @@
 .dashboard-container {
-  display: flex;
-  min-height: 100vh;
-  background-color: #f8f9fa; /* Color institucional claro */
+  height: 100vh;
+  width: 100%;
+  background: #f4f6f8;
+
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  overflow: hidden;
 }
 
-/* Sidebar */
-app-sidebar {
-  width: 260px;
-  background-color: #0d6efd; /* Azul institucional Bootstrap */
-  min-height: 100vh;
-  position: fixed;
-  left: 0;
-  top: 0;
-  color: #fff;
-}
-
+/* Main area */
 .main-content {
-  flex: 1;
-  margin-left: 260px; /* misma medida del sidebar */
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
 }
 
-/* Navbar superior */
-app-topbar {
-  height: 60px;
-  background: #ffffff;
-  border-bottom: 1px solid #dee2e6;
-  display: block;
-}
-
-/* Contenido */
+/* Page content */
 .content-wrapper {
-  padding: 20px;
-  flex: 1;
+  padding: 24px;
+  height: calc(100vh - 64px);
+  overflow-y: auto;
 }
 
 /* Responsive */
-@media (max-width: 768px) {
-  app-sidebar {
-    width: 220px;
-  }
-  .main-content {
-    margin-left: 220px;
+@media (max-width: 992px) {
+  .dashboard-container {
+    grid-template-columns: 1fr; /* Sidebar se vuelve overlay */
   }
 }

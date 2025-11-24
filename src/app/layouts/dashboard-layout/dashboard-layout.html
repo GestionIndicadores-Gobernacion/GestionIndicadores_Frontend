@@ -1,21 +1,22 @@
 <div class="dashboard-container">
 
-    <!-- Sidebar -->
-    <app-sidebar></app-sidebar>
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
 
-    <!-- Main content -->
-    <div class="main-content">
+  <!-- Main content -->
+  <div class="main-content">
 
-        <!-- Navbar superior -->
-        <app-topbar></app-topbar>
+    <!-- Topbar -->
+    <app-topbar></app-topbar>
 
-        <!-- Contenido dinámico -->
-        <div class="content-wrapper">
-            <router-outlet></router-outlet>
-        </div>
-
+    <!-- Content -->
+    <div class="content-wrapper">
+      <router-outlet></router-outlet>
     </div>
 
-    <!-- Loader global -->
-    <app-loader></app-loader>
+  </div>
+
+  <!-- Loader global -->
+  <app-loader></app-loader>
+
 </div>

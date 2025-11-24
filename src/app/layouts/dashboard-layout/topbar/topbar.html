@@ -1,12 +1,11 @@
-<nav class="navbar navbar-light bg-white px-3 d-flex justify-content-between">
+<div class="topbar">
+  <button class="menu-btn" (click)="toggleSidebar()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
 
-  <div>
-    <span class="fw-bold">Sistema de Indicadores</span>
-  </div>
+  <span class="topbar-title">Sistema de Indicadores</span>
 
-  <div>
-    <button class="btn btn-outline-danger btn-sm" (click)="logout()">
-      <i class="bi bi-box-arrow-right"></i> Salir
-    </button>
-  </div>
-</nav>
+  <button class="logout-btn" (click)="logout()">Salir</button>
+</div>

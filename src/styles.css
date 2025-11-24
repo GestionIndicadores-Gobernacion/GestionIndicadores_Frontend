@@ -1,10 +1,12 @@
 /* You can add global styles to this file, and also import other style files */
 :root {
-  --gov-primary: #0054a6;   /* Azul Gobernación */
-  --gov-secondary: #00a9e0; /* Celeste moderno */
-  --gov-dark: #0b2239;  
+  --gov-primary: #0054a6;
+  /* Azul Gobernación */
+  --gov-secondary: #00a9e0;
+  /* Celeste moderno */
+  --gov-dark: #0b2239;
   --gov-light: #f5f9fc;
-  
+
   --radius: 14px;
   --transition: 0.25s ease;
   --font-main: 'Inter', sans-serif;
@@ -14,4 +16,18 @@ body {
   font-family: var(--font-main);
   background: var(--gov-light);
   margin: 0;
+}
+
+@media (max-width: 768px) {
+  .content-wrapper {
+    padding: 12px;
+  }
+
+  h2 {
+    font-size: 1.4rem;
+  }
+
+  .kpi-number {
+    font-size: 1.5rem;
+  }
 }

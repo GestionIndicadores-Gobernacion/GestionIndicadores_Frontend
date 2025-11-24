@@ -1,114 +1,121 @@
-/* ================================
-   KPIs
-================================ */
+.dashboard-home {
+  width: 100%;
+}
+
+.page-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #003b75;
+  margin-bottom: 24px;
+}
+
+/* KPIs */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
 
 .kpi-card {
+  padding: 20px;
   border-radius: 12px;
-  padding: 1rem 1.25rem;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  color: white;
+  transition: transform 0.25s ease;
 }
 
 .kpi-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+}
+
+.kpi-label {
+  margin: 0;
+  opacity: 0.8;
 }
 
 .kpi-number {
-  font-size: 2.2rem;
+  font-size: 2rem;
   font-weight: 700;
-  margin-top: 0.25rem;
+  margin: 4px 0 0;
 }
 
-/* Colores institucionales */
+/* KPI Colors */
+/* 🔵 Azul Gobernación (elegante, serio, institucional) */
 .kpi-blue {
-  background-color: #0d6efd;
-  color: white;
+  background: linear-gradient(135deg, #003b75, #005bbf);
 }
 
+/* 🟢 Verde institucional */
 .kpi-green {
-  background-color: #198754;
-  color: white;
+  background: linear-gradient(135deg, #28a745, #34d058);
 }
 
+/* 🟠 Naranja gov (alertas suaves y métricas positivas) */
 .kpi-orange {
-  background-color: #fd7e14;
-  color: white;
+  background: linear-gradient(135deg, #ff9f43, #ff7845);
 }
 
+/* 🟣 Morado profesional (ideal para métricas técnicas) */
 .kpi-purple {
-  background-color: #6f42c1;
-  color: white;
+  background: linear-gradient(135deg, #6f42c1, #8b5cec);
 }
 
+/* 🔴 Rojo institucional */
 .kpi-red {
-  background-color: #dc3545;
-  color: white;
+  background: linear-gradient(135deg, #dc3545, #f05a67);
 }
 
-/* ================================
-   Cards
-================================ */
-
-.card {
-  border-radius: 14px !important;
+/* Cards */
+.dashboard-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+  padding: 20px;
 }
 
 .card-title {
-  font-size: 1.05rem;
   font-weight: 600;
-  color: #333;
+  color: #003b75;
+  margin-bottom: 14px;
 }
 
-.card.shadow-sm {
-  border: none !important;
+/* Grid */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
 }
 
-/* ================================
-   ApexCharts (consistencia visual)
-================================ */
-
-apx-chart {
-  display: block;
-  height: 300px;
+@media (max-width: 768px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
 }
 
-/* Ajustes para que las leyendas no revienten el layout */
-.apexcharts-legend {
-  margin-top: 10px !important;
-}
-
-/* ================================
-   Tabla Últimos Registros
-================================ */
-
-table {
+/* Table */
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
   font-size: 0.9rem;
 }
 
-table tbody tr:hover {
-  background-color: rgba(0, 0, 0, 0.03);
-  cursor: pointer;
+.custom-table thead {
+  background: #eef2f6;
 }
 
-thead th {
+.custom-table th {
+  text-align: left;
+  padding: 10px;
+  color: #003b75;
   font-weight: 600;
 }
 
-/* ================================
-   Loading
-================================ */
-
-.spinner-border {
-  width: 3rem;
-  height: 3rem;
+.custom-table td {
+  padding: 10px;
 }
 
-/* ================================
-   Responsive Tweaks
-================================ */
-
-@media (max-width: 768px) {
-  .kpi-number {
-    font-size: 1.8rem;
-  }
+.custom-table tr:hover {
+  background: #f5f9ff;
 }
