@@ -1,236 +1,217 @@
-<div class="container-fluid">
+<div class="record-form-container">
 
-    <h3 class="mb-3">
+    <h2 class="page-title">
         {{ isEdit ? 'Editar Registro' : 'Crear Registro' }}
-    </h3>
+    </h2>
 
-    <!-- LOADING -->
-    <div *ngIf="loading" class="text-center my-5">
-        <div class="spinner-border text-primary"></div>
+    <!-- Loading -->
+    <div *ngIf="loading" class="loading-box">
+        <div class="spinner"></div>
     </div>
 
-    <!-- FORM -->
     <form *ngIf="!loading" (ngSubmit)="save()">
 
-        <!-- =========================
-         📌 SECCIÓN 1: DATOS GENERALES
-         ========================== -->
-        <div class="card mb-3">
-            <div class="card-body">
+        <!-- ============================
+     📌 SECCIÓN 1 — DATOS GENERALES
+     ============================ -->
+        <div class="form-section">
+            <h3 class="section-title">Datos del registro</h3>
 
-                <h5 class="card-title mb-3">Datos del registro</h5>
+            <div class="form-grid">
 
-                <div class="row g-3">
-
-                    <!-- Municipio -->
-                    <div class="col-md-4">
-                        <label class="form-label">Municipio</label>
-                        <select class="form-control" [(ngModel)]="form.municipio" name="municipio" required>
-                            <option [ngValue]="null" disabled>Seleccionar municipio...</option>
-                            <option *ngFor="let m of municipios" [ngValue]="m">
-                                {{ m }}
-                            </option>
-                        </select>
-                    </div>
-
-                    <!-- Fecha -->
-                    <div class="col-md-4">
-                        <label class="form-label">Fecha</label>
-                        <input type="date" class="form-control" [(ngModel)]="form.fecha" name="fecha" required>
-                    </div>
-
-                    <!-- Componente -->
-                    <div class="col-md-4">
-                        <label class="form-label">Componente</label>
-                        <select class="form-control" [(ngModel)]="form.component_id" name="component_id"
-                            (change)="onComponentChange()" required>
-                            <option [ngValue]="null" disabled>Seleccionar componente...</option>
-                            <option *ngFor="let c of components" [ngValue]="c.id">
-                                {{ c.name }}
-                            </option>
-                        </select>
-                    </div>
-
-                    <!-- Indicador -->
-                    <div class="col-md-4">
-                        <label class="form-label">Indicador</label>
-                        <select class="form-control" [(ngModel)]="form.indicator_id" name="indicator_id"
-                            (change)="onIndicatorChange()" [disabled]="!form.component_id" required>
-                            <option [ngValue]="null" disabled>
-                                {{ form.component_id ? 'Seleccionar indicador...' : 'Seleccione primero un componente'
-                                }}
-                            </option>
-                            <option *ngFor="let i of indicators" [ngValue]="i.id">
-                                {{ i.name }}
-                            </option>
-                        </select>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-
-        <!-- =========================
-         📌 SECCIÓN 2: POBLACIÓN
-         ========================== -->
-        <div class="card mb-3">
-            <div class="card-body">
-
-                <h5 class="card-title mb-3">Población</h5>
-
-                <!-- Chips tipo_poblacion -->
-                <div class="mb-3">
-                    <label class="form-label">Tipo de población</label>
-
-                    <div class="d-flex flex-wrap gap-2 mb-2">
-                        <span class="badge bg-primary d-flex align-items-center"
-                            *ngFor="let t of tipoPoblacionChips; let i = index">
-                            {{ t }}
-                            <button type="button" class="btn-close btn-close-white btn-sm ms-2" aria-label="Eliminar"
-                                (click)="removeTipoPoblacion(i)"></button>
-                        </span>
-
-                        <span *ngIf="!tipoPoblacionChips.length" class="text-muted">
-                            No hay tipos de población agregados.
-                        </span>
-                    </div>
-
-                    <div class="input-group">
-                        <input type="text" class="form-control" [(ngModel)]="nuevoTipoPoblacion"
-                            name="nuevoTipoPoblacion" placeholder="Agregar tipo de población (ej: Perros, Gatos)"
-                            (keyup.enter)="addTipoPoblacion()">
-                        <button type="button" class="btn btn-outline-primary" (click)="addTipoPoblacion()">
-                            Agregar
-                        </button>
-                    </div>
+                <!-- Municipio -->
+                <div class="form-group">
+                    <label>Municipio</label>
+                    <select [(ngModel)]="form.municipio" name="municipio" required>
+                        <option disabled [ngValue]="null">Seleccionar municipio...</option>
+                        <option *ngFor="let m of municipios" [ngValue]="m">{{ m }}</option>
+                    </select>
                 </div>
 
-                <!-- Detalle poblacional si aplica -->
-                <div *ngIf="selectedIndicator?.use_list && hasAllowedValues()">
-                    <label class="form-label">Detalle por tipo de población</label>
+                <!-- Fecha -->
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="date" [(ngModel)]="form.fecha" name="fecha" required>
+                </div>
 
-                    <div class="table-responsive">
-                        <table class="table table-sm align-middle">
-                            <thead>
-                                <tr>
-                                    <th>Tipo</th>
-                                    <th>Cantidad</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr *ngFor="let val of selectedIndicator?.allowed_values">
-                                    <td>{{ val }}</td>
-                                    <td style="max-width: 120px;">
-                                        <input type="number" min="0" class="form-control form-control-sm"
-                                            [(ngModel)]="detallePoblacion[val]" name="detalle_{{ val }}">
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <!-- Componente -->
+                <div class="form-group">
+                    <label>Componente</label>
+                    <select [(ngModel)]="form.component_id" name="component_id" (change)="onComponentChange()" required>
+                        <option disabled [ngValue]="null">Seleccionar componente...</option>
+                        <option *ngFor="let c of components" [ngValue]="c.id">{{ c.name }}</option>
+                    </select>
+                </div>
 
-                    <small class="text-muted">
-                        Solo se permiten claves definidas en el indicador.
-                    </small>
+                <!-- Indicador -->
+                <div class="form-group">
+                    <label>Indicador</label>
+                    <select [(ngModel)]="form.indicator_id" name="indicator_id" (change)="onIndicatorChange()"
+                        [disabled]="!form.component_id" required>
+                        <option disabled [ngValue]="null">
+                            {{ form.component_id ? 'Seleccionar indicador...' : 'Seleccione primero un componente' }}
+                        </option>
+                        <option *ngFor="let i of indicators" [ngValue]="i.id">{{ i.name }}</option>
+                    </select>
                 </div>
 
             </div>
         </div>
 
-        <!-- =========================
-         📌 SECCIÓN 3: VALOR DEL INDICADOR
-         ========================== -->
-        <div class="card mb-3" *ngIf="selectedIndicator">
-            <div class="card-body">
-                <h5 class="card-title mb-3">
-                    Valor del indicador
-                    <span class="badge bg-secondary ms-2">
-                        {{ selectedIndicator.data_type }}
+        <!-- ============================
+     📌 SECCIÓN 2 — POBLACIÓN
+     ============================ -->
+        <div class="form-section" [class.disabled-section]="!datosGeneralesCompletos">
+            <h3 class="section-title">Población</h3>
+
+            <!-- Chips -->
+            <div class="form-group full">
+                <label>Tipo de población</label>
+
+                <div class="chips">
+                    <span class="chip" *ngFor="let t of tipoPoblacionChips; let i = index">
+                        {{ t }}
+                        <button type="button" class="chip-close" (click)="removeTipoPoblacion(i)">✕</button>
                     </span>
-                </h5>
+
+                    <span *ngIf="!tipoPoblacionChips.length" class="empty-text">
+                        No hay tipos de población agregados.
+                    </span>
+                </div>
+
+                <div class="chips-input">
+                    <input type="text" [(ngModel)]="nuevoTipoPoblacion" name="nuevoTipoPoblacion"
+                        placeholder="Agregar tipo de población (ej: Perros, Gatos)" (keyup.enter)="addTipoPoblacion()">
+
+                    <button type="button" class="btn-outline-primary" (click)="addTipoPoblacion()">
+                        Agregar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Detalle poblacional -->
+            <div class="form-group full" *ngIf="selectedIndicator?.use_list && hasAllowedValues()">
+
+                <label>Detalle por tipo de población</label>
+
+                <table class="inner-table">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Cantidad</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr *ngFor="let val of selectedIndicator?.allowed_values">
+                            <td>{{ val }}</td>
+                            <td>
+                                <input type="number" min="0" [(ngModel)]="detallePoblacion[val]"
+                                    name="detalle_{{ val }}">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <small class="help-text">
+                    Solo se permiten claves definidas en el indicador.
+                </small>
+            </div>
+
+        </div>
+
+        <!-- ============================
+     📌 SECCIÓN 3 — VALOR
+     ============================ -->
+        <div class="form-section" *ngIf="selectedIndicator" [class.disabled-section]="!datosGeneralesCompletos">
+            <h3 class="section-title">
+                Valor del indicador
+                <span class="tag">{{ selectedIndicator.data_type }}</span>
+            </h3>
+
+            <div class="form-group full">
 
                 <!-- BOOLEAN -->
-                <div *ngIf="isBooleanIndicator()">
-                    <label class="form-label">Valor</label>
-                    <select class="form-control" [(ngModel)]="form.valor" name="valor_boolean">
+                <ng-container *ngIf="isBooleanIndicator()">
+                    <label>Valor</label>
+                    <select [(ngModel)]="form.valor" name="valor_bool">
                         <option value="">Seleccionar...</option>
                         <option value="true">Sí</option>
                         <option value="false">No</option>
                     </select>
-                </div>
+                </ng-container>
 
                 <!-- INTEGER -->
-                <div *ngIf="isIntegerIndicator()">
-                    <label class="form-label">Valor</label>
-                    <input type="number" class="form-control" [(ngModel)]="form.valor" name="valor_integer">
-                </div>
+                <ng-container *ngIf="isIntegerIndicator()">
+                    <label>Valor</label>
+                    <input type="number" [(ngModel)]="form.valor" name="valor_int">
+                </ng-container>
 
                 <!-- DECIMAL -->
-                <div *ngIf="isDecimalIndicator()">
-                    <label class="form-label">Valor</label>
-                    <input type="number" step="0.01" class="form-control" [(ngModel)]="form.valor" name="valor_decimal">
-                </div>
+                <ng-container *ngIf="isDecimalIndicator()">
+                    <label>Valor</label>
+                    <input type="number" step="0.01" [(ngModel)]="form.valor" name="valor_decimal">
+                </ng-container>
 
                 <!-- TEXT -->
-                <div *ngIf="isTextIndicator()">
-                    <label class="form-label">Valor</label>
-                    <textarea class="form-control" rows="3" [(ngModel)]="form.valor" name="valor_text"></textarea>
-                </div>
+                <ng-container *ngIf="isTextIndicator()">
+                    <label>Valor</label>
+                    <textarea rows="3" [(ngModel)]="form.valor" name="valor_text"></textarea>
+                </ng-container>
 
                 <!-- DATE -->
-                <div *ngIf="isDateIndicator()">
-                    <label class="form-label">Valor</label>
-                    <input type="date" class="form-control" [(ngModel)]="form.valor" name="valor_date">
-                </div>
+                <ng-container *ngIf="isDateIndicator()">
+                    <label>Valor</label>
+                    <input type="date" [(ngModel)]="form.valor" name="valor_date">
+                </ng-container>
 
                 <!-- CATEGORY -->
-                <div *ngIf="isCategoryIndicator()">
-                    <label class="form-label">Valor</label>
+                <ng-container *ngIf="isCategoryIndicator()">
 
-                    <ng-container *ngIf="hasAllowedValues(); else categoryText">
-                        <select class="form-control" [(ngModel)]="form.valor" name="valor_category">
+                    <label>Valor</label>
+
+                    <ng-container *ngIf="hasAllowedValues(); else textValue">
+                        <select [(ngModel)]="form.valor" name="valor_cat">
                             <option value="">Seleccionar...</option>
-                            <option *ngFor="let v of selectedIndicator?.allowed_values" [value]="v">
-                                {{ v }}
-                            </option>
+                            <option *ngFor="let v of selectedIndicator?.allowed_values" [value]="v">{{ v }}</option>
                         </select>
                     </ng-container>
 
-                    <ng-template #categoryText>
-                        <input type="text" class="form-control" [(ngModel)]="form.valor" name="valor_category_text"
+                    <ng-template #textValue>
+                        <input type="text" [(ngModel)]="form.valor" name="valor_cat_text"
                             placeholder="Valor de categoría">
                     </ng-template>
-                </div>
+                </ng-container>
 
-                <small class="text-muted d-block mt-2">
-                    El tipo de control se ajusta automáticamente según el tipo de dato del indicador.
-                </small>
             </div>
+
+            <small class="help-text">
+                El tipo de control se ajusta automáticamente según el tipo de dato del indicador.
+            </small>
         </div>
 
-        <!-- =========================
-         📌 SECCIÓN 4: EVIDENCIA
-         ========================== -->
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title mb-3">Evidencia</h5>
+        <!-- ============================
+     📌 SECCIÓN 4 — EVIDENCIA
+     ============================ -->
+        <div class="form-section" [class.disabled-section]="!datosGeneralesCompletos">
+            <h3 class="section-title">Evidencia</h3>
 
-                <div class="mb-3">
-                    <label class="form-label">URL de evidencia (opcional)</label>
-                    <input type="url" class="form-control" [(ngModel)]="form.evidencia_url" name="evidencia_url"
-                        placeholder="https://...">
-                </div>
+            <div class="form-group full">
+                <label>URL de evidencia (opcional)</label>
+                <input type="url" [(ngModel)]="form.evidencia_url" name="evidencia_url" placeholder="https://...">
             </div>
         </div>
 
         <!-- BOTONES -->
-        <button class="btn btn-primary" [disabled]="saving">
-            {{ saving ? 'Guardando...' : (isEdit ? 'Actualizar' : 'Crear Registro') }}
-        </button>
+        <div class="form-actions">
+            <button class="btn-primary" [disabled]="saving">
+                {{ saving ? 'Guardando...' : (isEdit ? 'Actualizar' : 'Crear Registro') }}
+            </button>
 
-        <button type="button" class="btn btn-secondary ms-2" (click)="cancel()">
-            Cancelar
-        </button>
+            <button type="button" class="btn-secondary" (click)="cancel()">
+                Cancelar
+            </button>
+        </div>
 
     </form>
 

@@ -1,0 +1,141 @@
+.record-view-container {
+  padding: 24px;
+}
+
+/* Header */
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.header-row h2 {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #003b75;
+}
+
+/* Cards */
+.view-card {
+  background: white;
+  padding: 22px;
+  margin-bottom: 18px;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.view-card h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #003b75;
+  margin-bottom: 18px;
+}
+
+/* Info Grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.95rem;
+  padding: 10px 12px;
+  background: #f7f9fb;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+}
+
+.info-item span {
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+/* Chips */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  background: #005bbf;
+  padding: 6px 12px;
+  border-radius: 20px;
+  color: white;
+  font-size: 0.85rem;
+}
+
+/* Sub-labels */
+.sub-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #003b75;
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* Table */
+.detail-table {
+  width: 100%;
+  background: white;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 0.9rem;
+}
+
+.detail-table th {
+  background: #eef2f6;
+  padding: 10px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 1px solid #d8dee9;
+}
+
+.detail-table td {
+  padding: 10px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* Value */
+.value-text {
+  font-size: 1rem;
+  background: #f7f9fb;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+}
+
+/* Evidence */
+.evidence-link {
+  color: #005bbf;
+  font-weight: 600;
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+.no-evidence {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+/* Back button */
+.btn-secondary {
+  background: #eef2f6;
+  border: 1px solid #ccd4dd;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #dce2e9;
+}

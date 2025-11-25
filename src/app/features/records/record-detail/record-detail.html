@@ -1,118 +1,110 @@
-<div class="container-fluid">
+<div class="record-view-container">
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="m-0">Detalle del Registro</h3>
+  <div class="header-row">
+      <h2>Detalle del Registro</h2>
+      <button class="btn-secondary" (click)="back()">← Volver</button>
+  </div>
 
-        <button class="btn btn-secondary" (click)="back()">Volver</button>
-    </div>
+  <!-- LOADING -->
+  <div *ngIf="loading" class="loading-box">
+      <div class="spinner"></div>
+  </div>
 
-    <!-- LOADING -->
-    <div *ngIf="loading" class="text-center my-5">
-        <div class="spinner-border text-primary"></div>
-    </div>
+  <!-- CONTENT -->
+  <div *ngIf="!loading && record">
 
-    <!-- CONTENT -->
-    <div *ngIf="!loading && record">
+      <!-- ============================
+           📌 DATOS GENERALES
+      ============================ -->
+      <div class="view-card">
+          <h3>Datos generales</h3>
 
-        <!-- ============================
-         📌 DATOS PRINCIPALES
-         ============================ -->
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Datos generales</h5>
+          <div class="info-grid">
+              <div class="info-item"><span>ID</span>{{ record.id }}</div>
+              <div class="info-item"><span>Municipio</span>{{ record.municipio }}</div>
+              <div class="info-item"><span>Fecha</span>{{ record.fecha }}</div>
+              <div class="info-item"><span>Registrado el</span>{{ record.fecha_registro }}</div>
+              <div class="info-item"><span>Creado por (ID)</span>{{ record.creado_por }}</div>
+          </div>
+      </div>
 
-                <p><strong>ID:</strong> {{ record.id }}</p>
-                <p><strong>Municipio:</strong> {{ record.municipio }}</p>
-                <p><strong>Fecha:</strong> {{ record.fecha }}</p>
-                <p><strong>Fecha de registro:</strong> {{ record.fecha_registro }}</p>
-                <p><strong>Creado por (ID):</strong> {{ record.creado_por }}</p>
-            </div>
-        </div>
+      <!-- ============================
+           📌 COMPONENTE / INDICADOR
+      ============================ -->
+      <div class="view-card">
+          <h3>Componente e Indicador</h3>
 
-        <!-- ============================
-         📌 COMPONENTE / INDICADOR
-         ============================ -->
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Componente e Indicador</h5>
+          <div class="info-grid">
+              <div class="info-item">
+                  <span>Componente</span>
+                  {{ record.component_id !== null ? componentMap[record.component_id] : 'Sin componente' }}
+              </div>
 
-                <p><strong>Componente:</strong> {{ record.component_id !== null ? componentMap[record.component_id] :
-                    'Sin componente' }}
-                </p>
-                <p><strong>Indicador:</strong> {{ record.indicator_id !== null ? indicatorMap[record.indicator_id] :
-                    'Sin indicador' }}
-                </p>
-            </div>
-        </div>
+              <div class="info-item">
+                  <span>Indicador</span>
+                  {{ record.indicator_id !== null ? indicatorMap[record.indicator_id] : 'Sin indicador' }}
+              </div>
+          </div>
+      </div>
 
-        <!-- ============================
-         📌 POBLACIÓN
-         ============================ -->
-        <div class="card mb-3">
-            <div class="card-body">
+      <!-- ============================
+           📌 POBLACIÓN
+      ============================ -->
+      <div class="view-card">
+          <h3>Población</h3>
 
-                <h5 class="card-title">Población</h5>
+          <span class="sub-label">Tipo de población</span>
 
-                <p><strong>Tipo de población:</strong></p>
+          <div class="chips">
+              <span class="chip" *ngFor="let t of record.tipo_poblacion">
+                  {{ t }}
+              </span>
+          </div>
 
-                <div class="d-flex flex-wrap gap-2 mb-3">
-                    <span class="badge bg-primary" *ngFor="let t of record.tipo_poblacion">
-                        {{ t }}
-                    </span>
-                </div>
+          <div *ngIf="record.detalle_poblacion">
+              <span class="sub-label mt-3">Detalle por tipo</span>
 
-                <div *ngIf="record.detalle_poblacion">
-                    <h6 class="mt-3">Detalle por tipo</h6>
+              <table class="detail-table">
+                  <thead>
+                      <tr>
+                          <th>Tipo</th>
+                          <th>Cantidad</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      <tr *ngFor="let key of record.detalle_poblacion | keyvalue">
+                          <td>{{ key.key }}</td>
+                          <td>{{ key.value }}</td>
+                      </tr>
+                  </tbody>
+              </table>
+          </div>
+      </div>
 
-                    <table class="table table-sm table-striped mt-2 w-auto">
-                        <thead>
-                            <tr>
-                                <th>Tipo</th>
-                                <th>Cantidad</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let key of record.detalle_poblacion | keyvalue">
-                                <td>{{ key.key }}</td>
-                                <td>{{ key.value }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+      <!-- ============================
+           📌 VALOR DEL INDICADOR
+      ============================ -->
+      <div class="view-card">
+          <h3>Valor del indicador</h3>
+          <p class="value-text">{{ record.valor }}</p>
+      </div>
 
-            </div>
-        </div>
+      <!-- ============================
+           📌 EVIDENCIA
+      ============================ -->
+      <div class="view-card">
+          <h3>Evidencia</h3>
 
-        <!-- ============================
-         📌 VALOR DEL INDICADOR
-         ============================ -->
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Valor del indicador</h5>
-                <p><strong>Valor:</strong> {{ record.valor }}</p>
-            </div>
-        </div>
+          <ng-container *ngIf="record.evidencia_url; else noEvidence">
+              <a class="evidence-link" [href]="record.evidencia_url" target="_blank">
+                  {{ record.evidencia_url }}
+              </a>
+          </ng-container>
 
-        <!-- ============================
-         📌 EVIDENCIA
-         ============================ -->
-        <div class="card mb-3">
-            <div class="card-body">
+          <ng-template #noEvidence>
+              <p class="no-evidence">Sin evidencia adjunta</p>
+          </ng-template>
+      </div>
 
-                <h5 class="card-title">Evidencia</h5>
-
-                <p *ngIf="record.evidencia_url; else noEvidencia">
-                    <a [href]="record.evidencia_url" target="_blank">
-                        {{ record.evidencia_url }}
-                    </a>
-                </p>
-
-                <ng-template #noEvidencia>
-                    <p class="text-muted">Sin evidencia adjunta</p>
-                </ng-template>
-
-            </div>
-        </div>
-
-    </div>
+  </div>
 </div>

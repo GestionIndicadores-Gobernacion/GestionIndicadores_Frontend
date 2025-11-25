@@ -1,55 +1,85 @@
-<div class="container-fluid">
+<div class="record-form-container">
 
-  <h3 class="mb-3">
+  <h2 class="page-title">
     {{ isEdit ? "Editar Usuario" : "Crear Usuario" }}
-  </h3>
+  </h2>
 
-  <div *ngIf="loading" class="text-center mt-5">
-    <div class="spinner-border text-primary"></div>
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-box">
+    <div class="spinner"></div>
   </div>
 
   <form *ngIf="!loading" (ngSubmit)="save()">
 
-    <div class="mb-3">
-      <label class="form-label">Nombre completo</label>
-      <input type="text" class="form-control" [(ngModel)]="form.name" name="name" required>
+    <!-- ============================
+         📌 Datos del Usuario
+    ============================ -->
+    <div class="form-section">
+
+      <!-- Nombre -->
+      <div class="form-group">
+        <label>Nombre completo</label>
+        <input 
+          type="text" 
+          [(ngModel)]="form.name" 
+          name="name"
+          required>
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label>Correo</label>
+        <input 
+          type="email" 
+          [(ngModel)]="form.email" 
+          name="email"
+          required>
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label>Contraseña</label>
+
+        <input 
+          type="password"
+          [(ngModel)]="form.password"
+          name="password"
+          [required]="!isEdit"
+          placeholder="{{ isEdit ? 'Dejar en blanco para no modificar' : '' }}"
+        >
+      </div>
+
+      <!-- Rol -->
+      <div class="form-group">
+        <label>Rol</label>
+        <select 
+          [(ngModel)]="form.role_id" 
+          name="role_id"
+          required>
+          <option [ngValue]="null" disabled>Seleccionar rol...</option>
+          <option *ngFor="let r of roles" [ngValue]="r.id">
+            {{ r.name }}
+          </option>
+        </select>
+      </div>
+
     </div>
 
-    <div class="mb-3">
-      <label class="form-label">Correo</label>
-      <input type="email" class="form-control" [(ngModel)]="form.email" name="email" required>
+    <!-- ============================
+         📌 BOTONES
+    ============================ -->
+    <div class="form-actions">
+      <button class="btn-primary" [disabled]="saving">
+        {{ saving ? "Guardando..." : (isEdit ? "Actualizar" : "Crear Usuario") }}
+      </button>
+
+      <button 
+        type="button" 
+        class="btn-secondary-custom"
+        (click)="router.navigate(['/dashboard/users'])">
+        Cancelar
+      </button>
     </div>
-
-    <div class="mb-3">
-      <label class="form-label">Contraseña</label>
-
-      <input 
-        type="password" 
-        class="form-control"
-        [(ngModel)]="form.password" 
-        name="password"
-        [required]="!isEdit"
-        placeholder="{{ isEdit ? 'Dejar en blanco para no modificar' : '' }}"
-      >
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">Rol</label>
-      <select class="form-control" [(ngModel)]="form.role_id" name="role_id" required>
-        <option [ngValue]="null" disabled>Seleccionar rol...</option>
-        <option *ngFor="let r of roles" [ngValue]="r.id">
-          {{ r.name }}
-        </option>
-      </select>
-    </div>
-
-    <button class="btn btn-primary" [disabled]="saving">
-      {{ saving ? "Guardando..." : (isEdit ? "Actualizar" : "Crear Usuario") }}
-    </button>
-
-    <button class="btn btn-secondary ms-2" (click)="router.navigate(['/dashboard/users'])" type="button">
-      Cancelar
-    </button>
 
   </form>
 

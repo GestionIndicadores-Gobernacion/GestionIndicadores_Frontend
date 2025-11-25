@@ -1,33 +1,34 @@
-<div class="container-fluid">
+<div class="records-container">
 
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="m-0">Gestión de Usuarios</h3>
+  <!-- Header -->
+  <div class="records-header">
+    <h2>Gestión de Usuarios</h2>
 
-    <button class="btn btn-primary" (click)="goCreate()">
-      + Crear Usuario
+    <button class="btn-primary" (click)="goCreate()">
+      Crear Usuario
     </button>
   </div>
 
   <!-- Buscador -->
-  <div class="mb-3">
-    <input
-      type="text"
-      class="form-control"
-      placeholder="Buscar por nombre, correo o rol..."
+  <div class="search-box">
+    <input 
+      type="text" 
+      placeholder="Buscar por nombre, correo o rol..." 
       [(ngModel)]="search"
-      (input)="applyFilter()"
-    >
+      (input)="applyFilter()">
   </div>
 
   <!-- Loading -->
-  <div class="text-center my-5" *ngIf="loading">
-    <div class="spinner-border text-primary"></div>
+  <div class="loading-box" *ngIf="loading">
+    <div class="spinner"></div>
   </div>
 
   <!-- Tabla -->
-  <div class="table-responsive" *ngIf="!loading">
-    <table class="table table-hover align-middle">
-      <thead class="table-light">
+  <div *ngIf="!loading" class="table-wrapper">
+
+    <table class="custom-table">
+
+      <thead>
         <tr>
           <th>Nombre</th>
           <th>Email</th>
@@ -38,22 +39,30 @@
 
       <tbody>
         <tr *ngFor="let u of filteredUsers">
+
           <td>{{ u.name }}</td>
           <td>{{ u.email }}</td>
           <td>{{ u.role?.name }}</td>
 
-          <td class="text-center">
-            <button class="btn btn-outline-secondary btn-sm me-2" (click)="goEdit(u.id)">
+          <td class="actions-col">
+
+            <!-- Editar -->
+            <button class="btn-outline-primary" (click)="goEdit(u.id)">
               Editar
             </button>
 
-            <button class="btn btn-outline-danger btn-sm" (click)="deleteUser(u.id)">
+            <!-- Eliminar -->
+            <button class="btn-outline-danger" (click)="deleteUser(u.id)">
               Eliminar
             </button>
+
           </td>
+
         </tr>
       </tbody>
+
     </table>
+
   </div>
 
 </div>

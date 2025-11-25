@@ -1,63 +1,46 @@
-<div class="container-fluid">
+<div class="component-form-container form-container">
 
-  <h3 class="mb-3">
+  <h2 class="page-title">
     {{ isEdit ? "Editar Componente" : "Crear Componente" }}
-  </h3>
+  </h2>
 
-  <div *ngIf="loading" class="text-center mt-5">
-    <div class="spinner-border text-primary"></div>
+  <div *ngIf="loading" class="loading-box">
+    <div class="spinner"></div>
   </div>
 
   <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="submit()">
 
-    <!-- Nombre -->
-    <div class="mb-3">
-      <label class="form-label">Nombre</label>
-      <input
-        type="text"
-        class="form-control"
-        formControlName="name"
-        placeholder="Nombre del componente"
-        required
-      >
+    <div class="form-section">
+
+      <div class="form-group">
+        <label>Nombre</label>
+        <input type="text" formControlName="name" placeholder="Nombre del componente">
+      </div>
+
+      <div class="form-group full">
+        <label>Descripción</label>
+        <textarea rows="3" formControlName="description" placeholder="Descripción del componente"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Activo</label>
+        <label class="switch">
+          <input type="checkbox" formControlName="active">
+          <span class="slider"></span>
+        </label>
+      </div>
+
     </div>
 
-    <!-- Descripción -->
-    <div class="mb-3">
-      <label class="form-label">Descripción</label>
-      <textarea
-        class="form-control"
-        rows="3"
-        formControlName="description"
-        placeholder="Descripción del componente"
-      ></textarea>
+    <div class="form-actions">
+      <button class="btn-primary" [disabled]="saving || form.invalid">
+        {{ saving ? "Guardando..." : (isEdit ? "Actualizar" : "Crear Componente") }}
+      </button>
+
+      <button type="button" class="btn-secondary-custom" [routerLink]="['/dashboard/components']">
+        Cancelar
+      </button>
     </div>
-
-    <!-- Activo -->
-    <div class="mb-3 form-check">
-      <input
-        type="checkbox"
-        class="form-check-input"
-        id="activeCheck"
-        formControlName="active"
-      >
-      <label class="form-check-label" for="activeCheck">
-        Activo
-      </label>
-    </div>
-
-    <!-- Botones -->
-    <button class="btn btn-primary" [disabled]="saving || form.invalid">
-      {{ saving ? "Guardando..." : (isEdit ? "Actualizar" : "Crear Componente") }}
-    </button>
-
-    <button
-      class="btn btn-secondary ms-2"
-      type="button"
-      [routerLink]="['/dashboard/components']"
-    >
-      Cancelar
-    </button>
 
   </form>
 

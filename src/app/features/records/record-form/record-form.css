@@ -1,0 +1,281 @@
+.record-form-container {
+  padding: 24px;
+}
+
+/* Title */
+.page-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #003b75;
+  margin-bottom: 20px;
+}
+
+/* Section */
+.form-section {
+  background: white;
+  padding: 20px;
+  margin-bottom: 18px;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #003b75;
+}
+
+/* FORM GRID */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+/* GROUP */
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.full {
+  grid-column: 1 / -1;
+}
+
+/* LABEL */
+label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #003b75;
+}
+
+/* INPUTS */
+input,
+select,
+textarea {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #ccd4dd;
+  outline: none;
+  font-size: 0.95rem;
+  transition: 0.2s border ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #005bbf;
+}
+
+/* Chips */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.chip {
+  background: #005bbf;
+  padding: 6px 12px;
+  border-radius: 20px;
+  color: white;
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.chip-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 0.9rem;
+  margin-left: 6px;
+  cursor: pointer;
+}
+
+.empty-text {
+  color: #7a8494;
+}
+
+/* Chip input */
+.chips-input {
+  display: flex;
+  gap: 10px;
+}
+
+.chips-input input {
+  flex: 1;
+}
+
+/* Table */
+.inner-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 6px;
+}
+
+.inner-table th {
+  text-align: left;
+  padding: 8px;
+  background: #eef2f6;
+  font-size: 0.9rem;
+}
+
+.inner-table td {
+  padding: 8px;
+  border-bottom: 1px solid #f0f3f7;
+}
+
+/* Tag */
+.tag {
+  background: #005bbf;
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  color: white;
+}
+
+/* Help text */
+.help-text {
+  color: #6c7280;
+  font-size: 0.8rem;
+}
+
+/* Buttons */
+.form-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 12px;
+}
+
+.btn-outline-primary {
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1.5px solid #005bbf;
+  color: #005bbf;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.25s ease;
+  white-space: nowrap;
+}
+
+.btn-outline-primary:hover {
+  background: #005bbf;
+  color: white;
+}
+
+
+.btn-primary {
+  background: linear-gradient(135deg, #003b75, #005bbf);
+  border: none;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s ease;
+}
+
+.btn-primary:hover {
+  opacity: 0.93;
+}
+
+.btn-secondary {
+  background: #eef2f6;
+  border: 1px solid #ccd4dd;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #dce2e9;
+}
+
+.disabled-section {
+  opacity: 0.4;
+  pointer-events: none; 
+  filter: grayscale(0.3);
+}
+
+/* ============================================
+   PROGRESS STEPS
+============================================ */
+.steps-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+  user-select: none;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: #7a8494;
+}
+
+.step span {
+  font-size: 0.8rem;
+  margin-top: 6px;
+}
+
+.step .circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #d5dce6;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: 0.25s ease;
+}
+
+/* Active (Step actual) */
+.step.active .circle {
+  background: #005bbf !important;
+}
+
+.step.active span {
+  color: #003b75 !important;
+  font-weight: 600;
+}
+
+/* Completed steps */
+.step.completed .circle {
+  background: #28a745 !important;
+}
+
+.step.completed span {
+  color: #28a745 !important;
+  font-weight: 600;
+}
+
+/* Disabled steps */
+.step.disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* Lines between steps */
+.step-line {
+  flex-grow: 1;
+  height: 3px;
+  background: #d5dce6;
+  border-radius: 6px;
+  transition: 0.25s ease;
+}
+
+.step-line.completed {
+  background: #28a745;
+}

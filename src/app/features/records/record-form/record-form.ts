@@ -346,6 +346,15 @@ export class RecordFormComponent {
     });
   }
 
+  get datosGeneralesCompletos(): boolean {
+    return Boolean(
+      this.form.municipio &&
+      this.form.fecha &&
+      this.form.component_id &&
+      this.form.indicator_id
+    );
+  }
+
   cancel() {
     this.router.navigate(['/dashboard/records']);
   }

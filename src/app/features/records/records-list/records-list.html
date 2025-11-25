@@ -1,28 +1,20 @@
-<div class="container-fluid">
+<div class="records-container">
 
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="m-0">Gestión de Registros</h3>
-
-    <button class="btn btn-primary" routerLink="/dashboard/records/create">
-      + Crear Registro
-    </button>
+  <div class="records-header">
+    <h2>Gestión de Registros</h2>
+    <button class="btn-primary" routerLink="/dashboard/records/create">Crear Registro</button>
   </div>
 
-  <!-- Buscador -->
-  <div class="mb-3">
-    <input type="text" class="form-control" placeholder="Buscar por componente, indicador o municipio..."
-      [(ngModel)]="search" (input)="applyFilter()">
+  <div class="search-box">
+    <input type="text" placeholder="Buscar por componente, indicador o municipio..."
+      [(ngModel)]="search" (input)="applyFilter()" />
   </div>
 
-  <!-- Loading -->
-  <div *ngIf="loading" class="text-center my-5">
-    <div class="spinner-border text-primary"></div>
-  </div>
 
-  <!-- Tabla -->
-  <div *ngIf="!loading" class="table-responsive">
-    <table class="table table-hover align-middle">
-      <thead class="table-light">
+  <div *ngIf="!loading" class="table-wrapper">
+    <table class="custom-table">
+
+      <thead>
         <tr>
           <th>ID</th>
           <th>Componente</th>
@@ -38,17 +30,9 @@
         <tr *ngFor="let r of filteredRecords">
 
           <td>{{ r.id }}</td>
-
-          <td>
-            {{ componentMap[r.component_id ?? 0] || '—' }}
-          </td>
-
-          <td>
-            {{ indicatorMap[r.indicator_id ?? 0] || '—' }}
-          </td>
-
+          <td>{{ componentMap[r.component_id ?? 0] || '—' }}</td>
+          <td>{{ indicatorMap[r.indicator_id ?? 0] || '—' }}</td>
           <td>{{ r.municipio }}</td>
-
           <td>{{ r.fecha | date }}</td>
 
           <td>
@@ -57,22 +41,25 @@
             </ng-container>
           </td>
 
-          <td class="text-center">
-            <button class="btn btn-outline-secondary btn-sm me-2" [routerLink]="['/dashboard/records', r.id]">
+          <td class="actions-col">
+
+            <button class="btn-outline" [routerLink]="['/dashboard/records', r.id]">
               Ver
             </button>
 
-            <button class="btn btn-outline-primary btn-sm me-2" [routerLink]="['/dashboard/records', r.id, 'edit']">
+            <button class="btn-outline-primary" [routerLink]="['/dashboard/records', r.id, 'edit']">
               Editar
             </button>
 
-            <button class="btn btn-outline-danger btn-sm" (click)="deleteRecord(r.id)">
+            <button class="btn-outline-danger" (click)="deleteRecord(r.id)">
               Eliminar
             </button>
+
           </td>
 
         </tr>
       </tbody>
+
     </table>
   </div>
 

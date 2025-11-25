@@ -1,137 +1,160 @@
-<div class="container-fluid">
+<div class="record-form-container">
 
-  <h3 class="mb-3">
+  <!-- Título -->
+  <h2 class="page-title">
     {{ isEdit ? "Editar Indicador" : "Crear Indicador" }}
-  </h3>
+  </h2>
 
-  <div *ngIf="loading" class="text-center mt-5">
-    <div class="spinner-border text-primary"></div>
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-box">
+    <div class="spinner"></div>
   </div>
 
   <form *ngIf="!loading" (ngSubmit)="save()">
 
-    <!-- Componente -->
-    <div class="mb-3">
-      <label class="form-label">Componente</label>
-      <select
-        class="form-control"
-        [(ngModel)]="form.component_id"
-        name="component_id"
-        required
+    <!-- ==========================
+         📌 DATOS GENERALES
+         ========================== -->
+    <div class="form-section">
+      <h3 class="section-title">Datos del indicador</h3>
+
+      <div class="form-grid">
+
+        <!-- Componente -->
+        <div class="form-group">
+          <label>Componente</label>
+          <select
+            [(ngModel)]="form.component_id"
+            name="component_id"
+            required
+          >
+            <option [ngValue]="null" disabled>Seleccionar componente...</option>
+            <option *ngFor="let c of components" [ngValue]="c.id">
+              {{ c.name }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Nombre -->
+        <div class="form-group">
+          <label>Nombre</label>
+          <input
+            type="text"
+            [(ngModel)]="form.name"
+            name="name"
+            required
+          >
+        </div>
+
+        <!-- Tipo de dato -->
+        <div class="form-group">
+          <label>Tipo de dato</label>
+          <select
+            [(ngModel)]="form.data_type"
+            name="data_type"
+            required
+          >
+            <option value="integer">Entero</option>
+            <option value="decimal">Decimal</option>
+            <option value="boolean">Booleano</option>
+            <option value="text">Texto</option>
+            <option value="date">Fecha</option>
+            <option value="category">Categoría</option>
+          </select>
+        </div>
+
+        <!-- Obligatorio -->
+        <div class="form-group">
+          <label class="form-check-label">
+            <input
+              type="checkbox"
+              [(ngModel)]="form.required"
+              name="required"
+              class="checkbox-inline"
+            >
+            Obligatorio
+          </label>
+        </div>
+
+        <!-- Activo -->
+        <div class="form-group">
+          <label class="form-check-label">
+            <input
+              type="checkbox"
+              [(ngModel)]="form.active"
+              name="active"
+              class="checkbox-inline"
+            >
+            Activo
+          </label>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==========================
+         📌 LISTA DE VALORES
+         ========================== -->
+    <div class="form-section">
+      <h3 class="section-title">Valores permitidos</h3>
+
+      <div class="form-group">
+        <label class="form-check-label">
+          <input
+            type="checkbox"
+            [(ngModel)]="form.use_list"
+            name="use_list"
+            class="checkbox-inline"
+          >
+          Usar lista de valores permitidos
+        </label>
+      </div>
+
+      <div class="form-group full" *ngIf="form.use_list">
+        <label>Valores (separados por coma)</label>
+        <input
+          type="text"
+          [(ngModel)]="form.allowed_values_text"
+          name="allowed_values_text"
+          placeholder="Ej: Aceptado, Rechazado, En trámite"
+        >
+        <small class="help-text">
+          Los valores deben estar separados por coma.
+        </small>
+      </div>
+
+    </div>
+
+    <!-- ==========================
+         📌 DESCRIPCIÓN
+         ========================== -->
+    <div class="form-section">
+      <h3 class="section-title">Descripción</h3>
+
+      <div class="form-group full">
+        <textarea
+          rows="3"
+          [(ngModel)]="form.description"
+          name="description"
+          placeholder="Descripción del indicador"
+        ></textarea>
+      </div>
+    </div>
+
+    <!-- BOTONES -->
+    <div class="form-actions">
+      <button class="btn-primary" [disabled]="saving">
+        {{ saving ? "Guardando..." : (isEdit ? "Actualizar" : "Crear Indicador") }}
+      </button>
+
+      <button
+        type="button"
+        class="btn-secondary-custom"
+        [routerLink]="['/dashboard/indicators']"
       >
-        <option [ngValue]="null" disabled>Seleccionar componente...</option>
-        <option *ngFor="let c of components" [ngValue]="c.id">
-          {{ c.name }}
-        </option>
-      </select>
+        Cancelar
+      </button>
     </div>
-
-    <!-- Nombre -->
-    <div class="mb-3">
-      <label class="form-label">Nombre</label>
-      <input
-        type="text"
-        class="form-control"
-        [(ngModel)]="form.name"
-        name="name"
-        required
-      >
-    </div>
-
-    <!-- Descripción -->
-    <div class="mb-3">
-      <label class="form-label">Descripción</label>
-      <textarea
-        class="form-control"
-        rows="3"
-        [(ngModel)]="form.description"
-        name="description"
-      ></textarea>
-    </div>
-
-    <!-- Tipo de dato -->
-    <div class="mb-3">
-      <label class="form-label">Tipo de dato</label>
-      <select
-        class="form-control"
-        [(ngModel)]="form.data_type"
-        name="data_type"
-        required
-      >
-        <option value="integer">Entero</option>
-        <option value="decimal">Decimal</option>
-        <option value="boolean">Booleano</option>
-        <option value="text">Texto</option>
-        <option value="date">Fecha</option>
-        <option value="category">Categoría</option>
-      </select>
-    </div>
-
-    <!-- Opciones booleanas -->
-    <div class="mb-3 form-check">
-      <input
-        type="checkbox"
-        class="form-check-input"
-        id="requiredCheck"
-        [(ngModel)]="form.required"
-        name="required"
-      >
-      <label class="form-check-label" for="requiredCheck">
-        Obligatorio
-      </label>
-    </div>
-
-    <div class="mb-3 form-check">
-      <input
-        type="checkbox"
-        class="form-check-input"
-        id="useListCheck"
-        [(ngModel)]="form.use_list"
-        name="use_list"
-      >
-      <label class="form-check-label" for="useListCheck">
-        Usar lista de valores permitidos
-      </label>
-    </div>
-
-    <!-- allowed_values -->
-    <div class="mb-3" *ngIf="form.use_list">
-      <label class="form-label">Valores permitidos (separados por coma)</label>
-      <input
-        type="text"
-        class="form-control"
-        [(ngModel)]="form.allowed_values_text"
-        name="allowed_values_text"
-        placeholder="Ej: Aceptado, Rechazado, En trámite"
-      >
-    </div>
-
-    <!-- Activo -->
-    <div class="mb-3 form-check">
-      <input
-        type="checkbox"
-        class="form-check-input"
-        id="activeCheck"
-        [(ngModel)]="form.active"
-        name="active"
-      >
-      <label class="form-check-label" for="activeCheck">
-        Activo
-      </label>
-    </div>
-
-    <!-- Botones -->
-    <button class="btn btn-primary" [disabled]="saving">
-      {{ saving ? "Guardando..." : (isEdit ? "Actualizar" : "Crear Indicador") }}
-    </button>
-
-    <button
-      class="btn btn-secondary ms-2"
-      type="button"
-      [routerLink]="['/dashboard/indicators']"
-    >
-      Cancelar
-    </button>
 
   </form>
 
