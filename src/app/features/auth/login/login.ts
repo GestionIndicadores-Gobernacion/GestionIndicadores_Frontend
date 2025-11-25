@@ -15,16 +15,15 @@ import { Router } from '@angular/router';
   styleUrl: './login.css',
 })
 export class LoginComponent {
-  email = '';
+   email = '';
   password = '';
   errorMessage = '';
-
   loading = false;
 
   constructor(
     private auth: AuthService,
     private router: Router
-  ) { }
+  ) {}
 
   onSubmit(form: NgForm) {
     if (form.invalid) return;
@@ -34,12 +33,19 @@ export class LoginComponent {
     this.auth.login({ email: this.email, password: this.password })
       .subscribe({
         next: (res) => {
-          this.auth.saveSession(res.access_token, res.user);
+
+          // 👇 ARREGLADO
+          this.auth.saveSession(
+            res.access_token,
+            res.refresh_token,
+            res.user
+          );
+
           this.router.navigate(['/dashboard']);
           this.loading = false;
         },
         error: (err) => {
-          this.errorMessage = err;
+          this.errorMessage = err.error?.msg || 'Error al iniciar sesión';
           this.loading = false;
         }
       });
