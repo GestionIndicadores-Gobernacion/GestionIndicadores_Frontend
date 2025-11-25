@@ -79,14 +79,14 @@
                     </span>
                 </div>
 
-                <div class="chips-input">
+                <!-- <div class="chips-input">
                     <input type="text" [(ngModel)]="nuevoTipoPoblacion" name="nuevoTipoPoblacion"
                         placeholder="Agregar tipo de población (ej: Perros, Gatos)" (keyup.enter)="addTipoPoblacion()">
 
                     <button type="button" class="btn-outline-primary" (click)="addTipoPoblacion()">
                         Agregar
                     </button>
-                </div>
+                </div> -->
             </div>
 
             <!-- Detalle poblacional -->
@@ -103,13 +103,14 @@
                     </thead>
 
                     <tbody>
-                        <tr *ngFor="let val of selectedIndicator?.allowed_values">
-                            <td>{{ val }}</td>
+                        <tr *ngFor="let tipo of tipoPoblacionChips">
+                            <td>{{ tipo }}</td>
                             <td>
-                                <input type="number" min="0" [(ngModel)]="detallePoblacion[val]"
-                                    name="detalle_{{ val }}">
+                                <input type="number" min="0" [(ngModel)]="detallePoblacion[tipo]"
+                                    name="detalle_{{ tipo }}">
                             </td>
                         </tr>
+
                     </tbody>
                 </table>
 

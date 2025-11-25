@@ -15,7 +15,7 @@ import { Router } from '@angular/router';
   styleUrl: './login.css',
 })
 export class LoginComponent {
-   email = '';
+  email = '';
   password = '';
   errorMessage = '';
   loading = false;
@@ -23,7 +23,7 @@ export class LoginComponent {
   constructor(
     private auth: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   onSubmit(form: NgForm) {
     if (form.invalid) return;
