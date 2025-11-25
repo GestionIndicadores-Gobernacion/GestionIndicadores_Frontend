@@ -26,17 +26,47 @@
 
       <thead>
         <tr>
-          <th>Nombre</th>
-          <th>Tipo de dato</th>
-          <th>Obligatorio</th>
-          <th>Lista</th>
-          <th>Estado</th>
+          <th (click)="sortBy('name')" class="sortable">
+            Nombre
+            <span *ngIf="sortColumn === 'name'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+
+          <th (click)="sortBy('data_type')" class="sortable">
+            Tipo de dato
+            <span *ngIf="sortColumn === 'data_type'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+
+          <th (click)="sortBy('required')" class="sortable">
+            Obligatorio
+            <span *ngIf="sortColumn === 'required'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+
+          <th (click)="sortBy('use_list')" class="sortable">
+            Lista
+            <span *ngIf="sortColumn === 'use_list'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+
+          <th (click)="sortBy('active')" class="sortable">
+            Estado
+            <span *ngIf="sortColumn === 'active'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+
           <th class="text-center">Acciones</th>
         </tr>
       </thead>
 
       <tbody>
-        <tr *ngFor="let i of filteredIndicators">
+        <tr *ngFor="let i of paginatedIndicators">
 
           <td>{{ i.name }}</td>
 
@@ -68,6 +98,23 @@
       </tbody>
 
     </table>
+    <div class="pagination-container" *ngIf="totalPages > 1">
+
+      <button class="page-btn" [disabled]="currentPage === 1" (click)="currentPage = currentPage - 1">
+        ◀
+      </button>
+
+      <span class="page-info">
+        Página {{ currentPage }} de {{ totalPages }}
+      </span>
+
+      <button class="page-btn" [disabled]="currentPage === totalPages" (click)="currentPage = currentPage + 1">
+        ▶
+      </button>
+
+    </div>
+
+
 
   </div>
 

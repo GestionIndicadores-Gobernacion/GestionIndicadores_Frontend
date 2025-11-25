@@ -17,6 +17,14 @@ import { FormsModule } from '@angular/forms';
 })
 export class ComponentesListComponent implements OnInit {
 
+  // PAGINACIÓN ---------------------
+  currentPage = 1;
+  pageSize = 8;
+
+  // ORDENAMIENTO -------------------
+  sortColumn: keyof ComponentModel | '' = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
+
   componentes: ComponentModel[] = [];
   filteredComponents: ComponentModel[] = [];
   loading = true;
@@ -60,6 +68,37 @@ export class ComponentesListComponent implements OnInit {
 
   goToEdit(id: number) {
     this.router.navigate([`/dashboard/components/${id}/edit`]);
+  }
+
+  get sortedComponents(): ComponentModel[] {
+    if (!this.sortColumn) return this.filteredComponents;
+
+    return [...this.filteredComponents].sort((a: any, b: any) => {
+      const valA = (a[this.sortColumn] ?? '').toString().toLowerCase();
+      const valB = (b[this.sortColumn] ?? '').toString().toLowerCase();
+
+      if (valA < valB) return this.sortDirection === 'asc' ? -1 : 1;
+      if (valA > valB) return this.sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  get paginatedComponents(): ComponentModel[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.sortedComponents.slice(start, start + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.sortedComponents.length / this.pageSize);
+  }
+
+  sortBy(column: keyof ComponentModel) {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
   }
 
   deleteComponent(id: number) {

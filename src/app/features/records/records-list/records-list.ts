@@ -20,12 +20,24 @@ import { RecordsService } from '../../../core/services/records.service';
   styleUrl: './records-list.css',
 })
 export class RecordsListComponent {
+
+  // PAGINACIÓN ---------------------
+  currentPage = 1;
+  pageSize = 10; // acá suelen ser más registros, podés subirlo a 20
+
+  // ORDENAMIENTO -------------------
+  sortColumn: keyof RecordModel | "component" | "indicator" | "" = "";
+  sortDirection: "asc" | "desc" = "asc";
+
   records: RecordModel[] = [];
   filteredRecords: RecordModel[] = [];
 
   loading = true;
 
   search = '';
+
+  isViewer = false;
+  user: any = null;
 
   // Diccionarios para mostrar nombre (no solo ID)
   componentMap: Record<number, string> = {};
@@ -35,7 +47,14 @@ export class RecordsListComponent {
     private recordsService: RecordsService,
     private componentsService: ComponentsService,
     private indicatorsService: IndicatorsService
-  ) { }
+  ) {
+    const userString = localStorage.getItem('user');
+    if (userString) {
+      this.user = JSON.parse(userString);
+
+      this.isViewer = this.user.role?.name === 'Viewer';
+    }
+  }
 
   ngOnInit(): void {
     this.loadMaps();
@@ -83,6 +102,56 @@ export class RecordsListComponent {
       (this.indicatorMap[r.indicator_id ?? 0] || '').toLowerCase().includes(term) ||
       r.municipio.toLowerCase().includes(term)
     );
+  }
+
+  get sortedRecords(): RecordModel[] {
+    if (!this.sortColumn) return this.filteredRecords;
+
+    return [...this.filteredRecords].sort((a: any, b: any) => {
+
+      let valA: string | number = '';
+      let valB: string | number = '';
+
+      // Campos especiales que vienen de mapas
+      if (this.sortColumn === 'component') {
+        valA = (this.componentMap[a.component_id ?? 0] || '').toLowerCase();
+        valB = (this.componentMap[b.component_id ?? 0] || '').toLowerCase();
+      }
+      else if (this.sortColumn === 'indicator') {
+        valA = (this.indicatorMap[a.indicator_id ?? 0] || '').toLowerCase();
+        valB = (this.indicatorMap[b.indicator_id ?? 0] || '').toLowerCase();
+      }
+      else if (this.sortColumn === 'fecha') {
+        valA = new Date(a.fecha).getTime();
+        valB = new Date(b.fecha).getTime();
+      }
+      else {
+        valA = (a[this.sortColumn] ?? '').toString().toLowerCase();
+        valB = (b[this.sortColumn] ?? '').toString().toLowerCase();
+      }
+
+      if (valA < valB) return this.sortDirection === 'asc' ? -1 : 1;
+      if (valA > valB) return this.sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  get paginatedRecords(): RecordModel[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.sortedRecords.slice(start, start + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.sortedRecords.length / this.pageSize);
+  }
+
+  sortBy(column: keyof RecordModel | 'component' | 'indicator') {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
   }
 
   deleteRecord(id: number) {

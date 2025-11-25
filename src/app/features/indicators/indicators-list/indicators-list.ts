@@ -15,6 +15,15 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './indicators-list.css',
 })
 export class IndicatorsListComponent {
+
+  // PAGINACIÓN ---------------------
+  currentPage = 1;
+  pageSize = 8;
+
+  // ORDENAMIENTO -------------------
+  sortColumn: keyof IndicatorModel | '' = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
+
   indicators: IndicatorModel[] = [];
   filteredIndicators: IndicatorModel[] = [];
   loading = true;
@@ -59,6 +68,37 @@ export class IndicatorsListComponent {
 
   goEdit(id: number) {
     this.router.navigate([`/dashboard/indicators/${id}/edit`]);
+  }
+
+  get sortedIndicators(): IndicatorModel[] {
+    if (!this.sortColumn) return this.filteredIndicators;
+
+    return [...this.filteredIndicators].sort((a: any, b: any) => {
+      const valA = (a[this.sortColumn] ?? '').toString().toLowerCase();
+      const valB = (b[this.sortColumn] ?? '').toString().toLowerCase();
+
+      if (valA < valB) return this.sortDirection === 'asc' ? -1 : 1;
+      if (valA > valB) return this.sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  get paginatedIndicators(): IndicatorModel[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.sortedIndicators.slice(start, start + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.sortedIndicators.length / this.pageSize);
+  }
+
+  sortBy(column: keyof IndicatorModel) {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
   }
 
   deleteIndicator(id: number) {

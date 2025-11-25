@@ -11,11 +11,7 @@
 
   <!-- Buscador -->
   <div class="search-box">
-    <input 
-      type="text" 
-      placeholder="Buscar por nombre, correo o rol..." 
-      [(ngModel)]="search"
-      (input)="applyFilter()">
+    <input type="text" placeholder="Buscar por nombre, correo o rol..." [(ngModel)]="search" (input)="applyFilter()">
   </div>
 
   <!-- Loading -->
@@ -30,15 +26,34 @@
 
       <thead>
         <tr>
-          <th>Nombre</th>
-          <th>Email</th>
-          <th>Rol</th>
+          <th (click)="sortBy('name')" class="sortable">
+            Nombre
+            <span *ngIf="sortColumn === 'name'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+
+          <th (click)="sortBy('email')" class="sortable">
+            Email
+            <span *ngIf="sortColumn === 'email'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+
+          <th (click)="sortBy('role')" class="sortable">
+            Rol
+            <span *ngIf="sortColumn === 'role'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+
           <th class="text-center">Acciones</th>
         </tr>
       </thead>
 
+
       <tbody>
-        <tr *ngFor="let u of filteredUsers">
+        <tr *ngFor="let u of paginatedUsers">
 
           <td>{{ u.name }}</td>
           <td>{{ u.email }}</td>
@@ -62,6 +77,24 @@
       </tbody>
 
     </table>
+
+    <div class="pagination-container" *ngIf="totalPages > 1">
+
+      <button class="page-btn" [disabled]="currentPage === 1" (click)="currentPage = currentPage - 1">
+        ◀
+      </button>
+
+      <span class="page-info">
+        Página {{ currentPage }} de {{ totalPages }}
+      </span>
+
+      <button class="page-btn" [disabled]="currentPage === totalPages" (click)="currentPage = currentPage + 1">
+        ▶
+      </button>
+
+    </div>
+
+
 
   </div>
 

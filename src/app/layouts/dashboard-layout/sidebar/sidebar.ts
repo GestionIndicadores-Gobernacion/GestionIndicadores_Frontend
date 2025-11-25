@@ -16,22 +16,25 @@ import { SidebarService } from '../../../core/services/sidebar.service';
 export class SidebarComponent {
 
   isOpen = false;
-  isAdmin = false;
+  isSuperAdmin = false;
+  isViewer = false;
+
+  user: any = null;
 
   constructor(private sidebarService: SidebarService) {
 
-    // Recuperar rol del usuario
     const userString = localStorage.getItem('user');
     if (userString) {
-      const user = JSON.parse(userString);
-      this.isAdmin = user.role_id === 1;
+      this.user = JSON.parse(userString);
+      this.isSuperAdmin = this.user.role?.name === 'SuperAdmin';
+      this.isViewer = this.user.role?.name === 'Viewer';
     }
 
-    // Escuchar cambios del sidebar (abrir/cerrar)
     this.sidebarService.isOpen$.subscribe(value => {
       this.isOpen = value;
     });
   }
+
 
   // Métodos que llaman al service
   openSidebar() {
@@ -43,3 +46,4 @@ export class SidebarComponent {
   }
 
 }
+

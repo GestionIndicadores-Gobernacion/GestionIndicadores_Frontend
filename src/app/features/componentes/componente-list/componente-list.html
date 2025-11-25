@@ -6,10 +6,7 @@
   </div>
 
   <div class="search-box">
-    <input type="text"
-           placeholder="Buscar por nombre o descripción..."
-           [(ngModel)]="search"
-           (input)="applyFilter()">
+    <input type="text" placeholder="Buscar por nombre o descripción..." [(ngModel)]="search" (input)="applyFilter()">
   </div>
 
   <div *ngIf="!loading" class="table-wrapper">
@@ -17,15 +14,34 @@
 
       <thead>
         <tr>
-          <th>Nombre</th>
-          <th>Descripción</th>
-          <th>Estado</th>
+          <th (click)="sortBy('name')" class="sortable">
+            Nombre
+            <span *ngIf="sortColumn === 'name'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+
+          <th (click)="sortBy('description')" class="sortable">
+            Descripción
+            <span *ngIf="sortColumn === 'description'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+
+          <th (click)="sortBy('active')" class="sortable">
+            Estado
+            <span *ngIf="sortColumn === 'active'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+
           <th class="text-center">Acciones</th>
         </tr>
       </thead>
 
+
       <tbody>
-        <tr *ngFor="let c of filteredComponents">
+        <tr *ngFor="let c of paginatedComponents">
 
           <td>{{ c.name }}</td>
           <td>{{ c.description || 'Sin descripción' }}</td>
@@ -52,6 +68,23 @@
       </tbody>
 
     </table>
+
+    <div class="pagination-container" *ngIf="totalPages > 1">
+
+      <button class="page-btn" [disabled]="currentPage === 1" (click)="currentPage = currentPage - 1">
+        ◀
+      </button>
+
+      <span class="page-info">
+        Página {{ currentPage }} de {{ totalPages }}
+      </span>
+
+      <button class="page-btn" [disabled]="currentPage === totalPages" (click)="currentPage = currentPage + 1">
+        ▶
+      </button>
+
+    </div>
+
   </div>
 
 </div>

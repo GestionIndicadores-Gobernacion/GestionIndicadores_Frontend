@@ -10,7 +10,8 @@
   padding: 24px 16px;
   overflow-y: auto;
   transition: transform 0.3s ease;
-  z-index: 999; /* siempre sobre el contenido */
+  z-index: 999;
+  /* siempre sobre el contenido */
 }
 
 
@@ -19,6 +20,7 @@
   .sidebar {
     transform: translateX(-100%);
   }
+
   .sidebar.open {
     transform: translateX(0);
   }
@@ -66,4 +68,47 @@
   height: calc(100vh - 64px);
   background: rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(2px);
+}
+
+
+/* Bloque de usuario dentro del sidebar */
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 10px;
+  margin-bottom: 22px;
+  background: rgba(255, 255, 255, 0.10);
+  /* transparencia suave */
+  border-radius: 10px;
+}
+
+/* Avatar redondo */
+.sidebar-user-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #00a9e0;
+  /* contraste institucional */
+  color: white;
+  font-weight: 700;
+  font-size: 1.2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Datos del usuario */
+.sidebar-user-data .user-name {
+  font-weight: 600;
+  margin: 0;
+  font-size: 0.95rem;
+  color: white;
+}
+
+.sidebar-user-data .user-role {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #e5ecf5;
+  /* gris claro */
 }

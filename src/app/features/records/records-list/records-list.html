@@ -2,12 +2,12 @@
 
   <div class="records-header">
     <h2>Gestión de Registros</h2>
-    <button class="btn-primary" routerLink="/dashboard/records/create">Crear Registro</button>
+    <button *ngIf="!isViewer" class="btn-primary" routerLink="/dashboard/records/create">Crear Registro</button>
   </div>
 
   <div class="search-box">
-    <input type="text" placeholder="Buscar por componente, indicador o municipio..."
-      [(ngModel)]="search" (input)="applyFilter()" />
+    <input type="text" placeholder="Buscar por componente, indicador o municipio..." [(ngModel)]="search"
+      (input)="applyFilter()" />
   </div>
 
 
@@ -16,18 +16,43 @@
 
       <thead>
         <tr>
-          <th>ID</th>
-          <th>Componente</th>
-          <th>Indicador</th>
-          <th>Municipio</th>
-          <th>Fecha</th>
-          <th>Tipo población</th>
+          <th (click)="sortBy('id')" class="sortable">
+            ID
+            <span *ngIf="sortColumn === 'id'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+          </th>
+
+          <th (click)="sortBy('component')" class="sortable">
+            Componente
+            <span *ngIf="sortColumn === 'component'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+          </th>
+
+          <th (click)="sortBy('indicator')" class="sortable">
+            Indicador
+            <span *ngIf="sortColumn === 'indicator'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+          </th>
+
+          <th (click)="sortBy('municipio')" class="sortable">
+            Municipio
+            <span *ngIf="sortColumn === 'municipio'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+          </th>
+
+          <th (click)="sortBy('fecha')" class="sortable">
+            Fecha
+            <span *ngIf="sortColumn === 'fecha'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+          </th>
+
+          <th (click)="sortBy('tipo_poblacion')" class="sortable">
+            Tipo población
+            <span *ngIf="sortColumn === 'tipo_poblacion'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+          </th>
+
           <th class="text-center">Acciones</th>
         </tr>
       </thead>
 
+
       <tbody>
-        <tr *ngFor="let r of filteredRecords">
+        <tr *ngFor="let r of paginatedRecords">
 
           <td>{{ r.id }}</td>
           <td>{{ componentMap[r.component_id ?? 0] || '—' }}</td>
@@ -47,11 +72,11 @@
               Ver
             </button>
 
-            <button class="btn-outline-primary" [routerLink]="['/dashboard/records', r.id, 'edit']">
+            <button *ngIf="!isViewer" class="btn-outline-primary" [routerLink]="['/dashboard/records', r.id, 'edit']">
               Editar
             </button>
 
-            <button class="btn-outline-danger" (click)="deleteRecord(r.id)">
+            <button *ngIf="!isViewer" class="btn-outline-danger" (click)="deleteRecord(r.id)">
               Eliminar
             </button>
 
@@ -61,6 +86,23 @@
       </tbody>
 
     </table>
+
+    <div class="pagination-container" *ngIf="totalPages > 1">
+
+      <button class="page-btn" [disabled]="currentPage === 1" (click)="currentPage = currentPage - 1">
+        ◀
+      </button>
+
+      <span class="page-info">
+        Página {{ currentPage }} de {{ totalPages }}
+      </span>
+
+      <button class="page-btn" [disabled]="currentPage === totalPages" (click)="currentPage = currentPage + 1">
+        ▶
+      </button>
+
+    </div>
+
   </div>
 
 </div>
