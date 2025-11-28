@@ -1,3 +1,6 @@
+@import 'ngx-toastr/toastr.css';
+
+
 /* CONTENEDOR PRINCIPAL */
 .records-container {
   padding: 24px;
@@ -382,4 +385,43 @@ input:checked+.slider:before {
 .page-info {
   font-weight: 600;
   color: #003b75;
+}
+
+/* === INVALID INPUT BORDER (GLOBAL) === */
+
+input.invalid,
+textarea.invalid {
+  border: 2px solid #C6342D !important;
+  /* Rojo institucional */
+  background-color: #fff5f5;
+}
+
+input.invalid:focus,
+textarea.invalid:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(198, 52, 45, 0.3);
+}
+
+/* Mensajes de error */
+.error-message {
+  color: #C6342D;
+  font-size: 13px;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* Botón deshabilitado */
+.btn-primary[disabled],
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(40%);
+  pointer-events: none;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 0;
+  color: #777;
+  font-size: 1.1rem;
 }

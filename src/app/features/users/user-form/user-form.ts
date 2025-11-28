@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { UsersService } from '../../../core/services/users.service';
 import { RolesService } from '../../../core/services/roles.service';
 import { UserCreateRequest, UserUpdateRequest } from '../../../core/models/user.model';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-user-form',
@@ -14,11 +15,14 @@ import { UserCreateRequest, UserUpdateRequest } from '../../../core/models/user.
   styleUrl: './user-form.css'
 })
 export class UserFormComponent {
+
   loading = true;
   saving = false;
 
   isEdit = false;
   userId: number | null = null;
+
+  attemptedSubmit = false;
 
   roles: any[] = [];
 
@@ -33,8 +37,9 @@ export class UserFormComponent {
     public router: Router,
     private route: ActivatedRoute,
     private usersService: UsersService,
-    private rolesService: RolesService
-  ) { }
+    private rolesService: RolesService,
+    private toast: ToastService
+  ) {}
 
   ngOnInit() {
     this.userId = Number(this.route.snapshot.paramMap.get('id'));
@@ -46,10 +51,33 @@ export class UserFormComponent {
     else this.loading = false;
   }
 
+  // =========================================
+  // 📌 VALIDACIONES
+  // =========================================
+
+  isValidEmail(email: string) {
+    if (!email) return false;
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  passwordInvalid() {
+    // creación → obligatorio
+    if (!this.isEdit && !this.form.password) return true;
+
+    // en edición → si escribe algo, validar longitud mínima
+    if (this.isEdit && this.form.password && this.form.password.length < 6) return true;
+
+    return false;
+  }
+
+  // =========================================
+  // Cargar datos
+  // =========================================
+
   loadRoles() {
     this.rolesService.getAll().subscribe({
       next: res => this.roles = res,
-      error: () => alert('Error cargando roles')
+      error: () => this.toast.error('Error cargando roles')
     });
   }
 
@@ -65,13 +93,31 @@ export class UserFormComponent {
         this.loading = false;
       },
       error: () => {
-        alert('Usuario no encontrado');
+        this.toast.error('Usuario no encontrado');
         this.router.navigate(['/dashboard/users']);
       }
     });
   }
 
+  // =========================================
+  // Guardar
+  // =========================================
+
   save() {
+    this.attemptedSubmit = true;
+
+    // validación completa
+    if (
+      !this.form.name ||
+      !this.form.email ||
+      !this.isValidEmail(this.form.email) ||
+      this.passwordInvalid() ||
+      !this.form.role_id
+    ) {
+      this.toast.warning('Por favor corrige los errores del formulario.');
+      return;
+    }
+
     this.saving = true;
 
     if (this.isEdit) {
@@ -87,7 +133,7 @@ export class UserFormComponent {
 
       this.usersService.update(this.userId!, payload).subscribe({
         next: () => this.router.navigate(['/dashboard/users']),
-        error: () => this.saving = false
+        error: () => (this.saving = false)
       });
 
     } else {
@@ -100,7 +146,7 @@ export class UserFormComponent {
 
       this.usersService.create(payload).subscribe({
         next: () => this.router.navigate(['/dashboard/users']),
-        error: () => this.saving = false
+        error: () => (this.saving = false)
       });
     }
   }

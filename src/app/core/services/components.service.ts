@@ -1,15 +1,21 @@
+// core/services/components.service.ts
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment.development';
-import { ComponentModel, ComponentCreateRequest, ComponentUpdateRequest } from '../models/component.model';
+import { 
+  ComponentModel, 
+  ComponentCreateRequest, 
+  ComponentUpdateRequest 
+} from '../models/component.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ComponentsService {
-  private api = `${environment.apiUrl}/components`;
 
-  constructor(private http: HttpClient) { }
+  private api = `${environment.apiUrl}/component`;
+
+  constructor(private http: HttpClient) {}
 
   getAll() {
     return this.http.get<ComponentModel[]>(this.api);

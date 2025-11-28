@@ -14,42 +14,61 @@
     <div *ngIf="!loading && record">
 
         <!-- ============================
-           📌 DATOS GENERALES
-      ============================ -->
+               📌 DATOS GENERALES
+        ============================ -->
         <div class="view-card">
             <h3>Datos generales</h3>
 
             <div class="info-grid">
-                <!-- <div class="info-item"><span>ID</span>{{ record.id }}</div> -->
-                <div class="info-item"><span>Municipio</span>{{ record.municipio }}</div>
-                <div class="info-item"><span>Fecha</span>{{ record.fecha | date:'mediumDate'}}</div>
-                <div class="info-item"><span>Registrado el</span>{{ record.fecha_registro | date:'mediumDate' }}</div>
-                <!-- <div class="info-item"><span>Creado por (ID)</span>{{ record.creado_por }}</div> -->
+                <div class="info-item">
+                    <span>Municipio</span>
+                    {{ record.municipio }}
+                </div>
+
+                <div class="info-item">
+                    <span>Fecha</span>
+                    {{ record.fecha | date:'mediumDate' }}
+                </div>
+
+                <div class="info-item">
+                    <span>Registrado el</span>
+                    {{ record.fecha_registro | date:'mediumDate' }}
+                </div>
             </div>
         </div>
 
         <!-- ============================
-           📌 COMPONENTE / INDICADOR
-      ============================ -->
+               📌 COMPONENTE / INDICADOR
+        ============================ -->
         <div class="view-card">
             <h3>Componente e Indicador</h3>
 
             <div class="info-grid">
+
                 <div class="info-item">
                     <span>Componente</span>
-                    {{ record.component_id !== null ? componentMap[record.component_id] : 'Sin componente' }}
+                    {{
+                        record.component_id !== null
+                            ? componentMap[record.component_id]
+                            : 'Sin componente'
+                    }}
                 </div>
 
                 <div class="info-item">
                     <span>Indicador</span>
-                    {{ record.indicator_id !== null ? indicatorMap[record.indicator_id] : 'Sin indicador' }}
+                    {{
+                        record.indicator_id !== null
+                            ? indicatorMap[record.indicator_id ?? 0] || '—'
+                            : 'Sin indicador'
+                    }}
                 </div>
+
             </div>
         </div>
 
         <!-- ============================
-           📌 POBLACIÓN
-      ============================ -->
+               📌 POBLACIÓN
+        ============================ -->
         <div class="view-card">
             <h3>Población</h3>
 
@@ -61,7 +80,8 @@
                 </span>
             </div>
 
-            <div *ngIf="record.detalle_poblacion">
+            <!-- Detalle poblacional (solo si existe y no está vacío) -->
+            <div *ngIf="record.detalle_poblacion && (record.detalle_poblacion | keyvalue).length > 0">
                 <span class="sub-label mt-3">Detalle por tipo</span>
 
                 <table class="detail-table">
@@ -72,26 +92,19 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let key of record.detalle_poblacion | keyvalue">
-                            <td>{{ key.key }}</td>
-                            <td>{{ key.value }}</td>
+                        <tr *ngFor="let kv of record.detalle_poblacion | keyvalue">
+                            <td>{{ kv.key }}</td>
+                            <td>{{ kv.value }}</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+
         </div>
 
         <!-- ============================
-           📌 VALOR DEL INDICADOR
-      ============================ -->
-        <div class="view-card">
-            <h3>Valor del indicador</h3>
-            <p class="value-text">{{ record.valor }}</p>
-        </div>
-
-        <!-- ============================
-           📌 EVIDENCIA
-      ============================ -->
+               📌 EVIDENCIA
+        ============================ -->
         <div class="view-card">
             <h3>Evidencia</h3>
 

@@ -2,37 +2,43 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ComponentModel } from '../../../core/models/component.model';
 import { ComponentsService } from '../../../core/services/components.service';
+import { StrategyModel } from '../../../core/models/strategy.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { StrategiesService } from '../../../core/services/strategy.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-componente-list',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule
-  ],
+  imports: [CommonModule, FormsModule],
   templateUrl: './componente-list.html',
   styleUrl: './componente-list.css',
 })
 export class ComponentesListComponent implements OnInit {
 
-  // PAGINACIÓN ---------------------
-  currentPage = 1;
-  pageSize = 8;
-
-  // ORDENAMIENTO -------------------
-  sortColumn: keyof ComponentModel | '' = '';
-  sortDirection: 'asc' | 'desc' = 'asc';
-
   componentes: ComponentModel[] = [];
   filteredComponents: ComponentModel[] = [];
+
+  strategies: StrategyModel[] = [];
+  strategyMap: Record<number, string> = {};
+
   loading = true;
   search = '';
 
+  // Pag.
+  currentPage = 1;
+  pageSize = 8;
+
+  // Sort.
+  sortColumn: keyof ComponentModel | '' = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
+
   constructor(
     private componentsService: ComponentsService,
-    private router: Router
+    private strategiesService: StrategiesService,
+    private router: Router,
+    private toast: ToastService
   ) { }
 
   ngOnInit(): void {
@@ -41,24 +47,39 @@ export class ComponentesListComponent implements OnInit {
 
   load() {
     this.loading = true;
-    this.componentsService.getAll().subscribe({
-      next: (res) => {
-        this.componentes = res;
-        this.filteredComponents = res;
-        this.loading = false;
+
+    // Cargar estrategias y luego componentes
+    this.strategiesService.getAll().subscribe({
+      next: strategies => {
+        this.strategies = strategies;
+        this.strategyMap = Object.fromEntries(strategies.map(s => [s.id, s.name]));
+
+        this.componentsService.getAll().subscribe({
+          next: comps => {
+            this.componentes = comps;
+            this.filteredComponents = comps;
+            this.loading = false;
+          },
+          error: () => {
+            this.loading = false;
+            alert('Error al cargar los componentes');
+          }
+        });
       },
       error: () => {
+        alert('Error al cargar estrategias');
         this.loading = false;
-        alert('Error al cargar los componentes');
       }
     });
   }
 
   applyFilter() {
     const term = this.search.toLowerCase();
+
     this.filteredComponents = this.componentes.filter(c =>
       c.name.toLowerCase().includes(term) ||
-      (c.description || '').toLowerCase().includes(term)
+      (c.description || '').toLowerCase().includes(term) ||
+      (this.strategyMap[c.strategy_id] || '').toLowerCase().includes(term)
     );
   }
 
@@ -68,6 +89,15 @@ export class ComponentesListComponent implements OnInit {
 
   goToEdit(id: number) {
     this.router.navigate([`/dashboard/components/${id}/edit`]);
+  }
+
+  sortBy(column: keyof ComponentModel) {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
   }
 
   get sortedComponents(): ComponentModel[] {
@@ -92,21 +122,27 @@ export class ComponentesListComponent implements OnInit {
     return Math.ceil(this.sortedComponents.length / this.pageSize);
   }
 
-  sortBy(column: keyof ComponentModel) {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
-    }
-  }
-
   deleteComponent(id: number) {
-    if (!confirm('¿Desea eliminar este componente?')) return;
+    this.toast
+      .confirm(
+        "¿Eliminar componente?",
+        "Esta acción no se puede deshacer."
+      )
+      .then(result => {
+        if (result.isConfirmed) {
 
-    this.componentsService.delete(id).subscribe({
-      next: () => this.load(),
-      error: () => alert('Error al eliminar el componente')
-    });
+          this.componentsService.delete(id).subscribe({
+            next: () => {
+              this.toast.success("Componente eliminado correctamente");
+              this.load();
+            },
+            error: () => {
+              this.toast.error("Error al eliminar el componente");
+            }
+          });
+
+        }
+      });
   }
+
 }

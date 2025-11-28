@@ -9,20 +9,27 @@
   <div *ngIf="!loading && indicator">
 
     <p><strong>ID:</strong> {{ indicator.id }}</p>
+
     <p><strong>Nombre:</strong> {{ indicator.name }}</p>
-    <p><strong>Descripción:</strong> {{ indicator.description }}</p>
+
+    <p><strong>Descripción:</strong> {{ indicator.description || '—' }}</p>
+
     <p><strong>Tipo de dato:</strong> {{ indicator.data_type }}</p>
-    <p><strong>Obligatorio:</strong> {{ indicator.required ? 'Sí' : 'No' }}</p>
-    <p><strong>Usa lista:</strong> {{ indicator.use_list ? 'Sí' : 'No' }}</p>
-    <p><strong>Valores permitidos:</strong> {{ (indicator.allowed_values || []).join(', ') }}</p>
+
+    <p><strong>Componente:</strong> {{ componentMap[indicator.component_id] || '—' }}</p>
+
+    <p><strong>Estrategia:</strong> {{ strategyMap[componentStrategyMap[indicator.component_id]] || '—' }}</p>
+
     <p>
       <strong>Activo:</strong>
-      <span class="badge" [class.bg-success]="indicator.active" [class.bg-secondary]="!indicator.active">
+      <span class="badge"
+            [class.bg-success]="indicator.active"
+            [class.bg-secondary]="!indicator.active">
         {{ indicator.active ? "Activo" : "Inactivo" }}
       </span>
     </p>
 
-    <button class="btn btn-secondary mt-2" (click)="goBack()">Volver</button>
+    <button class="btn btn-secondary mt-3" (click)="goBack()">Volver</button>
 
   </div>
 

@@ -16,7 +16,12 @@ export const DASHBOARD_LAYOUT_ROUTES: Routes = [
       import('../../features/users/users.routes')
         .then(m => m.USERS_ROUTES),
   },
-
+  {
+    path: 'strategies',
+    loadChildren: () =>
+      import('../../features/strategy/strategy.routes')
+        .then(m => m.STRATEGY_ROUTES),
+  },
   {
     path: 'indicators',
     loadChildren: () =>

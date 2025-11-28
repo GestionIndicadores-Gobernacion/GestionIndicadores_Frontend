@@ -1,0 +1,107 @@
+<div class="records-container">
+
+  <div class="records-header">
+    <h2>Gestión de Estrategias</h2>
+    <button class="btn-primary" (click)="goToCreate()">Crear Estrategia</button>
+  </div>
+
+  <div class="search-box">
+    <input 
+      type="text" 
+      placeholder="Buscar por nombre o descripción..." 
+      [(ngModel)]="search" 
+      (input)="applyFilter()"
+    >
+  </div>
+
+  <div *ngIf="!loading" class="table-wrapper">
+
+    <table class="custom-table">
+
+      <thead>
+        <tr>
+
+          <th (click)="sortBy('name')" class="sortable">
+            Nombre
+            <span *ngIf="sortColumn === 'name'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+
+          <th (click)="sortBy('description')" class="sortable">
+            Descripción
+            <span *ngIf="sortColumn === 'description'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+
+          <th (click)="sortBy('active')" class="sortable">
+            Estado
+            <span *ngIf="sortColumn === 'active'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+
+          <th class="text-center">Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let s of paginatedStrategies">
+
+          <td>{{ s.name }}</td>
+
+          <td>{{ s.description || 'Sin descripción' }}</td>
+
+          <td>
+            <span 
+              class="state-badge" 
+              [class.active]="s.active" 
+              [class.inactive]="!s.active"
+            >
+              {{ s.active ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+
+          <td class="actions-col">
+            <button class="btn-outline-primary" (click)="goToEdit(s.id)">
+              Editar
+            </button>
+
+            <button class="btn-outline-danger" (click)="deleteStrategy(s.id)">
+              Eliminar
+            </button>
+          </td>
+
+        </tr>
+      </tbody>
+
+    </table>
+
+    <div class="pagination-container" *ngIf="totalPages > 1">
+
+      <button 
+        class="page-btn" 
+        [disabled]="currentPage === 1" 
+        (click)="currentPage = currentPage - 1"
+      >
+        ◀
+      </button>
+
+      <span class="page-info">
+        Página {{ currentPage }} de {{ totalPages }}
+      </span>
+
+      <button 
+        class="page-btn" 
+        [disabled]="currentPage === totalPages" 
+        (click)="currentPage = currentPage + 1"
+      >
+        ▶
+      </button>
+
+    </div>
+
+  </div>
+
+</div>

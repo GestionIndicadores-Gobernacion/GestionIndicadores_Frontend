@@ -4,6 +4,7 @@ import { UserModel } from '../../../core/models/user.model';
 import { UsersService } from '../../../core/services/users.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-users-list',
@@ -31,7 +32,8 @@ export class UsersListComponent {
 
   constructor(
     private usersService: UsersService,
-    private router: Router
+    private router: Router,
+    private toast: ToastService
   ) { }
 
   ngOnInit(): void {
@@ -100,11 +102,24 @@ export class UsersListComponent {
   }
 
   deleteUser(id: number) {
-    if (!confirm('¿Seguro que deseas eliminar este usuario?')) return;
+    this.toast.confirm(
+      "¿Eliminar usuario?",
+      "Esta acción no se puede deshacer."
+    ).then(result => {
 
-    this.usersService.delete(id).subscribe({
-      next: () => this.loadUsers(),
-      error: () => alert('Error eliminando usuario')
+      if (!result.isConfirmed) return;
+
+      this.usersService.delete(id).subscribe({
+        next: () => {
+          this.toast.success("Usuario eliminado correctamente");
+          this.loadUsers();
+        },
+        error: () => {
+          // Ya lo muestra el interceptor
+        }
+      });
+
     });
   }
+
 }

@@ -17,9 +17,10 @@
 
   <nav>
     <a routerLink="dashboard" routerLinkActive="active">Dashboard</a>
-    <a routerLink="dashboard/records" routerLinxkActive="active">Registros</a>
-    <a routerLink="dashboard/components"*ngIf="!isViewer" routerLinkActive="active">Componentes</a>
+    <a routerLink="dashboard/strategies" routerLinxkActive="active">Estrategias</a>
+    <a routerLink="dashboard/components" *ngIf="!isViewer" routerLinkActive="active">Componentes Estrategicos</a>
     <a routerLink="dashboard/indicators" routerLinkActive="active" *ngIf="!isViewer">Indicadores</a>
+    <a routerLink="dashboard/records" routerLinxkActive="active">Registros</a>
     <a routerLink="dashboard/users" routerLinkActive="active" *ngIf="isSuperAdmin">Usuarios</a>
   </nav>
 </div>

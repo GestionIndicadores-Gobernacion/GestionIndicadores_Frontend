@@ -1,31 +1,18 @@
-<div class="records-container">
+<div *ngIf="!loading" class="table-wrapper">
 
-  <!-- Header -->
-  <div class="records-header">
-    <h2>Gestión de Indicadores</h2>
-
-    <button class="btn-primary" (click)="goCreate()">
-      Crear Indicador
-    </button>
+  <!-- ❌ NO HAY INDICADORES -->
+  <div *ngIf="paginatedIndicators.length === 0" class="empty-state">
+    <p>No hay indicadores registrados.</p>
   </div>
 
-  <!-- Search -->
-  <div class="search-box">
-    <input type="text" placeholder="Buscar por nombre o tipo..." [(ngModel)]="search" (input)="applyFilter()" />
-  </div>
-
-  <!-- Loading -->
-  <div class="loading-box" *ngIf="loading">
-    <div class="spinner"></div>
-  </div>
-
-  <!-- Tabla -->
-  <div *ngIf="!loading" class="table-wrapper">
+  <!-- ✅ SÍ HAY INDICADORES -->
+  <ng-container *ngIf="paginatedIndicators.length > 0">
 
     <table class="custom-table">
 
       <thead>
         <tr>
+
           <th (click)="sortBy('name')" class="sortable">
             Nombre
             <span *ngIf="sortColumn === 'name'">
@@ -40,16 +27,16 @@
             </span>
           </th>
 
-          <th (click)="sortBy('required')" class="sortable">
-            Obligatorio
-            <span *ngIf="sortColumn === 'required'">
+          <th class="sortable" (click)="sortBy('component')">
+            Componente
+            <span *ngIf="sortColumn === 'component'">
               {{ sortDirection === 'asc' ? '▲' : '▼' }}
             </span>
           </th>
 
-          <th (click)="sortBy('use_list')" class="sortable">
-            Lista
-            <span *ngIf="sortColumn === 'use_list'">
+          <th class="sortable" (click)="sortBy('strategy')">
+            Estrategia
+            <span *ngIf="sortColumn === 'strategy'">
               {{ sortDirection === 'asc' ? '▲' : '▼' }}
             </span>
           </th>
@@ -62,6 +49,7 @@
           </th>
 
           <th class="text-center">Acciones</th>
+
         </tr>
       </thead>
 
@@ -69,21 +57,19 @@
         <tr *ngFor="let i of paginatedIndicators">
 
           <td>{{ i.name }}</td>
-
           <td>{{ i.data_type }}</td>
-
-          <td>{{ i.required ? 'Sí' : 'No' }}</td>
-
-          <td>{{ i.use_list ? 'Sí' : 'No' }}</td>
+          <td>{{ componentMap[i.component_id] || '—' }}</td>
+          <td>{{ strategyMap[componentStrategyMap[i.component_id]] || '—' }}</td>
 
           <td>
-            <span class="state-badge" [class.active]="i.active" [class.inactive]="!i.active">
+            <span class="state-badge" 
+                  [class.active]="i.active" 
+                  [class.inactive]="!i.active">
               {{ i.active ? 'Activo' : 'Inactivo' }}
             </span>
           </td>
 
           <td class="actions-col">
-
             <button class="btn-outline-primary" (click)="goEdit(i.id)">
               Editar
             </button>
@@ -91,16 +77,19 @@
             <button class="btn-outline-danger" (click)="deleteIndicator(i.id)">
               Eliminar
             </button>
-
           </td>
 
         </tr>
       </tbody>
 
     </table>
+
+    <!-- PAGINACIÓN -->
     <div class="pagination-container" *ngIf="totalPages > 1">
 
-      <button class="page-btn" [disabled]="currentPage === 1" (click)="currentPage = currentPage - 1">
+      <button class="page-btn" 
+              [disabled]="currentPage === 1"
+              (click)="currentPage = currentPage - 1">
         ◀
       </button>
 
@@ -108,14 +97,14 @@
         Página {{ currentPage }} de {{ totalPages }}
       </span>
 
-      <button class="page-btn" [disabled]="currentPage === totalPages" (click)="currentPage = currentPage + 1">
+      <button class="page-btn" 
+              [disabled]="currentPage === totalPages"
+              (click)="currentPage = currentPage + 1">
         ▶
       </button>
 
     </div>
 
-
-
-  </div>
+  </ng-container>
 
 </div>

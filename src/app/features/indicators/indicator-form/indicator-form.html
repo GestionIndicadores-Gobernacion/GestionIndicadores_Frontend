@@ -12,146 +12,142 @@
 
   <form *ngIf="!loading" (ngSubmit)="save()">
 
-    <!-- ==========================
-         📌 DATOS GENERALES
-         ========================== -->
+    <!-- ========================== -->
+    <!-- 📌 DATOS GENERALES         -->
+    <!-- ========================== -->
     <div class="form-section">
       <h3 class="section-title">Datos del indicador</h3>
 
-      <div class="form-grid">
+      <div class="row g-4">
 
-        <!-- Componente -->
-        <div class="form-group">
-          <label>Componente</label>
+        <!-- STRATEGY -->
+        <div class="col-lg-3 col-md-6">
+          <label class="form-label">Estrategia</label>
+
           <select
-            [(ngModel)]="form.component_id"
+            class="form-select"
+            name="strategy"
+            [(ngModel)]="selectedStrategy"
+            (change)="filterComponents()"
+            [class.invalid]="!selectedStrategy && attemptedSubmit"
+            required>
+
+            <option value="" disabled>Seleccionar estrategia...</option>
+            <option *ngFor="let s of strategies" [value]="s.id">{{ s.name }}</option>
+          </select>
+
+          <div class="error-message" *ngIf="!selectedStrategy && attemptedSubmit">
+            Debe seleccionar una estrategia.
+          </div>
+        </div>
+
+        <!-- COMPONENT -->
+        <div class="col-lg-3 col-md-6">
+          <label class="form-label">Componente</label>
+
+          <select
+            class="form-select"
             name="component_id"
-            required
-          >
-            <option [ngValue]="null" disabled>Seleccionar componente...</option>
-            <option *ngFor="let c of components" [ngValue]="c.id">
-              {{ c.name }}
-            </option>
+            [(ngModel)]="form.component_id"
+            [disabled]="!selectedStrategy"
+            [class.invalid]="!form.component_id && attemptedSubmit"
+            required>
+
+            <option value="" disabled>Seleccionar componente...</option>
+            <option *ngFor="let c of filteredComponents" [value]="c.id">{{ c.name }}</option>
           </select>
+
+          <div class="error-message" *ngIf="!form.component_id && attemptedSubmit">
+            Debe seleccionar un componente.
+          </div>
         </div>
 
-        <!-- Nombre -->
-        <div class="form-group">
-          <label>Nombre</label>
+        <!-- NAME -->
+        <div class="col-lg-4 col-md-6">
+          <label class="form-label">Nombre</label>
+
           <input
+            class="form-control"
             type="text"
-            [(ngModel)]="form.name"
             name="name"
+            [(ngModel)]="form.name"
             required
-          >
+            [disabled]="!form.component_id"
+            [class.invalid]="(!form.name || form.name.trim().length < 3) && attemptedSubmit">
+
+          <div class="error-message" *ngIf="attemptedSubmit && (!form.name || form.name.trim().length < 3)">
+            <span *ngIf="!form.name">El nombre es obligatorio.</span>
+            <span *ngIf="form.name && form.name.trim().length < 3">Debe tener mínimo 3 caracteres.</span>
+          </div>
         </div>
 
-        <!-- Tipo de dato -->
-        <div class="form-group">
-          <label>Tipo de dato</label>
+        <!-- DATA TYPE -->
+        <div class="col-lg-3 col-md-6">
+          <label class="form-label">Tipo de dato</label>
+
           <select
-            [(ngModel)]="form.data_type"
+            class="form-select"
             name="data_type"
-            required
-          >
+            [(ngModel)]="form.data_type"
+            [disabled]="!form.component_id"
+            [class.invalid]="!form.data_type && attemptedSubmit"
+            required>
+
+            <option value="">Seleccione tipo de dato...</option>
             <option value="integer">Entero</option>
-            <option value="decimal">Decimal</option>
+            <option value="float">Decimal</option>
             <option value="boolean">Booleano</option>
-            <option value="text">Texto</option>
+            <option value="string">Texto</option>
             <option value="date">Fecha</option>
-            <option value="category">Categoría</option>
           </select>
-        </div>
 
-        <!-- Obligatorio -->
-        <div class="form-group">
-          <label class="form-check-label">
-            <input
-              type="checkbox"
-              [(ngModel)]="form.required"
-              name="required"
-              class="checkbox-inline"
-            >
-            Obligatorio
-          </label>
-        </div>
-
-        <!-- Activo -->
-        <div class="form-group">
-          <label class="form-check-label">
-            <input
-              type="checkbox"
-              [(ngModel)]="form.active"
-              name="active"
-              class="checkbox-inline"
-            >
-            Activo
-          </label>
+          <div class="error-message" *ngIf="attemptedSubmit && !form.data_type">
+            Debe seleccionar un tipo de dato.
+          </div>
         </div>
 
       </div>
-    </div>
 
-    <!-- ==========================
-         📌 LISTA DE VALORES
-         ========================== -->
-    <div class="form-section">
-      <h3 class="section-title">Valores permitidos</h3>
-
-      <div class="form-group">
-        <label class="form-check-label">
+      <!-- ACTIVO -->
+      <div class="col-lg-2 mt-4 col-md-6 d-flex flex-column">
+        <label class="form-label mb-1">Activo</label>
+        <label class="switch">
           <input
             type="checkbox"
-            [(ngModel)]="form.use_list"
-            name="use_list"
-            class="checkbox-inline"
-          >
-          Usar lista de valores permitidos
+            name="active"
+            [(ngModel)]="form.active"
+            [disabled]="!form.component_id">
+          <span class="slider"></span>
         </label>
       </div>
 
-      <div class="form-group full" *ngIf="form.use_list">
-        <label>Valores (separados por coma)</label>
-        <input
-          type="text"
-          [(ngModel)]="form.allowed_values_text"
-          name="allowed_values_text"
-          placeholder="Ej: Aceptado, Rechazado, En trámite"
-        >
-        <small class="help-text">
-          Los valores deben estar separados por coma.
-        </small>
-      </div>
-
     </div>
 
-    <!-- ==========================
-         📌 DESCRIPCIÓN
-         ========================== -->
+    <!-- DESCRIPCIÓN -->
     <div class="form-section">
       <h3 class="section-title">Descripción</h3>
 
-      <div class="form-group full">
+      <div class="mb-3">
         <textarea
           rows="3"
-          [(ngModel)]="form.description"
+          class="form-control"
           name="description"
-          placeholder="Descripción del indicador"
-        ></textarea>
+          [(ngModel)]="form.description"
+          placeholder="Descripción del indicador (opcional)"
+          [disabled]="!form.component_id">
+        </textarea>
       </div>
     </div>
 
     <!-- BOTONES -->
     <div class="form-actions">
-      <button class="btn-primary" [disabled]="saving">
-        {{ saving ? "Guardando..." : (isEdit ? "Actualizar" : "Crear Indicador") }}
+      <button
+        class="btn-primary"
+        [disabled]="saving">
+        {{ saving ? "Guardando..." : (isEdit ? "Actualizar Indicador" : "Crear Indicador") }}
       </button>
 
-      <button
-        type="button"
-        class="btn-secondary-custom"
-        [routerLink]="['/dashboard/indicators']"
-      >
+      <button type="button" class="btn-secondary-custom" [routerLink]="['/dashboard/indicators']">
         Cancelar
       </button>
     </div>

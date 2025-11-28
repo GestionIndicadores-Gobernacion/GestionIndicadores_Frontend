@@ -10,64 +10,71 @@
   </div>
 
   <div *ngIf="!loading" class="table-wrapper">
-    <table class="custom-table">
 
-      <thead>
-        <tr>
-          <th (click)="sortBy('name')" class="sortable">
-            Nombre
-            <span *ngIf="sortColumn === 'name'">
-              {{ sortDirection === 'asc' ? '▲' : '▼' }}
-            </span>
-          </th>
+    <div *ngIf="paginatedComponents.length === 0" class="empty-state">
+      <p>No hay componentes registrados.</p>
+    </div>
 
-          <th (click)="sortBy('description')" class="sortable">
-            Descripción
-            <span *ngIf="sortColumn === 'description'">
-              {{ sortDirection === 'asc' ? '▲' : '▼' }}
-            </span>
-          </th>
-
-          <th (click)="sortBy('active')" class="sortable">
-            Estado
-            <span *ngIf="sortColumn === 'active'">
-              {{ sortDirection === 'asc' ? '▲' : '▼' }}
-            </span>
-          </th>
-
-          <th class="text-center">Acciones</th>
-        </tr>
-      </thead>
-
-
-      <tbody>
-        <tr *ngFor="let c of paginatedComponents">
-
-          <td>{{ c.name }}</td>
-          <td>{{ c.description || 'Sin descripción' }}</td>
-
-          <td>
-            <span class="state-badge" [class.active]="c.active" [class.inactive]="!c.active">
-              {{ c.active ? 'Activo' : 'Inactivo' }}
-            </span>
-          </td>
-
-          <td class="actions-col">
-
-            <button class="btn-outline-primary" (click)="goToEdit(c.id)">
-              Editar
-            </button>
-
-            <button class="btn-outline-danger" (click)="deleteComponent(c.id)">
-              Eliminar
-            </button>
-
-          </td>
-
-        </tr>
-      </tbody>
-
-    </table>
+      <ng-container *ngIf="paginatedComponents.length > 0">
+        <table class="custom-table">
+    
+          <thead>
+            <tr>
+              <th (click)="sortBy('name')" class="sortable">
+                Nombre
+                <span *ngIf="sortColumn === 'name'">
+                  {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                </span>
+              </th>
+    
+              <th (click)="sortBy('description')" class="sortable">
+                Descripción
+                <span *ngIf="sortColumn === 'description'">
+                  {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                </span>
+              </th>
+    
+              <th (click)="sortBy('strategy_id')" class="sortable">
+                Estrategia
+                <span *ngIf="sortColumn === 'strategy_id'">
+                  {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                </span>
+              </th>
+    
+              <th (click)="sortBy('active')" class="sortable">
+                Estado
+                <span *ngIf="sortColumn === 'active'">
+                  {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                </span>
+              </th>
+    
+              <th class="text-center">Acciones</th>
+            </tr>
+          </thead>
+    
+          <tbody>
+            <tr *ngFor="let c of paginatedComponents">
+              <td>{{ c.name }}</td>
+              <td>{{ c.description || 'Sin descripción' }}</td>
+    
+              <!-- NUEVO -->
+              <td>{{ strategyMap[c.strategy_id] || '—' }}</td>
+    
+              <td>
+                <span class="state-badge" [class.active]="c.active" [class.inactive]="!c.active">
+                  {{ c.active ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+    
+              <td class="actions-col">
+                <button class="btn-outline-primary" (click)="goToEdit(c.id)">Editar</button>
+                <button class="btn-outline-danger" (click)="deleteComponent(c.id)">Eliminar</button>
+              </td>
+            </tr>
+          </tbody>
+    
+        </table>
+      </ng-container>
 
     <div class="pagination-container" *ngIf="totalPages > 1">
 

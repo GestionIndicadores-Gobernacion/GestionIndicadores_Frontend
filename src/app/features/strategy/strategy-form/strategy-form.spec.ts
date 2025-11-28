@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Register } from './register';
+import { StrategyForm } from './strategy-form';
 
-describe('Register', () => {
-  let component: Register;
-  let fixture: ComponentFixture<Register>;
+describe('StrategyForm', () => {
+  let component: StrategyForm;
+  let fixture: ComponentFixture<StrategyForm>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Register]
+      imports: [StrategyForm]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(Register);
+    fixture = TestBed.createComponent(StrategyForm);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

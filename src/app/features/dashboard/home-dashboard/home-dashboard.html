@@ -1,6 +1,5 @@
 <div class="dashboard-home">
 
-  <!-- Título -->
   <h2 class="page-title">Panel Principal</h2>
 
   <!-- KPIs -->
@@ -13,44 +12,25 @@
 
   <ng-container *ngIf="!loading">
 
-    <!-- Primera fila de gráficas -->
+    <!-- Gráficas principales -->
     <div class="grid-2">
       <div class="dashboard-card">
         <h5 class="card-title">Registros por Municipio</h5>
-        <apx-chart
-          [series]="municipiosChart.series"
-          [chart]="municipiosChart.chart"
-          [xaxis]="municipiosChart.xaxis"
-          [stroke]="municipiosChart.stroke"
-          [title]="municipiosChart.title">
+        <apx-chart [series]="municipiosChart.series" [chart]="municipiosChart.chart" [xaxis]="municipiosChart.xaxis"
+          [stroke]="municipiosChart.stroke" [title]="municipiosChart.title">
         </apx-chart>
       </div>
 
       <div class="dashboard-card">
         <h5 class="card-title">Registros por Mes</h5>
-        <apx-chart
-          [series]="mesesChart.series"
-          [chart]="mesesChart.chart"
-          [xaxis]="mesesChart.xaxis"
-          [stroke]="mesesChart.stroke"
-          [title]="mesesChart.title">
+        <apx-chart [series]="mesesChart.series" [chart]="mesesChart.chart" [xaxis]="mesesChart.xaxis"
+          [stroke]="mesesChart.stroke" [title]="mesesChart.title">
         </apx-chart>
       </div>
     </div>
 
-    <!-- Tipos de población + tabla -->
+    <!-- Últimos registros -->
     <div class="grid-2">
-      <div class="dashboard-card">
-        <h5 class="card-title">Tipos de Población</h5>
-        <apx-chart
-          [series]="tiposChart.series"
-          [chart]="tiposChart.chart"
-          [labels]="tiposChart.labels"
-          [legend]="tiposChart.legend"
-          [title]="tiposChart.title">
-        </apx-chart>
-      </div>
-
       <div class="dashboard-card">
         <h5 class="card-title">Últimos Registros</h5>
 
@@ -59,18 +39,29 @@
             <tr>
               <th>Municipio</th>
               <th>Fecha</th>
-              <th>Indicador</th>
+              <th>Componente</th>
+              <th>Indicadores</th>
             </tr>
           </thead>
+
           <tbody>
             <tr *ngFor="let r of latestRecords">
+
               <td>{{ r.municipio }}</td>
-              <td>{{ r.fecha }}</td>
-              <td>{{ r.indicator_id }}</td>
+              <td>{{ r.fecha | date }}</td>
+              <td>{{ componentMap[r.component_id] }}</td>
+
+              <td>
+                <div *ngFor="let id of getIndicatorIds(r)">
+                  <strong>{{ indicatorMap[id] }}:</strong>
+                  {{ r.detalle_poblacion[id] }}
+                </div>
+              </td>
+
             </tr>
           </tbody>
-        </table>
 
+        </table>
       </div>
     </div>
 

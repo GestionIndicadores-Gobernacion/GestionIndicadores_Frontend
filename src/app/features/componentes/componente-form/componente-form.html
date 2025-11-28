@@ -12,16 +12,86 @@
 
     <div class="form-section">
 
+      <!-- Estrategia -->
+      <div class="form-group">
+        <label>Estrategia</label>
+
+        <select
+          formControlName="strategy_id"
+          [class.invalid]="showError('strategy_id')">
+
+          <option value="" disabled>Seleccione una estrategia...</option>
+          <option *ngFor="let s of strategies" [value]="s.id">
+            {{ s.name }}
+          </option>
+        </select>
+
+        <!-- Errores -->
+        <div class="error-message" *ngIf="showError('strategy_id')">
+          <span *ngIf="form.get('strategy_id')?.errors?.['required']">
+            Debe seleccionar una estrategia.
+          </span>
+        </div>
+      </div>
+
+
+      <!-- Nombre -->
       <div class="form-group">
         <label>Nombre</label>
-        <input type="text" formControlName="name" placeholder="Nombre del componente">
+
+        <input
+          type="text"
+          formControlName="name"
+          placeholder="Nombre del componente"
+          [class.invalid]="showError('name')">
+
+        <div class="error-message" *ngIf="showError('name')">
+          <span *ngIf="form.get('name')?.errors?.['required']">
+            El nombre es obligatorio.
+          </span>
+          <span *ngIf="form.get('name')?.errors?.['minlength']">
+            Debe tener mínimo 3 caracteres.
+          </span>
+        </div>
       </div>
 
+
+      <!-- Tipo de dato -->
+      <div class="form-group">
+        <label>Tipo de dato</label>
+
+        <select
+          formControlName="data_type"
+          [class.invalid]="showError('data_type')">
+
+          <option value="" disabled>Seleccione un tipo de dato...</option>
+          <option value="integer">Entero</option>
+          <option value="decimal">Decimal</option>
+          <option value="boolean">Booleano</option>
+          <option value="text">Texto</option>
+          <option value="date">Fecha</option>
+          <option value="category">Categoría (lista)</option>
+        </select>
+
+        <div class="error-message" *ngIf="showError('data_type')">
+          <span *ngIf="form.get('data_type')?.errors?.['required']">
+            Seleccione un tipo de dato.
+          </span>
+        </div>
+      </div>
+
+
+      <!-- Descripción -->
       <div class="form-group full">
         <label>Descripción</label>
-        <textarea rows="3" formControlName="description" placeholder="Descripción del componente"></textarea>
+        <textarea
+          rows="3"
+          formControlName="description"
+          placeholder="Descripción del componente"></textarea>
       </div>
 
+
+      <!-- Activo -->
       <div class="form-group">
         <label>Activo</label>
         <label class="switch">
@@ -32,9 +102,10 @@
 
     </div>
 
+
     <div class="form-actions">
       <button class="btn-primary" [disabled]="saving || form.invalid">
-        {{ saving ? "Guardando..." : (isEdit ? "Actualizar" : "Crear Componente") }}
+        {{ saving ? "Guardando..." : (isEdit ? "Actualizar Componente" : "Crear Componente") }}
       </button>
 
       <button type="button" class="btn-secondary-custom" [routerLink]="['/dashboard/components']">

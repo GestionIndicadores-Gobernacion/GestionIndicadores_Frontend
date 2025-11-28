@@ -11,29 +11,44 @@
 
   <form *ngIf="!loading" (ngSubmit)="save()">
 
-    <!-- ============================
-         📌 Datos del Usuario
-    ============================ -->
     <div class="form-section">
 
       <!-- Nombre -->
       <div class="form-group">
         <label>Nombre completo</label>
+
         <input 
-          type="text" 
-          [(ngModel)]="form.name" 
+          type="text"
           name="name"
-          required>
+          [(ngModel)]="form.name"
+          required
+          [class.invalid]="attemptedSubmit && !form.name"
+        >
+
+        <div class="error-message" *ngIf="attemptedSubmit && !form.name">
+          El nombre es obligatorio.
+        </div>
       </div>
 
       <!-- Email -->
       <div class="form-group">
         <label>Correo</label>
+
         <input 
-          type="email" 
-          [(ngModel)]="form.email" 
+          type="email"
           name="email"
-          required>
+          [(ngModel)]="form.email"
+          required
+          [class.invalid]="attemptedSubmit && !isValidEmail(form.email)"
+        >
+
+        <div class="error-message" *ngIf="attemptedSubmit && !form.email">
+          El correo es obligatorio.
+        </div>
+
+        <div class="error-message" *ngIf="attemptedSubmit && form.email && !isValidEmail(form.email)">
+          Debe ingresar un correo válido.
+        </div>
       </div>
 
       <!-- Password -->
@@ -42,41 +57,54 @@
 
         <input 
           type="password"
-          [(ngModel)]="form.password"
           name="password"
+          [(ngModel)]="form.password"
           [required]="!isEdit"
           placeholder="{{ isEdit ? 'Dejar en blanco para no modificar' : '' }}"
+          [class.invalid]="attemptedSubmit && passwordInvalid()"
         >
+
+        <div class="error-message" *ngIf="attemptedSubmit && !isEdit && !form.password">
+          La contraseña es obligatoria.
+        </div>
+
+        <div class="error-message"
+             *ngIf="attemptedSubmit && isEdit && form.password && form.password.length < 6">
+          La contraseña debe tener al menos 6 caracteres.
+        </div>
       </div>
 
       <!-- Rol -->
       <div class="form-group">
         <label>Rol</label>
+
         <select 
-          [(ngModel)]="form.role_id" 
           name="role_id"
-          required>
+          [(ngModel)]="form.role_id"
+          required
+          [class.invalid]="attemptedSubmit && !form.role_id"
+        >
           <option [ngValue]="null" disabled>Seleccionar rol...</option>
+
           <option *ngFor="let r of roles" [ngValue]="r.id">
             {{ r.name }}
           </option>
         </select>
+
+        <div class="error-message" *ngIf="attemptedSubmit && !form.role_id">
+          Debe seleccionar un rol.
+        </div>
       </div>
 
     </div>
 
-    <!-- ============================
-         📌 BOTONES
-    ============================ -->
+    <!-- BOTONES -->
     <div class="form-actions">
       <button class="btn-primary" [disabled]="saving">
-        {{ saving ? "Guardando..." : (isEdit ? "Actualizar" : "Crear Usuario") }}
+        {{ saving ? "Guardando..." : (isEdit ? "Actualizar Usuario" : "Crear Usuario") }}
       </button>
 
-      <button 
-        type="button" 
-        class="btn-secondary-custom"
-        (click)="router.navigate(['/dashboard/users'])">
+      <button type="button" class="btn-secondary-custom" (click)="cancel()">
         Cancelar
       </button>
     </div>

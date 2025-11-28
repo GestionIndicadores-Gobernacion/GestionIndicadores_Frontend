@@ -1,63 +1,54 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+
 import { ComponentModel } from '../../../core/models/component.model';
 import { IndicatorModel } from '../../../core/models/indicator.model';
-import { RecordDetallePoblacion, RecordModel, RecordCreateRequest } from '../../../core/models/record.model';
+import { RecordCreateRequest, RecordDetallePoblacion } from '../../../core/models/record.model';
+
 import { ComponentsService } from '../../../core/services/components.service';
 import { IndicatorsService } from '../../../core/services/indicators.service';
 import { RecordsService } from '../../../core/services/records.service';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { StrategiesService } from '../../../core/services/strategy.service';
+
 import { MUNICIPIOS_VALLE } from '../../../core/data/municipios';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-record-form',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    RouterModule
-  ],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './record-form.html',
   styleUrl: './record-form.css',
 })
 export class RecordFormComponent {
 
-  municipios = MUNICIPIOS_VALLE
+  municipios = MUNICIPIOS_VALLE;
 
   loading = false;
   saving = false;
   isEdit = false;
   id?: number;
 
-  // catálogo
+  attemptedSubmit = false;
+
+  strategies: any[] = [];
   components: ComponentModel[] = [];
+  allComponents: ComponentModel[] = [];
+  indicators: IndicatorModel[] = [];
   allIndicators: IndicatorModel[] = [];
-  indicators: IndicatorModel[] = [];         // filtrados por componente
-  selectedIndicator?: IndicatorModel;
 
-  // formulario base
-  form: {
-    component_id: number | null;
-    indicator_id: number | null;
-    municipio: string;
-    fecha: string;
-    valor: string;
-    evidencia_url: string;
-  } = {
-      component_id: null,
-      indicator_id: null,
-      municipio: '',
-      fecha: '',
-      valor: '',
-      evidencia_url: '',
-    };
+  // formulario
+  form = {
+    strategy_id: null as number | null,
+    component_id: null as number | null,
+    municipio: '',
+    fecha: '',
+    evidencia_url: '',
+  };
 
-  // tipo_poblacion en chips
-  tipoPoblacionChips: string[] = [];
-  nuevoTipoPoblacion = '';
-
-  // detalle_poblacion
+  // detalle poblacional dinámico
   detallePoblacion: RecordDetallePoblacion = {};
 
   constructor(
@@ -65,269 +56,162 @@ export class RecordFormComponent {
     private router: Router,
     private recordsService: RecordsService,
     private componentsService: ComponentsService,
-    private indicatorsService: IndicatorsService
+    private indicatorsService: IndicatorsService,
+    private strategiesService: StrategiesService,
+    private toast: ToastService
   ) { }
 
   ngOnInit(): void {
     this.id = Number(this.route.snapshot.paramMap.get('id'));
     this.isEdit = !!this.id;
 
-    if (this.isEdit) {
-      this.loading = true;
-    }
+    if (this.isEdit) this.loading = true;
 
+    this.loadStrategies();
     this.loadComponents();
     this.loadIndicators();
 
-    if (this.isEdit) {
-      this.loadRecord();
-    }
+    if (this.isEdit) this.loadRecord();
   }
 
-  // -----------------------------
-  // Carga de catálogos
-  // -----------------------------
+  loadStrategies() {
+    this.strategiesService.getAll().subscribe({
+      next: res => this.strategies = res,
+      error: () => this.toast.error("Error cargando estrategias"),
+    });
+  }
+
   loadComponents() {
     this.componentsService.getAll().subscribe({
-      next: (res) => {
-        this.components = res;
+      next: res => {
+        this.allComponents = res;
+        if (this.form.strategy_id) this.onStrategyChange();
       },
-      error: () => {
-        alert('Error cargando componentes');
-      },
+      error: () => this.toast.error("Error cargando componentes"),
     });
   }
 
   loadIndicators() {
     this.indicatorsService.getAll().subscribe({
-      next: (res) => {
-        this.allIndicators = res;
-
-        // si ya hay componente/indicador cargado (modo edición), ajustamos
-        if (this.form.component_id) {
-          this.onComponentChange(false);
-        }
-        if (this.form.indicator_id) {
-          this.onIndicatorChange(false);
-        }
-      },
-      error: () => {
-        alert('Error cargando indicadores');
-      },
+      next: res => this.allIndicators = res,
+      error: () => this.toast.error("Error cargando indicadores"),
     });
   }
 
-  // -----------------------------
-  // Cargar registro en modo edición
-  // -----------------------------
+  // ==========================================================
+  // Cargar registro (edición)
+  // ==========================================================
   loadRecord() {
     this.recordsService.getById(this.id!).subscribe({
-      next: (r: RecordModel) => {
+      next: r => {
+        this.form.strategy_id = r.strategy_id ?? null;
         this.form.component_id = r.component_id;
-        this.form.indicator_id = r.indicator_id;
         this.form.municipio = r.municipio;
         this.form.fecha = r.fecha;
-        this.form.valor = r.valor ?? '';
         this.form.evidencia_url = r.evidencia_url ?? '';
 
-        // tipo_poblacion a chips
-        if (Array.isArray(r.tipo_poblacion)) {
-          this.tipoPoblacionChips = [...r.tipo_poblacion];
-        } else if (r.tipo_poblacion) {
-          this.tipoPoblacionChips = [r.tipo_poblacion as unknown as string];
-        }
-
-        // detalle_poblacion
         this.detallePoblacion = r.detalle_poblacion ?? {};
 
-        // si ya están los indicadores cargados, filtramos / seleccionamos
-        if (this.allIndicators.length) {
-          this.onComponentChange(false);
-          this.onIndicatorChange(false);
-        }
+        this.onStrategyChange(false);
+        this.onComponentChange(false);
 
         this.loading = false;
       },
       error: () => {
-        alert('Error cargando registro');
         this.loading = false;
-      },
+        this.toast.error("Error cargando registro");
+      }
     });
   }
 
-  // -----------------------------
-  // Cambios de componente / indicador
-  // -----------------------------
-  onComponentChange(resetIndicator: boolean = true) {
+  // ==========================================================
+  // Estrategia seleccionada
+  // ==========================================================
+  onStrategyChange(reset: boolean = true) {
+    const strategyId = this.form.strategy_id;
+
+    if (!strategyId) {
+      this.components = [];
+      this.form.component_id = null;
+      this.indicators = [];
+      return;
+    }
+
+    this.components = this.allComponents.filter(c => c.strategy_id === strategyId);
+
+    if (reset) {
+      this.form.component_id = null;
+      this.indicators = [];
+      this.detallePoblacion = {};
+    }
+  }
+
+  // ==========================================================
+  // Componente seleccionado
+  // ==========================================================
+  onComponentChange(reset: boolean = true) {
     const compId = this.form.component_id;
 
     if (!compId) {
       this.indicators = [];
-      this.form.indicator_id = null;
-      this.selectedIndicator = undefined;
+      this.detallePoblacion = {};
       return;
     }
 
-    // filtrar indicadores según componente
-    this.indicators = this.allIndicators.filter(
-      (i) => i.component_id === compId
-    );
+    this.indicators = this.allIndicators.filter(i => i.component_id === compId);
 
-    if (resetIndicator) {
-      this.form.indicator_id = null;
-      this.selectedIndicator = undefined;
-      this.form.valor = '';
+    if (reset) {
       this.detallePoblacion = {};
-    } else if (this.form.indicator_id) {
-      this.onIndicatorChange(false);
-    }
-  }
-
-  onIndicatorChange(resetValue: boolean = true) {
-    const indId = this.form.indicator_id;
-    if (!indId) {
-      this.selectedIndicator = undefined;
-      return;
-    }
-
-    this.selectedIndicator = this.indicators.find((i) => i.id === indId)
-      || this.allIndicators.find((i) => i.id === indId);
-
-    if (!this.selectedIndicator) return;
-
-    if (resetValue) {
-      this.form.valor = '';
-      this.detallePoblacion = {};
-    }
-
-    // Si el indicador usa lista y tiene allowed_values, inicializamos detalle_poblacion
-    if (this.selectedIndicator.use_list && this.selectedIndicator.allowed_values) {
-      const nueva: RecordDetallePoblacion = {};
-      this.selectedIndicator.allowed_values.forEach((val) => {
-        const actual = this.detallePoblacion[val] ?? 0;
-        nueva[val] = actual;
+      this.indicators.forEach(ind => {
+        this.detallePoblacion[ind.id] = 0;
       });
-      this.detallePoblacion = nueva;
     }
   }
 
-  // -----------------------------
-  // Chips de tipo_poblacion
-  // -----------------------------
-  addTipoPoblacion() {
-    const value = this.nuevoTipoPoblacion.trim();
-    if (!value) return;
-    if (!this.tipoPoblacionChips.includes(value)) {
-      this.tipoPoblacionChips.push(value);
-    }
-    this.nuevoTipoPoblacion = '';
-  }
-
-  removeTipoPoblacion(index: number) {
-    this.tipoPoblacionChips.splice(index, 1);
-  }
-
-  // -----------------------------
-  // Helpers UI
-  // -----------------------------
-  isBooleanIndicator(): boolean {
-    return this.selectedIndicator?.data_type === 'boolean';
-  }
-
-  isIntegerIndicator(): boolean {
-    return this.selectedIndicator?.data_type === 'integer';
-  }
-
-  isDecimalIndicator(): boolean {
-    return this.selectedIndicator?.data_type === 'decimal';
-  }
-
-  isTextIndicator(): boolean {
-    return this.selectedIndicator?.data_type === 'text';
-  }
-
-  isDateIndicator(): boolean {
-    return this.selectedIndicator?.data_type === 'date';
-  }
-
-  isCategoryIndicator(): boolean {
-    return this.selectedIndicator?.data_type === 'category';
-  }
-
-  hasAllowedValues(): boolean {
-    return !!(
-      this.selectedIndicator &&
-      this.selectedIndicator.allowed_values &&
-      this.selectedIndicator.allowed_values.length
-    );
-  }
-
-  // -----------------------------
-  // Construir payload
-  // -----------------------------
+  // ==========================================================
+  // Payload final
+  // ==========================================================
   buildPayload(): RecordCreateRequest {
-
-    let tipoPoblacion: string[] | string;
-    let detalle: RecordDetallePoblacion | null = null;
-
-    if (this.selectedIndicator?.use_list && this.selectedIndicator.allowed_values) {
-      // Caso: el indicador define la población
-      tipoPoblacion = [...this.selectedIndicator.allowed_values];
-
-      // detalle poblacional es obligatorio en este caso
-      detalle = { ...this.detallePoblacion };
-
-    } else {
-      // Caso: población definida manualmente por chips
-
-      // Validar mínimo 1 chip
-      if (!this.tipoPoblacionChips.length) {
-        alert('Debe agregar al menos un tipo de población');
-        throw new Error('Invalid form');
-      }
-
-      tipoPoblacion =
-        this.tipoPoblacionChips.length === 1
-          ? this.tipoPoblacionChips[0]
-          : this.tipoPoblacionChips;
-
-      // Detalle poblacional no aplica en este modo
-      detalle = null;
-    }
-
     return {
+      strategy_id: this.form.strategy_id!,
       component_id: this.form.component_id!,
-      indicator_id: this.form.indicator_id!,
       municipio: this.form.municipio.trim(),
       fecha: this.form.fecha,
-      tipo_poblacion: tipoPoblacion,
-      detalle_poblacion: detalle,
-      valor: this.form.valor ? String(this.form.valor) : null,
+      detalle_poblacion: this.detallePoblacion,
       evidencia_url: this.form.evidencia_url || null,
     };
   }
 
-  // -----------------------------
+  // ==========================================================
   // Guardar
-  // -----------------------------
+  // ==========================================================
   save() {
-    if (!this.form.component_id || !this.form.indicator_id) {
-      alert('Debe seleccionar componente e indicador');
-      return;
-    }
-    if (!this.form.municipio.trim() || !this.form.fecha) {
-      alert('Debe completar municipio y fecha');
+    this.attemptedSubmit = true;
+
+    if (!this.form.strategy_id || !this.form.component_id || !this.form.municipio || !this.form.fecha) {
+      this.toast.warning("Por favor completa los campos obligatorios.");
       return;
     }
 
-    if (!this.selectedIndicator?.use_list) {
-      if (!this.tipoPoblacionChips.length) {
-        alert('Debe agregar al menos un tipo de población');
-        return;
-      }
-    }
     const payload = this.buildPayload();
 
+    // Confirmación si es edición
+    if (this.isEdit) {
+      this.toast.confirm(
+        "¿Guardar cambios?",
+        "Se actualizará el registro."
+      ).then(result => {
+        if (result.isConfirmed) {
+          this.sendRequest(payload);
+        }
+      });
+      return;
+    }
+
+    this.sendRequest(payload);
+  }
+
+  private sendRequest(payload: RecordCreateRequest) {
     this.saving = true;
 
     const obs = this.isEdit
@@ -337,25 +221,32 @@ export class RecordFormComponent {
     obs.subscribe({
       next: () => {
         this.saving = false;
+
+        this.toast.success(
+          this.isEdit
+            ? "Registro actualizado con éxito"
+            : "Registro creado correctamente"
+        );
+
         this.router.navigate(['/dashboard/records']);
       },
       error: () => {
         this.saving = false;
-        alert('Error al guardar el registro');
-      },
+      }
     });
   }
 
-  get datosGeneralesCompletos(): boolean {
+  get datosGeneralesCompletos() {
     return Boolean(
       this.form.municipio &&
       this.form.fecha &&
-      this.form.component_id &&
-      this.form.indicator_id
+      this.form.strategy_id &&
+      this.form.component_id
     );
   }
 
   cancel() {
     this.router.navigate(['/dashboard/records']);
   }
+
 }

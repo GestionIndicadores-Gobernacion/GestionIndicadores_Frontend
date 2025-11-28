@@ -1,35 +1,33 @@
-// src/app/app/core/models/indicator.model.ts
-export type IndicatorDataType =
-  | 'integer'
-  | 'decimal'
-  | 'boolean'
-  | 'text'
-  | 'date'
-  | 'category';
+// core/models/indicator.model.ts
 
 export interface IndicatorModel {
   id: number;
   component_id: number;
+
   name: string;
   description?: string | null;
-  data_type: IndicatorDataType;
-  required: boolean;
-  use_list: boolean;
-  allowed_values?: string[] | null;
+
+  // Tipos válidos según backend
+  data_type: 'string' | 'integer' | 'boolean' | 'date' | 'float';
+
   active: boolean;
+
+  created_at?: string;
+  updated_at?: string;
 }
 
+
+// Para crear
 export interface IndicatorCreateRequest {
   component_id: number;
   name: string;
   description?: string | null;
-  data_type: IndicatorDataType;
-  required: boolean;
-  use_list: boolean;
-  allowed_values?: string[];  // lista de strings
-  active: boolean;
+  data_type: 'string' | 'integer' | 'boolean' | 'date' | 'float';
+  active?: boolean;
 }
 
-export interface IndicatorUpdateRequest extends Partial<IndicatorCreateRequest> {
+
+// Para actualizar (si lo usas)
+export interface IndicatorUpdateRequest extends IndicatorCreateRequest {
   id: number;
 }
