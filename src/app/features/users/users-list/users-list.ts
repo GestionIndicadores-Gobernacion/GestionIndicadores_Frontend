@@ -100,8 +100,16 @@ export class UsersListComponent {
   goEdit(id: number) {
     this.router.navigate(['/dashboard/users', id, 'edit']);
   }
-
   deleteUser(id: number) {
+
+    const user = this.users.find(u => u.id === id);
+
+    // 🚫 BLOQUEAR ELIMINACIÓN DEL ADMIN PRINCIPAL
+    if (user?.email === 'admin@gobernacion.gov.co') {
+      this.toast.error("No puedes eliminar el usuario principal de administración.");
+      return; // ❗ Se sale y NO sigue con el flujo
+    }
+
     this.toast.confirm(
       "¿Eliminar usuario?",
       "Esta acción no se puede deshacer."
@@ -115,11 +123,16 @@ export class UsersListComponent {
           this.loadUsers();
         },
         error: () => {
-          // Ya lo muestra el interceptor
+          // El interceptor muestra el error exacto}
         }
       });
 
     });
   }
+
+  isMainAdmin(user: UserModel): boolean {
+    return user.email === 'admin@gobernacion.gov.co';
+  }
+
 
 }

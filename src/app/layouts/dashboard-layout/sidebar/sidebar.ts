@@ -35,7 +35,6 @@ export class SidebarComponent {
     });
   }
 
-
   // Métodos que llaman al service
   openSidebar() {
     this.sidebarService.open();

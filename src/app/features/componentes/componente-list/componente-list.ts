@@ -123,26 +123,33 @@ export class ComponentesListComponent implements OnInit {
   }
 
   deleteComponent(id: number) {
-    this.toast
-      .confirm(
-        "¿Eliminar componente?",
-        "Esta acción no se puede deshacer."
-      )
-      .then(result => {
-        if (result.isConfirmed) {
+  this.toast
+    .confirm(
+      "¿Eliminar componente?",
+      "Esta acción no se puede deshacer."
+    )
+    .then(result => {
+      if (!result.isConfirmed) return;
 
-          this.componentsService.delete(id).subscribe({
-            next: () => {
-              this.toast.success("Componente eliminado correctamente");
-              this.load();
-            },
-            error: () => {
-              this.toast.error("Error al eliminar el componente");
-            }
-          });
+      this.componentsService.delete(id).subscribe({
+        next: () => {
+          this.toast.success("Componente eliminado correctamente");
+          this.load();
+        },
+        error: (err) => {
+          console.log("🔥 ERROR DELETE COMPONENT:", err);
 
+          const msg =
+            err.error?.message ||     // Mensaje backend tipo {"message": "..."}
+            err.error?.msg ||
+            err.error?.description ||
+            "Error al eliminar el componente";
+
+          this.toast.error(msg);
         }
       });
-  }
+    });
+}
+
 
 }

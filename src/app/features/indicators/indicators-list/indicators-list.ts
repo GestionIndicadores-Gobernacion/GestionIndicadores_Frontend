@@ -171,19 +171,25 @@ export class IndicatorsListComponent {
         "Esta acción no se puede deshacer."
       )
       .then(result => {
-        if (result.isConfirmed) {
+        if (!result.isConfirmed) return;
 
-          this.indicatorsService.delete(id).subscribe({
-            next: () => {
-              this.toast.success("Indicador eliminado correctamente");
-              this.load(); // refresca la lista
-            },
-            error: () => {
-              this.toast.error("Error al eliminar el indicador");
-            }
-          });
+        this.indicatorsService.delete(id).subscribe({
+          next: () => {
+            this.toast.success("Indicador eliminado correctamente");
+            this.load();
+          },
+          error: (err) => {
+            console.log("🔥 ERROR DELETE INDICATOR:", err);
 
-        }
+            const msg =
+              err.error?.message ||
+              err.error?.msg ||
+              err.error?.description ||
+              "Error al eliminar el indicador";
+
+            this.toast.error(msg);
+          }
+        });
       });
   }
 

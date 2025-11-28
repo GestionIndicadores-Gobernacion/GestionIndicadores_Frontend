@@ -22,6 +22,7 @@
           name="name"
           [(ngModel)]="form.name"
           required
+          [disabled]="isMainAdmin()"
           [class.invalid]="attemptedSubmit && !form.name"
         >
 
@@ -39,6 +40,7 @@
           name="email"
           [(ngModel)]="form.email"
           required
+          [disabled]="isMainAdmin()"
           [class.invalid]="attemptedSubmit && !isValidEmail(form.email)"
         >
 
@@ -61,6 +63,7 @@
           [(ngModel)]="form.password"
           [required]="!isEdit"
           placeholder="{{ isEdit ? 'Dejar en blanco para no modificar' : '' }}"
+          [disabled]="isMainAdmin()"
           [class.invalid]="attemptedSubmit && passwordInvalid()"
         >
 
@@ -82,6 +85,7 @@
           name="role_id"
           [(ngModel)]="form.role_id"
           required
+          [disabled]="isMainAdmin()"
           [class.invalid]="attemptedSubmit && !form.role_id"
         >
           <option [ngValue]="null" disabled>Seleccionar rol...</option>
@@ -100,13 +104,30 @@
 
     <!-- BOTONES -->
     <div class="form-actions">
-      <button class="btn-primary" [disabled]="saving">
+
+      <!-- Si es el superadmin → botón bloqueado -->
+      <button 
+        *ngIf="isMainAdmin()"
+        class="btn-primary"
+        type="button"
+        disabled
+      >
+        Usuario principal — No editable
+      </button>
+
+      <!-- Si NO es el superadmin → botón normal -->
+      <button 
+        *ngIf="!isMainAdmin()"
+        class="btn-primary"
+        [disabled]="saving"
+      >
         {{ saving ? "Guardando..." : (isEdit ? "Actualizar Usuario" : "Crear Usuario") }}
       </button>
 
       <button type="button" class="btn-secondary-custom" (click)="cancel()">
         Cancelar
       </button>
+
     </div>
 
   </form>

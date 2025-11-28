@@ -39,7 +39,7 @@ export class UserFormComponent {
     private usersService: UsersService,
     private rolesService: RolesService,
     private toast: ToastService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.userId = Number(this.route.snapshot.paramMap.get('id'));
@@ -50,6 +50,11 @@ export class UserFormComponent {
     if (this.isEdit) this.loadUser();
     else this.loading = false;
   }
+
+  isMainAdmin(): boolean {
+    return this.isEdit && this.form.email === 'admin@gobernacion.gov.co';
+  }
+
 
   // =========================================
   // 📌 VALIDACIONES

@@ -105,6 +105,7 @@ export class StrategyListComponent implements OnInit {
   goToEdit(id: number) {
     this.router.navigate([`/dashboard/strategies/${id}/edit`]);
   }
+
   deleteStrategy(id: number) {
     this.toast
       .confirm(
@@ -119,13 +120,24 @@ export class StrategyListComponent implements OnInit {
               this.toast.success("Estrategia eliminada correctamente");
               this.load(); // refrescar la lista
             },
-            error: () => {
-              this.toast.error("Error al eliminar la estrategia");
+            error: (err) => {
+              console.log("🔥 ERROR DELETE STRATEGY:", err);
+
+              const msg =
+                err.error?.message ||
+                err.error?.msg ||
+                err.error?.description ||
+                err.error ||
+                "Error al eliminar la estrategia";
+
+              this.toast.error(msg);
             }
+
           });
 
         }
       });
   }
+
 
 }
