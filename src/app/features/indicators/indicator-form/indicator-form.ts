@@ -17,6 +17,7 @@ import { IndicatorsService } from '../../../core/services/indicators.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../../core/services/toast.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-indicator-form',
@@ -55,18 +56,64 @@ export class IndicatorFormComponent {
     private componentsService: ComponentsService,
     private strategiesService: StrategiesService,
     private toast: ToastService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.id = Number(this.route.snapshot.paramMap.get('id'));
     this.isEdit = !!this.id;
 
-    this.loadStrategies();
-    this.loadComponents();
-
     if (this.isEdit) {
-      this.loadIndicator();
+      this.loadDataForEdit();
+    } else {
+      this.loadStrategies();
+      this.loadComponents();
     }
+  }
+
+  // ============================================================
+  // CARGA COMPLETA PARA EDICIÓN (estrategia + componente + indicador)
+  // ============================================================
+  loadDataForEdit() {
+    this.loading = true;
+
+    forkJoin({
+      strategies: this.strategiesService.getAll(),
+      components: this.componentsService.getAll(),
+      indicator: this.indicatorsService.getById(this.id!)
+    }).subscribe({
+      next: ({ strategies, components, indicator }) => {
+
+        this.strategies = strategies;
+        this.components = components;
+
+        // Setear datos del indicador
+        this.form = {
+          component_id: indicator.component_id,
+          name: indicator.name,
+          description: indicator.description ?? null,
+          data_type: indicator.data_type,
+          active: indicator.active,
+        };
+
+        // Encontrar componente → encontrar estrategia
+        const comp = components.find(c => c.id === indicator.component_id);
+
+        if (comp) {
+          this.selectedStrategy = comp.strategy_id;
+        }
+
+        // Filtrar componentes de esa estrategia
+        this.filteredComponents = components.filter(
+          c => c.strategy_id === this.selectedStrategy
+        );
+
+        this.loading = false;
+      },
+      error: () => {
+        this.toast.error("Error cargando datos del indicador");
+        this.loading = false;
+      }
+    });
   }
 
   loadStrategies() {
@@ -78,48 +125,23 @@ export class IndicatorFormComponent {
 
   loadComponents() {
     this.componentsService.getAll().subscribe({
-      next: (res) => {
-        this.components = res;
-
-        if (this.isEdit) {
-          const comp = this.components.find(c => c.id === this.form.component_id);
-          if (comp) {
-            this.selectedStrategy = comp.strategy_id;
-            this.filterComponents();
-          }
-        }
-      },
+      next: (res) => (this.components = res),
       error: () => this.toast.error('Error al cargar componentes'),
     });
   }
 
+  // ============================================================
+  // FILTRAR COMPONENTES POR ESTRATEGIA
+  // ============================================================
   filterComponents() {
     this.filteredComponents = this.components.filter(
       (c) => c.strategy_id === Number(this.selectedStrategy)
     );
 
-    this.form.component_id = 0;
-  }
-
-  loadIndicator() {
-    this.loading = true;
-
-    this.indicatorsService.getById(this.id!).subscribe({
-      next: (data: IndicatorModel) => {
-        this.form = {
-          component_id: data.component_id,
-          name: data.name,
-          description: data.description ?? null,
-          data_type: data.data_type,
-          active: data.active,
-        };
-        this.loading = false;
-      },
-      error: () => {
-        this.toast.error('Error cargando indicador');
-        this.loading = false;
-      },
-    });
+    // ❗ NO resetear componente si estamos editando
+    if (!this.isEdit) {
+      this.form.component_id = 0;
+    }
   }
 
   private cleanUpdate(body: IndicatorUpdateRequest): IndicatorUpdateRequest {
@@ -133,16 +155,20 @@ export class IndicatorFormComponent {
     return clean;
   }
 
+  // ============================================================
+  // GUARDAR
+  // ============================================================
   save() {
     this.attemptedSubmit = true;
 
-    // Validación manual (ngModel)
-    if (!this.selectedStrategy || !this.form.component_id || !this.form.name || this.form.name.trim().length < 3 || !this.form.data_type) {
+    if (!this.selectedStrategy || !this.form.component_id ||
+      !this.form.name || this.form.name.trim().length < 3 ||
+      !this.form.data_type) {
+
       this.toast.warning("Por favor completa los campos obligatorios.");
       return;
     }
 
-    // Confirmación si es edición
     if (this.isEdit) {
       this.toast.confirm(
         "¿Guardar cambios?",
@@ -158,6 +184,9 @@ export class IndicatorFormComponent {
     this.sendRequest();
   }
 
+  // ============================================================
+  // ENVÍO REAL (CREAR / ACTUALIZAR)
+  // ============================================================
   private sendRequest() {
     this.saving = true;
 
@@ -169,24 +198,37 @@ export class IndicatorFormComponent {
       active: this.form.active,
     };
 
-    const request$ = this.isEdit
-      ? this.indicatorsService.update(
-          this.id!,
-          this.cleanUpdate({ id: this.id!, ...body })
-        )
-      : this.indicatorsService.create(body);
+    let request$;
+
+    if (this.isEdit) {
+      // ❗ NO ENVIAR ID (dump_only)
+      const cleanBody = this.cleanUpdate(body);
+      console.log("CLEAN UPDATE BODY:", cleanBody);
+
+      request$ = this.indicatorsService.update(
+        this.id!,
+        cleanBody
+      );
+    } else {
+      request$ = this.indicatorsService.create(body);
+    }
+
+    console.log("BODY QUE ENVÍO:", body);
 
     request$.subscribe({
       next: () => {
         this.saving = false;
+
         this.toast.success(
           this.isEdit
             ? "Indicador actualizado con éxito"
             : "Indicador creado correctamente"
         );
+
         this.router.navigate(['/dashboard/indicators']);
       },
-      error: () => {
+      error: (err) => {
+        console.error("ERROR REAL DEL BACKEND:", err.error);
         this.saving = false;
       },
     });
