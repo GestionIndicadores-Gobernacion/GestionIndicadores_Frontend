@@ -11,7 +11,6 @@ export const DASHBOARD_LAYOUT_ROUTES: Routes = [
 
   {
     path: 'users',
-    canActivate: [adminGuard],
     loadChildren: () =>
       import('../../features/users/users.routes')
         .then(m => m.USERS_ROUTES),

@@ -37,6 +37,21 @@ export class DashboardService {
     return this.http.get<RecordModel[]>(`${this.api}/latest`, { params });
   }
 
+  getRecordsByEstrategia() {
+    return this.http.get<any[]>(`${this.api}/stats/estrategias`);
+  }
+
+  getRecordsByComponent(estrategiaId?: number) {
+    let params = new HttpParams();
+
+    if (estrategiaId) {
+      params = params.set('estrategia_id', estrategiaId);
+    }
+
+    return this.http.get<any[]>(`${this.api}/stats/componentes`, { params });
+  }
+
+
   // ======================
   // 📌 2. KPIs
   // ======================

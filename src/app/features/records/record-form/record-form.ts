@@ -26,6 +26,7 @@ export class RecordFormComponent {
 
   municipios = MUNICIPIOS_VALLE;
 
+  today: string = ''; 
   loading = false;
   saving = false;
   isEdit = false;
@@ -62,6 +63,9 @@ export class RecordFormComponent {
   ) { }
 
   ngOnInit(): void {
+
+    this.today = new Date().toISOString().split('T')[0];
+
     this.id = Number(this.route.snapshot.paramMap.get('id'));
     this.isEdit = !!this.id;
 

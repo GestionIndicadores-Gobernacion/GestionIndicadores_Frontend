@@ -12,6 +12,7 @@ import {
   RecordStatsMes,
   RecordStatsTipoPoblacion
 } from '../models/record.model';
+import { EstrategiaChartData } from '../../features/dashboard/charts/estrategias-chart/estrategias-chart';
 
 @Injectable({
   providedIn: 'root',
@@ -20,7 +21,7 @@ export class RecordsService {
 
   private api = `${environment.apiUrl}/record`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // =====================================================
   // GET LIST (con filtros opcionales)
@@ -66,7 +67,7 @@ export class RecordsService {
 
     const parsed = {
       ...body,
-      
+
     };
 
     return this.http.put<RecordModel>(`${this.api}/${id}`, parsed);
@@ -92,6 +93,10 @@ export class RecordsService {
 
   getStatsTipoPoblacion() {
     return this.http.get<RecordStatsTipoPoblacion[]>(`${this.api}/stats/tipo-poblacion`);
+  }
+
+  getStatsEstrategias() {
+    return this.http.get<EstrategiaChartData[]>(`${this.api}/stats/estrategias`);
   }
 
   getLatest(limit = 5) {

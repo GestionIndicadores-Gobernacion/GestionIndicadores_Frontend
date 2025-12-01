@@ -46,6 +46,7 @@
           <input
             type="date"
             [(ngModel)]="form.fecha"
+            [max]="today"
             name="fecha"
             required
             [class.invalid]="attemptedSubmit && !form.fecha">

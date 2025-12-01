@@ -48,20 +48,36 @@
                 <div class="info-item">
                     <span>Componente</span>
                     {{
-                        record.component_id !== null
-                            ? componentMap[record.component_id]
-                            : 'Sin componente'
+                    record.component_id !== null
+                    ? componentMap[record.component_id]
+                    : 'Sin componente'
                     }}
                 </div>
 
-                <div class="info-item">
-                    <span>Indicador</span>
-                    {{
-                        record.indicator_id !== null
-                            ? indicatorMap[record.indicator_id ?? 0] || '—'
-                            : 'Sin indicador'
-                    }}
+                <div class="info-item" style="grid-column: span 2;">
+                    <span>Indicadores reportados</span>
+
+                    <table class="detail-table" *ngIf="record.detalle_poblacion">
+                        <thead>
+                            <tr>
+                                <th>Indicador</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr *ngFor="let kv of record.detalle_poblacion | keyvalue">
+                                <td>{{ indicatorMap[+kv.key] || '—' }}</td>
+                                <td>{{ kv.value }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div *ngIf="!record.detalle_poblacion || (record.detalle_poblacion | keyvalue).length === 0">
+                        — No hay indicadores asociados —
+                    </div>
                 </div>
+
 
             </div>
         </div>
@@ -87,17 +103,18 @@
                 <table class="detail-table">
                     <thead>
                         <tr>
-                            <th>Tipo</th>
-                            <th>Cantidad</th>
+                            <th>Indicador</th>
+                            <th>Valor</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr *ngFor="let kv of record.detalle_poblacion | keyvalue">
-                            <td>{{ kv.key }}</td>
+                            <td>{{ indicatorMap[+kv.key] || '—' }}</td>
                             <td>{{ kv.value }}</td>
                         </tr>
                     </tbody>
                 </table>
+
             </div>
 
         </div>

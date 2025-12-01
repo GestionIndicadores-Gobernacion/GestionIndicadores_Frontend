@@ -6,55 +6,45 @@ import { DashboardService } from '../../../core/services/dashboard.service';
 import { ComponentsService } from '../../../core/services/components.service';
 import { IndicatorsService } from '../../../core/services/indicators.service';
 
-import {
-  NgxApexchartsModule,
-  ApexAxisChartSeries,
-  ApexChart,
-  ApexXAxis,
-  ApexStroke,
-  ApexTitleSubtitle
-} from 'ngx-apexcharts';
-
-// ------------------------------
-// TYPES
-// ------------------------------
-
-export type KpiKey =
-  'totalRegistros' |
-  'registrosMes' |
-  'municipiosActivos' |
-  'indicadoresActivos' |
-  'componentesActivos';
-
-export type KpiCardConfig = {
-  label: string;
-  key: KpiKey;
-  colorClass: string;
-};
-
-export type AxisChartOptions = {
-  series: ApexAxisChartSeries;
-  chart: ApexChart;
-  xaxis: ApexXAxis;
-  stroke: ApexStroke;
-  title: ApexTitleSubtitle;
-};
-
-// ------------------------------
-// COMPONENT
-// ------------------------------
+import { NgxApexchartsModule } from 'ngx-apexcharts';
+import { KpiCardsComponent } from '../kpi-cards/kpi-cards';
+import { EstrategiasChartComponent } from '../charts/estrategias-chart/estrategias-chart';
 
 @Component({
   selector: 'app-home-dashboard',
   standalone: true,
-  imports: [CommonModule, NgxApexchartsModule],
+  imports: [
+    CommonModule,
+    NgxApexchartsModule,
+    KpiCardsComponent,
+    EstrategiasChartComponent,
+  ],
   templateUrl: './home-dashboard.html',
   styleUrls: ['./home-dashboard.css'],
 })
 export class HomeDashboardComponent implements OnInit {
 
+  // ---------------- DATA PARA LAS GRÁFICAS ----------------
+  estrategiasData: any[] = [];
+
+  municipiosChart: any = {
+    series: [],
+    chart: { type: 'bar', height: 300 },
+    xaxis: { categories: [] },
+    stroke: { curve: 'smooth' },
+    title: { text: '' }
+  };
+
+  mesesChart: any = {
+    series: [],
+    chart: { type: 'line', height: 300 },
+    xaxis: { categories: [] },
+    stroke: { curve: 'smooth' },
+    title: { text: '' }
+  };
+
   // ---------------- KPIs ----------------
-  kpis: Record<KpiKey, number> = {
+  kpis = {
     totalRegistros: 0,
     registrosMes: 0,
     municipiosActivos: 0,
@@ -62,7 +52,7 @@ export class HomeDashboardComponent implements OnInit {
     componentesActivos: 0,
   };
 
-  kpiCards: KpiCardConfig[] = [
+  kpiCards = [
     { label: 'Total Registros', key: 'totalRegistros', colorClass: 'kpi-blue' },
     { label: 'Registros del Mes', key: 'registrosMes', colorClass: 'kpi-green' },
     { label: 'Municipios Activos', key: 'municipiosActivos', colorClass: 'kpi-orange' },
@@ -74,24 +64,7 @@ export class HomeDashboardComponent implements OnInit {
   componentMap: Record<number, string> = {};
   indicatorMap: Record<number, string> = {};
 
-  // ---------------- CHARTS ----------------
-  municipiosChart: AxisChartOptions = {
-    series: [],
-    chart: { type: 'bar', height: 300 },
-    xaxis: { categories: [] },
-    stroke: { curve: 'smooth' },
-    title: { text: '' }
-  };
-
-  mesesChart: AxisChartOptions = {
-    series: [],
-    chart: { type: 'line', height: 300 },
-    xaxis: { categories: [] },
-    stroke: { curve: 'smooth' },
-    title: { text: '' }
-  };
-
-  // ---------------- LISTA DE ÚLTIMOS REGISTROS ----------------
+  // ---------------- ÚLTIMOS REGISTROS ----------------
   latestRecords: any[] = [];
   loading = true;
 
@@ -108,46 +81,39 @@ export class HomeDashboardComponent implements OnInit {
   }
 
   // ---------------- MAPAS ----------------
-
   private loadMaps(): void {
     forkJoin({
       comps: this.componentsService.getAll(),
-      inds: this.indicatorsService.getAll()
+      inds: this.indicatorsService.getAll(),
     }).subscribe({
       next: ({ comps, inds }) => {
-
-        this.componentMap = Object.fromEntries(
-          comps.map(c => [c.id, c.name])
-        );
-
-        this.indicatorMap = Object.fromEntries(
-          inds.map(i => [i.id, i.name])
-        );
-      },
-      error: (err) => console.error('Error cargando mapas:', err)
+        this.componentMap = Object.fromEntries(comps.map(c => [c.id, c.name]));
+        this.indicatorMap = Object.fromEntries(inds.map(i => [i.id, i.name]));
+      }
     });
   }
 
   // ---------------- KPIs ----------------
-
   private loadKPIs(): void {
-    this.dashboardService.getKPIs().subscribe({
-      next: (kpis) => this.kpis = kpis,
-      error: (err) => console.error('Error cargando KPIs:', err)
+    this.dashboardService.getKPIs().subscribe(res => {
+      this.kpis = res;
     });
   }
 
-  // ---------------- GRÁFICOS & ÚLTIMOS REGISTROS ----------------
-
+  // ---------------- ESTADÍSTICAS DEL DASHBOARD ----------------
   private loadStats(): void {
     this.loading = true;
 
     forkJoin({
+      estrategias: this.dashboardService.getRecordsByEstrategia(),
       municipios: this.dashboardService.getRecordsByMunicipio(),
       meses: this.dashboardService.getRecordsByMes(),
       latest: this.dashboardService.getLatestRecords(5),
     }).subscribe({
-      next: ({ municipios, meses, latest }) => {
+      next: ({ estrategias, municipios, meses, latest }) => {
+
+        // Estrategias
+        this.estrategiasData = estrategias;
 
         // Municipios
         this.municipiosChart = {
@@ -155,7 +121,7 @@ export class HomeDashboardComponent implements OnInit {
           chart: { type: 'bar', height: 300 },
           xaxis: { categories: municipios.map(m => m.municipio) },
           stroke: { curve: 'smooth' },
-          title: { text: 'Registros por municipio' }
+          title: { text: 'Registros por municipio' },
         };
 
         // Meses
@@ -164,7 +130,7 @@ export class HomeDashboardComponent implements OnInit {
           chart: { type: 'line', height: 300 },
           xaxis: { categories: meses.map(m => m.mes) },
           stroke: { curve: 'smooth' },
-          title: { text: 'Registros por mes' }
+          title: { text: 'Registros por mes' },
         };
 
         // Últimos registros
@@ -172,17 +138,13 @@ export class HomeDashboardComponent implements OnInit {
 
         this.loading = false;
       },
-      error: (err) => {
-        console.error('Error cargando estadísticas:', err);
-        this.loading = false;
-      }
+      error: () => (this.loading = false),
     });
   }
 
-  // Para leer indicadores en detalle_poblacion
+  // ---------------- UTIL ----------------
   getIndicatorIds(record: any): number[] {
     if (!record.detalle_poblacion) return [];
     return Object.keys(record.detalle_poblacion).map(id => Number(id));
   }
-
 }

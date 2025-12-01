@@ -3,17 +3,19 @@
   <h2 class="page-title">Panel Principal</h2>
 
   <!-- KPIs -->
-  <div class="kpi-grid">
-    <div *ngFor="let card of kpiCards" class="kpi-card" [ngClass]="card.colorClass">
-      <h6 class="kpi-label">{{ card.label }}</h6>
-      <p class="kpi-number">{{ kpis[card.key] }}</p>
-    </div>
-  </div>
+  <app-kpi-cards [kpiCards]="kpiCards" [kpis]="kpis">
+  </app-kpi-cards>
 
   <ng-container *ngIf="!loading">
 
+    <div class="dashboard-card">
+      <h5 class="card-title">Registros por Estrategia</h5>
+      <app-estrategias-chart [data]="estrategiasData"></app-estrategias-chart>
+    </div>
+
     <!-- Gráficas principales -->
-    <div class="grid-2">
+    <div class="grid-2 mt-3">
+
       <div class="dashboard-card">
         <h5 class="card-title">Registros por Municipio</h5>
         <apx-chart [series]="municipiosChart.series" [chart]="municipiosChart.chart" [xaxis]="municipiosChart.xaxis"
