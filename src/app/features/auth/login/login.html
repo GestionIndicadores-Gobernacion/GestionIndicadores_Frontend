@@ -3,18 +3,51 @@
   <p class="subtitle">Iniciar sesión</p>
 
   <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)">
-    
+
+    <!-- ===========================
+        EMAIL
+    ============================ -->
     <div class="field">
       <label>Correo</label>
-      <input type="email" name="email" [(ngModel)]="email" required />
+
+      <input type="email" name="email" [(ngModel)]="email" #emailCtrl="ngModel" required email
+        [class.invalid]="showError(emailCtrl)" />
+
+      <!-- MENSAJES DE ERROR -->
+      <div class="error-message" *ngIf="showError(emailCtrl)">
+        <span *ngIf="emailCtrl.errors?.['required']">
+          El correo es obligatorio.
+        </span>
+        <span *ngIf="emailCtrl.errors?.['email']">
+          Debe ser un correo válido.
+        </span>
+      </div>
     </div>
 
+    <!-- ===========================
+        PASSWORD
+    ============================ -->
     <div class="field">
       <label>Contraseña</label>
-      <input type="password" name="password" [(ngModel)]="password" required />
+
+      <input type="password" name="password" [(ngModel)]="password" #passwordCtrl="ngModel" required minlength="3"
+        [class.invalid]="showError(passwordCtrl)" />
+
+      <!-- MENSAJES DE ERROR -->
+      <div class="error-message" *ngIf="showError(passwordCtrl)">
+        <span *ngIf="passwordCtrl.errors?.['required']">
+          La contraseña es obligatoria.
+        </span>
+        <span *ngIf="passwordCtrl.errors?.['minlength']">
+          Debe tener al menos 3 caracteres.
+        </span>
+      </div>
     </div>
 
-    <button class="btn" type="submit">Ingresar</button>
+
+    <button class="btn" type="submit">
+      Iniciar sesión
+    </button>
 
   </form>
 </div>

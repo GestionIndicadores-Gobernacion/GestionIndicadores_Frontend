@@ -42,7 +42,7 @@ export class ComponentesFormComponent implements OnInit {
       strategy_id: ['', Validators.required],
       name: ['', [Validators.required, Validators.minLength(3)]],
       description: [''],
-      data_type: ['', Validators.required],
+      data_type: ['integer', Validators.required],
       active: [true],
     });
 

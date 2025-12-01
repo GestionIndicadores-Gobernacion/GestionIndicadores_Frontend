@@ -29,5 +29,5 @@ export interface IndicatorCreateRequest {
 
 // Para actualizar (si lo usas)
 export interface IndicatorUpdateRequest extends IndicatorCreateRequest {
-  id: number;
+  id?: number;
 }
