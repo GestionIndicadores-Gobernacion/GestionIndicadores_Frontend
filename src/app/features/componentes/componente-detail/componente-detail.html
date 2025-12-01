@@ -1,1 +1,40 @@
-<p>componente-detail works!</p>
+<div class="container-fluid">
+
+  <h3 class="mb-3">Detalle del Componente</h3>
+
+  <div *ngIf="loading" class="text-center my-5">
+    <div class="spinner-border text-primary"></div>
+  </div>
+
+  <div *ngIf="!loading && componente">
+
+    <p><strong>ID:</strong> {{ componente.id }}</p>
+
+    <p><strong>Nombre:</strong> {{ componente.name }}</p>
+
+    <p><strong>Descripción:</strong> 
+      {{ componente.description || 'Sin descripción' }}
+    </p>
+
+    <p><strong>Estrategia:</strong> 
+      <span class="badge bg-info text-dark">
+        {{ strategyName || '—' }}
+      </span>
+    </p>
+
+    <p>
+      <strong>Estado:</strong>
+      <span class="badge" 
+            [class.bg-success]="componente.active" 
+            [class.bg-secondary]="!componente.active">
+        {{ componente.active ? 'Activo' : 'Inactivo' }}
+      </span>
+    </p>
+
+    <button class="btn btn-secondary mt-3" (click)="goBack()">
+      Volver
+    </button>
+
+  </div>
+
+</div>

@@ -1,0 +1,114 @@
+/* Sidebar base */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 240px;
+  background: #003b75;
+  color: white;
+  padding: 24px 16px;
+  overflow-y: auto;
+  transition: transform 0.3s ease;
+  z-index: 999;
+  /* siempre sobre el contenido */
+}
+
+
+/* Modo móvil: sidebar oculto */
+@media (max-width: 992px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+}
+
+/* Desktop: siempre visible */
+@media (min-width: 993px) {
+  .sidebar {
+    transform: translateX(0);
+  }
+}
+
+.sidebar-title {
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+}
+
+.sidebar nav a {
+  display: block;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  color: #e5ecf5;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: background 0.25s ease;
+}
+
+.sidebar nav a:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.sidebar nav a.active {
+  background: #00a9e0;
+  color: white;
+}
+
+/* Overlay oscuro para móvil */
+.overlay {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  width: 100%;
+  height: calc(100vh - 64px);
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+}
+
+
+/* Bloque de usuario dentro del sidebar */
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 10px;
+  margin-bottom: 22px;
+  background: rgba(255, 255, 255, 0.10);
+  /* transparencia suave */
+  border-radius: 10px;
+}
+
+/* Avatar redondo */
+.sidebar-user-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #00a9e0;
+  /* contraste institucional */
+  color: white;
+  font-weight: 700;
+  font-size: 1.2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Datos del usuario */
+.sidebar-user-data .user-name {
+  font-weight: 600;
+  margin: 0;
+  font-size: 0.95rem;
+  color: white;
+}
+
+.sidebar-user-data .user-role {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #e5ecf5;
+  /* gris claro */
+}

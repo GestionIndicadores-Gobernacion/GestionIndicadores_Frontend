@@ -1,1 +1,135 @@
-<p>user-form works!</p>
+<div class="record-form-container">
+
+  <h2 class="page-title">
+    {{ isEdit ? "Editar Usuario" : "Crear Usuario" }}
+  </h2>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-box">
+    <div class="spinner"></div>
+  </div>
+
+  <form *ngIf="!loading" (ngSubmit)="save()">
+
+    <div class="form-section">
+
+      <!-- Nombre -->
+      <div class="form-group">
+        <label>Nombre completo</label>
+
+        <input 
+          type="text"
+          name="name"
+          [(ngModel)]="form.name"
+          required
+          [disabled]="isMainAdmin()"
+          [class.invalid]="attemptedSubmit && !form.name"
+        >
+
+        <div class="error-message" *ngIf="attemptedSubmit && !form.name">
+          El nombre es obligatorio.
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label>Correo</label>
+
+        <input 
+          type="email"
+          name="email"
+          [(ngModel)]="form.email"
+          required
+          [disabled]="isMainAdmin()"
+          [class.invalid]="attemptedSubmit && !isValidEmail(form.email)"
+        >
+
+        <div class="error-message" *ngIf="attemptedSubmit && !form.email">
+          El correo es obligatorio.
+        </div>
+
+        <div class="error-message" *ngIf="attemptedSubmit && form.email && !isValidEmail(form.email)">
+          Debe ingresar un correo válido.
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label>Contraseña</label>
+
+        <input 
+          type="password"
+          name="password"
+          [(ngModel)]="form.password"
+          [required]="!isEdit"
+          placeholder="{{ isEdit ? 'Dejar en blanco para no modificar' : '' }}"
+          [disabled]="isMainAdmin()"
+          [class.invalid]="attemptedSubmit && passwordInvalid()"
+        >
+
+        <div class="error-message" *ngIf="attemptedSubmit && !isEdit && !form.password">
+          La contraseña es obligatoria.
+        </div>
+
+        <div class="error-message"
+             *ngIf="attemptedSubmit && isEdit && form.password && form.password.length < 6">
+          La contraseña debe tener al menos 6 caracteres.
+        </div>
+      </div>
+
+      <!-- Rol -->
+      <div class="form-group">
+        <label>Rol</label>
+
+        <select 
+          name="role_id"
+          [(ngModel)]="form.role_id"
+          required
+          [disabled]="isMainAdmin()"
+          [class.invalid]="attemptedSubmit && !form.role_id"
+        >
+          <option [ngValue]="null" disabled>Seleccionar rol...</option>
+
+          <option *ngFor="let r of roles" [ngValue]="r.id">
+            {{ r.name }}
+          </option>
+        </select>
+
+        <div class="error-message" *ngIf="attemptedSubmit && !form.role_id">
+          Debe seleccionar un rol.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BOTONES -->
+    <div class="form-actions">
+
+      <!-- Si es el superadmin → botón bloqueado -->
+      <button 
+        *ngIf="isMainAdmin()"
+        class="btn-primary"
+        type="button"
+        disabled
+      >
+        Usuario principal — No editable
+      </button>
+
+      <!-- Si NO es el superadmin → botón normal -->
+      <button 
+        *ngIf="!isMainAdmin()"
+        class="btn-primary"
+        [disabled]="saving"
+      >
+        {{ saving ? "Guardando..." : (isEdit ? "Actualizar Usuario" : "Crear Usuario") }}
+      </button>
+
+      <button type="button" class="btn-secondary-custom" (click)="cancel()">
+        Cancelar
+      </button>
+
+    </div>
+
+  </form>
+
+</div>

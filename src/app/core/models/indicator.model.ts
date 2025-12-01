@@ -1,26 +1,33 @@
+// core/models/indicator.model.ts
+
 export interface IndicatorModel {
   id: number;
-  nombre: string;
-  descripcion: string;
-  data_type: string;     // "integer", "string", "array", etc.
-  categoria?: string;
+  component_id: number;
+
+  name: string;
+  description?: string | null;
+
+  // Tipos válidos según backend
+  data_type: 'string' | 'integer' | 'boolean' | 'date' | 'float';
+
+  active: boolean;
+
   created_at?: string;
   updated_at?: string;
 }
 
+
+// Para crear
 export interface IndicatorCreateRequest {
-  nombre: string;
-  descripcion: string;
-  data_type: string;
-  categoria?: string;
+  component_id: number;
+  name: string;
+  description?: string | null;
+  data_type: 'string' | 'integer' | 'boolean' | 'date' | 'float';
+  active?: boolean;
 }
 
-export interface IndicatorUpdateRequest {
+
+// Para actualizar (si lo usas)
+export interface IndicatorUpdateRequest extends IndicatorCreateRequest {
   id: number;
-  nombre?: string;
-  descripcion?: string;
-  data_type?: string;
-  categoria?: string;
 }
-
-export interface IndicatorResponse extends IndicatorModel {}

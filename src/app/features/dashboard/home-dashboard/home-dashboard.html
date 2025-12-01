@@ -1,1 +1,72 @@
-<p>home-dashboard works!</p>
+<div class="dashboard-home">
+
+  <h2 class="page-title">Panel Principal</h2>
+
+  <!-- KPIs -->
+  <app-kpi-cards [kpiCards]="kpiCards" [kpis]="kpis">
+  </app-kpi-cards>
+
+  <ng-container *ngIf="!loading">
+
+    <div class="dashboard-card">
+      <h5 class="card-title">Registros por Estrategia</h5>
+      <app-estrategias-chart [data]="estrategiasData"></app-estrategias-chart>
+    </div>
+
+    <!-- Gráficas principales -->
+    <div class="grid-2 mt-3">
+
+      <div class="dashboard-card">
+        <h5 class="card-title">Registros por Municipio</h5>
+        <apx-chart [series]="municipiosChart.series" [chart]="municipiosChart.chart" [xaxis]="municipiosChart.xaxis"
+          [stroke]="municipiosChart.stroke" [title]="municipiosChart.title">
+        </apx-chart>
+      </div>
+
+      <div class="dashboard-card">
+        <h5 class="card-title">Registros por Mes</h5>
+        <apx-chart [series]="mesesChart.series" [chart]="mesesChart.chart" [xaxis]="mesesChart.xaxis"
+          [stroke]="mesesChart.stroke" [title]="mesesChart.title">
+        </apx-chart>
+      </div>
+    </div>
+
+    <!-- Últimos registros -->
+    <div class="grid-2">
+      <div class="dashboard-card">
+        <h5 class="card-title">Últimos Registros</h5>
+
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>Municipio</th>
+              <th>Fecha</th>
+              <th>Componente</th>
+              <th>Indicadores</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let r of latestRecords">
+
+              <td>{{ r.municipio }}</td>
+              <td>{{ r.fecha | date }}</td>
+              <td>{{ componentMap[r.component_id] }}</td>
+
+              <td>
+                <div *ngFor="let id of getIndicatorIds(r)">
+                  <strong>{{ indicatorMap[id] }}:</strong>
+                  {{ r.detalle_poblacion[id] }}
+                </div>
+              </td>
+
+            </tr>
+          </tbody>
+
+        </table>
+      </div>
+    </div>
+
+  </ng-container>
+
+</div>

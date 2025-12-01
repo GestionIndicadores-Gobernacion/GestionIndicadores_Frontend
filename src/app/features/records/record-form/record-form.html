@@ -1,1 +1,185 @@
-<p>record-form works!</p>
+<div class="record-form-container">
+
+  <h2 class="page-title">
+    {{ isEdit ? 'Editar Registro' : 'Crear Registro' }}
+  </h2>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-box">
+    <div class="spinner"></div>
+  </div>
+
+  <form *ngIf="!loading" (ngSubmit)="save()">
+
+    <!-- =====================================================
+        📌 SECCIÓN 1 — DATOS GENERALES
+        ====================================================== -->
+    <div class="form-section">
+      <h3 class="section-title">Datos del registro</h3>
+
+      <div class="form-grid">
+
+        <!-- Municipio -->
+        <div class="form-group">
+          <label>Municipio</label>
+
+          <select
+            [(ngModel)]="form.municipio"
+            name="municipio"
+            required
+            [class.invalid]="attemptedSubmit && !form.municipio">
+
+            <option disabled [ngValue]="null">Seleccionar municipio...</option>
+            <option *ngFor="let m of municipios" [ngValue]="m">{{ m }}</option>
+          </select>
+
+          <div class="error-message" *ngIf="attemptedSubmit && !form.municipio">
+            Debe seleccionar un municipio.
+          </div>
+        </div>
+
+
+        <!-- Fecha -->
+        <div class="form-group">
+          <label>Fecha</label>
+
+          <input
+            type="date"
+            [(ngModel)]="form.fecha"
+            [max]="today"
+            name="fecha"
+            required
+            [class.invalid]="attemptedSubmit && !form.fecha">
+
+          <div class="error-message" *ngIf="attemptedSubmit && !form.fecha">
+            Debe seleccionar una fecha.
+          </div>
+        </div>
+
+
+        <!-- Estrategia -->
+        <div class="form-group">
+          <label>Estrategia</label>
+
+          <select
+            [(ngModel)]="form.strategy_id"
+            name="strategy_id"
+            required
+            (change)="onStrategyChange()"
+            [class.invalid]="attemptedSubmit && !form.strategy_id">
+
+            <option disabled [ngValue]="null">Seleccionar estrategia...</option>
+            <option *ngFor="let s of strategies" [ngValue]="s.id">
+              {{ s.name }}
+            </option>
+          </select>
+
+          <div class="error-message" *ngIf="attemptedSubmit && !form.strategy_id">
+            Debe seleccionar una estrategia.
+          </div>
+        </div>
+
+
+        <!-- Componente -->
+        <div class="form-group">
+          <label>Componente</label>
+
+          <select
+            [(ngModel)]="form.component_id"
+            name="component_id"
+            required
+            (change)="onComponentChange()"
+            [disabled]="!form.strategy_id"
+            [class.invalid]="attemptedSubmit && !form.component_id">
+
+            <option disabled [ngValue]="null">
+              {{ form.strategy_id ? 'Seleccionar componente...' : 'Seleccione una estrategia' }}
+            </option>
+
+            <option *ngFor="let c of components" [ngValue]="c.id">
+              {{ c.name }}
+            </option>
+          </select>
+
+          <div class="error-message" *ngIf="attemptedSubmit && !form.component_id">
+            Debe seleccionar un componente.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- =====================================================
+        📌 SECCIÓN 2 — VALORES DE INDICADORES
+        ====================================================== -->
+    <div class="form-section" [class.disabled-section]="!datosGeneralesCompletos">
+      <h3 class="section-title">Valores de Indicadores</h3>
+
+      <div class="form-group full" *ngIf="indicators.length > 0">
+
+        <table class="inner-table">
+          <thead>
+            <tr>
+              <th>Indicador</th>
+              <th>Valor</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let ind of indicators">
+              <td>{{ ind.name }}</td>
+
+              <td>
+                <input
+                  type="number"
+                  min="0"
+                  [(ngModel)]="detallePoblacion[ind.id]"
+                  name="ind_{{ ind.id }}"
+                  [class.invalid]="attemptedSubmit && detallePoblacion[ind.id] === undefined">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+      <div *ngIf="indicators.length === 0" class="empty-text">
+        Seleccione un componente para ver sus indicadores.
+      </div>
+    </div>
+
+
+    <!-- =====================================================
+        📌 SECCIÓN 3 — EVIDENCIA
+        ====================================================== -->
+    <div class="form-section" [class.disabled-section]="!datosGeneralesCompletos">
+      <h3 class="section-title">Evidencia</h3>
+
+      <div class="form-group full">
+        <label>URL de evidencia (opcional)</label>
+
+        <input
+          type="url"
+          [(ngModel)]="form.evidencia_url"
+          name="evidencia_url"
+          placeholder="https://...">
+      </div>
+    </div>
+
+
+    <!-- =====================================================
+        📌 BOTONES
+        ====================================================== -->
+    <div class="form-actions">
+      <button class="btn-primary" [disabled]="saving">
+        {{ saving ? 'Guardando...' : (isEdit ? 'Actualizar' : 'Crear Registro') }}
+      </button>
+
+      <button type="button" class="btn-secondary" (click)="cancel()">
+        Cancelar
+      </button>
+    </div>
+
+  </form>
+</div>

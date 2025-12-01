@@ -1,1 +1,20 @@
-<p>login works!</p>
+<div class="login-card">
+  <h2>Gestión de Indicadores</h2>
+  <p class="subtitle">Iniciar sesión</p>
+
+  <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)">
+    
+    <div class="field">
+      <label>Correo</label>
+      <input type="email" name="email" [(ngModel)]="email" required />
+    </div>
+
+    <div class="field">
+      <label>Contraseña</label>
+      <input type="password" name="password" [(ngModel)]="password" required />
+    </div>
+
+    <button class="btn" type="submit">Ingresar</button>
+
+  </form>
+</div>

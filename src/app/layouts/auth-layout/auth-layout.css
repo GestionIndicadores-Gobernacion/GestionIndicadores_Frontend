@@ -1,0 +1,20 @@
+/* Fondo institucional y centrado del contenido */
+.auth-wrapper {
+  height: 100vh;
+  width: 100%;
+  background: #eef2f6;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 0;
+}
+
+/* Ajuste para pantallas muy bajas */
+@media (max-height: 700px) {
+  .auth-wrapper {
+    align-items: flex-start;
+    padding-top: 20px;
+  }
+}

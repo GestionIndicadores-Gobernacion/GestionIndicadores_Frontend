@@ -1,0 +1,87 @@
+/* Card limpia institucional */
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  padding: 32px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  text-align: left;
+}
+
+/* Título institucional */
+.login-card h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 0;
+  color: #003b75;
+}
+
+.subtitle {
+  margin-bottom: 24px;
+  color: #6c6f73;
+  font-size: 0.95rem;
+}
+
+/* Campos */
+.field {
+  margin-bottom: 18px;
+}
+
+.field label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+  color: #2e3a46;
+}
+
+.field input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #cfd7df;
+  background: #f9fbfc;
+  font-size: 0.95rem;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+.field input:focus {
+  outline: 2px solid #00a9e0;
+}
+
+/* Botón */
+.btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #0054a6;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.btn:hover {
+  background: #003b75;
+}
+
+/* RESPONSIVE */
+
+/* Pantallas pequeñas (celulares ultra compactos) */
+@media (max-width: 380px) {
+  .login-card {
+    padding: 22px;
+  }
+
+  .login-card h2 {
+    font-size: 1.4rem;
+  }
+
+  .btn {
+    font-size: 0.95rem;
+  }
+}

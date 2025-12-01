@@ -1,0 +1,121 @@
+.dashboard-home {
+  width: 100%;
+}
+
+.page-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #003b75;
+  margin-bottom: 24px;
+}
+
+/* KPIs */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.kpi-card {
+  padding: 20px;
+  border-radius: 12px;
+  color: white;
+  transition: transform 0.25s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-4px);
+}
+
+.kpi-label {
+  margin: 0;
+  opacity: 0.8;
+}
+
+.kpi-number {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 4px 0 0;
+}
+
+/* KPI Colors */
+/* 🔵 Azul Gobernación (elegante, serio, institucional) */
+.kpi-blue {
+  background: linear-gradient(135deg, #003b75, #005bbf);
+}
+
+/* 🟢 Verde institucional */
+.kpi-green {
+  background: linear-gradient(135deg, #28a745, #34d058);
+}
+
+/* 🟠 Naranja gov (alertas suaves y métricas positivas) */
+.kpi-orange {
+  background: linear-gradient(135deg, #ff9f43, #ff7845);
+}
+
+/* 🟣 Morado profesional (ideal para métricas técnicas) */
+.kpi-purple {
+  background: linear-gradient(135deg, #6f42c1, #8b5cec);
+}
+
+/* 🔴 Rojo institucional */
+.kpi-red {
+  background: linear-gradient(135deg, #dc3545, #f05a67);
+}
+
+/* Cards */
+.dashboard-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+  padding: 20px;
+}
+
+.card-title {
+  font-weight: 600;
+  color: #003b75;
+  margin-bottom: 14px;
+}
+
+/* Grid */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+@media (max-width: 768px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Table */
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.custom-table thead {
+  background: #eef2f6;
+}
+
+.custom-table th {
+  text-align: left;
+  padding: 10px;
+  color: #003b75;
+  font-weight: 600;
+}
+
+.custom-table td {
+  padding: 10px;
+}
+
+.custom-table tr:hover {
+  background: #f5f9ff;
+}

@@ -1,1 +1,29 @@
-<p>sidebar works!</p>
+<div class="sidebar" [class.open]="isOpen">
+  <h3 class="sidebar-title">Menú</h3>
+
+  <div class="sidebar-user" *ngIf="user">
+
+    <div class="sidebar-user-avatar">
+      {{ user.name.charAt(0) }}
+    </div>
+
+    <div class="sidebar-user-data">
+      <p class="user-name">{{ user.name }}</p>
+      <p class="user-role">{{ user.role?.name }}</p>
+    </div>
+
+  </div>
+
+
+  <nav>
+    <a routerLink="dashboard" routerLinkActive="active">Dashboard</a>
+    <a routerLink="dashboard/records" routerLinxkActive="active">Registros</a>
+    <a routerLink="dashboard/strategies" *ngIf="!isViewer" routerLinxkActive="active">Estrategias</a>
+    <a routerLink="dashboard/components" *ngIf="!isViewer" routerLinkActive="active">Componentes Estrategicos</a>
+    <a routerLink="dashboard/indicators" routerLinkActive="active" *ngIf="!isViewer">Indicadores</a>
+    <a routerLink="dashboard/users" routerLinkActive="active" *ngIf="isSuperAdmin">Usuarios</a>
+  </nav>
+</div>
+
+<!-- Overlay para móviles -->
+<div class="overlay" *ngIf="isOpen" (click)="closeSidebar()"></div>
