@@ -51,6 +51,11 @@ export class DashboardService {
     return this.http.get<any[]>(`${this.api}/stats/componentes`, { params });
   }
 
+  getIndicatorsByEstrategia() {
+    return this.http.get<any[]>(`${this.api}/stats/indicadores_por_estrategia`);
+  }
+
+
 
   // ======================
   // 📌 2. KPIs

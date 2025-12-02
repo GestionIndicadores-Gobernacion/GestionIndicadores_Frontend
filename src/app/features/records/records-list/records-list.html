@@ -14,98 +14,90 @@
     </div>
   </div>
 
-
-
-
+  <!-- BUSCADOR -->
   <div class="search-box">
-    <input type="text" placeholder="Buscar por componente, indicador o municipio..." [(ngModel)]="search"
-      (input)="applyFilter()" />
+    <input type="text"
+           placeholder="Buscar por componente, indicador o municipio..."
+           [(ngModel)]="search"
+           (input)="applyFilter()" />
   </div>
-
 
   <div *ngIf="!loading" class="table-wrapper">
 
-    <!-- MENSAJE CUANDO NO HAY REGISTROS -->
-    <div *ngIf="!loading && paginatedRecords.length === 0" class="empty-state">
+    <!-- SIN REGISTROS -->
+    <div *ngIf="paginatedRecords.length === 0" class="empty-state">
       <p>No hay registros disponibles.</p>
     </div>
-    <ng-container *ngIf="paginatedRecords.length > 0">
 
-      <table class="custom-table">
+    <!-- TABLA -->
+    <table *ngIf="paginatedRecords.length > 0" class="custom-table">
 
-        <thead>
-          <tr>
-            <th (click)="sortBy('id')" class="sortable">
-              ID
-              <span *ngIf="sortColumn === 'id'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-            </th>
+      <thead>
+        <tr>
+          <th (click)="sortBy('id')">ID</th>
 
-            <th (click)="sortBy('component')" class="sortable">
-              Componente
-              <span *ngIf="sortColumn === 'component'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-            </th>
+          <th (click)="sortBy('component')">Componente</th>
 
-            <th (click)="sortBy('indicator')" class="sortable">
-              Indicador
-              <span *ngIf="sortColumn === 'indicator'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-            </th>
+          <th (click)="sortBy('indicator')">Indicadores</th>
 
-            <th (click)="sortBy('municipio')" class="sortable">
-              Municipio
-              <span *ngIf="sortColumn === 'municipio'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-            </th>
+          <th (click)="sortBy('municipio')">Municipios</th>
 
-            <th (click)="sortBy('fecha')" class="sortable">
-              Fecha
-              <span *ngIf="sortColumn === 'fecha'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-            </th>
+          <th (click)="sortBy('fecha')">Fecha</th>
 
-            <th class="text-center">Acciones</th>
-          </tr>
-        </thead>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </thead>
 
+      <tbody>
+        <tr *ngFor="let r of paginatedRecords">
 
-        <tbody>
-          <tr *ngFor="let r of paginatedRecords">
+          <td>{{ r.id }}</td>
 
-            <td>{{ r.id }}</td>
-            <td>{{ componentMap[r.component_id ?? 0] || '—' }}</td>
-            <td>
-              <div *ngFor="let indId of getIndicatorIds(r)">
-                <strong>{{ indicatorMap[indId] || '—' }}:</strong>
-                {{ r.detalle_poblacion?.[indId] ?? '—' }}
-              </div>
-            </td>
+          <td>{{ componentMap[r.component_id] }}</td>
 
+          <!-- INDICADORES (NUEVO MODELO) -->
+          <td>
+            <div *ngFor="let name of getIndicatorNames(r)">
+              <b>{{ name }}</b>
+            </div>
+          </td>
 
-            <td>{{ r.municipio }}</td>
-            <td>{{ r.fecha | date }}</td>
+          <td>
+            {{ getMunicipios(r).join(', ') || '—' }}
+          </td>
 
-            <td class="actions-col">
+          <td>{{ r.fecha | date }}</td>
 
-              <button class="btn-outline" [routerLink]="['/dashboard/records', r.id]">
-                Ver
-              </button>
+          <td class="actions-col">
 
-              <button *ngIf="!isViewer" class="btn-outline-primary" [routerLink]="['/dashboard/records', r.id, 'edit']">
-                Editar
-              </button>
+            <button class="btn-outline"
+                    [routerLink]="['/dashboard/records', r.id]">
+              Ver
+            </button>
 
-              <button *ngIf="!isViewer" class="btn-outline-danger" (click)="deleteRecord(r.id)">
-                Eliminar
-              </button>
+            <button *ngIf="!isViewer"
+                    class="btn-outline-primary"
+                    [routerLink]="['/dashboard/records', r.id, 'edit']">
+              Editar
+            </button>
 
-            </td>
+            <button *ngIf="!isViewer"
+                    class="btn-outline-danger"
+                    (click)="deleteRecord(r.id)">
+              Eliminar
+            </button>
+          </td>
+        </tr>
+      </tbody>
 
-          </tr>
-        </tbody>
+    </table>
 
-      </table>
-    </ng-container>
-
+    <!-- PAGINACIÓN -->
     <div class="pagination-container" *ngIf="totalPages > 1">
 
-      <button class="page-btn" [disabled]="currentPage === 1" (click)="currentPage = currentPage - 1">
+      <button class="page-btn"
+              [disabled]="currentPage === 1"
+              (click)="currentPage = currentPage - 1">
         ◀
       </button>
 
@@ -113,7 +105,9 @@
         Página {{ currentPage }} de {{ totalPages }}
       </span>
 
-      <button class="page-btn" [disabled]="currentPage === totalPages" (click)="currentPage = currentPage + 1">
+      <button class="page-btn"
+              [disabled]="currentPage === totalPages"
+              (click)="currentPage = currentPage + 1">
         ▶
       </button>
 

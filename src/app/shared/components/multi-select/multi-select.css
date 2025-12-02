@@ -1,0 +1,84 @@
+.form-group {
+    margin-bottom: 14px;
+    width: 100%;
+}
+
+label {
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #003b75;
+}
+
+/* Caja principal */
+.multi-container {
+    border: 1px solid #ccd4dd;
+    background: white;
+    border-radius: 10px;
+    padding: 8px;
+    cursor: text;
+    position: relative;
+}
+
+.chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.chip {
+    background: #005bbf;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.chip .remove {
+    margin-left: 6px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.multi-container input {
+    border: none;
+    outline: none;
+    padding: 6px;
+    min-width: 130px;
+    font-size: 0.9rem;
+}
+
+/* Dropdown */
+.dropdown {
+    position: absolute;
+    background: white;
+    top: 100%;
+    left: 0;
+    right: 0;
+    border: 1px solid #ccd4dd;
+    border-radius: 10px;
+    margin-top: 4px;
+    max-height: 180px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    z-index: 2000;
+}
+
+.dropdown-item {
+    padding: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.dropdown-item:hover {
+    background: #eef2f6;
+}
+
+.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
