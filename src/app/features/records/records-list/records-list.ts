@@ -12,6 +12,7 @@ import { StrategiesService } from '../../../core/services/strategy.service';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { ToastService } from '../../../core/services/toast.service';
+import { ActivitiesService } from '../../../core/services/activities.service';
 
 @Component({
   selector: 'app-records-list',
@@ -43,12 +44,14 @@ export class RecordsListComponent {
   strategyMap: Record<number, string> = {};
   componentMap: Record<number, string> = {};
   indicatorMap: Record<number, string> = {};
+  activityMap: Record<number, string> = {};
 
   constructor(
     private recordsService: RecordsService,
     private componentsService: ComponentsService,
     private indicatorsService: IndicatorsService,
     private strategiesService: StrategiesService,
+    private activitiesService: ActivitiesService,
     private toast: ToastService
   ) {
     const userString = localStorage.getItem('user');
@@ -79,6 +82,11 @@ export class RecordsListComponent {
                 this.indicatorMap = Object.fromEntries(inds.map(i => [i.id, i.name]));
 
                 this.loadRecords();
+              }
+            });
+            this.activitiesService.getAll().subscribe({
+              next: acts => {
+                this.activityMap = Object.fromEntries(acts.map(a => [a.id, a.description]));
               }
             });
 
@@ -138,23 +146,22 @@ export class RecordsListComponent {
 
     this.filteredRecords = this.records.filter(r => {
 
+      const strategy = (this.strategyMap[r.strategy_id] || '').toLowerCase();
+      const activity = (this.activityMap[r.activity_id] || '').toLowerCase();
       const comp = (this.componentMap[r.component_id] || '').toLowerCase();
+      const muni = this.getMunicipios(r).join(', ').toLowerCase();
+      const indicators = this.getIndicatorNames(r).join(' ').toLowerCase();
 
-      const muni = this.getMunicipios(r)
-        .join(', ')
-        .toLowerCase();
-
-      const indicators = this.getIndicatorNames(r)
-        .join(' ')
-        .toLowerCase();
-
-      return comp.includes(term)
+      return strategy.includes(term)
+        || activity.includes(term)
+        || comp.includes(term)
         || muni.includes(term)
         || indicators.includes(term);
     });
 
     this.currentPage = 1;
   }
+
 
   // ================================
   // ORDENAMIENTO
@@ -180,6 +187,16 @@ export class RecordsListComponent {
         case 'component':
           valA = this.componentMap[a.component_id]?.toLowerCase() || '';
           valB = this.componentMap[b.component_id]?.toLowerCase() || '';
+          break;
+
+        case 'strategy':
+          valA = this.strategyMap[a.strategy_id]?.toLowerCase() || '';
+          valB = this.strategyMap[b.strategy_id]?.toLowerCase() || '';
+          break;
+
+        case 'activity':
+          valA = this.activityMap[a.activity_id]?.toLowerCase() || '';
+          valB = this.activityMap[b.activity_id]?.toLowerCase() || '';
           break;
 
         case 'municipio':
@@ -353,6 +370,11 @@ export class RecordsListComponent {
       new Blob([excelBuffer]),
       `registros_${new Date().toISOString().slice(0, 10)}.xlsx`
     );
+  }
+
+  getShortActivity(text: string = ''): string {
+    if (!text) return '—';
+    return text.length > 60 ? text.slice(0, 60) + '...' : text;
   }
 
 }

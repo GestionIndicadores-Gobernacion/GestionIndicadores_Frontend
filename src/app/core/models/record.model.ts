@@ -23,7 +23,7 @@ export interface RecordStatsMes {
 // 📌 NUEVA ESTRUCTURA DE DETALLE_POBLACION
 // =======================================================
 
-// Ejemplo:
+// Ejemplo de estructura:
 // detalle_poblacion = {
 //   municipios: {
 //     "Cali": {
@@ -36,7 +36,7 @@ export interface RecordStatsMes {
 // }
 
 export interface RecordIndicadoresPorMunicipio {
-  [indicador: string]: number;  // un indicador con su valor
+  [indicador: string]: number;
 }
 
 export interface RecordMunicipioDetalle {
@@ -46,20 +46,23 @@ export interface RecordMunicipioDetalle {
 export interface RecordDetallePoblacion {
   municipios: {
     [municipio: string]: RecordMunicipioDetalle;
-  }
+  };
 }
 
 
 // =======================================================
-// 📌 MODELO PRINCIPAL DEL REGISTRO
+// 📌 MODELO PRINCIPAL DEL REGISTRO (🔥 ACTUALIZADO)
 // =======================================================
 export interface RecordModel {
   id: number;
 
+  // 🔥 Nuevos campos obligatorios del nuevo diseño
   strategy_id: number;
+  activity_id: number;
   component_id: number;
 
   fecha: string;
+  description?: string | null;
 
   detalle_poblacion: RecordDetallePoblacion;
 
@@ -68,42 +71,48 @@ export interface RecordModel {
 
   // --------------------------------------------------------------------
   // 🧩 CAMPOS LEGACY (mientras migras pantallas antiguas)
+  // * estos siguen existiendo porque varias pantallas los leen
   // --------------------------------------------------------------------
-
-  // Muchos componentes viejos usan esto para mostrar chips o filtros
-  municipio?: string | null;  // ← ahora SIEMPRE vendrá como null
-
+  municipio?: string | null;  
   indicator_id?: number | null;
   tipo_poblacion?: string[]; 
   valor?: string | null;
 }
 
+
 // =======================================================
-// ✏ Para crear
+// ✏ PARA CREAR (🔥 activity + description añadidos)
 // =======================================================
 export interface RecordCreateRequest {
   strategy_id: number;
+  activity_id: number;
   component_id: number;
+
   fecha: string;
+  description?: string | null;
+
   detalle_poblacion: RecordDetallePoblacion;
+
   evidencia_url: string | null;
 }
 
+
 // =======================================================
-// ✏ Para actualizar
+// ✏ PARA ACTUALIZAR
 // =======================================================
 export interface RecordUpdateRequest extends RecordCreateRequest {}
 
 
 // =======================================================
-// 🧩 Legacy (aún usados en RecordsService o filtros viejos)
+// 🧩 LEGACY – AÚN EN USO EN ALGUNOS FILTROS
 // =======================================================
 export interface RecordFilterParams {
   search?: string;
+
   component_id?: number | null;
   indicator_id?: number | null;
 
-  // ahora NO filtra por municipio porque no existe como columna
+  // municipio legacy (siempre null en el nuevo modelo)
   municipio?: string | null;
 
   fecha_from?: string | null;
