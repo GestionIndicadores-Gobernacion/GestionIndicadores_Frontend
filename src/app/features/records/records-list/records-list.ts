@@ -12,6 +12,7 @@ import { StrategiesService } from '../../../core/services/strategy.service';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { ToastService } from '../../../core/services/toast.service';
+import { ActivitiesService } from '../../../core/services/activities.service';
 
 @Component({
   selector: 'app-records-list',
@@ -27,7 +28,7 @@ export class RecordsListComponent {
   pageSize = 10;
 
   // ORDENAMIENTO
-  sortColumn: keyof RecordModel | 'component' | 'indicator' | '' = '';
+  sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
 
   loading = true;
@@ -43,12 +44,14 @@ export class RecordsListComponent {
   strategyMap: Record<number, string> = {};
   componentMap: Record<number, string> = {};
   indicatorMap: Record<number, string> = {};
+  activityMap: Record<number, string> = {};
 
   constructor(
     private recordsService: RecordsService,
     private componentsService: ComponentsService,
     private indicatorsService: IndicatorsService,
     private strategiesService: StrategiesService,
+    private activitiesService: ActivitiesService,
     private toast: ToastService
   ) {
     const userString = localStorage.getItem('user');
@@ -62,7 +65,9 @@ export class RecordsListComponent {
     this.loadMaps();
   }
 
-  // 1️⃣ Cargar Strategy → Component → Indicator → Records
+  // ================================
+  // Cargar Strategy → Component → Indicators → Records
+  // ================================
   loadMaps() {
     this.strategiesService.getAll().subscribe({
       next: strategies => {
@@ -79,6 +84,11 @@ export class RecordsListComponent {
                 this.loadRecords();
               }
             });
+            this.activitiesService.getAll().subscribe({
+              next: acts => {
+                this.activityMap = Object.fromEntries(acts.map(a => [a.id, a.description]));
+              }
+            });
 
           }
         });
@@ -86,11 +96,12 @@ export class RecordsListComponent {
     });
   }
 
-  // 2️⃣ Cargar registros y normalizar el tipo_poblacion
+  // ================================
+  // Cargar registros
+  // ================================
   loadRecords() {
     this.recordsService.getAll().subscribe({
       next: res => {
-
         this.records = res;
         this.filteredRecords = [...this.records];
         this.loading = false;
@@ -101,54 +112,111 @@ export class RecordsListComponent {
     });
   }
 
-  // 3️⃣ Filtro básico
+  // ================================
+  // NUEVO: Obtener Municipios
+  // ================================
+  getMunicipios(r: RecordModel): string[] {
+    return r.detalle_poblacion?.municipios
+      ? Object.keys(r.detalle_poblacion.municipios)
+      : [];
+  }
+
+  // ================================
+  // NUEVO: Obtener nombres de indicadores
+  // ================================
+  getIndicatorNames(r: RecordModel): string[] {
+    const nombres = new Set<string>();
+
+    if (!r.detalle_poblacion?.municipios) return [];
+
+    Object.values(r.detalle_poblacion.municipios).forEach((mun: any) => {
+      Object.keys(mun.indicadores || {}).forEach(indName => {
+        nombres.add(indName);
+      });
+    });
+
+    return [...nombres].sort();
+  }
+
+  // ================================
+  // FILTRO
+  // ================================
   applyFilter() {
-    const term = this.search.toLowerCase().trim();
+    const term = this.search.trim().toLowerCase();
 
     this.filteredRecords = this.records.filter(r => {
-      const comp = (this.componentMap[r.component_id ?? 0] || '').toLowerCase();
-      const muni = r.municipio.toLowerCase();
-      const indicadoresTexto = this.getIndicatorIds(r)
-        .map(id => (this.indicatorMap[id] || '').toLowerCase())
-        .join(' ');
 
-      return comp.includes(term) || muni.includes(term) || indicadoresTexto.includes(term);
+      const strategy = (this.strategyMap[r.strategy_id] || '').toLowerCase();
+      const activity = (this.activityMap[r.activity_id] || '').toLowerCase();
+      const comp = (this.componentMap[r.component_id] || '').toLowerCase();
+      const muni = this.getMunicipios(r).join(', ').toLowerCase();
+      const indicators = this.getIndicatorNames(r).join(' ').toLowerCase();
+
+      return strategy.includes(term)
+        || activity.includes(term)
+        || comp.includes(term)
+        || muni.includes(term)
+        || indicators.includes(term);
     });
+
+    this.currentPage = 1;
   }
 
 
-  // 4️⃣ Ordenamiento
+  // ================================
+  // ORDENAMIENTO
+  // ================================
+  sortBy(column: string) {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+  }
+
   get sortedRecords(): RecordModel[] {
     if (!this.sortColumn) return this.filteredRecords;
 
-    return [...this.filteredRecords].sort((a: any, b: any) => {
-
+    return [...this.filteredRecords].sort((a, b) => {
       let valA: any = '';
       let valB: any = '';
 
-      if (this.sortColumn === 'component') {
-        valA = (this.componentMap[a.component_id ?? 0] || '').toLowerCase();
-        valB = (this.componentMap[b.component_id ?? 0] || '').toLowerCase();
-      }
-      else if (this.sortColumn === 'indicator') {
-        const indA = this.getIndicatorIds(a)
-          .map(id => (this.indicatorMap[id] || ''))
-          .sort()[0] || '';
-        const indB = this.getIndicatorIds(b)
-          .map(id => (this.indicatorMap[id] || ''))
-          .sort()[0] || '';
+      switch (this.sortColumn) {
 
-        valA = indA.toLowerCase();
-        valB = indB.toLowerCase();
-      }
+        case 'component':
+          valA = this.componentMap[a.component_id]?.toLowerCase() || '';
+          valB = this.componentMap[b.component_id]?.toLowerCase() || '';
+          break;
 
-      else if (this.sortColumn === 'fecha') {
-        valA = new Date(a.fecha).getTime();
-        valB = new Date(b.fecha).getTime();
-      }
-      else {
-        valA = (a[this.sortColumn] ?? '').toString().toLowerCase();
-        valB = (b[this.sortColumn] ?? '').toString().toLowerCase();
+        case 'strategy':
+          valA = this.strategyMap[a.strategy_id]?.toLowerCase() || '';
+          valB = this.strategyMap[b.strategy_id]?.toLowerCase() || '';
+          break;
+
+        case 'activity':
+          valA = this.activityMap[a.activity_id]?.toLowerCase() || '';
+          valB = this.activityMap[b.activity_id]?.toLowerCase() || '';
+          break;
+
+        case 'municipio':
+          valA = this.getMunicipios(a).join(', ').toLowerCase();
+          valB = this.getMunicipios(b).join(', ').toLowerCase();
+          break;
+
+        case 'indicator':
+          valA = this.getIndicatorNames(a)[0] || '';
+          valB = this.getIndicatorNames(b)[0] || '';
+          break;
+
+        case 'fecha':
+          valA = new Date(a.fecha).getTime();
+          valB = new Date(b.fecha).getTime();
+          break;
+
+        default:
+          valA = (a as any)[this.sortColumn] ?? '';
+          valB = (b as any)[this.sortColumn] ?? '';
       }
 
       if (valA < valB) return this.sortDirection === 'asc' ? -1 : 1;
@@ -166,26 +234,14 @@ export class RecordsListComponent {
     return Math.ceil(this.sortedRecords.length / this.pageSize);
   }
 
-  sortBy(column: any) {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
-    }
-  }
-
+  // ================================
+  // ELIMINAR
+  // ================================
   deleteRecord(id: number) {
-    this.toast
-      .confirm(
-        "¿Eliminar registro?",
-        "Esta acción no se puede deshacer."
-      )
+    this.toast.confirm("¿Eliminar registro?", "Esta acción no se puede deshacer.")
       .then(result => {
         if (result.isConfirmed) {
-
           this.loading = true;
-
           this.recordsService.delete(id).subscribe({
             next: () => {
               this.toast.success("Registro eliminado correctamente");
@@ -196,21 +252,16 @@ export class RecordsListComponent {
               this.toast.error("Error eliminando el registro");
             }
           });
-
         }
       });
   }
 
-
-  getIndicatorIds(record: RecordModel): number[] {
-    return Object.keys(record.detalle_poblacion || {}).map(id => Number(id));
-  }
-
-  // Exportar excel
+  // ================================
+  // EXPORTAR EXCEL (ya compatible con JSON)
+  // ================================
   exportToExcel() {
     const workbook = XLSX.utils.book_new();
 
-    // Agrupar registros por estrategia
     const registrosPorEstrategia: Record<number, RecordModel[]> = {};
     for (const r of this.records) {
       const stratId = r.strategy_id ?? 0;
@@ -226,7 +277,6 @@ export class RecordsListComponent {
       let sheetRows: any[][] = [];
       let currentRow = 0;
 
-      // Agrupar por componente
       const registrosPorComponente: Record<number, RecordModel[]> = {};
       for (const r of registros) {
         const compId = r.component_id ?? 0;
@@ -234,57 +284,54 @@ export class RecordsListComponent {
         registrosPorComponente[compId].push(r);
       }
 
-      // Construir sección por componente
       Object.keys(registrosPorComponente).forEach(compKey => {
         const compId = Number(compKey);
         const registrosComp = registrosPorComponente[compId];
         const nombreComponente = this.componentMap[compId] || "Componente";
 
-        // Título fusionado
         sheetRows[currentRow] = [];
         sheetRows[currentRow][0] = `Componente: ${nombreComponente}`;
         currentRow++;
 
-        // ==== NUEVOS HEADERS SIN ESTRATEGIA NI COMPONENTE ====
         const headersBase = [
           "Municipio",
           "Fecha",
-          "Fecha registro",
           "Evidencia",
         ];
 
-        // Indicadores del componente
-        const indicatorIds = new Set<number>();
+        const indicadorNombresSet = new Set<string>();
+
         registrosComp.forEach(r => {
-          Object.keys(r.detalle_poblacion || {}).forEach(id => {
-            indicatorIds.add(Number(id));
+          const municipios = r.detalle_poblacion?.municipios || {};
+          Object.values(municipios).forEach((mun: any) => {
+            Object.keys(mun.indicadores || {}).forEach(indName => {
+              indicadorNombresSet.add(indName);
+            });
           });
         });
 
-        const sortedIndicators = [...indicatorIds]
-          .map(id => this.indicatorMap[id] || `Indicador ${id}`)
-          .sort();
-
-        const headers = [...headersBase, ...sortedIndicators];
-
+        const sortedIndicatorNames = [...indicadorNombresSet].sort();
+        const headers = [...headersBase, ...sortedIndicatorNames];
         sheetRows[currentRow++] = headers;
 
-        // Filas de datos SIN ESTRATEGIA NI COMPONENTE
         registrosComp.forEach(r => {
-          const fila = [
-            r.municipio,
-            r.fecha,
-            r.evidencia_url ?? "—",
-            r.fecha_registro ?? "—",
-          ];
+          const municipios = r.detalle_poblacion?.municipios || {};
 
-          for (const indName of sortedIndicators) {
-            const id = Object.keys(this.indicatorMap)
-              .find(k => this.indicatorMap[Number(k)] === indName);
-            fila.push(id ? String(r.detalle_poblacion?.[Number(id)] ?? "—") : "—");
-          }
+          Object.keys(municipios).forEach(nombreMuni => {
+            const detMuni = municipios[nombreMuni];
 
-          sheetRows[currentRow++] = fila;
+            const fila = [
+              nombreMuni,
+              r.fecha,
+              r.evidencia_url ?? "—",
+            ];
+
+            for (const indName of sortedIndicatorNames) {
+              fila.push(String(detMuni.indicadores[indName] ?? "—"));
+            }
+
+            sheetRows[currentRow++] = fila;
+          });
         });
 
         sheetRows[currentRow++] = [];
@@ -294,12 +341,9 @@ export class RecordsListComponent {
 
       const maxCols = Math.max(...sheetRows.map(r => r.length));
       worksheet["!cols"] = Array.from({ length: maxCols }).map((_, i) => ({
-        wch: Math.max(
-          ...sheetRows.map(r => (r[i] ? r[i].toString().length : 10))
-        ) + 2
+        wch: Math.max(...sheetRows.map(r => (r[i] ? r[i].toString().length : 10))) + 2
       }));
 
-      // Fusionar títulos
       sheetRows.forEach((row, index) => {
         if (row[0]?.toString().startsWith("Componente: ")) {
           worksheet["!merges"] = worksheet["!merges"] || [];
@@ -322,7 +366,15 @@ export class RecordsListComponent {
       type: 'array'
     });
 
-    saveAs(new Blob([excelBuffer]), `r1egistros-estrategias_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    saveAs(
+      new Blob([excelBuffer]),
+      `registros_${new Date().toISOString().slice(0, 10)}.xlsx`
+    );
+  }
+
+  getShortActivity(text: string = ''): string {
+    if (!text) return '—';
+    return text.length > 60 ? text.slice(0, 60) + '...' : text;
   }
 
 }

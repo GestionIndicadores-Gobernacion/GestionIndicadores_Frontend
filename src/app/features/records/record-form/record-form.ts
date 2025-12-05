@@ -5,7 +5,12 @@ import { FormsModule } from '@angular/forms';
 
 import { ComponentModel } from '../../../core/models/component.model';
 import { IndicatorModel } from '../../../core/models/indicator.model';
-import { RecordCreateRequest, RecordDetallePoblacion } from '../../../core/models/record.model';
+
+import {
+  RecordCreateRequest,
+  RecordDetallePoblacion,
+  RecordMunicipioDetalle
+} from '../../../core/models/record.model';
 
 import { ComponentsService } from '../../../core/services/components.service';
 import { IndicatorsService } from '../../../core/services/indicators.service';
@@ -15,42 +20,50 @@ import { StrategiesService } from '../../../core/services/strategy.service';
 import { MUNICIPIOS_VALLE } from '../../../core/data/municipios';
 import { ToastService } from '../../../core/services/toast.service';
 
+// ⭐ Nuevo componente reutilizable
+import { MultiSelectComponent } from '../../../shared/components/multi-select/multi-select';
+import { ActivityModel } from '../../../core/models/activity.model';
+import { ActivitiesService } from '../../../core/services/activities.service';
+
 @Component({
   selector: 'app-record-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, MultiSelectComponent],
   templateUrl: './record-form.html',
   styleUrl: './record-form.css',
 })
 export class RecordFormComponent {
 
   municipios = MUNICIPIOS_VALLE;
+  selectedMunicipios: string[] = [];
 
-  today: string = ''; 
+  today = '';
   loading = false;
   saving = false;
   isEdit = false;
   id?: number;
-
   attemptedSubmit = false;
 
   strategies: any[] = [];
+  activities: ActivityModel[] = [];
   components: ComponentModel[] = [];
   allComponents: ComponentModel[] = [];
   indicators: IndicatorModel[] = [];
   allIndicators: IndicatorModel[] = [];
+  allActivities: ActivityModel[] = [];
 
-  // formulario
   form = {
     strategy_id: null as number | null,
+    activity_id: null as number | null,
     component_id: null as number | null,
-    municipio: '',
     fecha: '',
-    evidencia_url: '',
+    description: '',
+    evidencia_url: ''
   };
 
-  // detalle poblacional dinámico
-  detallePoblacion: RecordDetallePoblacion = {};
+  detallePoblacion: RecordDetallePoblacion = {
+    municipios: {}
+  };
 
   constructor(
     private route: ActivatedRoute,
@@ -59,11 +72,11 @@ export class RecordFormComponent {
     private componentsService: ComponentsService,
     private indicatorsService: IndicatorsService,
     private strategiesService: StrategiesService,
+    private activitiesService: ActivitiesService,
     private toast: ToastService
   ) { }
 
   ngOnInit(): void {
-
     this.today = new Date().toISOString().split('T')[0];
 
     this.id = Number(this.route.snapshot.paramMap.get('id'));
@@ -72,6 +85,7 @@ export class RecordFormComponent {
     if (this.isEdit) this.loading = true;
 
     this.loadStrategies();
+    this.loadActivities();
     this.loadComponents();
     this.loadIndicators();
 
@@ -85,38 +99,47 @@ export class RecordFormComponent {
     });
   }
 
+  loadActivities() {
+    this.activitiesService.getAll().subscribe({
+      next: res => {
+        this.allActivities = res;   // guardamos todas
+        this.activities = [];       // solo las filtradas por estrategia
+      },
+      error: () => this.toast.error("Error cargando actividades"),
+    });
+  }
+
+
   loadComponents() {
     this.componentsService.getAll().subscribe({
       next: res => {
         this.allComponents = res;
-        if (this.form.strategy_id) this.onStrategyChange();
-      },
-      error: () => this.toast.error("Error cargando componentes"),
+        if (this.form.activity_id) this.onActivityChange(false);
+      }
     });
   }
 
   loadIndicators() {
     this.indicatorsService.getAll().subscribe({
       next: res => this.allIndicators = res,
-      error: () => this.toast.error("Error cargando indicadores"),
     });
   }
 
-  // ==========================================================
-  // Cargar registro (edición)
-  // ==========================================================
   loadRecord() {
     this.recordsService.getById(this.id!).subscribe({
       next: r => {
-        this.form.strategy_id = r.strategy_id ?? null;
-        this.form.component_id = r.component_id;
-        this.form.municipio = r.municipio;
+        this.form.strategy_id = r.strategy_id;
+        this.form.activity_id = r.activity_id ?? null;
+        this.form.component_id = r.component_id ?? null;
         this.form.fecha = r.fecha;
+        this.form.description = r.description ?? '';
         this.form.evidencia_url = r.evidencia_url ?? '';
 
-        this.detallePoblacion = r.detalle_poblacion ?? {};
+        this.detallePoblacion = r.detalle_poblacion ?? { municipios: {} };
+        this.selectedMunicipios = Object.keys(this.detallePoblacion.municipios);
 
         this.onStrategyChange(false);
+        this.onActivityChange(false);
         this.onComponentChange(false);
 
         this.loading = false;
@@ -128,91 +151,119 @@ export class RecordFormComponent {
     });
   }
 
-  // ==========================================================
-  // Estrategia seleccionada
-  // ==========================================================
   onStrategyChange(reset: boolean = true) {
-    const strategyId = this.form.strategy_id;
-
-    if (!strategyId) {
+    if (!this.form.strategy_id) {
+      this.activities = [];
+      this.form.activity_id = null;
       this.components = [];
-      this.form.component_id = null;
       this.indicators = [];
       return;
     }
 
-    this.components = this.allComponents.filter(c => c.strategy_id === strategyId);
+    // 🔥 CORRECTO: filtrar desde TODAS las actividades
+    this.activities = this.allActivities.filter(
+      a => a.strategy_id === this.form.strategy_id
+    );
+
+    if (reset) {
+      this.form.activity_id = null;
+      this.form.component_id = null;
+      this.indicators = [];
+      this.selectedMunicipios = [];
+      this.detallePoblacion = { municipios: {} };
+    }
+  }
+
+  onActivityChange(reset: boolean = true) {
+    if (!this.form.activity_id) {
+      this.components = [];
+      this.indicators = [];
+      return;
+    }
+
+    this.components = this.allComponents.filter(
+      c => c.strategy_id === this.form.strategy_id
+    );
 
     if (reset) {
       this.form.component_id = null;
       this.indicators = [];
-      this.detallePoblacion = {};
+      this.selectedMunicipios = [];
+      this.detallePoblacion = { municipios: {} };
     }
   }
 
-  // ==========================================================
-  // Componente seleccionado
-  // ==========================================================
   onComponentChange(reset: boolean = true) {
-    const compId = this.form.component_id;
-
-    if (!compId) {
+    if (!this.form.component_id) {
       this.indicators = [];
-      this.detallePoblacion = {};
       return;
     }
 
-    this.indicators = this.allIndicators.filter(i => i.component_id === compId);
+    this.indicators = this.allIndicators.filter(
+      i => i.component_id === this.form.component_id
+    );
 
     if (reset) {
-      this.detallePoblacion = {};
-      this.indicators.forEach(ind => {
-        this.detallePoblacion[ind.id] = 0;
-      });
+      this.selectedMunicipios = [];
+      this.detallePoblacion = { municipios: {} };
     }
   }
 
-  // ==========================================================
-  // Payload final
-  // ==========================================================
+  onMunicipiosChange() {
+    const nuevos = this.selectedMunicipios;
+
+    nuevos.forEach(m => {
+      if (!this.detallePoblacion.municipios[m]) {
+        const detalle: RecordMunicipioDetalle = {
+          indicadores: {}
+        };
+
+        this.indicators.forEach(ind => {
+          detalle.indicadores[ind.name] = 0;
+        });
+
+        this.detallePoblacion.municipios[m] = detalle;
+      }
+    });
+
+    Object.keys(this.detallePoblacion.municipios).forEach(m => {
+      if (!nuevos.includes(m)) delete this.detallePoblacion.municipios[m];
+    });
+  }
+
   buildPayload(): RecordCreateRequest {
     return {
       strategy_id: this.form.strategy_id!,
+      activity_id: this.form.activity_id!,
       component_id: this.form.component_id!,
-      municipio: this.form.municipio.trim(),
       fecha: this.form.fecha,
+      description: this.form.description || null,
       detalle_poblacion: this.detallePoblacion,
       evidencia_url: this.form.evidencia_url || null,
     };
   }
 
-  // ==========================================================
-  // Guardar
-  // ==========================================================
   save() {
     this.attemptedSubmit = true;
 
-    if (!this.form.strategy_id || !this.form.component_id || !this.form.municipio || !this.form.fecha) {
+    if (!this.form.strategy_id || !this.form.activity_id || !this.form.component_id || !this.form.fecha) {
       this.toast.warning("Por favor completa los campos obligatorios.");
+      return;
+    }
+
+    if (this.selectedMunicipios.length === 0) {
+      this.toast.warning("Debes seleccionar al menos un municipio.");
       return;
     }
 
     const payload = this.buildPayload();
 
-    // Confirmación si es edición
     if (this.isEdit) {
-      this.toast.confirm(
-        "¿Guardar cambios?",
-        "Se actualizará el registro."
-      ).then(result => {
-        if (result.isConfirmed) {
-          this.sendRequest(payload);
-        }
-      });
-      return;
+      this.toast.confirm("¿Guardar cambios?", "Se actualizará el registro.")
+        .then(res => res.isConfirmed && this.sendRequest(payload));
+    } else {
+      this.sendRequest(payload);
     }
-
-    this.sendRequest(payload);
   }
 
   private sendRequest(payload: RecordCreateRequest) {
@@ -225,28 +276,11 @@ export class RecordFormComponent {
     obs.subscribe({
       next: () => {
         this.saving = false;
-
-        this.toast.success(
-          this.isEdit
-            ? "Registro actualizado con éxito"
-            : "Registro creado correctamente"
-        );
-
+        this.toast.success(this.isEdit ? "Registro actualizado" : "Registro creado correctamente");
         this.router.navigate(['/dashboard/records']);
       },
-      error: () => {
-        this.saving = false;
-      }
+      error: () => this.saving = false
     });
-  }
-
-  get datosGeneralesCompletos() {
-    return Boolean(
-      this.form.municipio &&
-      this.form.fecha &&
-      this.form.strategy_id &&
-      this.form.component_id
-    );
   }
 
   cancel() {

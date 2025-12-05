@@ -1,0 +1,31 @@
+<div class="form-group" [class.disabled]="disabled">
+  <label *ngIf="label">{{ label }}</label>
+
+  <div class="multi-container" (click)="open($event)">
+    <!-- chips -->
+    <div class="chips">
+      <span class="chip" *ngFor="let s of selected">
+        {{ s }}
+        <button class="remove" (click)="remove(s); $event.stopPropagation()">×</button>
+      </span>
+
+      <!-- buscador -->
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (input)="filter()"
+        [placeholder]="placeholder"
+        [disabled]="disabled"
+      />
+    </div>
+
+    <!-- dropdown -->
+    <div class="dropdown" *ngIf="isOpen && filteredItems.length > 0">
+      <div class="dropdown-item"
+           *ngFor="let item of filteredItems"
+           (click)="select(item); $event.stopPropagation()">
+        {{ item }}
+      </div>
+    </div>
+  </div>
+</div>

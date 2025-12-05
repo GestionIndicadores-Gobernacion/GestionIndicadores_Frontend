@@ -107,18 +107,6 @@
   background: #f8fbff;
 }
 
-/* ============================
-   ACCIONES – Botones modernos
-   ============================ */
-.actions-col {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-start;
-  align-items: center;
-  white-space: nowrap;
-  padding-right: 12px;
-}
-
 
 /* Botón gris (VER) */
 .btn-outline {

@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { adminGuard } from '../../core/guards/admin-guard';
 
 export const DASHBOARD_LAYOUT_ROUTES: Routes = [
   {
@@ -20,6 +19,12 @@ export const DASHBOARD_LAYOUT_ROUTES: Routes = [
     loadChildren: () =>
       import('../../features/strategy/strategy.routes')
         .then(m => m.STRATEGY_ROUTES),
+  },
+  {
+    path: 'activities',
+    loadChildren: () =>
+      import('../../features/activities/activities.routes')
+        .then(m => m.ACTIVITIES_ROUTES),
   },
   {
     path: 'indicators',
