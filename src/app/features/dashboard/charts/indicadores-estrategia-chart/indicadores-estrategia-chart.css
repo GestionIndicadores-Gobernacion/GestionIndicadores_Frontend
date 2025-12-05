@@ -1,10 +1,13 @@
 .chart-wrapper {
-  padding: 10px;
+  background: #fff;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .empty {
   text-align: center;
-  padding: 20px;
-  font-size: 14px;
-  color: #7f8c8d;
+  padding: 28px;
+  font-size: 15px;
+  color: #666;
 }

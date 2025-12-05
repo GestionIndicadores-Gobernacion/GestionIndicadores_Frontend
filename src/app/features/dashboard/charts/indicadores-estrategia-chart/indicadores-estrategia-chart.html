@@ -1,7 +1,9 @@
 <div class="chart-wrapper" *ngIf="data && data.length > 0">
-  <apx-chart 
+  <apx-chart
     [series]="chartOptions.series"
     [chart]="chartOptions.chart"
+    [plotOptions]="chartOptions.plotOptions"
+    [dataLabels]="chartOptions.dataLabels"
     [xaxis]="chartOptions.xaxis"
     [colors]="chartOptions.colors"
     [title]="chartOptions.title">

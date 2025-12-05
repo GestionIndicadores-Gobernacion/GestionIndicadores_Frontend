@@ -17,10 +17,8 @@ export class IndicadoresEstrategiaChartComponent {
 
   chartOptions: any = {
     series: [],
-    chart: { type: 'bar', height: 330 },
-    xaxis: { categories: [] },
-    colors: ['#8e44ad'],
-    title: { text: 'Indicadores por Estrategia' }
+    chart: { type: 'bar', height: 380 },
+    xaxis: { categories: [] }
   };
 
   ngOnChanges() {
@@ -31,13 +29,41 @@ export class IndicadoresEstrategiaChartComponent {
         name: 'Indicadores distintos',
         data: this.data.map(item => item.total_indicadores),
       }],
-      chart: { type: 'bar', height: 330 },
+      chart: { type: 'bar', height: 380 },
+      plotOptions: {
+        bar: {
+          horizontal: true,
+          distributed: true,
+          borderRadius: 6,
+          dataLabels: {
+            position: 'right'
+          }
+        }
+      },
+      dataLabels: {
+        enabled: true,
+        style: {
+          fontSize: '12px',
+          fontWeight: 'bold'
+        }
+      },
       xaxis: {
         categories: this.data.map(item => item.estrategia),
-        labels: { rotate: -35 }
       },
-      colors: ['#8e44ad'],
-      title: { text: 'Indicadores distintos por Estrategia' }
+      colors: [
+        '#8e44ad',
+        '#2ecc71',
+        '#3498db',
+        '#e67e22',
+        '#e74c3c',
+        '#1abc9c',
+        '#f1c40f',
+        '#9b59b6'
+      ],
+      title: {
+        text: 'Indicadores distintos por Estrategia'
+      }
     };
+
   }
 }
