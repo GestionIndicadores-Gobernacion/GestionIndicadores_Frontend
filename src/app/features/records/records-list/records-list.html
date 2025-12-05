@@ -1,7 +1,7 @@
 <div class="records-container">
 
   <div class="records-header">
-    <h2>Gestión de Registros</h2>
+    <h2>Gestión de Reportes</h2>
 
     <div class="header-actions">
       <button class="btn-export" (click)="exportToExcel()">
@@ -9,7 +9,7 @@
       </button>
 
       <button *ngIf="!isViewer" class="btn-primary" routerLink="/dashboard/records/create">
-        Crear Registro
+        Crear Reporte
       </button>
     </div>
   </div>
@@ -22,9 +22,9 @@
 
   <div *ngIf="!loading" class="table-wrapper">
 
-    <!-- SIN REGISTROS -->
+    <!-- SIN ReporteS -->
     <div *ngIf="paginatedRecords.length === 0" class="empty-state">
-      <p>No hay registros disponibles.</p>
+      <p>No hay Reportes disponibles.</p>
     </div>
 
     <!-- TABLA -->

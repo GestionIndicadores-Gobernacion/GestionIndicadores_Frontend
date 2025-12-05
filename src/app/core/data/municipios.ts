@@ -1,6 +1,7 @@
 // src/app/core/data/municipios.ts
 
 export const MUNICIPIOS_VALLE = [
+  "Todo el Valle del Cauca",
   "Alcalá",
   "Andalucía",
   "Ansermanuevo",
@@ -42,5 +43,5 @@ export const MUNICIPIOS_VALLE = [
   "Vijes",
   "Yotoco",
   "Yumbo",
-  "Zarzal"
+  "Zarzal",
 ];

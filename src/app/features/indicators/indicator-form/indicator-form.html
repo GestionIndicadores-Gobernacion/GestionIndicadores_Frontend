@@ -24,13 +24,8 @@
         <div class="col-lg-3 col-md-6">
           <label class="form-label">Estrategia</label>
 
-          <select
-            class="form-select"
-            name="strategy"
-            [(ngModel)]="selectedStrategy"
-            (change)="filterComponents()"
-            [class.invalid]="!selectedStrategy && attemptedSubmit"
-            required>
+          <select class="form-select" name="strategy" [(ngModel)]="selectedStrategy" (change)="filterComponents()"
+            [class.invalid]="!selectedStrategy && attemptedSubmit" required>
 
             <option value="" disabled>Seleccionar estrategia...</option>
             <option *ngFor="let s of strategies" [value]="s.id">{{ s.name }}</option>
@@ -45,13 +40,8 @@
         <div class="col-lg-3 col-md-6">
           <label class="form-label">Componente</label>
 
-          <select
-            class="form-select"
-            name="component_id"
-            [(ngModel)]="form.component_id"
-            [disabled]="!selectedStrategy"
-            [class.invalid]="!form.component_id && attemptedSubmit"
-            required>
+          <select class="form-select" name="component_id" [(ngModel)]="form.component_id" [disabled]="!selectedStrategy"
+            [class.invalid]="!form.component_id && attemptedSubmit" required>
 
             <option value="" disabled>Seleccionar componente...</option>
             <option *ngFor="let c of filteredComponents" [value]="c.id">{{ c.name }}</option>
@@ -66,12 +56,7 @@
         <div class="col-lg-4 col-md-6">
           <label class="form-label">Nombre</label>
 
-          <input
-            class="form-control"
-            type="text"
-            name="name"
-            [(ngModel)]="form.name"
-            required
+          <input class="form-control" type="text" name="name" [(ngModel)]="form.name" required
             [disabled]="!form.component_id"
             [class.invalid]="(!form.name || form.name.trim().length < 3) && attemptedSubmit">
 
@@ -81,17 +66,27 @@
           </div>
         </div>
 
+        <!-- META -->
+        <div class="col-lg-3 col-md-6">
+          <label class="form-label">Meta (valor objetivo)</label>
+
+          <input type="number" class="form-control" name="meta" [(ngModel)]="form.meta" min="1" required
+            [disabled]="!form.component_id" [class.invalid]="attemptedSubmit && (!form.meta || form.meta <= 0)"
+            placeholder="Ej: 100">
+
+          <!-- Error -->
+          <div class="error-message" *ngIf="attemptedSubmit && (!form.meta || form.meta <= 0)">
+            La meta es obligatoria y debe ser mayor a cero.
+          </div>
+        </div>
+
+
         <!-- DATA TYPE -->
         <div class="col-lg-3 col-md-6">
           <label class="form-label">Tipo de dato</label>
 
-          <select
-            class="form-select"
-            name="data_type"
-            [(ngModel)]="form.data_type"
-            [disabled]="!form.component_id"
-            [class.invalid]="!form.data_type && attemptedSubmit"
-            required>
+          <select class="form-select" name="data_type" [(ngModel)]="form.data_type" [disabled]="!form.component_id"
+            [class.invalid]="!form.data_type && attemptedSubmit" required>
 
             <option value="">Seleccione tipo de dato...</option>
             <option value="integer">Entero</option>
@@ -112,11 +107,7 @@
       <div class="col-lg-2 mt-4 col-md-6 d-flex flex-column">
         <label class="form-label mb-1">Activo</label>
         <label class="switch">
-          <input
-            type="checkbox"
-            name="active"
-            [(ngModel)]="form.active"
-            [disabled]="!form.component_id">
+          <input type="checkbox" name="active" [(ngModel)]="form.active" [disabled]="!form.component_id">
           <span class="slider"></span>
         </label>
       </div>
@@ -128,22 +119,15 @@
       <h3 class="section-title">Descripción</h3>
 
       <div class="mb-3">
-        <textarea
-          rows="3"
-          class="form-control"
-          name="description"
-          [(ngModel)]="form.description"
-          placeholder="Descripción del indicador (opcional)"
-          [disabled]="!form.component_id">
+        <textarea rows="3" class="form-control" name="description" [(ngModel)]="form.description"
+          placeholder="Descripción del indicador (opcional)" [disabled]="!form.component_id">
         </textarea>
       </div>
     </div>
 
     <!-- BOTONES -->
     <div class="form-actions">
-      <button
-        class="btn-primary"
-        [disabled]="saving">
+      <button class="btn-primary" [disabled]="saving">
         {{ saving ? "Guardando..." : (isEdit ? "Actualizar Indicador" : "Crear Indicador") }}
       </button>
 

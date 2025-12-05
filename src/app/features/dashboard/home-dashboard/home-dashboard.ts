@@ -49,7 +49,7 @@ export class HomeDashboardComponent implements OnInit {
   };
 
   kpiCards = [
-    { label: 'Total Registros', key: 'totalRegistros', colorClass: 'kpi-blue' },
+    { label: 'Total Reportes', key: 'totalRegistros', colorClass: 'kpi-blue' },
     { label: 'Registros del Mes', key: 'registrosMes', colorClass: 'kpi-green' },
     { label: 'Municipios Activos', key: 'municipiosActivos', colorClass: 'kpi-orange' },
     { label: 'Indicadores Activos', key: 'indicadoresActivos', colorClass: 'kpi-purple' },

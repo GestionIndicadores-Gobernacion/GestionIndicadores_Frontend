@@ -1,7 +1,7 @@
 <div class="record-form-container">
 
   <h2 class="page-title">
-    {{ isEdit ? 'Editar Registro' : 'Crear Registro' }}
+    {{ isEdit ? 'Editar reporte' : 'Crear reporte' }}
   </h2>
 
   <!-- LOADING -->
@@ -12,10 +12,10 @@
   <form *ngIf="!loading" (ngSubmit)="save()">
 
     <!-- =====================================================
-         📌 SECCIÓN 1 — DATOS GENERALES
+         📌 Sección 1 — Datos generales
     ====================================================== -->
     <div class="form-section">
-      <h3 class="section-title">Datos del registro</h3>
+      <h3 class="section-title">Datos generales</h3>
 
       <div class="form-grid">
 
@@ -23,11 +23,7 @@
         <div class="form-group">
           <label>Estrategia</label>
 
-          <select 
-            [(ngModel)]="form.strategy_id" 
-            name="strategy_id" 
-            required
-            (change)="onStrategyChange()"
+          <select [(ngModel)]="form.strategy_id" name="strategy_id" required (change)="onStrategyChange()"
             [class.invalid]="attemptedSubmit && !form.strategy_id">
 
             <option disabled [ngValue]="null">Seleccionar estrategia...</option>
@@ -36,19 +32,18 @@
               {{ s.name }}
             </option>
           </select>
+
+          <div class="error-message" *ngIf="attemptedSubmit && !form.strategy_id">
+            La estrategia es obligatoria.
+          </div>
         </div>
 
         <!-- Actividad -->
         <div class="form-group">
           <label>Actividad</label>
 
-          <select
-            [(ngModel)]="form.activity_id"
-            name="activity_id"
-            required
-            (change)="onActivityChange()"
-            [disabled]="!form.strategy_id"
-            [class.invalid]="attemptedSubmit && !form.activity_id">
+          <select [(ngModel)]="form.activity_id" name="activity_id" required (change)="onActivityChange()"
+            [disabled]="!form.strategy_id" [class.invalid]="attemptedSubmit && !form.activity_id">
 
             <option disabled [ngValue]="null">
               {{ form.strategy_id ? 'Seleccionar actividad...' : 'Seleccione una estrategia' }}
@@ -59,7 +54,7 @@
             </option>
           </select>
 
-          <div *ngIf="attemptedSubmit && !form.activity_id" class="error-message">
+          <div class="error-message" *ngIf="attemptedSubmit && !form.activity_id">
             La actividad es obligatoria.
           </div>
         </div>
@@ -68,13 +63,8 @@
         <div class="form-group">
           <label>Componente</label>
 
-          <select
-            [(ngModel)]="form.component_id"
-            name="component_id"
-            required
-            (change)="onComponentChange()"
-            [disabled]="!form.activity_id"
-            [class.invalid]="attemptedSubmit && !form.component_id">
+          <select [(ngModel)]="form.component_id" name="component_id" required (change)="onComponentChange()"
+            [disabled]="!form.activity_id" [class.invalid]="attemptedSubmit && !form.component_id">
 
             <option disabled [ngValue]="null">
               {{ form.activity_id ? 'Seleccionar componente...' : 'Seleccione una actividad' }}
@@ -84,87 +74,93 @@
               {{ c.name }}
             </option>
           </select>
-        </div>
 
-        <!-- Fecha -->
-        <div class="form-group">
-          <label>Fecha</label>
-
-          <input
-            type="date"
-            [(ngModel)]="form.fecha"
-            name="fecha"
-            [max]="today"
-            required
-            [class.invalid]="attemptedSubmit && !form.fecha"
-          />
-        </div>
-
-        <!-- Descripción -->
-        <div class="form-group full">
-          <label>Descripción</label>
-
-          <textarea
-            rows="2"
-            [(ngModel)]="form.description"
-            name="description"
-            placeholder="Descripción del registro"
-          ></textarea>
-        </div>
-
-        <!-- Municipios -->
-        <div class="form-group full">
-
-          <app-multi-select
-            label="Municipios"
-            placeholder="Buscar municipio..."
-            [items]="municipios"
-            [(selected)]="selectedMunicipios"
-            (selectedChange)="onMunicipiosChange()"
-            [disabled]="
-              !form.strategy_id ||
-              !form.activity_id ||
-              !form.component_id ||
-              !form.fecha
-            ">
-          </app-multi-select>
-
-          <div 
-            class="hint-text"
-            *ngIf="
-              !form.strategy_id ||
-              !form.activity_id ||
-              !form.component_id ||
-              !form.fecha
-            ">
-            Primero completa Estrategia, Actividad, Componente y Fecha.
+          <div class="error-message" *ngIf="attemptedSubmit && !form.component_id">
+            El componente es obligatorio.
           </div>
-
-          <div 
-            *ngIf="
-              attemptedSubmit &&
-              selectedMunicipios.length === 0 &&
-              form.strategy_id &&
-              form.activity_id &&
-              form.component_id &&
-              form.fecha
-            "
-            class="error-message">
-            Seleccione al menos un municipio.
-          </div>
-
         </div>
 
       </div>
     </div>
 
-
     <!-- =====================================================
-         📌 SECCIÓN 2 — VALORES DE INDICADORES
+         📌 Sección 2 — Reporte de indicadores KPI
     ====================================================== -->
     <div class="form-section">
-      <h3 class="section-title">Valores de Indicadores por Municipio</h3>
+      <h3 class="section-title">Reporte de indicadores KPI</h3>
 
+      <div class="empty-text" style="margin-bottom: 20px;">
+        En este campo reporte los avances cuantitativos de su componente,
+        de acuerdo a los municipios impactados.
+      </div>
+
+      <!-- ⭐ DOS COLUMNAS -->
+      <div class="form-grid-dos two-columns">
+
+        <!-- Resumen ejecutivo -->
+        <div class="form-group">
+          <label>Resumen ejecutivo</label>
+
+          <textarea rows="4" maxlength="500" [(ngModel)]="form.description" name="description" required
+            placeholder="Resumen ejecutivo del avance de su componente"
+            [class.invalid]="attemptedSubmit && !form.description"></textarea>
+
+          <!-- Contador -->
+          <div class="char-counter">
+            {{ form.description.length || 0 }}/500
+          </div>
+
+          <!-- Error -->
+          <div class="error-message" *ngIf="attemptedSubmit && !form.description">
+            El resumen ejecutivo es obligatorio.
+          </div>
+        </div>
+
+        <!-- Actividades realizadas -->
+        <div class="form-group">
+          <label>Actividades realizadas</label>
+
+          <textarea rows="4" maxlength="500" [(ngModel)]="form.actividades_realizadas" name="actividades_realizadas"
+            required placeholder="Describe aquí las actividades ejecutadas"
+            [class.invalid]="attemptedSubmit && !form.actividades_realizadas"></textarea>
+
+          <!-- Contador -->
+          <div class="char-counter">
+            {{ form.actividades_realizadas.length || 0 }}/500
+          </div>
+
+          <!-- Error -->
+          <div class="error-message" *ngIf="attemptedSubmit && !form.actividades_realizadas">
+            Las actividades realizadas son obligatorias.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Municipios -->
+      <div class="form-group mt-3 full">
+
+        <app-multi-select label="Municipios" placeholder="Buscar municipio..." [items]="municipios"
+          [(selected)]="selectedMunicipios" (selectedChange)="onMunicipiosChange()" [disabled]="
+  !form.strategy_id ||
+  !form.activity_id ||
+  !form.component_id
+">
+        </app-multi-select>
+
+
+        <div class="hint-text" *ngIf="!form.strategy_id || !form.activity_id || !form.component_id">
+          Primero completa estrategia, actividad y componente.
+        </div>
+
+        <div class="error-message" *ngIf="attemptedSubmit && selectedMunicipios.length === 0 &&
+                     form.strategy_id && form.activity_id && form.component_id">
+          Seleccione al menos un municipio.
+        </div>
+
+      </div>
+
+      <!-- Tablas por municipio -->
       <div *ngIf="selectedMunicipios.length === 0" class="empty-text">
         Selecciona municipios para agregar valores.
       </div>
@@ -183,51 +179,39 @@
 
           <tbody>
             <tr *ngFor="let ind of indicators">
-
               <td>{{ ind.name }}</td>
 
               <td>
-                <input
-                  type="number"
-                  min="0"
-                  [(ngModel)]="detallePoblacion.municipios[municipio].indicadores[ind.name]"
-                  name="ind_{{ municipio }}_{{ ind.id }}"
-                />
+                <input type="number" min="0" [(ngModel)]="detallePoblacion.municipios[municipio].indicadores[ind.name]"
+                  name="ind_{{ municipio }}_{{ ind.id }}">
               </td>
-
             </tr>
           </tbody>
         </table>
 
       </div>
+
     </div>
 
-
     <!-- =====================================================
-         📌 SECCIÓN EVIDENCIA
+         📌 Evidencia
     ====================================================== -->
     <div class="form-section">
       <h3 class="section-title">Evidencia</h3>
 
       <div class="form-group full">
-        <input
-          type="url"
-          [(ngModel)]="form.evidencia_url"
-          name="evidencia_url"
-          placeholder="https://..."
-          class="full-input"
-        />
+        <input type="url" [(ngModel)]="form.evidencia_url" name="evidencia_url" placeholder="https://..."
+          class="full-input" />
       </div>
     </div>
 
-
     <!-- =====================================================
-         📌 BOTONES
+         📌 Botones
     ====================================================== -->
     <div class="form-actions">
 
       <button class="btn-primary" [disabled]="saving">
-        {{ saving ? 'Guardando...' : (isEdit ? 'Actualizar' : 'Crear Registro') }}
+        {{ saving ? 'Guardando...' : (isEdit ? 'Actualizar' : 'Crear reporte') }}
       </button>
 
       <button type="button" class="btn-secondary" (click)="cancel()">

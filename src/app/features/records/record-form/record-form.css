@@ -34,6 +34,12 @@
   gap: 22px;
 }
 
+.form-grid-dos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+}
+
 .form-group.full {
   grid-column: 1 / -1;
 }
@@ -180,3 +186,4 @@ app-multi-select[disabled] {
 .btn-secondary:hover {
   background: #dce2e9;
 }
+
