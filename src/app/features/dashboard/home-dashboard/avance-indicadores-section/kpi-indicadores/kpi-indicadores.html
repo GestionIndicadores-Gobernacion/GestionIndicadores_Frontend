@@ -1,0 +1,20 @@
+<div class="kpi-container">
+  <div class="kpi-card" *ngFor="let ind of indicadores">
+
+    <h4 class="title">{{ ind.indicador }}</h4>
+
+    <!-- Mostrar avance total del año -->
+    <div class="avance">{{ ind.avance_total }}%</div>
+
+    <!-- Mostrar valor total acumulado -->
+    <small class="meta">
+      {{ ind.valor_total }} / {{ ind.meta }}
+    </small>
+
+    <!-- Barra de progreso -->
+    <div class="progress-bar">
+      <div class="progress" [style.width.%]="ind.avance_total"></div>
+    </div>
+
+  </div>
+</div>

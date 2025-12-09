@@ -179,7 +179,10 @@
 
           <tbody>
             <tr *ngFor="let ind of indicators">
-              <td>{{ ind.name }}</td>
+              <td>
+                {{ ind.name }}
+                <span class="meta-tag">Meta: {{ ind.meta }}</span>
+              </td>
 
               <td>
                 <input type="number" min="0" [(ngModel)]="detallePoblacion.municipios[municipio].indicadores[ind.name]"

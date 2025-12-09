@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { EstrategiasChart } from './estrategias-chart';
+import { AvanceIndicadoresSection } from './avance-indicadores-section';
 
-describe('EstrategiasChart', () => {
-  let component: EstrategiasChart;
-  let fixture: ComponentFixture<EstrategiasChart>;
+describe('AvanceIndicadoresSection', () => {
+  let component: AvanceIndicadoresSection;
+  let fixture: ComponentFixture<AvanceIndicadoresSection>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EstrategiasChart]
+      imports: [AvanceIndicadoresSection]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(EstrategiasChart);
+    fixture = TestBed.createComponent(AvanceIndicadoresSection);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

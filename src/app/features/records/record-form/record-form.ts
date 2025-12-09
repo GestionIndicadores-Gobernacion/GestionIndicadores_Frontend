@@ -264,7 +264,6 @@ export class RecordFormComponent {
     });
   }
 
-
   buildPayload(): RecordCreateRequest {
     return {
       strategy_id: this.form.strategy_id!,

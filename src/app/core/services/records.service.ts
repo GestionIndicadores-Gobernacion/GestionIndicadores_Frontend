@@ -12,7 +12,6 @@ import {
   RecordStatsMes,
   RecordStatsTipoPoblacion
 } from '../models/record.model';
-import { EstrategiaChartData } from '../../features/dashboard/charts/estrategias-chart/estrategias-chart';
 
 @Injectable({
   providedIn: 'root',
@@ -93,10 +92,6 @@ export class RecordsService {
 
   getStatsTipoPoblacion() {
     return this.http.get<RecordStatsTipoPoblacion[]>(`${this.api}/stats/tipo-poblacion`);
-  }
-
-  getStatsEstrategias() {
-    return this.http.get<EstrategiaChartData[]>(`${this.api}/stats/estrategias`);
   }
 
   getLatest(limit = 5) {

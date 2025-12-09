@@ -1,0 +1,99 @@
+<div class="avance-section">
+
+  <div class="header-row">
+    <h3 class="section-title">Avance de Indicadores</h3>
+    <p class="section-subtitle">Consulta el porcentaje de avance por estrategia, componente y año.</p>
+  </div>
+
+  <!-- =======================
+       FILTROS
+  ======================== -->
+  <div class="filters-card">
+
+    <div class="row g-3 align-items-end">
+
+      <!-- Estrategia -->
+      <div class="col-12 col-lg-4">
+        <div class="filter-item">
+          <label>Estrategia</label>
+          <select [(ngModel)]="selectedEstrategia" [ngClass]="{ 'input-error': showErrors && !selectedEstrategia }"
+            (change)="onEstrategiaChange()">
+
+            <option [ngValue]="null">Seleccionar estrategia...</option>
+            <option *ngFor="let e of estrategias" [ngValue]="e.id">
+              {{ e.name }}
+            </option>
+          </select>
+          <small *ngIf="showErrors && !selectedEstrategia" class="error">
+            Selecciona una estrategia.
+          </small>
+        </div>
+      </div>
+
+      <!-- Componente -->
+      <div class="col-12 col-lg-4">
+        <div class="filter-item">
+          <label>Componente</label>
+          <select [(ngModel)]="selectedComponente" [ngClass]="{ 'input-error': showErrors && !selectedComponente }">
+
+            <option [ngValue]="null">Seleccionar componente...</option>
+            <option *ngFor="let c of componentes" [ngValue]="c.id">
+              {{ c.name }}
+            </option>
+          </select>
+          <small *ngIf="showErrors && !selectedComponente" class="error">
+            Selecciona un componente.
+          </small>
+        </div>
+      </div>
+
+      <!-- Año -->
+      <div class="col-6 col-lg-2">
+        <div class="filter-item">
+          <label>Año</label>
+          <select [(ngModel)]="selectedYear" [ngClass]="{ 'input-error': showErrors && !selectedYear }">
+
+            <option [ngValue]="null">Año...</option>
+            <option *ngFor="let y of years" [ngValue]="y">{{ y }}</option>
+          </select>
+          <small *ngIf="showErrors && !selectedYear" class="error">
+            Selecciona un año.
+          </small>
+        </div>
+      </div>
+
+      <!-- Botón Buscar -->
+      <div class="col-6 col-lg-2 text-end">
+        <button class="btn-search" (click)="onBuscar()">
+          Buscar
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- =======================
+        RESULTADOS
+  ======================== -->
+  <ng-container *ngIf="!loading; else loadingTpl">
+    <ng-container *ngIf="avanceIndicadoresData.length > 0; else noDataTpl">
+      <app-kpi-indicadores [indicadores]="avanceIndicadoresData">
+      </app-kpi-indicadores>
+
+
+      <app-indicadores-mensuales-chart *ngIf="avanceIndicadoresData.length > 0" [indicadores]="avanceIndicadoresData">
+      </app-indicadores-mensuales-chart>
+    </ng-container>
+  </ng-container>
+
+  <!-- LOADING -->
+  <ng-template #loadingTpl>
+    <p class="loading-text">Cargando información...</p>
+  </ng-template>
+
+  <!-- SIN DATOS -->
+  <ng-template #noDataTpl>
+    <p class="no-data-text">No hay datos disponibles para esta búsqueda.</p>
+  </ng-template>
+
+</div>
