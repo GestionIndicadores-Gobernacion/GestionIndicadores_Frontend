@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ComponentesChart } from './componentes-chart';
+import { KpiIndicadores } from './kpi-indicadores';
 
-describe('ComponentesChart', () => {
-  let component: ComponentesChart;
-  let fixture: ComponentFixture<ComponentesChart>;
+describe('KpiIndicadores', () => {
+  let component: KpiIndicadores;
+  let fixture: ComponentFixture<KpiIndicadores>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ComponentesChart]
+      imports: [KpiIndicadores]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ComponentesChart);
+    fixture = TestBed.createComponent(KpiIndicadores);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

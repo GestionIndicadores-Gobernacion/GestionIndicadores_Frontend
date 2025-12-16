@@ -2,29 +2,13 @@
 
   <h2 class="page-title">Panel Principal</h2>
 
-  <!-- KPIs -->
-  <app-kpi-cards [kpiCards]="kpiCards" [kpis]="kpis">
+  <!-- KPIs generales -->
+  <app-kpi-cards 
+    [kpiCards]="kpiCards" 
+    [kpis]="kpis">
   </app-kpi-cards>
 
-  <ng-container *ngIf="!loading">
-
-    <div class="dashboard-card">
-      <h5 class="card-title">Registros por Estrategia</h5>
-      <app-estrategias-chart [data]="estrategiasData"></app-estrategias-chart>
-    </div>
-
-    <!-- Gráficas principales -->
-    <div class="grid-2 mt-3">
-
-      <div class="dashboard-card mt-3">
-        <h5 class="card-title">Indicadores por Estrategia</h5>
-        <app-indicadores-estrategia-chart [data]="indicadoresEstrategiaData"></app-indicadores-estrategia-chart>
-      </div>
-
-    </div>
-
-
-
-  </ng-container>
+  <!-- Sección de Avance de Indicadores -->
+  <app-avance-indicadores-section></app-avance-indicadores-section>
 
 </div>

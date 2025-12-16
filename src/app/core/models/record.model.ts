@@ -63,7 +63,8 @@ export interface RecordModel {
 
   fecha: string;
   description?: string | null;
-
+  actividades_realizadas?: string | null;
+  
   detalle_poblacion: RecordDetallePoblacion;
 
   evidencia_url: string | null;
@@ -90,6 +91,7 @@ export interface RecordCreateRequest {
 
   fecha: string;
   description?: string | null;
+  actividades_realizadas?: string | null;
 
   detalle_poblacion: RecordDetallePoblacion;
 

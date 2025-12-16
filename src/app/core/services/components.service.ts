@@ -2,10 +2,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment.development';
-import { 
-  ComponentModel, 
-  ComponentCreateRequest, 
-  ComponentUpdateRequest 
+import {
+  ComponentModel,
+  ComponentCreateRequest,
+  ComponentUpdateRequest
 } from '../models/component.model';
 
 @Injectable({
@@ -15,7 +15,7 @@ export class ComponentsService {
 
   private api = `${environment.apiUrl}/component`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getAll() {
     return this.http.get<ComponentModel[]>(this.api);
@@ -36,4 +36,9 @@ export class ComponentsService {
   delete(id: number) {
     return this.http.delete(`${this.api}/${id}`);
   }
+
+  getComponentesByEstrategia(strategyId: number) {
+    return this.http.get<ComponentModel[]>(`${this.api}/by_strategy/${strategyId}`);
+  }
+
 }

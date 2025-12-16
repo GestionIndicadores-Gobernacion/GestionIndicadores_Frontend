@@ -46,6 +46,7 @@ export class IndicatorFormComponent {
     name: '',
     description: null,
     data_type: 'integer',
+    meta: 0,          // ⬅️ NUEVO
     active: true,
   };
 
@@ -92,6 +93,7 @@ export class IndicatorFormComponent {
           name: indicator.name,
           description: indicator.description ?? null,
           data_type: indicator.data_type,
+          meta: indicator.meta,             // ⬅️ NUEVO
           active: indicator.active,
         };
 
@@ -161,13 +163,17 @@ export class IndicatorFormComponent {
   save() {
     this.attemptedSubmit = true;
 
-    if (!this.selectedStrategy || !this.form.component_id ||
-      !this.form.name || this.form.name.trim().length < 3 ||
-      !this.form.data_type) {
+    if (!this.selectedStrategy ||
+      !this.form.component_id ||
+      !this.form.name ||
+      this.form.name.trim().length < 3 ||
+      !this.form.data_type ||
+      !this.form.meta || this.form.meta <= 0) {
 
       this.toast.warning("Por favor completa los campos obligatorios.");
       return;
     }
+
 
     if (this.isEdit) {
       this.toast.confirm(
@@ -195,8 +201,10 @@ export class IndicatorFormComponent {
       name: this.form.name.trim(),
       description: this.form.description?.trim() || null,
       data_type: this.form.data_type,
+      meta: Number(this.form.meta),         // ⬅️ NUEVO
       active: this.form.active,
     };
+
 
     let request$;
 

@@ -25,12 +25,30 @@
   color: #2c3e50;
 }
 
+.meta-tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 6px;
+  font-size: 12px;
+  background: #e8f3ff;
+  border-radius: 4px;
+  color: #0a4b8a;
+  font-weight: 600;
+}
+
+
 /* ============================
    GRID GENERAL
 ============================ */
 .form-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+.form-grid-dos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 22px;
 }
 
@@ -180,3 +198,4 @@ app-multi-select[disabled] {
 .btn-secondary:hover {
   background: #dce2e9;
 }
+

@@ -8,6 +8,8 @@ import { IndicatorsService } from '../../../core/services/indicators.service';
 import { RecordsService } from '../../../core/services/records.service';
 import { StrategiesService } from '../../../core/services/strategy.service';
 import { CommonModule } from '@angular/common';
+import { ActivitiesService } from '../../../core/services/activities.service';
+import { ActivityModel } from '../../../core/models/activity.model';
 
 @Component({
   selector: 'app-record-detail',
@@ -29,14 +31,17 @@ export class RecordDetailComponent {
 
   municipios: string[] = [];
 
+  activityMap: Record<number, string> = {};
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private recordsService: RecordsService,
     private componentsService: ComponentsService,
     private indicatorsService: IndicatorsService,
+    private activitiesService: ActivitiesService,
     private strategiesService: StrategiesService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadMaps();
@@ -47,7 +52,7 @@ export class RecordDetailComponent {
 
   loadMaps() {
     this.componentsService.getAll().subscribe({
-      next: (res: ComponentModel[]) => {
+      next: (res) => {
         this.componentMap = Object.fromEntries(res.map(c => [c.id, c.name]));
       }
     });
@@ -57,6 +62,15 @@ export class RecordDetailComponent {
         this.strategyMap = Object.fromEntries(res.map(s => [s.id, s.name]));
       }
     });
+
+    this.activitiesService.getAll().subscribe({
+      next: (res: ActivityModel[]) => {
+        this.activityMap = Object.fromEntries(
+          res.map(a => [a.id, a.description])
+        );
+      }
+    });
+
   }
 
   // ===== RECORD =====

@@ -1,0 +1,57 @@
+.kpi-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 18px;
+}
+
+.kpi-card {
+    background: white;
+    padding: 18px;
+    border-radius: 12px;
+    border: 1px solid #e6e6e6;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.title {
+    font-size: 16px;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.avance {
+    font-size: 32px;
+    font-weight: 700;
+    color: #2ecc71;
+}
+
+.meta {
+    color: #555;
+    font-size: 14px;
+}
+
+.progress-bar {
+    margin-top: 10px;
+    width: 100%;
+    height: 10px;
+    background: #efefef;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 10px;
+    background: #27ae60;
+}
+
+.kpi-container .municipios-info {
+  margin-top: 10px;
+}
+
+.kpi-container .municipios-info p {
+  font-size: 14px;
+  margin: 0;
+}
+
+.kpi-container .municipios-info strong {
+  font-weight: bold;
+}

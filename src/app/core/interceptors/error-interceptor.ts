@@ -11,16 +11,37 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
       let message = 'Error desconocido';
 
+      // 🔎 LOG REAL para depurar
+      console.error('ERROR COMPLETO:', error);
+
+      // ✅ Errores tipo Marshmallow / Flask-Smorest
       if (error.error?.errors) {
-        const firstError = Object.values(error.error.errors)[0];
-        message = String(firstError);
+        const errors = error.error.errors;
+
+        const firstKey = Object.keys(errors)[0];
+        const firstError = errors[firstKey];
+
+        // Puede ser array o string
+        if (Array.isArray(firstError)) {
+          message = firstError[0];
+        } else if (typeof firstError === 'string') {
+          message = firstError;
+        } else {
+          message = JSON.stringify(firstError);
+        }
       }
-      else if (error.error?.message) {
+
+      // ✅ Error con message plano
+      else if (typeof error.error?.message === 'string') {
         message = error.error.message;
       }
+
+      // ✅ Sin conexión
       else if (error.status === 0) {
         message = 'No hay conexión con el servidor.';
       }
+
+      // ✅ Auth
       else if (error.status === 401) {
         message = 'No autorizado o token inválido.';
       }
@@ -31,9 +52,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       console.error('INTERCEPTOR ERROR:', message);
       toast.error(message);
 
-      // 👇 DEVOLVER EL ERROR ORIGINAL
       return throwError(() => error);
     })
   );
-
 };

@@ -51,17 +51,26 @@ export class DashboardService {
     return this.http.get<any[]>(`${this.api}/stats/componentes`, { params });
   }
 
-  getIndicatorsByEstrategia() {
-    return this.http.get<any[]>(`${this.api}/stats/indicadores_por_estrategia`);
-  }
-
-
 
   // ======================
   // 📌 2. KPIs
   // ======================
   getKPIs(): Observable<any> {
     return this.http.get(`${this.api}/stats/count`);
+  }
+
+  getYears() {
+    return this.http.get<number[]>(`${this.api}/years`);
+  }
+
+  getAvanceIndicadores(year?: number, estrategiaId?: number, componenteId?: number) {
+    let params = new HttpParams();
+
+    if (year) params = params.set('year', year);
+    if (estrategiaId) params = params.set('estrategia_id', estrategiaId);
+    if (componenteId) params = params.set('component_id', componenteId);
+
+    return this.http.get<any[]>(`${this.api}/stats/avance_indicadores`, { params });
   }
 
 }

@@ -5,7 +5,6 @@ import { FormsModule } from '@angular/forms';
 
 import { ComponentModel } from '../../../core/models/component.model';
 import { IndicatorModel } from '../../../core/models/indicator.model';
-
 import {
   RecordCreateRequest,
   RecordDetallePoblacion,
@@ -20,7 +19,6 @@ import { StrategiesService } from '../../../core/services/strategy.service';
 import { MUNICIPIOS_VALLE } from '../../../core/data/municipios';
 import { ToastService } from '../../../core/services/toast.service';
 
-// ⭐ Nuevo componente reutilizable
 import { MultiSelectComponent } from '../../../shared/components/multi-select/multi-select';
 import { ActivityModel } from '../../../core/models/activity.model';
 import { ActivitiesService } from '../../../core/services/activities.service';
@@ -58,6 +56,7 @@ export class RecordFormComponent {
     component_id: null as number | null,
     fecha: '',
     description: '',
+    actividades_realizadas: '',
     evidencia_url: ''
   };
 
@@ -78,6 +77,7 @@ export class RecordFormComponent {
 
   ngOnInit(): void {
     this.today = new Date().toISOString().split('T')[0];
+    this.form.fecha = this.today;
 
     this.id = Number(this.route.snapshot.paramMap.get('id'));
     this.isEdit = !!this.id;
@@ -102,13 +102,12 @@ export class RecordFormComponent {
   loadActivities() {
     this.activitiesService.getAll().subscribe({
       next: res => {
-        this.allActivities = res;   // guardamos todas
-        this.activities = [];       // solo las filtradas por estrategia
+        this.allActivities = res;
+        this.activities = [];
       },
       error: () => this.toast.error("Error cargando actividades"),
     });
   }
-
 
   loadComponents() {
     this.componentsService.getAll().subscribe({
@@ -133,6 +132,7 @@ export class RecordFormComponent {
         this.form.component_id = r.component_id ?? null;
         this.form.fecha = r.fecha;
         this.form.description = r.description ?? '';
+        this.form.actividades_realizadas = r.actividades_realizadas ?? '';
         this.form.evidencia_url = r.evidencia_url ?? '';
 
         this.detallePoblacion = r.detalle_poblacion ?? { municipios: {} };
@@ -160,7 +160,6 @@ export class RecordFormComponent {
       return;
     }
 
-    // 🔥 CORRECTO: filtrar desde TODAS las actividades
     this.activities = this.allActivities.filter(
       a => a.strategy_id === this.form.strategy_id
     );
@@ -210,13 +209,46 @@ export class RecordFormComponent {
   }
 
   onMunicipiosChange() {
+
+    // 🟢 SI ELIGIÓ "Todo el Valle del Cauca"
+    if (this.selectedMunicipios.includes("Todo el Valle del Cauca")) {
+
+      // Si eligió el Valle y otros municipios, limpiar los otros
+      if (this.selectedMunicipios.length > 1) {
+        this.selectedMunicipios = ["Todo el Valle del Cauca"];
+      }
+
+      // Regenerar indicadores para el Valle completo
+      this.detallePoblacion = {
+        municipios: {
+          "Todo el Valle del Cauca": {
+            indicadores: {}
+          }
+        }
+      };
+
+      this.indicators.forEach(ind => {
+        this.detallePoblacion.municipios["Todo el Valle del Cauca"].indicadores[ind.name] = 0;
+      });
+
+      return;
+    }
+
+    // 🟡 SI QUITÓ "Todo el Valle del Cauca"
+    if (!this.selectedMunicipios.includes("Todo el Valle del Cauca") &&
+      this.detallePoblacion.municipios["Todo el Valle del Cauca"]) {
+
+      // El usuario lo eliminó, entonces limpiar completamente
+      this.detallePoblacion = { municipios: {} };
+    }
+
+    // 🟡 COMPORTAMIENTO NORMAL
     const nuevos = this.selectedMunicipios;
 
+    // Crear estructura de indicadores para nuevos municipios
     nuevos.forEach(m => {
       if (!this.detallePoblacion.municipios[m]) {
-        const detalle: RecordMunicipioDetalle = {
-          indicadores: {}
-        };
+        const detalle: RecordMunicipioDetalle = { indicadores: {} };
 
         this.indicators.forEach(ind => {
           detalle.indicadores[ind.name] = 0;
@@ -226,6 +258,7 @@ export class RecordFormComponent {
       }
     });
 
+    // Eliminar municipios deseleccionados
     Object.keys(this.detallePoblacion.municipios).forEach(m => {
       if (!nuevos.includes(m)) delete this.detallePoblacion.municipios[m];
     });
@@ -238,6 +271,7 @@ export class RecordFormComponent {
       component_id: this.form.component_id!,
       fecha: this.form.fecha,
       description: this.form.description || null,
+      actividades_realizadas: this.form.actividades_realizadas || null,
       detalle_poblacion: this.detallePoblacion,
       evidencia_url: this.form.evidencia_url || null,
     };
@@ -246,14 +280,36 @@ export class RecordFormComponent {
   save() {
     this.attemptedSubmit = true;
 
-    if (!this.form.strategy_id || !this.form.activity_id || !this.form.component_id || !this.form.fecha) {
+    // ============================
+    // Validaciones visuales
+    // ============================
+    if (!this.form.strategy_id || !this.form.activity_id || !this.form.component_id) {
       this.toast.warning("Por favor completa los campos obligatorios.");
+      return;
+    }
+
+    if (!this.form.description || !this.form.actividades_realizadas) {
+      this.toast.warning("Completa el resumen ejecutivo y las actividades realizadas.");
       return;
     }
 
     if (this.selectedMunicipios.length === 0) {
       this.toast.warning("Debes seleccionar al menos un municipio.");
       return;
+    }
+
+    for (const municipio of this.selectedMunicipios) {
+      for (const ind of this.indicators) {
+        const valor =
+          this.detallePoblacion.municipios[municipio]?.indicadores[ind.name] ?? 0;
+
+        if (valor > ind.meta) {
+          this.toast.error(
+            `En "${municipio}", el indicador "${ind.name}" supera la meta (${ind.meta}).`
+          );
+          return;
+        }
+      }
     }
 
     const payload = this.buildPayload();
@@ -283,8 +339,25 @@ export class RecordFormComponent {
     });
   }
 
+  validateIndicadorValue(municipio: string, ind: IndicatorModel) {
+    const valor =
+      this.detallePoblacion.municipios[municipio].indicadores[ind.name];
+
+    if (valor > ind.meta) {
+      this.detallePoblacion.municipios[municipio].indicadores[ind.name] = ind.meta;
+
+      this.toast.warning(
+        `El valor del indicador "${ind.name}" no puede superar la meta (${ind.meta}).`
+      );
+    }
+
+    if (valor < 0) {
+      this.detallePoblacion.municipios[municipio].indicadores[ind.name] = 0;
+    }
+  }
+
+
   cancel() {
     this.router.navigate(['/dashboard/records']);
   }
-
 }
