@@ -42,3 +42,16 @@
     height: 10px;
     background: #27ae60;
 }
+
+.kpi-container .municipios-info {
+  margin-top: 10px;
+}
+
+.kpi-container .municipios-info p {
+  font-size: 14px;
+  margin: 0;
+}
+
+.kpi-container .municipios-info strong {
+  font-weight: bold;
+}

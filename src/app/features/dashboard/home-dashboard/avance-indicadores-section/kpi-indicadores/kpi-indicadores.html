@@ -3,17 +3,26 @@
 
     <h4 class="title">{{ ind.indicador }}</h4>
 
-    <!-- Mostrar avance total del año -->
-    <div class="avance">{{ ind.avance_total }}%</div>
+    <!-- Avance total -->
+    <div class="avance">
+      {{ ind.avance_total | number:'1.0-2' }}%
+    </div>
 
-    <!-- Mostrar valor total acumulado -->
+    <!-- Valor / Meta -->
     <small class="meta">
       {{ ind.valor_total }} / {{ ind.meta }}
     </small>
 
-    <!-- Barra de progreso -->
+    <!-- Barra -->
     <div class="progress-bar">
       <div class="progress" [style.width.%]="ind.avance_total"></div>
+    </div>
+
+    <!-- Información de municipios -->
+    <div class="municipios-info" *ngIf="ind.municipios?.length">
+      <p *ngFor="let m of ind.municipios">
+        <strong>{{ m.municipio }}:</strong> {{ m.valor }}
+      </p>
     </div>
 
   </div>

@@ -185,8 +185,9 @@
               </td>
 
               <td>
-                <input type="number" min="0" [(ngModel)]="detallePoblacion.municipios[municipio].indicadores[ind.name]"
-                  name="ind_{{ municipio }}_{{ ind.id }}">
+                <input type="number" min="0" [max]="ind.meta"
+                  [(ngModel)]="detallePoblacion.municipios[municipio].indicadores[ind.name]"
+                  name="ind_{{ municipio }}_{{ ind.id }}" (input)="validateIndicadorValue(municipio, ind)" />
               </td>
             </tr>
           </tbody>

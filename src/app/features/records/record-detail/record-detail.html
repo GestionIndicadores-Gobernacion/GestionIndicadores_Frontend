@@ -32,6 +32,11 @@
         </div>
 
         <div class="info-item">
+          <span>Actividad</span>
+          {{ activityMap[record.activity_id] || '—' }}
+        </div>
+
+        <div class="info-item">
           <span>Fecha del Registro</span>
           {{ record.fecha | date:'mediumDate' }}
         </div>
@@ -44,6 +49,35 @@
       </div>
     </div>
 
+    <!-- ============================
+         📌 DESCRIPCIÓN
+    ============================ -->
+    <div class="view-card">
+      <h3>Resumen ejecutivo</h3>
+
+      <p class="text-block" *ngIf="record.description; else noDesc">
+        {{ record.description }}
+      </p>
+
+      <ng-template #noDesc>
+        <p class="empty-text">No se registró un resumen ejecutivo.</p>
+      </ng-template>
+    </div>
+
+    <!-- ============================
+         📌 ACTIVIDADES REALIZADAS
+    ============================ -->
+    <div class="view-card">
+      <h3>Actividades realizadas</h3>
+
+      <p class="text-block" *ngIf="record.actividades_realizadas; else noAct">
+        {{ record.actividades_realizadas }}
+      </p>
+
+      <ng-template #noAct>
+        <p class="empty-text">No se registraron actividades realizadas.</p>
+      </ng-template>
+    </div>
 
     <!-- ============================
          📌 MUNICIPIOS + INDICADORES
@@ -76,9 +110,7 @@
         </table>
 
       </div>
-
     </div>
-
 
     <!-- ============================
          📌 EVIDENCIA
@@ -87,10 +119,10 @@
       <h3>Evidencia</h3>
 
       <ng-container *ngIf="record.evidencia_url; else noEvidence">
-        <a class="evidence-link" 
-           [href]="record.evidencia_url" 
+        <a class="evidence-link"
+           [href]="record.evidencia_url"
            target="_blank">
-          {{ record.evidencia_url }}
+          Abrir evidencia
         </a>
       </ng-container>
 

@@ -298,6 +298,20 @@ export class RecordFormComponent {
       return;
     }
 
+    for (const municipio of this.selectedMunicipios) {
+      for (const ind of this.indicators) {
+        const valor =
+          this.detallePoblacion.municipios[municipio]?.indicadores[ind.name] ?? 0;
+
+        if (valor > ind.meta) {
+          this.toast.error(
+            `En "${municipio}", el indicador "${ind.name}" supera la meta (${ind.meta}).`
+          );
+          return;
+        }
+      }
+    }
+
     const payload = this.buildPayload();
 
     if (this.isEdit) {
@@ -324,6 +338,24 @@ export class RecordFormComponent {
       error: () => this.saving = false
     });
   }
+
+  validateIndicadorValue(municipio: string, ind: IndicatorModel) {
+    const valor =
+      this.detallePoblacion.municipios[municipio].indicadores[ind.name];
+
+    if (valor > ind.meta) {
+      this.detallePoblacion.municipios[municipio].indicadores[ind.name] = ind.meta;
+
+      this.toast.warning(
+        `El valor del indicador "${ind.name}" no puede superar la meta (${ind.meta}).`
+      );
+    }
+
+    if (valor < 0) {
+      this.detallePoblacion.municipios[municipio].indicadores[ind.name] = 0;
+    }
+  }
+
 
   cancel() {
     this.router.navigate(['/dashboard/records']);

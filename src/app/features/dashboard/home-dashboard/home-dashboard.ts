@@ -22,7 +22,6 @@ export class HomeDashboardComponent implements OnInit {
   // ---------------- KPIs generales ----------------
   kpis = {
     totalRegistros: 0,
-    registrosMes: 0,
     municipiosActivos: 0,
     indicadoresActivos: 0,
     componentesActivos: 0,
@@ -30,10 +29,9 @@ export class HomeDashboardComponent implements OnInit {
 
   kpiCards = [
     { label: 'Total Reportes', key: 'totalRegistros', colorClass: 'kpi-blue' },
-    { label: 'Registros del Mes', key: 'registrosMes', colorClass: 'kpi-green' },
-    { label: 'Municipios Activos', key: 'municipiosActivos', colorClass: 'kpi-orange' },
+    { label: 'Municipios Activos', key: 'municipiosActivos', colorClass: 'kpi-green' },
     { label: 'Indicadores Activos', key: 'indicadoresActivos', colorClass: 'kpi-purple' },
-    { label: 'Componentes Activos', key: 'componentesActivos', colorClass: 'kpi-red' },
+    { label: 'Componentes Activos', key: 'componentesActivos', colorClass: 'kpi-orange' },
   ];
 
   // ---------------- Gráficas ----------------

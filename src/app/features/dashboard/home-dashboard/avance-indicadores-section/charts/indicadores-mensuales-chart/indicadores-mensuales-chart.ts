@@ -12,8 +12,8 @@ import { NgxApexchartsModule } from 'ngx-apexcharts';
   styleUrl: './indicadores-mensuales-chart.css',
 })
 export class IndicadoresMensualesChartComponent implements OnChanges {
-  @Input() indicadores: any[] = [];
 
+  @Input() indicadores: any[] = [];
   chartOptions: any;
 
   meses = [
@@ -23,7 +23,6 @@ export class IndicadoresMensualesChartComponent implements OnChanges {
 
   ngOnChanges(): void {
     if (!this.indicadores || this.indicadores.length === 0) return;
-
     this.buildChart();
   }
 
@@ -31,14 +30,11 @@ export class IndicadoresMensualesChartComponent implements OnChanges {
 
     const series = this.indicadores.map(ind => ({
       name: ind.indicador,
-      data: this.meses.map((m, i) => {
+      data: this.meses.map((_, i) => {
 
-        // Buscar el mes según "2025-12"
-        const mesObj = ind.meses?.find((xx: { mes: string; }) => {
-          if (!xx.mes) return false;
-
-          const numeroMes = parseInt(xx.mes.split('-')[1]); // "2025-12" → 12
-          return numeroMes === (i + 1);
+        const mesObj = ind.meses?.find((m: any) => {
+          const n = parseInt(m.mes?.split('-')[1]);
+          return n === (i + 1);
         });
 
         return mesObj ? mesObj.valor : 0;
@@ -47,13 +43,14 @@ export class IndicadoresMensualesChartComponent implements OnChanges {
 
     this.chartOptions = {
       series,
+
       chart: {
         height: 380,
         type: 'line',
         toolbar: {
           show: true,
           tools: {
-            download: true,      // Descargar PNG
+            download: true,
             selection: true,
             zoom: true,
             zoomin: true,
@@ -62,22 +59,14 @@ export class IndicadoresMensualesChartComponent implements OnChanges {
             reset: true
           }
         },
-        zoom: {
-          enabled: true,
-        },
-        animations: {
-          enabled: true,
-          easing: 'easeinout',
-          speed: 700
-        }
+        zoom: { enabled: true }
       },
 
-      // 🎨 Colores institucionales
       colors: [
-        "#1E90FF", // azul institucional
-        "#2ECC71", // verde institucional
-        "#F39C12", // naranja
-        "#9B59B6", // morado
+        "#1E90FF",
+        "#2ECC71",
+        "#F39C12",
+        "#9B59B6"
       ],
 
       stroke: {
@@ -88,27 +77,58 @@ export class IndicadoresMensualesChartComponent implements OnChanges {
       markers: {
         size: 4,
         strokeWidth: 2,
-        hover: { size: 7 },
+        hover: { size: 7 }
       },
 
       dataLabels: {
         enabled: true,
-        formatter: (val: number) => val > 0 ? val : ""
+        formatter: (val: number) => val > 0 ? val : ''
       },
 
       tooltip: {
         enabled: true,
-        shared: true,
+        shared: false,
         intersect: false,
         followCursor: true,
-        y: {
-          formatter: (val: number) => `${val} unidades`
+
+        custom: ({ seriesIndex, dataPointIndex }: any) => {
+
+          const indicador = this.indicadores[seriesIndex];
+          if (!indicador) return '';
+
+          const mesNumero = dataPointIndex + 1;
+          const mesNombre = this.meses[dataPointIndex];
+
+          const mesData = indicador.meses?.find((m: any) => {
+            const n = parseInt(m.mes?.split('-')[1]);
+            return n === mesNumero;
+          });
+
+          if (!mesData) return '';
+
+          const municipiosHtml = indicador.municipios?.length
+            ? indicador.municipios
+                .map((m: any) =>
+                  `<div style="font-size:12px">• ${m.municipio}: <b>${m.valor}</b></div>`
+                )
+                .join('')
+            : `<div style="font-size:12px">Sin municipios</div>`;
+
+          return `
+            <div style="padding:10px">
+              <strong>${indicador.indicador}</strong><br/>
+              <span>${mesNombre}: <b>${mesData.valor}</b></span>
+              <hr style="margin:6px 0"/>
+              <div><strong>Municipios</strong></div>
+              ${municipiosHtml}
+            </div>
+          `;
         }
       },
 
       grid: {
         borderColor: "#e5e7eb",
-        strokeDashArray: 4,
+        strokeDashArray: 4
       },
 
       xaxis: {
@@ -127,11 +147,10 @@ export class IndicadoresMensualesChartComponent implements OnChanges {
         markers: { size: 10 }
       },
 
-      // 📌 Anotación del mes actual
       annotations: {
         xaxis: [
           {
-            x: new Date().getMonth(), // 0–11
+            x: new Date().getMonth(),
             borderColor: '#FF4560',
             label: {
               text: 'Mes actual',
@@ -151,7 +170,5 @@ export class IndicadoresMensualesChartComponent implements OnChanges {
         style: { fontSize: "16px" }
       }
     };
-
   }
-
 }

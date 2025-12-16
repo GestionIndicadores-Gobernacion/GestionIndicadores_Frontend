@@ -60,11 +60,10 @@
 
 
           <!-- INDICADORES (NUEVO MODELO) -->
-          <td>
-            <div *ngFor="let name of getIndicatorNames(r)">
-              <b>{{ name }}</b>
-            </div>
+          <td class="indicadores-cell" [title]="getIndicatorNames(r).join(', ')">
+            {{ getIndicatorNames(r).join(', ') }}
           </td>
+
 
           <td>
             {{ getMunicipios(r).join(', ') || '—' }}
@@ -73,19 +72,21 @@
           <td>{{ r.fecha | date }}</td>
 
           <td class="actions-col">
+            <div class="actions-wrapper">
+              <button class="btn-outline" [routerLink]="['/dashboard/records', r.id]">
+                Ver
+              </button>
 
-            <button class="btn-outline" [routerLink]="['/dashboard/records', r.id]">
-              Ver
-            </button>
+              <button *ngIf="!isViewer" class="btn-outline-primary" [routerLink]="['/dashboard/records', r.id, 'edit']">
+                Editar
+              </button>
 
-            <button *ngIf="!isViewer" class="btn-outline-primary" [routerLink]="['/dashboard/records', r.id, 'edit']">
-              Editar
-            </button>
-
-            <button *ngIf="!isViewer" class="btn-outline-danger" (click)="deleteRecord(r.id)">
-              Eliminar
-            </button>
+              <button *ngIf="!isViewer" class="btn-outline-danger" (click)="deleteRecord(r.id)">
+                Eliminar
+              </button>
+            </div>
           </td>
+
         </tr>
       </tbody>
 

@@ -260,43 +260,74 @@ export class RecordsListComponent {
   // EXPORTAR EXCEL (ya compatible con JSON)
   // ================================
   exportToExcel() {
+
+    // 🔒 Protección básica
+    if (!this.records || this.records.length === 0) {
+      console.warn('No hay registros para exportar');
+      return;
+    }
+
     const workbook = XLSX.utils.book_new();
 
+    // =====================================================
+    // 🔁 AGRUPAR REGISTROS POR ESTRATEGIA
+    // =====================================================
     const registrosPorEstrategia: Record<number, RecordModel[]> = {};
+
     for (const r of this.records) {
       const stratId = r.strategy_id ?? 0;
-      if (!registrosPorEstrategia[stratId]) registrosPorEstrategia[stratId] = [];
+      if (!registrosPorEstrategia[stratId]) {
+        registrosPorEstrategia[stratId] = [];
+      }
       registrosPorEstrategia[stratId].push(r);
     }
 
+    // =====================================================
+    // 📄 CREAR UNA HOJA POR ESTRATEGIA
+    // =====================================================
     Object.keys(registrosPorEstrategia).forEach(stratKey => {
+
       const strategyId = Number(stratKey);
       const registros = registrosPorEstrategia[strategyId];
-      const nombreEstrategia = this.strategyMap[strategyId] || "Estrategia";
+      const nombreEstrategia = this.strategyMap[strategyId] || 'Estrategia';
 
       let sheetRows: any[][] = [];
       let currentRow = 0;
 
+      // =====================================================
+      // 🔁 AGRUPAR POR COMPONENTE
+      // =====================================================
       const registrosPorComponente: Record<number, RecordModel[]> = {};
+
       for (const r of registros) {
         const compId = r.component_id ?? 0;
-        if (!registrosPorComponente[compId]) registrosPorComponente[compId] = [];
+        if (!registrosPorComponente[compId]) {
+          registrosPorComponente[compId] = [];
+        }
         registrosPorComponente[compId].push(r);
       }
 
+      // =====================================================
+      // 🧱 SECCIONES POR COMPONENTE
+      // =====================================================
       Object.keys(registrosPorComponente).forEach(compKey => {
+
         const compId = Number(compKey);
         const registrosComp = registrosPorComponente[compId];
-        const nombreComponente = this.componentMap[compId] || "Componente";
+        const nombreComponente = this.componentMap[compId] || 'Componente';
 
+        // 🔹 Título del componente
         sheetRows[currentRow] = [];
         sheetRows[currentRow][0] = `Componente: ${nombreComponente}`;
         currentRow++;
 
+        // =====================================================
+        // 📌 HEADERS DINÁMICOS (INDICADORES)
+        // =====================================================
         const headersBase = [
-          "Municipio",
-          "Fecha",
-          "Evidencia",
+          'Municipio',
+          'Fecha',
+          'Evidencia'
         ];
 
         const indicadorNombresSet = new Set<string>();
@@ -314,46 +345,67 @@ export class RecordsListComponent {
         const headers = [...headersBase, ...sortedIndicatorNames];
         sheetRows[currentRow++] = headers;
 
+        // =====================================================
+        // 📊 FILAS DE DATOS
+        // =====================================================
         registrosComp.forEach(r => {
+
           const municipios = r.detalle_poblacion?.municipios || {};
 
           Object.keys(municipios).forEach(nombreMuni => {
+
             const detMuni = municipios[nombreMuni];
 
             const fila = [
               nombreMuni,
               r.fecha,
-              r.evidencia_url ?? "—",
+              r.evidencia_url ?? '—'
             ];
 
             for (const indName of sortedIndicatorNames) {
-              fila.push(String(detMuni.indicadores[indName] ?? "—"));
+              fila.push(String(detMuni.indicadores[indName] ?? '—'));
             }
 
             sheetRows[currentRow++] = fila;
           });
         });
 
+        // 🔹 Espacio entre componentes
         sheetRows[currentRow++] = [];
       });
 
+      // =====================================================
+      // 🧾 CREAR WORKSHEET
+      // =====================================================
       const worksheet = XLSX.utils.aoa_to_sheet(sheetRows);
 
+      // =====================================================
+      // 📐 AUTO ANCHO DE COLUMNAS
+      // =====================================================
       const maxCols = Math.max(...sheetRows.map(r => r.length));
-      worksheet["!cols"] = Array.from({ length: maxCols }).map((_, i) => ({
-        wch: Math.max(...sheetRows.map(r => (r[i] ? r[i].toString().length : 10))) + 2
+
+      worksheet['!cols'] = Array.from({ length: maxCols }).map((_, i) => ({
+        wch: Math.max(
+          ...sheetRows.map(r => (r[i] ? r[i].toString().length : 10))
+        ) + 2
       }));
 
+      // =====================================================
+      // 🔗 MERGE PARA TÍTULOS DE COMPONENTE
+      // =====================================================
       sheetRows.forEach((row, index) => {
-        if (row[0]?.toString().startsWith("Componente: ")) {
-          worksheet["!merges"] = worksheet["!merges"] || [];
-          worksheet["!merges"].push({
+        if (row[0]?.toString().startsWith('Componente: ')) {
+          worksheet['!merges'] = worksheet['!merges'] || [];
+          worksheet['!merges'].push({
             s: { r: index, c: 0 },
             e: { r: index, c: maxCols - 1 }
           });
         }
       });
 
+      // =====================================================
+      // ➕ AGREGAR HOJA AL LIBRO
+      // =====================================================
       XLSX.utils.book_append_sheet(
         workbook,
         worksheet,
@@ -361,6 +413,9 @@ export class RecordsListComponent {
       );
     });
 
+    // =====================================================
+    // 💾 DESCARGAR ARCHIVO
+    // =====================================================
     const excelBuffer = XLSX.write(workbook, {
       bookType: 'xlsx',
       type: 'array'
@@ -372,9 +427,14 @@ export class RecordsListComponent {
     );
   }
 
+
   getShortActivity(text: string = ''): string {
     if (!text) return '—';
     return text.length > 60 ? text.slice(0, 60) + '...' : text;
+  }
+
+  shorten(text: string, max: number = 50): string {
+    return text.length > max ? text.slice(0, max) + '...' : text;
   }
 
 }
