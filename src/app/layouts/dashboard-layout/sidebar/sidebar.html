@@ -18,12 +18,12 @@
   <nav>
     <a routerLink="dashboard" routerLinkActive="active">Dashboard</a>
     <a routerLink="dashboard/records" routerLinxkActive="active">Reportes</a>
-
-    <a routerLink="dashboard/strategies" *ngIf="!isSuperAdmin" routerLinxkActive="active">Estrategias</a>
-    <a routerLink="dashboard/activities" *ngIf="!isSuperAdmin" routerLinxkActive="active">Actividades</a>
-    <a routerLink="dashboard/components" *ngIf="!isSuperAdmin" routerLinkActive="active">Componentes Estrategicos</a>
-    <a routerLink="dashboard/indicators" routerLinkActive="active" *ngIf="!isSuperAdmin">Indicadores</a>
-    <a routerLink="dashboard/users" routerLinkActive="active" *ngIf="!isSuperAdmin">Usuarios</a>
+    <a routerLink="dashboard/strategies" routerLinkActive="active">@if (!isEditor && !isViewer) { Estrategias }</a>
+    <a routerLink="dashboard/activities" routerLinkActive="active">@if (!isEditor && !isViewer) { Actividades }</a>
+    <a routerLink="dashboard/components" routerLinkActive="active">@if (!isEditor && !isViewer) { Componentes
+      Estrategicos }</a>
+    <a routerLink="dashboard/indicators" routerLinkActive="active">@if (!isEditor && !isViewer) { Indicadores }</a>
+    <a routerLink="dashboard/users" routerLinkActive="active">@if (!isEditor && !isViewer) { Usuarios }</a>
   </nav>
 </div>
 
