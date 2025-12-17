@@ -18,6 +18,7 @@ export class SidebarComponent {
   isOpen = false;
   isSuperAdmin = false;
   isViewer = false;
+  isEditor = false;
 
   user: any = null;
 
@@ -28,6 +29,7 @@ export class SidebarComponent {
       this.user = JSON.parse(userString);
       this.isSuperAdmin = this.user.role?.name === 'SuperAdmin';
       this.isViewer = this.user.role?.name === 'Viewer';
+      this.isEditor = this.user.role?.name === 'Editor';
     }
 
     this.sidebarService.isOpen$.subscribe(value => {
