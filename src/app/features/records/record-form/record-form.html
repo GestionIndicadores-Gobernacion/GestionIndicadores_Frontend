@@ -1,7 +1,7 @@
 <div class="record-form-container">
 
   <h2 class="page-title">
-    {{ isEdit ? 'Editar reporte' : 'Crear reporte' }}
+    {{ isEdit ? 'Editar informe' : 'Crear Informe' }}
   </h2>
 
   <!-- LOADING -->
@@ -140,13 +140,19 @@
       <!-- Municipios -->
       <div class="form-group mt-3 full">
 
-        <app-multi-select label="Municipios" placeholder="Buscar municipio..." [items]="municipios"
-          [(selected)]="selectedMunicipios" (selectedChange)="onMunicipiosChange()" [disabled]="
-  !form.strategy_id ||
-  !form.activity_id ||
-  !form.component_id
-">
+
+        <app-multi-select label="Municipios" [placeholder]="
+    selectedMunicipios.length === 0
+      ? '➕ Agregar municipio...'
+      : 'Agregar otro municipio...'
+  " [items]="municipios" [(selected)]="selectedMunicipios" (selectedChange)="onMunicipiosChange()" [disabled]="
+    !form.strategy_id ||
+    !form.activity_id ||
+    !form.component_id
+  ">
         </app-multi-select>
+
+
 
 
         <div class="hint-text" *ngIf="!form.strategy_id || !form.activity_id || !form.component_id">
