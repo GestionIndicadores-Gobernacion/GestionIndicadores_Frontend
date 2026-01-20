@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth-guard';
 import { AuthLayoutComponent } from './layouts/auth-layout/auth-layout';
 import { DashboardLayoutComponent } from './layouts/dashboard-layout/dashboard-layout';
+import { guestGuard } from './core/guards/guest-guard';
 
 
 export const routes: Routes = [
@@ -13,6 +14,7 @@ export const routes: Routes = [
     children: [
       {
         path: 'login',
+        canActivate: [ guestGuard ],
         loadComponent: () =>
           import('./features/auth/login/login')
             .then(m => m.LoginComponent),
