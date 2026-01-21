@@ -9,7 +9,6 @@ import { environment } from '../../../environments/environment';
 })
 export class AuthService {
 
-  // 👉 Ruta base: http://localhost:8080/auth
   private api = `${environment.apiUrl}/auth`;
 
   constructor(private http: HttpClient) { }
