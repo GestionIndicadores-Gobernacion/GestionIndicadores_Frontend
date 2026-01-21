@@ -17,6 +17,7 @@ import { RecordCreateRequest, RecordDetallePoblacion } from '../../../core/model
 
 import { MUNICIPIOS_VALLE } from '../../../core/data/municipios';
 import { MultiSelectComponent } from '../../../shared/components/multi-select/multi-select';
+import { DashboardService } from '../../../core/services/dashboard.service';
 
 @Component({
   selector: 'app-record-form',
@@ -26,6 +27,7 @@ import { MultiSelectComponent } from '../../../shared/components/multi-select/mu
   styleUrl: './record-form.css',
 })
 export class RecordFormComponent {
+  indicadorAvanceActual: Record<string, number> = {};
 
   municipios = MUNICIPIOS_VALLE;
   selectedMunicipios: string[] = [];
@@ -68,6 +70,7 @@ export class RecordFormComponent {
     private componentsService: ComponentsService,
     private indicatorsService: IndicatorsService,
     private strategiesService: StrategiesService,
+    private dashboardService: DashboardService,
     private activitiesService: ActivitiesService,
     private toast: ToastService
   ) { }
@@ -139,11 +142,35 @@ export class RecordFormComponent {
   }
 
   onComponentChange(reset = true) {
-    this.indicators = this.allIndicators.filter(i => i.component_id === this.form.component_id);
+
+    this.indicators = this.allIndicators
+      .filter(i => i.component_id === this.form.component_id)
+      .map(ind => ({
+        ...ind,
+        acumulado: 0   // 👈 NUEVO
+      }));
+
     if (reset) {
       this.selectedMunicipios = [];
       this.detallePoblacion = { municipios: {} };
     }
+
+    // 🔥 CONSULTAR AVANCE ACTUAL
+    this.dashboardService.getAvanceIndicadores(
+      new Date(this.form.fecha).getFullYear(),
+      this.form.strategy_id!,
+      this.form.component_id!
+    ).subscribe(res => {
+
+      res.forEach((r: any) => {
+        const found = this.indicators.find(i => i.id === r.indicador_id);
+        if (found) {
+          const total = r.meses?.reduce((acc: number, m: any) => acc + m.valor, 0) || 0;
+          found.acumulado = total;
+        }
+      });
+
+    });
   }
 
   /** ✅ MÉTODO CLAVE CORREGIDO */

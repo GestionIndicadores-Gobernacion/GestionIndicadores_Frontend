@@ -8,6 +8,9 @@ export interface IndicatorModel {
   active: boolean;
   created_at?: string;
   updated_at?: string;
+
+    // NUEVO (solo frontend)
+  acumulado?: number;
 }
 
 export interface IndicatorCreateRequest {

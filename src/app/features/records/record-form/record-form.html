@@ -150,8 +150,9 @@
             <td>
               {{ ind.name }}
               <span class="meta-tag">
-                Meta: {{ ind.meta }}
+                {{ ind.acumulado || 0 }}/{{ ind.meta }}
               </span>
+
             </td>
 
             <td>
