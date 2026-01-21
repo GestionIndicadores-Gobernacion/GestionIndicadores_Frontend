@@ -1,14 +1,17 @@
-import { Component } from '@angular/core';
-import { ComponentsService } from '../../../../core/services/components.service';
-import { DashboardService } from '../../../../core/services/dashboard.service';
-import { StrategiesService } from '../../../../core/services/strategy.service';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
+import { DashboardService } from '../../../../core/services/dashboard.service';
+import { StrategiesService } from '../../../../core/services/strategy.service';
+import { ComponentsService } from '../../../../core/services/components.service';
+
 import { KpiIndicadoresComponent } from './kpi-indicadores/kpi-indicadores';
 import { IndicadoresMensualesChartComponent } from './charts/indicadores-mensuales-chart/indicadores-mensuales-chart';
 
 @Component({
   selector: 'app-avance-indicadores-section',
+  standalone: true,
   imports: [
     CommonModule,
     FormsModule,
@@ -18,7 +21,7 @@ import { IndicadoresMensualesChartComponent } from './charts/indicadores-mensual
   templateUrl: './avance-indicadores-section.html',
   styleUrl: './avance-indicadores-section.css',
 })
-export class AvanceIndicadoresSectionComponent {
+export class AvanceIndicadoresSectionComponent implements OnInit {
 
   estrategias: any[] = [];
   componentes: any[] = [];
@@ -30,44 +33,86 @@ export class AvanceIndicadoresSectionComponent {
 
   avanceIndicadoresData: any[] = [];
   loading = false;
-
   showErrors = false;
 
   constructor(
     private dashboardService: DashboardService,
-    private componentsService: ComponentsService,
-    private strategiesService: StrategiesService
+    private strategiesService: StrategiesService,
+    private componentsService: ComponentsService
   ) { }
 
+  // =========================
+  // INIT
+  // =========================
   ngOnInit(): void {
     this.loadEstrategias();
-    this.generateYears();
+    this.loadYears();
   }
 
-  generateYears() {
-    const current = new Date().getFullYear();
-    this.years = [current - 1, current, current + 1];
-  }
-
-  loadEstrategias() {
-    this.strategiesService.getAll().subscribe(res => {
-      this.estrategias = res;
+  // =========================
+  // AÑOS REALES (records)
+  // =========================
+  loadYears() {
+    this.dashboardService.getYears().subscribe({
+      next: res => {
+        console.log('AÑOS DESDE BACKEND:', res);
+        this.years = res;
+      },
+      error: err => {
+        console.error('ERROR YEARS:', err);
+      }
     });
   }
 
+
+  // =========================
+  // ESTRATEGIAS CON RECORDS
+  // =========================
+  loadEstrategias() {
+    this.dashboardService.getRecordsByEstrategia().subscribe(stats => {
+
+      const nombresConDatos = stats.map(s => s.estrategia);
+
+      this.strategiesService.getAll().subscribe(all => {
+        this.estrategias = all.filter(e =>
+          nombresConDatos.includes(e.name)
+        );
+      });
+
+    });
+  }
+
+  // =========================
+  // COMPONENTES CON RECORDS
+  // =========================
   onEstrategiaChange() {
     this.selectedComponente = null;
+    this.componentes = [];
     this.avanceIndicadoresData = [];
     this.showErrors = false;
 
     if (!this.selectedEstrategia) return;
 
-    this.componentsService.getByActivity(this.selectedEstrategia)
-      .subscribe(res => {
-        this.componentes = res;
+    this.dashboardService
+      .getRecordsByComponent(this.selectedEstrategia)
+      .subscribe(stats => {
+
+        const componentesIds = stats.map(c => c.component_id);
+
+        this.componentsService
+          .getByActivity(this.selectedEstrategia!)
+          .subscribe(all => {
+            this.componentes = all.filter(c =>
+              componentesIds.includes(c.id)
+            );
+          });
+
       });
   }
 
+  // =========================
+  // BUSCAR
+  // =========================
   onBuscar() {
     this.showErrors = true;
 
@@ -79,26 +124,24 @@ export class AvanceIndicadoresSectionComponent {
     this.loadIndicadores();
   }
 
+  // =========================
+  // INDICADORES
+  // =========================
   loadIndicadores() {
-    if (!this.selectedEstrategia || !this.selectedComponente || !this.selectedYear) {
-      this.avanceIndicadoresData = [];
-      return;
-    }
-
     this.loading = true;
 
     this.dashboardService.getAvanceIndicadores(
-      this.selectedYear,
-      this.selectedEstrategia,
-      this.selectedComponente
+      this.selectedYear!,
+      this.selectedEstrategia!,
+      this.selectedComponente!
     ).subscribe(res => {
 
-      // ============================
-      // 🔥 PROCESAR INDICADORES AQUÍ
-      // ============================
       this.avanceIndicadoresData = res.map(ind => {
-        const valor_total = ind.meses?.reduce((acc: number, m: any) => acc + (m.valor || 0), 0) || 0;
-        const avance_total = ind.meta ? (valor_total / ind.meta) * 100 : 0;
+        const valor_total =
+          ind.meses?.reduce((acc: number, m: any) => acc + (m.valor || 0), 0) || 0;
+
+        const avance_total =
+          ind.meta ? (valor_total / ind.meta) * 100 : 0;
 
         return {
           ...ind,
@@ -107,10 +150,7 @@ export class AvanceIndicadoresSectionComponent {
         };
       });
 
-      console.log("Indicadores procesados:", this.avanceIndicadoresData);
-
       this.loading = false;
     });
   }
-
 }
