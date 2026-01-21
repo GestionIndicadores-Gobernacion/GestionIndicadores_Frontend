@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
@@ -8,11 +8,11 @@ import { ComponentsService } from '../../../core/services/components.service';
 import { IndicatorsService } from '../../../core/services/indicators.service';
 import { RecordsService } from '../../../core/services/records.service';
 import { StrategiesService } from '../../../core/services/strategy.service';
+import { ActivitiesService } from '../../../core/services/activities.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { ToastService } from '../../../core/services/toast.service';
-import { ActivitiesService } from '../../../core/services/activities.service';
 
 @Component({
   selector: 'app-records-list',
@@ -21,7 +21,7 @@ import { ActivitiesService } from '../../../core/services/activities.service';
   templateUrl: './records-list.html',
   styleUrl: './records-list.css',
 })
-export class RecordsListComponent {
+export class RecordsListComponent implements OnInit {
 
   // PAGINACIÓN
   currentPage = 1;
@@ -41,10 +41,14 @@ export class RecordsListComponent {
   filteredRecords: RecordModel[] = [];
 
   // MAPAS
-  strategyMap: Record<number, string> = {};
   componentMap: Record<number, string> = {};
-  indicatorMap: Record<number, string> = {};
   activityMap: Record<number, string> = {};
+  strategyMap: Record<number, string> = {};
+  indicatorMap: Record<number, string> = {};
+
+  // 🔥 MAPAS DE RELACIÓN
+  componentActivityMap: Record<number, number> = {};
+  activityStrategyMap: Record<number, number> = {};
 
   constructor(
     private recordsService: RecordsService,
@@ -66,33 +70,41 @@ export class RecordsListComponent {
   }
 
   // ================================
-  // Cargar Strategy → Component → Indicators → Records
+  // Cargar mapas base
   // ================================
   loadMaps() {
-    this.strategiesService.getAll().subscribe({
-      next: strategies => {
-        this.strategyMap = Object.fromEntries(strategies.map(s => [s.id, s.name]));
+    this.strategiesService.getAll().subscribe(strategies => {
+      this.strategyMap = Object.fromEntries(
+        strategies.map(s => [s.id, s.name])
+      );
 
-        this.componentsService.getAll().subscribe({
-          next: comps => {
-            this.componentMap = Object.fromEntries(comps.map(c => [c.id, c.name]));
+      this.activitiesService.getAll().subscribe(activities => {
+        this.activityMap = Object.fromEntries(
+          activities.map(a => [a.id, a.description])
+        );
 
-            this.indicatorsService.getAll().subscribe({
-              next: inds => {
-                this.indicatorMap = Object.fromEntries(inds.map(i => [i.id, i.name]));
+        this.activityStrategyMap = Object.fromEntries(
+          activities.map(a => [a.id, a.strategy_id])
+        );
 
-                this.loadRecords();
-              }
-            });
-            this.activitiesService.getAll().subscribe({
-              next: acts => {
-                this.activityMap = Object.fromEntries(acts.map(a => [a.id, a.description]));
-              }
-            });
+        this.componentsService.getAll().subscribe(components => {
+          this.componentMap = Object.fromEntries(
+            components.map(c => [c.id, c.name])
+          );
 
-          }
+          this.componentActivityMap = Object.fromEntries(
+            components.map(c => [c.id, c.activity_id])
+          );
+
+          this.indicatorsService.getAll().subscribe(inds => {
+            this.indicatorMap = Object.fromEntries(
+              inds.map(i => [i.id, i.name])
+            );
+
+            this.loadRecords();
+          });
         });
-      }
+      });
     });
   }
 
@@ -108,60 +120,69 @@ export class RecordsListComponent {
       },
       error: () => {
         this.loading = false;
+        this.toast.error('Error al cargar registros');
       }
     });
   }
 
   // ================================
-  // NUEVO: Obtener Municipios
+  // Helpers
   // ================================
+  getStrategyName(r: RecordModel): string {
+    const actId = this.componentActivityMap[r.component_id];
+    const stratId = this.activityStrategyMap[actId];
+    return this.strategyMap[stratId] || '—';
+  }
+
+  getActivityName(r: RecordModel): string {
+    const actId = this.componentActivityMap[r.component_id];
+    return this.activityMap[actId] || '—';
+  }
+
   getMunicipios(r: RecordModel): string[] {
     return r.detalle_poblacion?.municipios
       ? Object.keys(r.detalle_poblacion.municipios)
       : [];
   }
 
-  // ================================
-  // NUEVO: Obtener nombres de indicadores
-  // ================================
   getIndicatorNames(r: RecordModel): string[] {
-    const nombres = new Set<string>();
+    const set = new Set<string>();
 
     if (!r.detalle_poblacion?.municipios) return [];
 
     Object.values(r.detalle_poblacion.municipios).forEach((mun: any) => {
-      Object.keys(mun.indicadores || {}).forEach(indName => {
-        nombres.add(indName);
-      });
+      Object.keys(mun.indicadores || {}).forEach(ind => set.add(ind));
     });
 
-    return [...nombres].sort();
+    return [...set].sort();
+  }
+
+  getShort(text: string, max = 60): string {
+    return text.length > max ? text.slice(0, max) + '...' : text;
   }
 
   // ================================
   // FILTRO
   // ================================
   applyFilter() {
-    const term = this.search.trim().toLowerCase();
+    const term = this.search.toLowerCase();
 
     this.filteredRecords = this.records.filter(r => {
-
-      const strategy = (this.strategyMap[r.strategy_id] || '').toLowerCase();
-      const activity = (this.activityMap[r.activity_id] || '').toLowerCase();
-      const comp = (this.componentMap[r.component_id] || '').toLowerCase();
+      const strategy = this.getStrategyName(r).toLowerCase();
+      const activity = this.getActivityName(r).toLowerCase();
+      const component = (this.componentMap[r.component_id] || '').toLowerCase();
       const muni = this.getMunicipios(r).join(', ').toLowerCase();
-      const indicators = this.getIndicatorNames(r).join(' ').toLowerCase();
+      const inds = this.getIndicatorNames(r).join(' ').toLowerCase();
 
       return strategy.includes(term)
         || activity.includes(term)
-        || comp.includes(term)
+        || component.includes(term)
         || muni.includes(term)
-        || indicators.includes(term);
+        || inds.includes(term);
     });
 
     this.currentPage = 1;
   }
-
 
   // ================================
   // ORDENAMIENTO
@@ -183,20 +204,19 @@ export class RecordsListComponent {
       let valB: any = '';
 
       switch (this.sortColumn) {
+        case 'strategy':
+          valA = this.getStrategyName(a).toLowerCase();
+          valB = this.getStrategyName(b).toLowerCase();
+          break;
+
+        case 'activity':
+          valA = this.getActivityName(a).toLowerCase();
+          valB = this.getActivityName(b).toLowerCase();
+          break;
 
         case 'component':
           valA = this.componentMap[a.component_id]?.toLowerCase() || '';
           valB = this.componentMap[b.component_id]?.toLowerCase() || '';
-          break;
-
-        case 'strategy':
-          valA = this.strategyMap[a.strategy_id]?.toLowerCase() || '';
-          valB = this.strategyMap[b.strategy_id]?.toLowerCase() || '';
-          break;
-
-        case 'activity':
-          valA = this.activityMap[a.activity_id]?.toLowerCase() || '';
-          valB = this.activityMap[b.activity_id]?.toLowerCase() || '';
           break;
 
         case 'municipio':
@@ -238,203 +258,72 @@ export class RecordsListComponent {
   // ELIMINAR
   // ================================
   deleteRecord(id: number) {
-    this.toast.confirm("¿Eliminar registro?", "Esta acción no se puede deshacer.")
-      .then(result => {
-        if (result.isConfirmed) {
-          this.loading = true;
-          this.recordsService.delete(id).subscribe({
-            next: () => {
-              this.toast.success("Registro eliminado correctamente");
-              this.loadRecords();
-            },
-            error: () => {
-              this.loading = false;
-              this.toast.error("Error eliminando el registro");
-            }
-          });
+    this.toast.confirm(
+      '¿Eliminar registro?',
+      'Esta acción no se puede deshacer.'
+    ).then(r => {
+      if (!r.isConfirmed) return;
+
+      this.recordsService.delete(id).subscribe({
+        next: () => {
+          this.toast.success('Registro eliminado correctamente');
+          this.loadRecords();
+        },
+        error: () => {
+          this.toast.error('Error eliminando el registro');
         }
       });
+    });
   }
 
   // ================================
-  // EXPORTAR EXCEL (ya compatible con JSON)
+  // EXPORTAR EXCEL (corregido)
   // ================================
   exportToExcel() {
-
-    // 🔒 Protección básica
-    if (!this.records || this.records.length === 0) {
-      console.warn('No hay registros para exportar');
-      return;
-    }
+    if (!this.records.length) return;
 
     const workbook = XLSX.utils.book_new();
-
-    // =====================================================
-    // 🔁 AGRUPAR REGISTROS POR ESTRATEGIA
-    // =====================================================
-    const registrosPorEstrategia: Record<number, RecordModel[]> = {};
+    const grouped: Record<number, RecordModel[]> = {};
 
     for (const r of this.records) {
-      const stratId = r.strategy_id ?? 0;
-      if (!registrosPorEstrategia[stratId]) {
-        registrosPorEstrategia[stratId] = [];
-      }
-      registrosPorEstrategia[stratId].push(r);
+      const actId = this.componentActivityMap[r.component_id];
+      const stratId = this.activityStrategyMap[actId] ?? 0;
+
+      grouped[stratId] = grouped[stratId] || [];
+      grouped[stratId].push(r);
     }
 
-    // =====================================================
-    // 📄 CREAR UNA HOJA POR ESTRATEGIA
-    // =====================================================
-    Object.keys(registrosPorEstrategia).forEach(stratKey => {
+    Object.keys(grouped).forEach(key => {
+      const stratId = Number(key);
+      const rows = grouped[stratId];
+      const sheetName = this.strategyMap[stratId] || 'Estrategia';
 
-      const strategyId = Number(stratKey);
-      const registros = registrosPorEstrategia[strategyId];
-      const nombreEstrategia = this.strategyMap[strategyId] || 'Estrategia';
-
-      let sheetRows: any[][] = [];
-      let currentRow = 0;
-
-      // =====================================================
-      // 🔁 AGRUPAR POR COMPONENTE
-      // =====================================================
-      const registrosPorComponente: Record<number, RecordModel[]> = {};
-
-      for (const r of registros) {
-        const compId = r.component_id ?? 0;
-        if (!registrosPorComponente[compId]) {
-          registrosPorComponente[compId] = [];
-        }
-        registrosPorComponente[compId].push(r);
-      }
-
-      // =====================================================
-      // 🧱 SECCIONES POR COMPONENTE
-      // =====================================================
-      Object.keys(registrosPorComponente).forEach(compKey => {
-
-        const compId = Number(compKey);
-        const registrosComp = registrosPorComponente[compId];
-        const nombreComponente = this.componentMap[compId] || 'Componente';
-
-        // 🔹 Título del componente
-        sheetRows[currentRow] = [];
-        sheetRows[currentRow][0] = `Componente: ${nombreComponente}`;
-        currentRow++;
-
-        // =====================================================
-        // 📌 HEADERS DINÁMICOS (INDICADORES)
-        // =====================================================
-        const headersBase = [
-          'Municipio',
-          'Fecha',
-          'Evidencia'
-        ];
-
-        const indicadorNombresSet = new Set<string>();
-
-        registrosComp.forEach(r => {
-          const municipios = r.detalle_poblacion?.municipios || {};
-          Object.values(municipios).forEach((mun: any) => {
-            Object.keys(mun.indicadores || {}).forEach(indName => {
-              indicadorNombresSet.add(indName);
-            });
-          });
-        });
-
-        const sortedIndicatorNames = [...indicadorNombresSet].sort();
-        const headers = [...headersBase, ...sortedIndicatorNames];
-        sheetRows[currentRow++] = headers;
-
-        // =====================================================
-        // 📊 FILAS DE DATOS
-        // =====================================================
-        registrosComp.forEach(r => {
-
-          const municipios = r.detalle_poblacion?.municipios || {};
-
-          Object.keys(municipios).forEach(nombreMuni => {
-
-            const detMuni = municipios[nombreMuni];
-
-            const fila = [
-              nombreMuni,
-              r.fecha,
-              r.evidencia_url ?? '—'
-            ];
-
-            for (const indName of sortedIndicatorNames) {
-              fila.push(String(detMuni.indicadores[indName] ?? '—'));
-            }
-
-            sheetRows[currentRow++] = fila;
-          });
-        });
-
-        // 🔹 Espacio entre componentes
-        sheetRows[currentRow++] = [];
-      });
-
-      // =====================================================
-      // 🧾 CREAR WORKSHEET
-      // =====================================================
-      const worksheet = XLSX.utils.aoa_to_sheet(sheetRows);
-
-      // =====================================================
-      // 📐 AUTO ANCHO DE COLUMNAS
-      // =====================================================
-      const maxCols = Math.max(...sheetRows.map(r => r.length));
-
-      worksheet['!cols'] = Array.from({ length: maxCols }).map((_, i) => ({
-        wch: Math.max(
-          ...sheetRows.map(r => (r[i] ? r[i].toString().length : 10))
-        ) + 2
+      const data = rows.map(r => ({
+        Estrategia: this.getStrategyName(r),
+        Actividad: this.getActivityName(r),
+        Componente: this.componentMap[r.component_id],
+        Municipios: this.getMunicipios(r).join(', '),
+        Fecha: r.fecha
       }));
 
-      // =====================================================
-      // 🔗 MERGE PARA TÍTULOS DE COMPONENTE
-      // =====================================================
-      sheetRows.forEach((row, index) => {
-        if (row[0]?.toString().startsWith('Componente: ')) {
-          worksheet['!merges'] = worksheet['!merges'] || [];
-          worksheet['!merges'].push({
-            s: { r: index, c: 0 },
-            e: { r: index, c: maxCols - 1 }
-          });
-        }
-      });
-
-      // =====================================================
-      // ➕ AGREGAR HOJA AL LIBRO
-      // =====================================================
-      XLSX.utils.book_append_sheet(
-        workbook,
-        worksheet,
-        nombreEstrategia.slice(0, 31)
-      );
+      const sheet = XLSX.utils.json_to_sheet(data);
+      XLSX.utils.book_append_sheet(workbook, sheet, sheetName.slice(0, 31));
     });
 
-    // =====================================================
-    // 💾 DESCARGAR ARCHIVO
-    // =====================================================
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: 'xlsx',
-      type: 'array'
-    });
-
-    saveAs(
-      new Blob([excelBuffer]),
-      `registros_${new Date().toISOString().slice(0, 10)}.xlsx`
-    );
+    const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    saveAs(new Blob([buffer]), 'registros.xlsx');
   }
 
-
-  getShortActivity(text: string = ''): string {
-    if (!text) return '—';
-    return text.length > 60 ? text.slice(0, 60) + '...' : text;
+  prevPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
   }
 
-  shorten(text: string, max: number = 50): string {
-    return text.length > max ? text.slice(0, max) + '...' : text;
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
   }
 
 }

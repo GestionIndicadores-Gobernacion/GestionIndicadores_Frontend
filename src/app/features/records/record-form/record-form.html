@@ -9,7 +9,8 @@
     <div class="spinner"></div>
   </div>
 
-  <form *ngIf="!loading" (ngSubmit)="save()">
+  <form *ngIf="!loading" (ngSubmit)="onSubmit($event)">
+
 
     <!-- =====================================================
          📌 Sección 1 — Datos generales
@@ -26,7 +27,9 @@
           <select [(ngModel)]="form.strategy_id" name="strategy_id" required (change)="onStrategyChange()"
             [class.invalid]="attemptedSubmit && !form.strategy_id">
 
-            <option disabled [ngValue]="null">Seleccionar estrategia...</option>
+            <option disabled [ngValue]="null">
+              Seleccionar estrategia...
+            </option>
 
             <option *ngFor="let s of strategies" [ngValue]="s.id">
               {{ s.name }}
@@ -89,145 +92,100 @@
     <div class="form-section">
       <h3 class="section-title">Reporte de indicadores KPI</h3>
 
-      <div class="empty-text" style="margin-bottom: 20px;">
-        En este campo reporte los avances cuantitativos de su componente,
-        de acuerdo a los municipios impactados.
+      <div class="empty-text">
+        En este campo reporte los avances cuantitativos del componente por municipio.
       </div>
 
-      <!-- ⭐ DOS COLUMNAS -->
       <div class="form-grid-dos two-columns">
 
-        <!-- Resumen ejecutivo -->
+        <!-- Resumen -->
         <div class="form-group">
           <label>Resumen ejecutivo</label>
 
           <textarea rows="4" maxlength="500" [(ngModel)]="form.description" name="description" required
-            placeholder="Resumen ejecutivo del avance de su componente"
             [class.invalid]="attemptedSubmit && !form.description"></textarea>
 
-          <!-- Contador -->
           <div class="char-counter">
             {{ form.description.length || 0 }}/500
           </div>
 
-          <!-- Error -->
           <div class="error-message" *ngIf="attemptedSubmit && !form.description">
-            El resumen ejecutivo es obligatorio.
+            El resumen es obligatorio.
           </div>
         </div>
 
-        <!-- Actividades realizadas -->
+        <!-- Actividades -->
         <div class="form-group">
           <label>Actividades realizadas</label>
 
           <textarea rows="4" maxlength="500" [(ngModel)]="form.actividades_realizadas" name="actividades_realizadas"
-            required placeholder="Describe aquí las actividades ejecutadas"
-            [class.invalid]="attemptedSubmit && !form.actividades_realizadas"></textarea>
+            required [class.invalid]="attemptedSubmit && !form.actividades_realizadas"></textarea>
 
-          <!-- Contador -->
           <div class="char-counter">
             {{ form.actividades_realizadas.length || 0 }}/500
           </div>
 
-          <!-- Error -->
           <div class="error-message" *ngIf="attemptedSubmit && !form.actividades_realizadas">
-            Las actividades realizadas son obligatorias.
+            Campo obligatorio.
           </div>
         </div>
 
       </div>
 
       <!-- Municipios -->
-      <div class="form-group mt-3 full">
+      <app-multi-select label="Municipios" [items]="municipios" [(selected)]="selectedMunicipios"
+        (selectedChange)="onMunicipiosChange()" [disabled]="!form.component_id">
+      </app-multi-select>
 
-
-        <app-multi-select label="Municipios" [placeholder]="
-    selectedMunicipios.length === 0
-      ? '➕ Agregar municipio...'
-      : 'Agregar otro municipio...'
-  " [items]="municipios" [(selected)]="selectedMunicipios" (selectedChange)="onMunicipiosChange()" [disabled]="
-    !form.strategy_id ||
-    !form.activity_id ||
-    !form.component_id
-  ">
-        </app-multi-select>
-
-
-
-
-        <div class="hint-text" *ngIf="!form.strategy_id || !form.activity_id || !form.component_id">
-          Primero completa estrategia, actividad y componente.
-        </div>
-
-        <div class="error-message" *ngIf="attemptedSubmit && selectedMunicipios.length === 0 &&
-                     form.strategy_id && form.activity_id && form.component_id">
-          Seleccione al menos un municipio.
-        </div>
-
+      <div class="error-message" *ngIf="attemptedSubmit && !hasMunicipios()">
+        Debes seleccionar al menos un municipio.
       </div>
 
-      <!-- Tablas por municipio -->
-      <div *ngIf="selectedMunicipios.length === 0" class="empty-text">
-        Selecciona municipios para agregar valores.
-      </div>
 
       <div *ngFor="let municipio of selectedMunicipios" class="municipio-block">
-
-        <h4 class="municipio-title">{{ municipio }}</h4>
+        <h4>{{ municipio }}</h4>
 
         <table class="inner-table">
-          <thead>
-            <tr>
-              <th>Indicador</th>
-              <th>Valor</th>
-            </tr>
-          </thead>
+          <tr *ngFor="let ind of indicators">
+            <td>
+              {{ ind.name }}
+              <span class="meta-tag">
+                Meta: {{ ind.meta }}
+              </span>
+            </td>
 
-          <tbody>
-            <tr *ngFor="let ind of indicators">
-              <td>
-                {{ ind.name }}
-                <span class="meta-tag">Meta: {{ ind.meta }}</span>
-              </td>
+            <td>
+              <input type="number" min="0" [max]="ind.meta"
+                [(ngModel)]="detallePoblacion.municipios[municipio].indicadores[ind.name]"
+                name="ind_{{municipio}}_{{ind.id}}" (input)="validateIndicadorValue(municipio, ind)">
+            </td>
+          </tr>
 
-              <td>
-                <input type="number" min="0" [max]="ind.meta"
-                  [(ngModel)]="detallePoblacion.municipios[municipio].indicadores[ind.name]"
-                  name="ind_{{ municipio }}_{{ ind.id }}" (input)="validateIndicadorValue(municipio, ind)" />
-              </td>
-            </tr>
-          </tbody>
         </table>
-
       </div>
-
     </div>
 
-    <!-- =====================================================
-         📌 Evidencia
-    ====================================================== -->
+    <!-- Evidencia -->
+    <!-- Evidencia -->
     <div class="form-section">
       <h3 class="section-title">Evidencia</h3>
 
       <div class="form-group full">
         <input type="url" [(ngModel)]="form.evidencia_url" name="evidencia_url" placeholder="https://..."
-          class="full-input" />
+          class="full-input">
       </div>
     </div>
 
-    <!-- =====================================================
-         📌 Botones
-    ====================================================== -->
-    <div class="form-actions">
 
+    <!-- Botones -->
+    <div class="form-actions">
       <button class="btn-primary" [disabled]="saving">
-        {{ saving ? 'Guardando...' : (isEdit ? 'Actualizar' : 'Crear reporte') }}
+        {{ saving ? 'Guardando...' : (isEdit ? 'Actualizar' : 'Crear') }}
       </button>
 
       <button type="button" class="btn-secondary" (click)="cancel()">
         Cancelar
       </button>
-
     </div>
 
   </form>

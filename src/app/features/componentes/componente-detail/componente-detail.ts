@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ComponentModel } from '../../../core/models/component.model';
-import { ComponentsService } from '../../../core/services/components.service';
-import { StrategyModel } from '../../../core/models/strategy.model';
 import { CommonModule } from '@angular/common';
+
+import { ComponentsService } from '../../../core/services/components.service';
+import { ActivitiesService } from '../../../core/services/activities.service';
 import { StrategiesService } from '../../../core/services/strategy.service';
 
 @Component({
@@ -11,44 +11,36 @@ import { StrategiesService } from '../../../core/services/strategy.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './componente-detail.html',
-  styleUrl: './componente-detail.css',
 })
 export class ComponenteDetailComponent implements OnInit {
 
-  componente?: ComponentModel;
-  strategyName?: string;
+  componente: any;
+  activityName = '';
+  strategyName = '';
   loading = true;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private componentsService: ComponentsService,
+    private activitiesService: ActivitiesService,
     private strategiesService: StrategiesService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
 
-    this.componentsService.getById(id).subscribe({
-      next: (comp) => {
-        this.componente = comp;
+    this.componentsService.getById(id).subscribe(comp => {
+      this.componente = comp;
 
-        // cargar estrategia
-        this.strategiesService.getById(comp.strategy_id).subscribe({
-          next: (strategy) => {
-            this.strategyName = strategy.name;
-            this.loading = false;
-          },
-          error: () => {
-            this.strategyName = 'No encontrada';
-            this.loading = false;
-          }
+      this.activitiesService.getById(comp.activity_id).subscribe(activity => {
+        this.activityName = activity.description;
+
+        this.strategiesService.getById(activity.strategy_id).subscribe(strategy => {
+          this.strategyName = strategy.name;
+          this.loading = false;
         });
-      },
-      error: () => {
-        alert('Error cargando componente');
-        this.loading = false;
-      },
+      });
     });
   }
 

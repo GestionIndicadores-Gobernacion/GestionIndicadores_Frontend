@@ -53,7 +53,7 @@ export class IndicatorDetailComponent {
       // MAP de componentes
       components.forEach((c: ComponentModel) => {
         this.componentMap[c.id] = c.name;
-        this.componentStrategyMap[c.id] = c.strategy_id;
+        this.componentStrategyMap[c.id] = c.activity_id;
       });
 
       // MAP de estrategias

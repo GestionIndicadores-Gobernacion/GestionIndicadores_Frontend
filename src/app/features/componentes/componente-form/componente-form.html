@@ -12,12 +12,15 @@
 
     <div class="form-section">
 
+      <!-- ========================= -->
       <!-- Estrategia -->
+      <!-- ========================= -->
       <div class="form-group">
         <label>Estrategia</label>
 
         <select
           formControlName="strategy_id"
+          (change)="onStrategyChange(form.get('strategy_id')?.value)"
           [class.invalid]="showError('strategy_id')">
 
           <option value="" disabled>Seleccione una estrategia...</option>
@@ -26,16 +29,36 @@
           </option>
         </select>
 
-        <!-- Errores -->
         <div class="error-message" *ngIf="showError('strategy_id')">
-          <span *ngIf="form.get('strategy_id')?.errors?.['required']">
-            Debe seleccionar una estrategia.
-          </span>
+          Debe seleccionar una estrategia.
         </div>
       </div>
 
+      <!-- ========================= -->
+      <!-- Actividad -->
+      <!-- ========================= -->
+      <div class="form-group">
+        <label>Actividad</label>
 
+        <select
+          formControlName="activity_id"
+          [disabled]="filteredActivities.length === 0"
+          [class.invalid]="showError('activity_id')">
+
+          <option value="" disabled>Seleccione una actividad...</option>
+          <option *ngFor="let a of filteredActivities" [value]="a.id">
+            {{ a.description }}
+          </option>
+        </select>
+
+        <div class="error-message" *ngIf="showError('activity_id')">
+          Debe seleccionar una actividad.
+        </div>
+      </div>
+
+      <!-- ========================= -->
       <!-- Nombre -->
+      <!-- ========================= -->
       <div class="form-group">
         <label>Nombre</label>
 
@@ -55,8 +78,9 @@
         </div>
       </div>
 
-
+      <!-- ========================= -->
       <!-- Tipo de dato -->
+      <!-- ========================= -->
       <div class="form-group">
         <label>Tipo de dato</label>
 
@@ -74,24 +98,25 @@
         </select>
 
         <div class="error-message" *ngIf="showError('data_type')">
-          <span *ngIf="form.get('data_type')?.errors?.['required']">
-            Seleccione un tipo de dato.
-          </span>
+          Seleccione un tipo de dato.
         </div>
       </div>
 
-
+      <!-- ========================= -->
       <!-- Descripción -->
+      <!-- ========================= -->
       <div class="form-group full">
         <label>Descripción</label>
         <textarea
           rows="3"
           formControlName="description"
-          placeholder="Descripción del componente"></textarea>
+          placeholder="Descripción del componente">
+        </textarea>
       </div>
 
-
+      <!-- ========================= -->
       <!-- Activo -->
+      <!-- ========================= -->
       <div class="form-group">
         <label>Activo</label>
         <label class="switch">
@@ -102,13 +127,18 @@
 
     </div>
 
-
+    <!-- ========================= -->
+    <!-- Acciones -->
+    <!-- ========================= -->
     <div class="form-actions">
       <button class="btn-primary" [disabled]="saving || form.invalid">
         {{ saving ? "Guardando..." : (isEdit ? "Actualizar Componente" : "Crear Componente") }}
       </button>
 
-      <button type="button" class="btn-secondary-custom" [routerLink]="['/dashboard/components']">
+      <button
+        type="button"
+        class="btn-secondary-custom"
+        [routerLink]="['/dashboard/components']">
         Cancelar
       </button>
     </div>

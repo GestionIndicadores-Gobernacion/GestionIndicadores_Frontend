@@ -7,6 +7,7 @@ import {
   ComponentCreateRequest,
   ComponentUpdateRequest
 } from '../models/component.model';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -37,8 +38,10 @@ export class ComponentsService {
     return this.http.delete(`${this.api}/${id}`);
   }
 
-  getComponentesByEstrategia(strategyId: number) {
-    return this.http.get<ComponentModel[]>(`${this.api}/by_strategy/${strategyId}`);
+  getByActivity(activityId: number): Observable<ComponentModel[]> {
+    return this.http.get<ComponentModel[]>(
+      `${this.api}/by_activity/${activityId}`
+    );
   }
 
 }

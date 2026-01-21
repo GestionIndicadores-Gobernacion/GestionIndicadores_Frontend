@@ -101,12 +101,12 @@ export class IndicatorFormComponent {
         const comp = components.find(c => c.id === indicator.component_id);
 
         if (comp) {
-          this.selectedStrategy = comp.strategy_id;
+          this.selectedStrategy = comp.activity_id;
         }
 
         // Filtrar componentes de esa estrategia
         this.filteredComponents = components.filter(
-          c => c.strategy_id === this.selectedStrategy
+          c => c.activity_id === this.selectedStrategy
         );
 
         this.loading = false;
@@ -137,7 +137,7 @@ export class IndicatorFormComponent {
   // ============================================================
   filterComponents() {
     this.filteredComponents = this.components.filter(
-      (c) => c.strategy_id === Number(this.selectedStrategy)
+      (c) => c.activity_id === Number(this.selectedStrategy)
     );
 
     // ❗ NO resetear componente si estamos editando

@@ -62,7 +62,7 @@ export class AvanceIndicadoresSectionComponent {
 
     if (!this.selectedEstrategia) return;
 
-    this.componentsService.getComponentesByEstrategia(this.selectedEstrategia)
+    this.componentsService.getByActivity(this.selectedEstrategia)
       .subscribe(res => {
         this.componentes = res;
       });
