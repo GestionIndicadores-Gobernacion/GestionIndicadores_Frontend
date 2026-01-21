@@ -1,8 +1,17 @@
-<div class="record-view-container">
+<div class="record-detail">
 
-  <div class="header-row">
-    <h2>Detalle del Informe</h2>
-    <button class="btn-secondary" (click)="back()">← Volver</button>
+  <!-- HEADER -->
+  <div class="detail-header">
+    <div>
+      <h2>Detalle del Informe</h2>
+      <p class="subtitle">
+        {{ strategyMap[record?.strategy_id!] }} ·
+        {{ activityMap[record?.activity_id!] }} ·
+        {{ componentMap[record?.component_id!] }}
+      </p>
+    </div>
+
+    <button class="btn-back" (click)="back()">← Volver</button>
   </div>
 
   <!-- LOADING -->
@@ -10,126 +19,81 @@
     <div class="spinner"></div>
   </div>
 
-  <!-- CONTENT -->
   <div *ngIf="!loading && record">
 
-    <!-- ============================
-         📌 DATOS GENERALES
-    ============================ -->
-    <div class="view-card">
-      <h3>Datos generales</h3>
+    <!-- METADATA -->
+    <div class="meta-card">
+      <div>
+        <span>Fecha del informe</span>
+        <strong>{{ record.fecha | date:'mediumDate' }}</strong>
+      </div>
 
-      <div class="info-grid">
-
-        <div class="info-item">
-          <span>Estrategia</span>
-          {{ strategyMap[record.strategy_id] || '—' }}
-        </div>
-
-        <div class="info-item">
-          <span>Componente</span>
-          {{ componentMap[record.component_id] || '—' }}
-        </div>
-
-        <div class="info-item">
-          <span>Actividad</span>
-          {{ activityMap[record.activity_id] || '—' }}
-        </div>
-
-        <div class="info-item">
-          <span>Fecha del Registro</span>
-          {{ record.fecha | date:'mediumDate' }}
-        </div>
-
-        <div class="info-item">
-          <span>Registrado el</span>
-          {{ record.fecha_registro | date:'medium' }}
-        </div>
-
+      <div>
+        <span>Registrado el</span>
+        <strong>{{ record.fecha_registro | date:'medium' }}</strong>
       </div>
     </div>
 
-    <!-- ============================
-         📌 DESCRIPCIÓN
-    ============================ -->
-    <div class="view-card">
+    <!-- RESUMEN -->
+    <section class="section">
       <h3>Resumen ejecutivo</h3>
-
-      <p class="text-block" *ngIf="record.description; else noDesc">
+      <p *ngIf="record.description; else noDesc">
         {{ record.description }}
       </p>
-
       <ng-template #noDesc>
-        <p class="empty-text">No se registró un resumen ejecutivo.</p>
+        <p class="empty">Sin resumen registrado.</p>
       </ng-template>
-    </div>
+    </section>
 
-    <!-- ============================
-         📌 ACTIVIDADES REALIZADAS
-    ============================ -->
-    <div class="view-card">
+    <!-- ACTIVIDADES -->
+    <section class="section">
       <h3>Actividades realizadas</h3>
-
-      <p class="text-block" *ngIf="record.actividades_realizadas; else noAct">
+      <p *ngIf="record.actividades_realizadas; else noAct">
         {{ record.actividades_realizadas }}
       </p>
-
       <ng-template #noAct>
-        <p class="empty-text">No se registraron actividades realizadas.</p>
+        <p class="empty">Sin actividades registradas.</p>
       </ng-template>
-    </div>
+    </section>
 
-    <!-- ============================
-         📌 MUNICIPIOS + INDICADORES
-    ============================ -->
-    <div class="view-card">
-      <h3>Valores por municipio</h3>
+    <!-- MUNICIPIOS -->
+    <section class="section">
+      <h3>Resultados por municipio</h3>
 
-      <div *ngIf="municipios.length === 0" class="empty-text">
-        No hay municipios registrados en este registro.
+      <div *ngIf="municipios.length === 0" class="empty">
+        No hay municipios registrados.
       </div>
 
-      <div *ngFor="let muni of municipios" class="municipio-section">
+      <div class="municipios-grid">
+        <div *ngFor="let muni of municipios" class="municipio-card">
 
-        <h4 class="muni-title">{{ muni }}</h4>
+          <h4>{{ muni }}</h4>
 
-        <table class="detail-table">
-          <thead>
-            <tr>
-              <th>Indicador</th>
-              <th>Valor</th>
-            </tr>
-          </thead>
+          <div class="indicador-row"
+               *ngFor="let kv of getIndicadoresForMunicipio(muni)">
+            <span>{{ kv.key }}</span>
+            <strong>{{ kv.value }}</strong>
+          </div>
 
-          <tbody>
-            <tr *ngFor="let kv of getIndicadoresForMunicipio(muni)">
-              <td>{{ kv.key }}</td>
-              <td>{{ kv.value }}</td>
-            </tr>
-          </tbody>
-        </table>
-
+        </div>
       </div>
-    </div>
+    </section>
 
-    <!-- ============================
-         📌 EVIDENCIA
-    ============================ -->
-    <div class="view-card">
+    <!-- EVIDENCIA -->
+    <section class="section">
       <h3>Evidencia</h3>
 
-      <ng-container *ngIf="record.evidencia_url; else noEvidence">
-        <a class="evidence-link"
-           [href]="record.evidencia_url"
-           target="_blank">
-          Abrir evidencia
-        </a>
-      </ng-container>
+      <a *ngIf="record.evidencia_url; else noEv"
+         class="evidence-btn"
+         [href]="record.evidencia_url"
+         target="_blank">
+        Abrir evidencia
+      </a>
 
-      <ng-template #noEvidence>
-        <p class="no-evidence">Sin evidencia adjunta</p>
+      <ng-template #noEv>
+        <p class="empty">No se adjuntó evidencia.</p>
       </ng-template>
-    </div>
+    </section>
 
   </div>
 </div>

@@ -39,9 +39,23 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       else if (error.status === 0) {
         message = 'No hay conexión con el servidor.';
       }
+      else if (
+        error.status === 401 &&
+        error.error?.msg === 'Token has expired'
+      ) {
+        // 🔐 Sesión expirada → logout silencioso
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+
+        toast.warning('Tu sesión expiró. Inicia sesión nuevamente.');
+        window.location.href = '/login';
+
+        return throwError(() => error);
+      }
       else if (error.status === 401) {
         message = 'No autorizado o token inválido.';
       }
+
       else if (error.status === 403) {
         message = 'No tienes permisos para realizar esta acción.';
       }

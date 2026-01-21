@@ -14,20 +14,17 @@
     </div>
   </div>
 
-  <!-- BUSCADOR -->
   <div class="search-box">
-    <input type="text" placeholder="Buscar por componente, indicador o municipio..." [(ngModel)]="search"
-      (input)="applyFilter()" />
+    <input type="text" placeholder="Buscar por estrategia, actividad, componente, indicador o municipio..."
+      [(ngModel)]="search" (input)="applyFilter()" />
   </div>
 
   <div *ngIf="!loading" class="table-wrapper">
 
-    <!-- SIN ReporteS -->
     <div *ngIf="paginatedRecords.length === 0" class="empty-state">
       <p>No hay Reportes disponibles.</p>
     </div>
 
-    <!-- TABLA -->
     <table *ngIf="paginatedRecords.length > 0" class="custom-table">
 
       <thead>
@@ -43,27 +40,22 @@
         </tr>
       </thead>
 
-
       <tbody>
         <tr *ngFor="let r of paginatedRecords">
 
           <td>{{ r.id }}</td>
 
-          <td>{{ strategyMap[r.strategy_id] }}</td>
+          <td>{{ getStrategyName(r) }}</td>
 
-          <td class="actividad-cell" [title]="activityMap[r.activity_id]">
-            {{ getShortActivity(activityMap[r.activity_id]) }}
+          <td class="actividad-cell" [title]="getActivityName(r)">
+            {{ getShort(getActivityName(r)) }}
           </td>
-
 
           <td>{{ componentMap[r.component_id] }}</td>
 
-
-          <!-- INDICADORES (NUEVO MODELO) -->
           <td class="indicadores-cell" [title]="getIndicatorNames(r).join(', ')">
             {{ getIndicatorNames(r).join(', ') }}
           </td>
-
 
           <td>
             {{ getMunicipios(r).join(', ') || '—' }}
@@ -72,19 +64,17 @@
           <td>{{ r.fecha | date }}</td>
 
           <td class="actions-col">
-            <div class="actions-wrapper">
-              <button class="btn-outline" [routerLink]="['/dashboard/records', r.id]">
-                Ver
-              </button>
+            <button class="btn-outline" [routerLink]="['/dashboard/records', r.id]">
+              Ver
+            </button>
 
-              <button *ngIf="!isViewer" class="btn-outline-primary" [routerLink]="['/dashboard/records', r.id, 'edit']">
-                Editar
-              </button>
+            <button *ngIf="!isViewer" class="btn-outline-primary" [routerLink]="['/dashboard/records', r.id, 'edit']">
+              Editar
+            </button>
 
-              <button *ngIf="!isViewer" class="btn-outline-danger" (click)="deleteRecord(r.id)">
-                Eliminar
-              </button>
-            </div>
+            <button *ngIf="!isViewer" class="btn-outline-danger" (click)="deleteRecord(r.id)">
+              Eliminar
+            </button>
           </td>
 
         </tr>
@@ -92,18 +82,12 @@
 
     </table>
 
-    <!-- PAGINACIÓN -->
     <div class="pagination-container" *ngIf="totalPages > 1">
-
-      <button class="page-btn" [disabled]="currentPage === 1" (click)="currentPage = currentPage - 1">
+      <button class="page-btn" [disabled]="currentPage === 1" (click)="prevPage()">
         ◀
       </button>
 
-      <span class="page-info">
-        Página {{ currentPage }} de {{ totalPages }}
-      </span>
-
-      <button class="page-btn" [disabled]="currentPage === totalPages" (click)="currentPage = currentPage + 1">
+      <button class="page-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">
         ▶
       </button>
 

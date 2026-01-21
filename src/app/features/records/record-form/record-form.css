@@ -199,3 +199,11 @@ app-multi-select[disabled] {
   background: #dce2e9;
 }
 
+@media (max-width: 600px) {
+
+  .form-grid-dos {
+    grid-template-columns: 1fr; /* 🔥 una columna */
+    gap: 18px;
+  }
+
+}

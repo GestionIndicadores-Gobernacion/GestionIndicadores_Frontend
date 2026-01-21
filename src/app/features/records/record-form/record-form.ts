@@ -3,25 +3,21 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { ComponentModel } from '../../../core/models/component.model';
-import { IndicatorModel } from '../../../core/models/indicator.model';
-import {
-  RecordCreateRequest,
-  RecordDetallePoblacion,
-  RecordMunicipioDetalle
-} from '../../../core/models/record.model';
-
 import { ComponentsService } from '../../../core/services/components.service';
 import { IndicatorsService } from '../../../core/services/indicators.service';
 import { RecordsService } from '../../../core/services/records.service';
 import { StrategiesService } from '../../../core/services/strategy.service';
-
-import { MUNICIPIOS_VALLE } from '../../../core/data/municipios';
+import { ActivitiesService } from '../../../core/services/activities.service';
 import { ToastService } from '../../../core/services/toast.service';
 
-import { MultiSelectComponent } from '../../../shared/components/multi-select/multi-select';
+import { ComponentModel } from '../../../core/models/component.model';
 import { ActivityModel } from '../../../core/models/activity.model';
-import { ActivitiesService } from '../../../core/services/activities.service';
+import { IndicatorModel } from '../../../core/models/indicator.model';
+import { RecordCreateRequest, RecordDetallePoblacion } from '../../../core/models/record.model';
+
+import { MUNICIPIOS_VALLE } from '../../../core/data/municipios';
+import { MultiSelectComponent } from '../../../shared/components/multi-select/multi-select';
+import { DashboardService } from '../../../core/services/dashboard.service';
 
 @Component({
   selector: 'app-record-form',
@@ -31,24 +27,29 @@ import { ActivitiesService } from '../../../core/services/activities.service';
   styleUrl: './record-form.css',
 })
 export class RecordFormComponent {
+  indicadorAvanceActual: Record<string, number> = {};
 
   municipios = MUNICIPIOS_VALLE;
   selectedMunicipios: string[] = [];
 
-  today = '';
+  private skipNextSubmit = false;
+
   loading = false;
   saving = false;
   isEdit = false;
-  id?: number;
   attemptedSubmit = false;
+  id?: number;
+
+  /** 🔥 FLAG CLAVE */
+  isLoadingRecord = false;
 
   strategies: any[] = [];
-  activities: ActivityModel[] = [];
-  components: ComponentModel[] = [];
-  allComponents: ComponentModel[] = [];
-  indicators: IndicatorModel[] = [];
-  allIndicators: IndicatorModel[] = [];
   allActivities: ActivityModel[] = [];
+  activities: ActivityModel[] = [];
+  allComponents: ComponentModel[] = [];
+  components: ComponentModel[] = [];
+  allIndicators: IndicatorModel[] = [];
+  indicators: IndicatorModel[] = [];
 
   form = {
     strategy_id: null as number | null,
@@ -60,9 +61,7 @@ export class RecordFormComponent {
     evidencia_url: ''
   };
 
-  detallePoblacion: RecordDetallePoblacion = {
-    municipios: {}
-  };
+  detallePoblacion: RecordDetallePoblacion = { municipios: {} };
 
   constructor(
     private route: ActivatedRoute,
@@ -71,203 +70,156 @@ export class RecordFormComponent {
     private componentsService: ComponentsService,
     private indicatorsService: IndicatorsService,
     private strategiesService: StrategiesService,
+    private dashboardService: DashboardService,
     private activitiesService: ActivitiesService,
     private toast: ToastService
   ) { }
 
   ngOnInit(): void {
-    this.today = new Date().toISOString().split('T')[0];
-    this.form.fecha = this.today;
+    this.form.fecha = new Date().toISOString().split('T')[0];
 
     this.id = Number(this.route.snapshot.paramMap.get('id'));
     this.isEdit = !!this.id;
 
-    if (this.isEdit) this.loading = true;
-
-    this.loadStrategies();
-    this.loadActivities();
-    this.loadComponents();
-    this.loadIndicators();
-
+    this.loadBaseData();
     if (this.isEdit) this.loadRecord();
   }
 
-  loadStrategies() {
-    this.strategiesService.getAll().subscribe({
-      next: res => this.strategies = res,
-      error: () => this.toast.error("Error cargando estrategias"),
-    });
-  }
-
-  loadActivities() {
-    this.activitiesService.getAll().subscribe({
-      next: res => {
-        this.allActivities = res;
-        this.activities = [];
-      },
-      error: () => this.toast.error("Error cargando actividades"),
-    });
-  }
-
-  loadComponents() {
-    this.componentsService.getAll().subscribe({
-      next: res => {
-        this.allComponents = res;
-        if (this.form.activity_id) this.onActivityChange(false);
-      }
-    });
-  }
-
-  loadIndicators() {
-    this.indicatorsService.getAll().subscribe({
-      next: res => this.allIndicators = res,
-    });
+  loadBaseData() {
+    this.strategiesService.getAll().subscribe(r => this.strategies = r);
+    this.activitiesService.getAll().subscribe(r => this.allActivities = r);
+    this.componentsService.getAll().subscribe(r => this.allComponents = r);
+    this.indicatorsService.getAll().subscribe(r => this.allIndicators = r);
   }
 
   loadRecord() {
-    this.recordsService.getById(this.id!).subscribe({
-      next: r => {
-        this.form.strategy_id = r.strategy_id;
-        this.form.activity_id = r.activity_id ?? null;
-        this.form.component_id = r.component_id ?? null;
-        this.form.fecha = r.fecha;
-        this.form.description = r.description ?? '';
-        this.form.actividades_realizadas = r.actividades_realizadas ?? '';
-        this.form.evidencia_url = r.evidencia_url ?? '';
+    this.loading = true;
+    this.isLoadingRecord = true;
 
-        this.detallePoblacion = r.detalle_poblacion ?? { municipios: {} };
-        this.selectedMunicipios = Object.keys(this.detallePoblacion.municipios);
+    this.recordsService.getById(this.id!).subscribe(r => {
 
-        this.onStrategyChange(false);
-        this.onActivityChange(false);
-        this.onComponentChange(false);
+      this.form.component_id = r.component_id;
+      this.form.fecha = r.fecha;
+      this.form.description = r.description ?? '';
+      this.form.actividades_realizadas = r.actividades_realizadas ?? '';
+      this.form.evidencia_url = r.evidencia_url ?? '';
 
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-        this.toast.error("Error cargando registro");
+      const comp = this.allComponents.find(c => c.id === r.component_id);
+      if (comp) {
+        this.form.activity_id = comp.activity_id;
+        const act = this.allActivities.find(a => a.id === comp.activity_id);
+        if (act) this.form.strategy_id = act.strategy_id;
       }
+
+      this.onStrategyChange(false);
+      this.onActivityChange(false);
+      this.onComponentChange(false);
+
+      this.detallePoblacion = r.detalle_poblacion ?? { municipios: {} };
+      this.selectedMunicipios = Object.keys(this.detallePoblacion.municipios);
+
+      this.loading = false;
+      this.isLoadingRecord = false;
     });
   }
 
-  onStrategyChange(reset: boolean = true) {
-    if (!this.form.strategy_id) {
-      this.activities = [];
-      this.form.activity_id = null;
-      this.components = [];
-      this.indicators = [];
-      return;
-    }
-
-    this.activities = this.allActivities.filter(
-      a => a.strategy_id === this.form.strategy_id
-    );
-
+  onStrategyChange(reset = true) {
+    this.activities = this.allActivities.filter(a => a.strategy_id === this.form.strategy_id);
     if (reset) {
       this.form.activity_id = null;
       this.form.component_id = null;
+      this.components = [];
       this.indicators = [];
-      this.selectedMunicipios = [];
-      this.detallePoblacion = { municipios: {} };
     }
   }
 
-  onActivityChange(reset: boolean = true) {
-    if (!this.form.activity_id) {
-      this.components = [];
-      this.indicators = [];
-      return;
-    }
-
-    this.components = this.allComponents.filter(
-      c => c.strategy_id === this.form.strategy_id
-    );
-
+  onActivityChange(reset = true) {
+    this.components = this.allComponents.filter(c => c.activity_id === this.form.activity_id);
     if (reset) {
       this.form.component_id = null;
       this.indicators = [];
-      this.selectedMunicipios = [];
-      this.detallePoblacion = { municipios: {} };
     }
   }
 
-  onComponentChange(reset: boolean = true) {
-    if (!this.form.component_id) {
-      this.indicators = [];
-      return;
-    }
+  onComponentChange(reset = true) {
 
-    this.indicators = this.allIndicators.filter(
-      i => i.component_id === this.form.component_id
-    );
+    this.indicators = this.allIndicators
+      .filter(i => i.component_id === this.form.component_id)
+      .map(ind => ({
+        ...ind,
+        acumulado: 0   // 👈 NUEVO
+      }));
 
     if (reset) {
       this.selectedMunicipios = [];
       this.detallePoblacion = { municipios: {} };
     }
-  }
 
-  onMunicipiosChange() {
+    // 🔥 CONSULTAR AVANCE ACTUAL
+    this.dashboardService.getAvanceIndicadores(
+      new Date(this.form.fecha).getFullYear(),
+      this.form.strategy_id!,
+      this.form.component_id!
+    ).subscribe(res => {
 
-    // 🟢 SI ELIGIÓ "Todo el Valle del Cauca"
-    if (this.selectedMunicipios.includes("Todo el Valle del Cauca")) {
-
-      // Si eligió el Valle y otros municipios, limpiar los otros
-      if (this.selectedMunicipios.length > 1) {
-        this.selectedMunicipios = ["Todo el Valle del Cauca"];
-      }
-
-      // Regenerar indicadores para el Valle completo
-      this.detallePoblacion = {
-        municipios: {
-          "Todo el Valle del Cauca": {
-            indicadores: {}
-          }
+      res.forEach((r: any) => {
+        const found = this.indicators.find(i => i.id === r.indicador_id);
+        if (found) {
+          const total = r.meses?.reduce((acc: number, m: any) => acc + m.valor, 0) || 0;
+          found.acumulado = total;
         }
-      };
-
-      this.indicators.forEach(ind => {
-        this.detallePoblacion.municipios["Todo el Valle del Cauca"].indicadores[ind.name] = 0;
       });
 
-      return;
+    });
+  }
+
+  /** ✅ MÉTODO CLAVE CORREGIDO */
+  onMunicipiosChange() {
+
+    // 👇 CLAVE: marcar que este cambio NO debe guardar
+    this.skipNextSubmit = true;
+
+    if (this.isLoadingRecord) return;
+
+    const ALL = 'Todo el Valle del Cauca';
+
+    if (this.selectedMunicipios.includes(ALL)) {
+      this.selectedMunicipios = [ALL];
     }
 
-    // 🟡 SI QUITÓ "Todo el Valle del Cauca"
-    if (!this.selectedMunicipios.includes("Todo el Valle del Cauca") &&
-      this.detallePoblacion.municipios["Todo el Valle del Cauca"]) {
-
-      // El usuario lo eliminó, entonces limpiar completamente
-      this.detallePoblacion = { municipios: {} };
-    }
-
-    // 🟡 COMPORTAMIENTO NORMAL
-    const nuevos = this.selectedMunicipios;
-
-    // Crear estructura de indicadores para nuevos municipios
-    nuevos.forEach(m => {
-      if (!this.detallePoblacion.municipios[m]) {
-        const detalle: RecordMunicipioDetalle = { indicadores: {} };
-
-        this.indicators.forEach(ind => {
-          detalle.indicadores[ind.name] = 0;
-        });
-
-        this.detallePoblacion.municipios[m] = detalle;
+    Object.keys(this.detallePoblacion.municipios).forEach(m => {
+      if (!this.selectedMunicipios.includes(m)) {
+        delete this.detallePoblacion.municipios[m];
       }
     });
 
-    // Eliminar municipios deseleccionados
-    Object.keys(this.detallePoblacion.municipios).forEach(m => {
-      if (!nuevos.includes(m)) delete this.detallePoblacion.municipios[m];
+    this.selectedMunicipios.forEach(m => {
+      if (!this.detallePoblacion.municipios[m]) {
+        this.detallePoblacion.municipios[m] = { indicadores: {} };
+        this.indicators.forEach(ind => {
+          this.detallePoblacion.municipios[m].indicadores[ind.name] = 0;
+        });
+      }
     });
   }
+
+  onSubmit(event: Event) {
+
+    // 🚫 Si el submit viene de municipios, NO guardar
+    if (this.skipNextSubmit) {
+      this.skipNextSubmit = false;
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
+    // ✅ Submit real (botón Guardar)
+    this.save();
+  }
+
 
   buildPayload(): RecordCreateRequest {
     return {
-      strategy_id: this.form.strategy_id!,
-      activity_id: this.form.activity_id!,
       component_id: this.form.component_id!,
       fecha: this.form.fecha,
       description: this.form.description || null,
@@ -280,80 +232,38 @@ export class RecordFormComponent {
   save() {
     this.attemptedSubmit = true;
 
-    // ============================
-    // Validaciones visuales
-    // ============================
-    if (!this.form.strategy_id || !this.form.activity_id || !this.form.component_id) {
-      this.toast.warning("Por favor completa los campos obligatorios.");
+    if (!this.form.component_id || !this.form.description || !this.form.actividades_realizadas) {
+      this.toast.warning('Completa los campos obligatorios');
       return;
     }
 
-    if (!this.form.description || !this.form.actividades_realizadas) {
-      this.toast.warning("Completa el resumen ejecutivo y las actividades realizadas.");
+    // 🚨 VALIDACIÓN DE MUNICIPIOS (LA ÚNICA NECESARIA)
+    if (!this.hasMunicipios()) {
+      this.toast.warning('Debes seleccionar al menos un municipio');
       return;
-    }
-
-    if (this.selectedMunicipios.length === 0) {
-      this.toast.warning("Debes seleccionar al menos un municipio.");
-      return;
-    }
-
-    for (const municipio of this.selectedMunicipios) {
-      for (const ind of this.indicators) {
-        const valor =
-          this.detallePoblacion.municipios[municipio]?.indicadores[ind.name] ?? 0;
-
-        if (valor > ind.meta) {
-          this.toast.error(
-            `En "${municipio}", el indicador "${ind.name}" supera la meta (${ind.meta}).`
-          );
-          return;
-        }
-      }
     }
 
     const payload = this.buildPayload();
-
-    if (this.isEdit) {
-      this.toast.confirm("¿Guardar cambios?", "Se actualizará el registro.")
-        .then(res => res.isConfirmed && this.sendRequest(payload));
-    } else {
-      this.sendRequest(payload);
-    }
-  }
-
-  private sendRequest(payload: RecordCreateRequest) {
-    this.saving = true;
-
-    const obs = this.isEdit
+    const req = this.isEdit
       ? this.recordsService.update(this.id!, payload)
       : this.recordsService.create(payload);
 
-    obs.subscribe({
-      next: () => {
-        this.saving = false;
-        this.toast.success(this.isEdit ? "Registro actualizado" : "Registro creado correctamente");
-        this.router.navigate(['/dashboard/records']);
-      },
-      error: () => this.saving = false
+    req.subscribe(() => {
+      this.toast.success(this.isEdit ? 'Registro actualizado' : 'Registro creado');
+      this.router.navigate(['/dashboard/records']);
     });
   }
 
   validateIndicadorValue(municipio: string, ind: IndicatorModel) {
-    const valor =
-      this.detallePoblacion.municipios[municipio].indicadores[ind.name];
-
-    if (valor > ind.meta) {
+    const v = this.detallePoblacion.municipios[municipio].indicadores[ind.name];
+    if (v > ind.meta) {
       this.detallePoblacion.municipios[municipio].indicadores[ind.name] = ind.meta;
-
-      this.toast.warning(
-        `El valor del indicador "${ind.name}" no puede superar la meta (${ind.meta}).`
-      );
+      this.toast.warning(`"${ind.name}" no puede superar ${ind.meta}`);
     }
+  }
 
-    if (valor < 0) {
-      this.detallePoblacion.municipios[municipio].indicadores[ind.name] = 0;
-    }
+  hasMunicipios(): boolean {
+    return this.selectedMunicipios.length > 0;
   }
 
 

@@ -1,6 +1,8 @@
 // =======================================================
-// 📌 MODELOS ACTUALIZADOS PARA EL NUEVO DISEÑO
+// 📌 MODELOS ACTUALIZADOS – ARQUITECTURA FINAL
+// Record → Component → Activity → Strategy
 // =======================================================
+
 
 // =======================
 // 📊 Stats: municipios
@@ -20,20 +22,8 @@ export interface RecordStatsMes {
 
 
 // =======================================================
-// 📌 NUEVA ESTRUCTURA DE DETALLE_POBLACION
+// 📌 ESTRUCTURA DETALLE_POBLACION (NUEVA)
 // =======================================================
-
-// Ejemplo de estructura:
-// detalle_poblacion = {
-//   municipios: {
-//     "Cali": {
-//       indicadores: { habitantes_calle: 25, adultos_mayores: 4 }
-//     },
-//     "Palmira": {
-//       indicadores: { habitantes_calle: 8 }
-//     }
-//   }
-// }
 
 export interface RecordIndicadoresPorMunicipio {
   [indicador: string]: number;
@@ -51,12 +41,13 @@ export interface RecordDetallePoblacion {
 
 
 // =======================================================
-// 📌 MODELO PRINCIPAL DEL REGISTRO (🔥 ACTUALIZADO)
+// 📌 MODELO PRINCIPAL (LECTURA / LISTADOS / EXCEL)
 // =======================================================
+
 export interface RecordModel {
   id: number;
 
-  // 🔥 Nuevos campos obligatorios del nuevo diseño
+  // 🔎 IDs DERIVADOS (solo lectura)
   strategy_id: number;
   activity_id: number;
   component_id: number;
@@ -64,29 +55,27 @@ export interface RecordModel {
   fecha: string;
   description?: string | null;
   actividades_realizadas?: string | null;
-  
+
   detalle_poblacion: RecordDetallePoblacion;
 
   evidencia_url: string | null;
   fecha_registro?: string | null;
 
-  // --------------------------------------------------------------------
-  // 🧩 CAMPOS LEGACY (mientras migras pantallas antiguas)
-  // * estos siguen existiendo porque varias pantallas los leen
-  // --------------------------------------------------------------------
-  municipio?: string | null;  
+  // ---------------------------------------------------
+  // 🧩 CAMPOS LEGACY (para pantallas antiguas)
+  // ---------------------------------------------------
+  municipio?: string | null;
   indicator_id?: number | null;
-  tipo_poblacion?: string[]; 
+  tipo_poblacion?: string[];
   valor?: string | null;
 }
 
 
 // =======================================================
-// ✏ PARA CREAR (🔥 activity + description añadidos)
+// ✏ CREAR REGISTRO (🔥 SOLO component_id)
 // =======================================================
+
 export interface RecordCreateRequest {
-  strategy_id: number;
-  activity_id: number;
   component_id: number;
 
   fecha: string;
@@ -100,26 +89,33 @@ export interface RecordCreateRequest {
 
 
 // =======================================================
-// ✏ PARA ACTUALIZAR
+// ✏ ACTUALIZAR REGISTRO
 // =======================================================
+
 export interface RecordUpdateRequest extends RecordCreateRequest {}
 
 
 // =======================================================
-// 🧩 LEGACY – AÚN EN USO EN ALGUNOS FILTROS
+// 🔍 FILTROS (LISTADOS / REPORTES)
 // =======================================================
+
 export interface RecordFilterParams {
   search?: string;
 
   component_id?: number | null;
   indicator_id?: number | null;
 
-  // municipio legacy (siempre null en el nuevo modelo)
+  // legacy
   municipio?: string | null;
 
   fecha_from?: string | null;
   fecha_to?: string | null;
 }
+
+
+// =======================================================
+// 📊 Stats por tipo de población
+// =======================================================
 
 export interface RecordStatsTipoPoblacion {
   tipo: string;

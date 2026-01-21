@@ -6,7 +6,11 @@
   </div>
 
   <div class="search-box">
-    <input type="text" placeholder="Buscar por nombre o descripción..." [(ngModel)]="search" (input)="applyFilter()">
+    <input
+      type="text"
+      placeholder="Buscar por nombre, actividad o estrategia..."
+      [(ngModel)]="search"
+      (input)="applyFilter()">
   </div>
 
   <div *ngIf="!loading" class="table-wrapper">
@@ -15,70 +19,95 @@
       <p>No hay componentes registrados.</p>
     </div>
 
-      <ng-container *ngIf="paginatedComponents.length > 0">
-        <table class="custom-table">
-    
-          <thead>
-            <tr>
-              <th (click)="sortBy('name')" class="sortable">
-                Nombre
-                <span *ngIf="sortColumn === 'name'">
-                  {{ sortDirection === 'asc' ? '▲' : '▼' }}
-                </span>
-              </th>
-    
-              <th (click)="sortBy('description')" class="sortable">
-                Descripción
-                <span *ngIf="sortColumn === 'description'">
-                  {{ sortDirection === 'asc' ? '▲' : '▼' }}
-                </span>
-              </th>
-    
-              <th (click)="sortBy('strategy_id')" class="sortable">
-                Estrategia
-                <span *ngIf="sortColumn === 'strategy_id'">
-                  {{ sortDirection === 'asc' ? '▲' : '▼' }}
-                </span>
-              </th>
-    
-              <th (click)="sortBy('active')" class="sortable">
-                Estado
-                <span *ngIf="sortColumn === 'active'">
-                  {{ sortDirection === 'asc' ? '▲' : '▼' }}
-                </span>
-              </th>
-    
-              <th class="text-center">Acciones</th>
-            </tr>
-          </thead>
-    
-          <tbody>
-            <tr *ngFor="let c of paginatedComponents">
-              <td>{{ c.name }}</td>
-              <td>{{ c.description || 'Sin descripción' }}</td>
-    
-              <!-- NUEVO -->
-              <td>{{ strategyMap[c.strategy_id] || '—' }}</td>
-    
-              <td>
-                <span class="state-badge" [class.active]="c.active" [class.inactive]="!c.active">
-                  {{ c.active ? 'Activo' : 'Inactivo' }}
-                </span>
-              </td>
-    
-              <td class="actions-col">
-                <button class="btn-outline-primary" (click)="goToEdit(c.id)">Editar</button>
-                <button class="btn-outline-danger" (click)="deleteComponent(c.id)">Eliminar</button>
-              </td>
-            </tr>
-          </tbody>
-    
-        </table>
-      </ng-container>
+    <ng-container *ngIf="paginatedComponents.length > 0">
+      <table class="custom-table">
+
+        <thead>
+          <tr>
+            <th (click)="sortBy('name')" class="sortable">
+              Nombre
+              <span *ngIf="sortColumn === 'name'">
+                {{ sortDirection === 'asc' ? '▲' : '▼' }}
+              </span>
+            </th>
+
+            <th (click)="sortBy('description')" class="sortable">
+              Descripción
+              <span *ngIf="sortColumn === 'description'">
+                {{ sortDirection === 'asc' ? '▲' : '▼' }}
+              </span>
+            </th>
+
+            <!-- 🔥 Estrategia -->
+            <th (click)="sortBy('strategy')" class="sortable">
+              Estrategia
+              <span *ngIf="sortColumn === 'strategy'">
+                {{ sortDirection === 'asc' ? '▲' : '▼' }}
+              </span>
+            </th>
+
+            <th (click)="sortBy('activity_id')" class="sortable">
+              Actividad
+              <span *ngIf="sortColumn === 'activity_id'">
+                {{ sortDirection === 'asc' ? '▲' : '▼' }}
+              </span>
+            </th>
+
+            <th (click)="sortBy('active')" class="sortable">
+              Estado
+              <span *ngIf="sortColumn === 'active'">
+                {{ sortDirection === 'asc' ? '▲' : '▼' }}
+              </span>
+            </th>
+
+            <th class="text-center">Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let c of paginatedComponents">
+            <td>{{ c.name }}</td>
+            <td>{{ c.description || 'Sin descripción' }}</td>
+
+            <!-- Estrategia (derivada) -->
+            <td>
+              {{ strategyMap[activityStrategyMap[c.activity_id]] || '—' }}
+            </td>
+
+            <!-- Actividad -->
+            <td>
+              {{ activityMap[c.activity_id] || '—' }}
+            </td>
+
+            <td>
+              <span
+                class="state-badge"
+                [class.active]="c.active"
+                [class.inactive]="!c.active">
+                {{ c.active ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+
+            <td class="actions-col">
+              <button class="btn-outline-primary" (click)="goToEdit(c.id)">
+                Editar
+              </button>
+              <button class="btn-outline-danger" (click)="deleteComponent(c.id)">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+
+      </table>
+    </ng-container>
 
     <div class="pagination-container" *ngIf="totalPages > 1">
 
-      <button class="page-btn" [disabled]="currentPage === 1" (click)="currentPage = currentPage - 1">
+      <button
+        class="page-btn"
+        [disabled]="currentPage === 1"
+        (click)="currentPage = currentPage - 1">
         ◀
       </button>
 
@@ -86,7 +115,10 @@
         Página {{ currentPage }} de {{ totalPages }}
       </span>
 
-      <button class="page-btn" [disabled]="currentPage === totalPages" (click)="currentPage = currentPage + 1">
+      <button
+        class="page-btn"
+        [disabled]="currentPage === totalPages"
+        (click)="currentPage = currentPage + 1">
         ▶
       </button>
 
