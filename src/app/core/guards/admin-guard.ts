@@ -13,8 +13,8 @@ export const adminGuard: CanActivateFn = () => {
 
   const user = JSON.parse(userString);
 
-  // Validar que el usuario sea rol 1 (SuperAdmin)
-  if (!user.role_id || user.role_id !== 1) {
+  // SOLO SuperAdmin
+  if (user.role_id !== 1) {
     router.navigate(['/dashboard']);
     return false;
   }

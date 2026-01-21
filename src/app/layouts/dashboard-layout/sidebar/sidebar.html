@@ -17,14 +17,29 @@
 
   <nav>
     <a routerLink="dashboard" routerLinkActive="active">Dashboard</a>
-    <a routerLink="dashboard/records" routerLinxkActive="active">Informes</a>
-    <a routerLink="dashboard/strategies" routerLinkActive="active">@if (!isEditor && !isViewer) { Estrategias }</a>
-    <a routerLink="dashboard/activities" routerLinkActive="active">@if (!isEditor && !isViewer) { Actividades }</a>
-    <a routerLink="dashboard/components" routerLinkActive="active">@if (!isEditor && !isViewer) { Componentes
-      Estrategicos }</a>
-    <a routerLink="dashboard/indicators" routerLinkActive="active">@if (!isEditor && !isViewer) { Indicadores }</a>
-    <a routerLink="dashboard/users" routerLinkActive="active">@if (!isEditor && !isViewer) { Usuarios }</a>
+    <a routerLink="dashboard/records" routerLinkActive="active">Informes</a>
+
+    <a *ngIf="!isEditor && !isViewer" routerLink="dashboard/strategies" routerLinkActive="active">
+      Estrategias
+    </a>
+
+    <a *ngIf="!isEditor && !isViewer" routerLink="dashboard/activities" routerLinkActive="active">
+      Actividades
+    </a>
+
+    <a *ngIf="!isEditor && !isViewer" routerLink="dashboard/components" routerLinkActive="active">
+      Componentes Estratégicos
+    </a>
+
+    <a *ngIf="!isEditor && !isViewer" routerLink="dashboard/indicators" routerLinkActive="active">
+      Indicadores
+    </a>
+
+    <a *ngIf="!isEditor && !isViewer" routerLink="dashboard/users" routerLinkActive="active">
+      Usuarios
+    </a>
   </nav>
+
 </div>
 
 <!-- Overlay para móviles -->
