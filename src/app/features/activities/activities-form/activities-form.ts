@@ -126,7 +126,7 @@ export class ActivitiesFormComponent {
             : "Actividad creada correctamente"
         );
 
-        this.router.navigate(['/dashboard/activities']);
+        this.router.navigate(['/records/activities']);
       },
       error: () => {
         this.saving = false;

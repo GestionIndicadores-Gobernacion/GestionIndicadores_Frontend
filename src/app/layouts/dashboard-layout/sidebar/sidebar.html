@@ -1,46 +1,87 @@
 <div class="sidebar" [class.open]="isOpen">
   <h3 class="sidebar-title">Menú</h3>
 
-  <div class="sidebar-user" *ngIf="user">
-
+  @if (user) {
+  <div class="sidebar-user">
     <div class="sidebar-user-avatar">
       {{ user.name.charAt(0) }}
     </div>
 
     <div class="sidebar-user-data">
       <p class="user-name">{{ user.name }}</p>
-      <p class="user-role">{{ user.role?.name }}</p>
+      <p class="user-role">{{ role }}</p>
     </div>
-
   </div>
-
+  }
 
   <nav>
-    <a routerLink="dashboard" routerLinkActive="active">Dashboard</a>
-    <a routerLink="dashboard/records" routerLinkActive="active">Informes</a>
+    @for (item of menu; track item.label) {
 
-    <a *ngIf="!isEditor && !isViewer" routerLink="dashboard/strategies" routerLinkActive="active">
-      Estrategias
-    </a>
+    @if (canShow(item)) {
 
-    <a *ngIf="!isEditor && !isViewer" routerLink="dashboard/activities" routerLinkActive="active">
-      Actividades
+    <!-- ITEM NORMAL -->
+    @if (item.route && !item.children && !item.disabled) {
+    <a [routerLink]="item.route" routerLinkActive="active">
+      {{ item.label }}
     </a>
+    }
 
-    <a *ngIf="!isEditor && !isViewer" routerLink="dashboard/components" routerLinkActive="active">
-      Componentes Estratégicos
+    <!-- ITEM DESHABILITADO -->
+    @if (item.disabled) {
+    <a class="disabled-link">
+      {{ item.label }}
+      <span class="soon">(pronto)</span>
     </a>
+    }
 
-    <a *ngIf="!isEditor && !isViewer" routerLink="dashboard/indicators" routerLinkActive="active">
-      Indicadores
-    </a>
+    <!-- ITEM CONTENEDOR (Informes PYBA) -->
+    @if (item.children) {
+    <div class="submenu-header" [class.section-active]="isRecordsSectionActive()">
 
-    <a *ngIf="!isEditor && !isViewer" routerLink="dashboard/users" routerLinkActive="active">
-      Usuarios
-    </a>
+      <!-- TÍTULO (NO navega) -->
+      <span class="submenu-title">
+        {{ item.label }}
+      </span>
+
+      <!-- FLECHA -->
+      <button class="submenu-arrow" type="button" (click)="toggleSection(item.label)">
+        <span [class.open]="isExpanded(item.label)">▸</span>
+      </button>
+
+    </div>
+
+    @if (isExpanded(item.label)) {
+    <div class="submenu">
+      @for (child of item.children; track child.label) {
+      @if (canShow(child)) {
+
+      <!-- INFORMES (exact match) -->
+      @if (child.route === 'records') {
+      <a class="submenu-item" [routerLink]="child.route" routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }">
+        {{ child.label }}
+      </a>
+      }
+
+      <!-- RESTO DE CHILDREN -->
+      @if (child.route !== 'records') {
+      <a class="submenu-item" [routerLink]="child.route" routerLinkActive="active">
+        {{ child.label }}
+      </a>
+      }
+
+      }
+      }
+    </div>
+    }
+    }
+
+    }
+
+    }
   </nav>
-
 </div>
 
-<!-- Overlay para móviles -->
-<div class="overlay" *ngIf="isOpen" (click)="closeSidebar()"></div>
+<!-- Overlay móvil -->
+<div class="overlay" *ngIf="isOpen" (click)="closeSidebar()">
+</div>

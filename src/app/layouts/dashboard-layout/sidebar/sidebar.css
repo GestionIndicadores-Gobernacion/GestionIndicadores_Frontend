@@ -112,3 +112,94 @@
   color: #e5ecf5;
   /* gris claro */
 }
+
+.disabled-link {
+  color: #9ca3af;
+  /* gris suave */
+  cursor: not-allowed;
+  opacity: 0.7;
+  pointer-events: none;
+  /* bloquea el click */
+}
+
+.disabled-link .soon {
+  font-size: 0.75rem;
+  margin-left: 6px;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* ---------- SUBMENÚ ---------- */
+
+.submenu {
+  margin-left: 14px;
+  margin-top: 6px;
+  margin-bottom: 8px;
+}
+
+.submenu-item {
+  font-size: 0.85rem;
+  padding: 8px 14px;
+  opacity: 0.9;
+}
+
+/* Header del submenú (Informes) */
+.submenu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.submenu-link {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 8px;
+  color: #e5ecf5;
+  text-decoration: none;
+}
+
+.submenu-link:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Flecha */
+.submenu-arrow {
+  background: transparent;
+  border: none;
+  color: #e5ecf5;
+  cursor: pointer;
+  padding: 0 10px;
+}
+
+.submenu-arrow span {
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+
+.submenu-arrow span.open {
+  transform: rotate(90deg);
+}
+
+.submenu-title {
+  flex: 1;
+  padding: 12px 14px;
+  font-size: 0.95rem;
+  color: #e5ecf5;
+  font-weight: 500;
+}
+
+/* Padre activo por contexto (NO navegación) */
+.section-active {
+  position: relative;
+}
+
+.section-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 2px;
+  background: #00a9e0;
+}

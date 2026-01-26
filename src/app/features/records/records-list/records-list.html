@@ -8,7 +8,7 @@
         Exportar Excel
       </button>
 
-      <button *ngIf="!isViewer" class="btn-primary" routerLink="/dashboard/records/create">
+      <button *ngIf="!isViewer" class="btn-primary" routerLink="/records/create">
         Crear Informe
       </button>
     </div>
@@ -64,11 +64,11 @@
           <td>{{ r.fecha | date }}</td>
 
           <td class="actions-col">
-            <button class="btn-outline" [routerLink]="['/dashboard/records', r.id]">
+            <button class="btn-outline" [routerLink]="['/records', r.id]">
               Ver
             </button>
 
-            <button *ngIf="!isViewer" class="btn-outline-primary" [routerLink]="['/dashboard/records', r.id, 'edit']">
+            <button *ngIf="!isViewer" class="btn-outline-primary" [routerLink]="['/records', r.id, 'edit']">
               Editar
             </button>
 

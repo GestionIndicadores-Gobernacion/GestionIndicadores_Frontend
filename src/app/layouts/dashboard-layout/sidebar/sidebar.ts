@@ -1,50 +1,100 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { SidebarService } from '../../../core/services/sidebar.service';
+
+interface MenuItem {
+  label: string;
+  route?: string;
+  disabled?: boolean;
+  roles?: string[];
+  children?: MenuItem[];
+}
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterLink,
-  ],
+  imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
 })
 export class SidebarComponent {
 
   isOpen = false;
-  isSuperAdmin = false;
-  isViewer = false;
-  isEditor = false;
-
   user: any = null;
+  role = '';
 
-  constructor(private sidebarService: SidebarService) {
+  menu: MenuItem[] = [];
 
+  // 🔹 estado del colapsable
+  expandedSections: Record<string, boolean> = {
+    Informes: true, // abierto por defecto
+  };
+
+  constructor(
+    private sidebarService: SidebarService,
+    private router: Router
+  ) {
     const userString = localStorage.getItem('user');
     if (userString) {
       this.user = JSON.parse(userString);
-      this.isSuperAdmin = this.user.role?.name === 'SuperAdmin';
-      this.isViewer = this.user.role?.name === 'Viewer';
-      this.isEditor = this.user.role?.name === 'Editor';
+      this.role = this.user.role?.name;
     }
 
-    this.sidebarService.isOpen$.subscribe(value => {
-      this.isOpen = value;
+    this.sidebarService.isOpen$.subscribe(v => this.isOpen = v);
+
+    // 🔥 AUTO-EXPANDIR INFORMES PYBA SEGÚN RUTA
+    this.router.events.subscribe(() => {
+      if (this.isRecordsSectionActive()) {
+        this.expandedSections['Informes PYBA'] = true;
+      }
     });
+
+    this.buildMenu();
   }
 
-  // Métodos que llaman al service
-  openSidebar() {
-    this.sidebarService.open();
+
+  isRecordsSectionActive(): boolean {
+    return this.router.url.startsWith('/records');
+  }
+
+  toggleSection(label: string) {
+    this.expandedSections[label] = !this.expandedSections[label];
+  }
+
+  isExpanded(label: string): boolean {
+    return !!this.expandedSections[label];
+  }
+
+  canShow(item: MenuItem): boolean {
+    if (!item.roles) return true;
+    return item.roles.includes(this.role);
   }
 
   closeSidebar() {
     this.sidebarService.close();
   }
 
-}
+  buildMenu() {
+    this.menu = [
+      { label: 'Dashboard', route: 'dashboard' },
 
+      {
+        label: 'Informes PYBA',
+        children: [
+          { label: 'Informes', route: 'records' },
+          { label: 'Estrategias', route: 'records/strategies', roles: ['SuperAdmin'] },
+          { label: 'Actividades', route: 'records/activities', roles: ['SuperAdmin'] },
+          { label: 'Componentes Estratégicos', route: 'records/components', roles: ['SuperAdmin'] },
+          { label: 'Indicadores', route: 'records/indicators', roles: ['SuperAdmin'] },
+        ]
+      }
+      ,
+
+      { label: 'Planes de acción', disabled: true, roles: ['Editor', 'SuperAdmin'] },
+      { label: 'Bases de datos', disabled: true, roles: ['Editor', 'SuperAdmin'] },
+      { label: 'Usuarios', route: 'users', roles: ['SuperAdmin'] }
+    ];
+  }
+
+}

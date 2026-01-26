@@ -94,11 +94,11 @@ export class UsersListComponent {
   }
 
   goCreate() {
-    this.router.navigate(['/dashboard/users/create']);
+    this.router.navigate(['/users/create']);
   }
 
   goEdit(id: number) {
-    this.router.navigate(['/dashboard/users', id, 'edit']);
+    this.router.navigate(['/users', id, 'edit']);
   }
   deleteUser(id: number) {
 

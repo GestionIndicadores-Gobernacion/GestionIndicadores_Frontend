@@ -99,7 +99,7 @@ export class UserFormComponent {
       },
       error: () => {
         this.toast.error('Usuario no encontrado');
-        this.router.navigate(['/dashboard/users']);
+        this.router.navigate(['/users']);
       }
     });
   }
@@ -137,7 +137,7 @@ export class UserFormComponent {
       }
 
       this.usersService.update(this.userId!, payload).subscribe({
-        next: () => this.router.navigate(['/dashboard/users']),
+        next: () => this.router.navigate(['/users']),
         error: () => (this.saving = false)
       });
 
@@ -150,13 +150,13 @@ export class UserFormComponent {
       };
 
       this.usersService.create(payload).subscribe({
-        next: () => this.router.navigate(['/dashboard/users']),
+        next: () => this.router.navigate(['/users']),
         error: () => (this.saving = false)
       });
     }
   }
 
   cancel() {
-    this.router.navigate(['/dashboard/users']);
+    this.router.navigate(['/users']);
   }
 }
