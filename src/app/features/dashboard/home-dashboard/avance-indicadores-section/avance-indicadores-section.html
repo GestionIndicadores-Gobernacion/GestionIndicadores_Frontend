@@ -40,7 +40,7 @@
           <label>Componente</label>
           <select
             [(ngModel)]="selectedComponente"
-            [disabled]="componentes.length === 0"
+            [disabled]="!selectedEstrategia || componentes.length ===  0"
             [ngClass]="{ 'input-error': showErrors && !selectedComponente }">
 
             <option [ngValue]="null">Seleccionar componente...</option>
