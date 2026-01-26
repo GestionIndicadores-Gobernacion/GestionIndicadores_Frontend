@@ -11,11 +11,13 @@ import { IndicatorsService } from '../../../../core/services/indicators.service'
 import { RecordsService } from '../../../../core/services/records.service';
 import { StrategiesService } from '../../../../core/services/strategy.service';
 import { ToastService } from '../../../../core/services/toast.service';
+import { TIPOS_POBLACION, TipoPoblacionKey } from '../../../../core/data/tipos-poblacion';
+import { Pagination } from '../../../../shared/components/pagination/pagination';
 
 @Component({
   selector: 'app-records-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, DatePipe],
+  imports: [CommonModule, FormsModule, RouterModule, DatePipe, Pagination],
   templateUrl: './records-list.html',
   styleUrl: './records-list.css',
 })
@@ -112,6 +114,8 @@ export class RecordsListComponent implements OnInit {
   loadRecords() {
     this.recordsService.getAll().subscribe({
       next: res => {
+        console.log('RECORD EJEMPLO:', res[0]);
+
         this.records = res;
         this.filteredRecords = [...this.records];
         this.loading = false;
@@ -278,39 +282,107 @@ export class RecordsListComponent implements OnInit {
   // EXPORTAR EXCEL (corregido)
   // ================================
   exportToExcel() {
-    if (!this.records.length) return;
-
-    const workbook = XLSX.utils.book_new();
-    const grouped: Record<number, RecordModel[]> = {};
-
-    for (const r of this.records) {
-      const actId = this.componentActivityMap[r.component_id];
-      const stratId = this.activityStrategyMap[actId] ?? 0;
-
-      grouped[stratId] = grouped[stratId] || [];
-      grouped[stratId].push(r);
+    if (!this.filteredRecords.length) {
+      this.toast.info('No hay registros para exportar');
+      return;
     }
 
-    Object.keys(grouped).forEach(key => {
-      const stratId = Number(key);
-      const rows = grouped[stratId];
-      const sheetName = this.strategyMap[stratId] || 'Estrategia';
+    const workbook = XLSX.utils.book_new();
 
-      const data = rows.map(r => ({
-        Estrategia: this.getStrategyName(r),
-        Actividad: this.getActivityName(r),
-        Componente: this.componentMap[r.component_id],
-        Municipios: this.getMunicipios(r).join(', '),
-        Fecha: r.fecha
-      }));
+    // Agrupar por estrategia
+    const recordsByStrategy: Record<string, RecordModel[]> = {};
 
-      const sheet = XLSX.utils.json_to_sheet(data);
-      XLSX.utils.book_append_sheet(workbook, sheet, sheetName.slice(0, 31));
+    this.filteredRecords.forEach(r => {
+      const strategyName = this.strategyMap[r.strategy_id] || 'Sin estrategia';
+      if (!recordsByStrategy[strategyName]) {
+        recordsByStrategy[strategyName] = [];
+      }
+      recordsByStrategy[strategyName].push(r);
     });
 
-    const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    saveAs(new Blob([buffer]), 'registros.xlsx');
+    Object.entries(recordsByStrategy).forEach(([strategyName, records]) => {
+      const sheetRows: any[][] = [];
+
+      records.forEach(record => {
+        const actividad = this.activityMap[record.activity_id] || '—';
+        const componente = this.componentMap[record.component_id] || '—';
+        const fecha = new Date(record.fecha).toLocaleDateString('es-CO');
+
+        // =============================
+        // ENCABEZADO DEL RECORD
+        // =============================
+        sheetRows.push(
+          ['Estrategia:', strategyName],
+          ['Actividad:', actividad],
+          ['Componente:', componente],
+          ['Fecha:', fecha],
+          ['Actividades realizadas:', record.actividades_realizadas ?? ''],
+          ['Descripción:', record.description ?? ''],
+          [], // espacio
+          [
+            'Municipio',
+            'Indicador',
+            'Total',
+            ...TIPOS_POBLACION.map(tp => tp.label)
+          ]
+        );
+
+        // =============================
+        // TABLA DE DATOS
+        // =============================
+        const municipios = record.detalle_poblacion?.municipios || {};
+
+        Object.entries(municipios).forEach(([municipio, munData]: any) => {
+          const indicadores = munData.indicadores || {};
+
+          Object.entries(indicadores).forEach(([nombreIndicador, indData]: any) => {
+            const poblacionValues = TIPOS_POBLACION.map(tp =>
+              indData.tipos_poblacion?.[tp.key as TipoPoblacionKey] ?? ''
+            );
+
+            sheetRows.push([
+              municipio,
+              nombreIndicador,
+              indData.total ?? 0,
+              ...poblacionValues
+            ]);
+          });
+        });
+
+        sheetRows.push([], []); // separación visual entre records
+      });
+
+      const worksheet = XLSX.utils.aoa_to_sheet(sheetRows);
+
+      // =============================
+      // ANCHO DE COLUMNAS (dinámico)
+      // =============================
+      worksheet['!cols'] = [
+        { wch: 22 }, // Municipio
+        { wch: 45 }, // Indicador
+        { wch: 10 }, // Total
+        ...TIPOS_POBLACION.map(() => ({ wch: 18 }))
+      ];
+
+      XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        strategyName.substring(0, 31)
+      );
+    });
+
+    const buffer = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array'
+    });
+
+    saveAs(
+      new Blob([buffer], { type: 'application/octet-stream' }),
+      `registros_${new Date().toISOString().slice(0, 10)}.xlsx`
+    );
   }
+
+
 
   prevPage() {
     if (this.currentPage > 1) {

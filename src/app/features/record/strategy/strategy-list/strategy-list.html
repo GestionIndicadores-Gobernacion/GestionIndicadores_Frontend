@@ -6,12 +6,7 @@
   </div>
 
   <div class="search-box">
-    <input 
-      type="text" 
-      placeholder="Buscar por nombre o descripción..." 
-      [(ngModel)]="search" 
-      (input)="applyFilter()"
-    >
+    <input type="text" placeholder="Buscar por nombre o descripción..." [(ngModel)]="search" (input)="applyFilter()">
   </div>
 
   <div *ngIf="!loading" class="table-wrapper">
@@ -54,11 +49,7 @@
           <td>{{ s.description || 'Sin descripción' }}</td>
 
           <td>
-            <span 
-              class="state-badge" 
-              [class.active]="s.active" 
-              [class.inactive]="!s.active"
-            >
+            <span class="state-badge" [class.active]="s.active" [class.inactive]="!s.active">
               {{ s.active ? 'Activo' : 'Inactivo' }}
             </span>
           </td>
@@ -78,29 +69,10 @@
 
     </table>
 
-    <div class="pagination-container" *ngIf="totalPages > 1">
+    <!-- PAGINACIÓN -->
+    <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="currentPage = $event">
+    </app-pagination>
 
-      <button 
-        class="page-btn" 
-        [disabled]="currentPage === 1" 
-        (click)="currentPage = currentPage - 1"
-      >
-        ◀
-      </button>
-
-      <span class="page-info">
-        Página {{ currentPage }} de {{ totalPages }}
-      </span>
-
-      <button 
-        class="page-btn" 
-        [disabled]="currentPage === totalPages" 
-        (click)="currentPage = currentPage + 1"
-      >
-        ▶
-      </button>
-
-    </div>
 
   </div>
 

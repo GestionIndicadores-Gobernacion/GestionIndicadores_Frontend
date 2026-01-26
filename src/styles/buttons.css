@@ -1,0 +1,92 @@
+.btn-primary {
+  background: linear-gradient(135deg, #003b75, #005bbf);
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s ease;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(40%);
+  pointer-events: none;
+}
+
+/* OUTLINE */
+.btn-outline,
+.btn-outline-primary,
+.btn-outline-danger {
+  font-weight: 600;
+  font-size: 0.85rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.btn-outline {
+  padding: 8px 16px;
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #475569;
+}
+
+.btn-outline-primary {
+  padding: 8px 16px;
+  border: 1px solid #005bbf;
+  background: white;
+  color: #005bbf;
+}
+
+.btn-outline-danger {
+  padding: 8px 14px;
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+.btn-outline:hover {
+  background: #f1f5f9;
+}
+
+.btn-outline-primary:hover {
+  background: #e6f0ff;
+}
+
+.btn-outline-danger:hover {
+  background: #ffe5e8;
+}
+
+/* SECUNDARIO */
+.btn-secondary-custom {
+  background: #eef2f6;
+  border: 1px solid #ccd4dd;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #003b75;
+}
+
+.btn-export {
+  background: linear-gradient(135deg, #15803d, #16a34a);
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: 0.25s ease;
+  box-shadow: 0 3px 8px rgba(22, 163, 74, 0.25);
+}
