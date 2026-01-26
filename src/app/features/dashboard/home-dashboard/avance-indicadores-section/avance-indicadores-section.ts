@@ -97,14 +97,22 @@ export class AvanceIndicadoresSectionComponent implements OnInit {
       .getRecordsByComponent(this.selectedEstrategia)
       .subscribe(stats => {
 
-        const componentesIds = stats.map(c => c.component_id);
+        console.log('STATS COMPONENTES:', stats);
+
+        const componentesIds = stats.map(c => Number(c.component_id));
+        console.log('IDS CON RECORDS:', componentesIds);
 
         this.componentsService
           .getByActivity(this.selectedEstrategia!)
           .subscribe(all => {
+
+            console.log('COMPONENTES DEL SERVICE:', all);
+
             this.componentes = all.filter(c =>
               componentesIds.includes(c.id)
             );
+
+            console.log('COMPONENTES FINALES:', this.componentes);
           });
 
       });
