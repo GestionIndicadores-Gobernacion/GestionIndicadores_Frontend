@@ -126,7 +126,7 @@ export class ComponentesFormComponent implements OnInit {
         this.toast.success(
           this.isEdit ? 'Componente actualizado' : 'Componente creado'
         );
-        this.router.navigate(['/dashboard/components']);
+        this.router.navigate(['/records/components']);
       },
       error: () => this.toast.error('Error al guardar'),
     });

@@ -120,7 +120,7 @@ export class StrategyFormComponent implements OnInit {
             : "Estrategia creada correctamente"
         );
 
-        this.router.navigate(['/dashboard/strategies']);
+        this.router.navigate(['/records/strategies']);
       },
       error: () => {
         this.saving = false;

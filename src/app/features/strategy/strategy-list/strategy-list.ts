@@ -99,11 +99,11 @@ export class StrategyListComponent implements OnInit {
 
   // NAVEGACIÓN
   goToCreate() {
-    this.router.navigate(['/dashboard/strategies/create']);
+    this.router.navigate(['/records/strategies/create']);
   }
 
   goToEdit(id: number) {
-    this.router.navigate([`/dashboard/strategies/${id}/edit`]);
+    this.router.navigate([`/records/strategies/${id}/edit`]);
   }
 
   deleteStrategy(id: number) {

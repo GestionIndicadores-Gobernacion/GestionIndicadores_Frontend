@@ -45,6 +45,6 @@ export class ComponenteDetailComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/dashboard/components']);
+    this.router.navigate(['/records/components']);
   }
 }

@@ -7,14 +7,14 @@ import { guestGuard } from './core/guards/guest-guard';
 
 export const routes: Routes = [
 
-  // AUTH AREA  -----------------------------
+  // AUTH
   {
     path: 'auth',
     component: AuthLayoutComponent,
     children: [
       {
         path: 'login',
-        canActivate: [ guestGuard ],
+        canActivate: [guestGuard],
         loadComponent: () =>
           import('./features/auth/login/login')
             .then(m => m.LoginComponent),
@@ -22,20 +22,40 @@ export const routes: Routes = [
       { path: '', redirectTo: 'login', pathMatch: 'full' },
     ],
   },
+
+  // APP PRIVADA
   {
     path: '',
     component: DashboardLayoutComponent,
     canActivate: [authGuard],
     children: [
+
+      // HOME
       {
         path: 'dashboard',
         loadChildren: () =>
           import('./layouts/dashboard-layout/dashboard-layout.routes')
             .then(m => m.DASHBOARD_LAYOUT_ROUTES),
       },
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+
+      // ✅ INFORMES COMO MÓDULO RAÍZ
+      {
+        path: 'records',
+        loadChildren: () =>
+          import('./features/records/records.routes')
+            .then(m => m.RECORDS_ROUTES),
+      },
+
+      {
+        path: 'users',
+        loadChildren: () =>
+          import('./features/users/users.routes')
+            .then(m => m.USERS_ROUTES),
+      },
+
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ]
   },
-  // Not found
+
   { path: '**', redirectTo: '' },
 ];

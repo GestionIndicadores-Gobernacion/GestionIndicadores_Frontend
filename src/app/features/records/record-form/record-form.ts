@@ -250,7 +250,7 @@ export class RecordFormComponent {
 
     req.subscribe(() => {
       this.toast.success(this.isEdit ? 'Registro actualizado' : 'Registro creado');
-      this.router.navigate(['/dashboard/records']);
+      this.router.navigate(['records']);
     });
   }
 
@@ -268,6 +268,6 @@ export class RecordFormComponent {
 
 
   cancel() {
-    this.router.navigate(['/dashboard/records']);
+    this.router.navigate(['records']);
   }
 }

@@ -69,6 +69,6 @@ export class IndicatorDetailComponent {
   }
 
   goBack() {
-    this.router.navigate(['/dashboard/indicators']);
+    this.router.navigate(['/records/indicators']);
   }
 }

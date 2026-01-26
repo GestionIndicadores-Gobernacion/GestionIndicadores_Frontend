@@ -136,11 +136,11 @@ export class ComponentesListComponent implements OnInit {
   // 🚀 Navegación
   // ==========================
   goToCreate() {
-    this.router.navigate(['/dashboard/components/create']);
+    this.router.navigate(['/records/components/create']);
   }
 
   goToEdit(id: number) {
-    this.router.navigate([`/dashboard/components/${id}/edit`]);
+    this.router.navigate([`/records/components/${id}/edit`]);
   }
 
   // ==========================

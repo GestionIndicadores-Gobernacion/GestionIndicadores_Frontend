@@ -101,11 +101,11 @@ export class IndicatorsListComponent {
   }
 
   goCreate() {
-    this.router.navigate(['/dashboard/indicators/create']);
+    this.router.navigate(['/records/indicators/create']);
   }
 
   goEdit(id: number) {
-    this.router.navigate([`/dashboard/indicators/${id}/edit`]);
+    this.router.navigate([`/records/indicators/${id}/edit`]);
   }
 
   get sortedIndicators(): IndicatorModel[] {

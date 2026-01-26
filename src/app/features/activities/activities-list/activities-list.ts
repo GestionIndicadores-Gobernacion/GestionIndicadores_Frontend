@@ -114,11 +114,11 @@ export class ActivitiesListComponent {
 
   // NAVEGACIÓN
   goToCreate() {
-    this.router.navigate(['/dashboard/activities/create']);
+    this.router.navigate(['/records/activities/create']);
   }
 
   goToEdit(id: number) {
-    this.router.navigate([`/dashboard/activities/${id}/edit`]);
+    this.router.navigate([`/records/activities/${id}/edit`]);
   }
 
   deleteActivity(id: number) {

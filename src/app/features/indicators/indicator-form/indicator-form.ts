@@ -233,7 +233,7 @@ export class IndicatorFormComponent {
             : "Indicador creado correctamente"
         );
 
-        this.router.navigate(['/dashboard/indicators']);
+        this.router.navigate(['/records/indicators']);
       },
       error: (err) => {
         console.error("ERROR REAL DEL BACKEND:", err.error);

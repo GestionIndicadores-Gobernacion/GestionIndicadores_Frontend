@@ -108,6 +108,6 @@ export class RecordDetailComponent {
   }
 
   back() {
-    this.router.navigate(['/dashboard/records']);
+    this.router.navigate(['/records']);
   }
 }
