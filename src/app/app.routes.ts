@@ -42,14 +42,14 @@ export const routes: Routes = [
       {
         path: 'records',
         loadChildren: () =>
-          import('./features/records/records.routes')
+          import('./features/record/records/records.routes')
             .then(m => m.RECORDS_ROUTES),
       },
 
       {
         path: 'users',
         loadChildren: () =>
-          import('./features/users/users.routes')
+          import('./features/user/users.routes')
             .then(m => m.USERS_ROUTES),
       },
 
