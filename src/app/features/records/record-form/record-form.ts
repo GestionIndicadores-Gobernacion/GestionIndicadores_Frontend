@@ -19,6 +19,11 @@ import { MUNICIPIOS_VALLE } from '../../../core/data/municipios';
 import { MultiSelectComponent } from '../../../shared/components/multi-select/multi-select';
 import { DashboardService } from '../../../core/services/dashboard.service';
 
+export type TipoPoblacionKey =
+  | 'mujeres'
+  | 'poblacion_afro'
+  | 'discapacidad';
+
 @Component({
   selector: 'app-record-form',
   standalone: true,
@@ -27,21 +32,21 @@ import { DashboardService } from '../../../core/services/dashboard.service';
   styleUrl: './record-form.css',
 })
 export class RecordFormComponent {
-  indicadorAvanceActual: Record<string, number> = {};
+  readonly MUNICIPIO_TODO_VALLE = 'Todo el Valle del Cauca';
+
+  tiposPoblacion: { key: TipoPoblacionKey; label: string }[] = [
+    { key: 'mujeres', label: 'Mujeres' },
+    { key: 'poblacion_afro', label: 'Población afro' },
+    { key: 'discapacidad', label: 'Discapacidad' }
+  ];
 
   municipios = MUNICIPIOS_VALLE;
   selectedMunicipios: string[] = [];
 
-  private skipNextSubmit = false;
-
   loading = false;
   saving = false;
   isEdit = false;
-  attemptedSubmit = false;
   id?: number;
-
-  /** 🔥 FLAG CLAVE */
-  isLoadingRecord = false;
 
   strategies: any[] = [];
   allActivities: ActivityModel[] = [];
@@ -82,9 +87,15 @@ export class RecordFormComponent {
     this.isEdit = !!this.id;
 
     this.loadBaseData();
-    if (this.isEdit) this.loadRecord();
+
+    if (this.isEdit) {
+      this.loadRecord();
+    }
   }
 
+  // =====================================================
+  // CARGA BASE
+  // =====================================================
   loadBaseData() {
     this.strategiesService.getAll().subscribe(r => this.strategies = r);
     this.activitiesService.getAll().subscribe(r => this.allActivities = r);
@@ -92,37 +103,46 @@ export class RecordFormComponent {
     this.indicatorsService.getAll().subscribe(r => this.allIndicators = r);
   }
 
+  // =====================================================
+  // 🔥 MÉTODO QUE FALTABA
+  // =====================================================
   loadRecord() {
     this.loading = true;
-    this.isLoadingRecord = true;
 
-    this.recordsService.getById(this.id!).subscribe(r => {
+    this.recordsService.getById(this.id!).subscribe({
+      next: (r) => {
+        this.form.component_id = r.component_id;
+        this.form.fecha = r.fecha;
+        this.form.description = r.description ?? '';
+        this.form.actividades_realizadas = r.actividades_realizadas ?? '';
+        this.form.evidencia_url = r.evidencia_url ?? '';
 
-      this.form.component_id = r.component_id;
-      this.form.fecha = r.fecha;
-      this.form.description = r.description ?? '';
-      this.form.actividades_realizadas = r.actividades_realizadas ?? '';
-      this.form.evidencia_url = r.evidencia_url ?? '';
+        const comp = this.allComponents.find(c => c.id === r.component_id);
+        if (comp) {
+          this.form.activity_id = comp.activity_id;
+          const act = this.allActivities.find(a => a.id === comp.activity_id);
+          if (act) this.form.strategy_id = act.strategy_id;
+        }
 
-      const comp = this.allComponents.find(c => c.id === r.component_id);
-      if (comp) {
-        this.form.activity_id = comp.activity_id;
-        const act = this.allActivities.find(a => a.id === comp.activity_id);
-        if (act) this.form.strategy_id = act.strategy_id;
+        this.onStrategyChange(false);
+        this.onActivityChange(false);
+        this.onComponentChange(false);
+
+        this.detallePoblacion = r.detalle_poblacion ?? { municipios: {} };
+        this.selectedMunicipios = Object.keys(this.detallePoblacion.municipios);
+
+        this.loading = false;
+      },
+      error: () => {
+        this.toast.error('Error cargando el registro');
+        this.loading = false;
       }
-
-      this.onStrategyChange(false);
-      this.onActivityChange(false);
-      this.onComponentChange(false);
-
-      this.detallePoblacion = r.detalle_poblacion ?? { municipios: {} };
-      this.selectedMunicipios = Object.keys(this.detallePoblacion.municipios);
-
-      this.loading = false;
-      this.isLoadingRecord = false;
     });
   }
 
+  // =====================================================
+  // CASCADAS
+  // =====================================================
   onStrategyChange(reset = true) {
     this.activities = this.allActivities.filter(a => a.strategy_id === this.form.strategy_id);
     if (reset) {
@@ -142,108 +162,129 @@ export class RecordFormComponent {
   }
 
   onComponentChange(reset = true) {
-
     this.indicators = this.allIndicators
       .filter(i => i.component_id === this.form.component_id)
-      .map(ind => ({
-        ...ind,
-        acumulado: 0   // 👈 NUEVO
-      }));
+      .map(ind => ({ ...ind, acumulado: 0 }));
 
     if (reset) {
       this.selectedMunicipios = [];
       this.detallePoblacion = { municipios: {} };
     }
 
-    // 🔥 CONSULTAR AVANCE ACTUAL
     this.dashboardService.getAvanceIndicadores(
       new Date(this.form.fecha).getFullYear(),
       this.form.strategy_id!,
       this.form.component_id!
     ).subscribe(res => {
-
       res.forEach((r: any) => {
         const found = this.indicators.find(i => i.id === r.indicador_id);
         if (found) {
-          const total = r.meses?.reduce((acc: number, m: any) => acc + m.valor, 0) || 0;
-          found.acumulado = total;
+          found.acumulado =
+            r.meses?.reduce((acc: number, m: any) => acc + m.valor, 0) || 0;
         }
       });
-
     });
   }
 
-  /** ✅ MÉTODO CLAVE CORREGIDO */
+  // =====================================================
+  // MUNICIPIOS
+  // =====================================================
   onMunicipiosChange() {
+    const incluyeTodoValle = this.selectedMunicipios.includes(this.MUNICIPIO_TODO_VALLE);
 
-    // 👇 CLAVE: marcar que este cambio NO debe guardar
-    this.skipNextSubmit = true;
+    // 🚫 Caso 1: seleccionan "Todo el Valle del Cauca"
+    if (incluyeTodoValle) {
 
-    if (this.isLoadingRecord) return;
+      // dejamos SOLO ese municipio
+      this.selectedMunicipios = [this.MUNICIPIO_TODO_VALLE];
 
-    const ALL = 'Todo el Valle del Cauca';
+      // reiniciamos detalle poblacional
+      this.detallePoblacion = { municipios: {} };
 
-    if (this.selectedMunicipios.includes(ALL)) {
-      this.selectedMunicipios = [ALL];
+      this.detallePoblacion.municipios[this.MUNICIPIO_TODO_VALLE] = {
+        indicadores: {}
+      };
+
+      this.indicators.forEach(ind => {
+        this.detallePoblacion.municipios[this.MUNICIPIO_TODO_VALLE].indicadores[ind.name] = {
+          total: 0,
+          tipos_poblacion: ind.es_poblacional
+            ? { mujeres: 0, poblacion_afro: 0, discapacidad: 0 }
+            : undefined
+        };
+      });
+
+      return; // ⛔ NO permitir más lógica
     }
 
+    // ✅ Caso 2: municipios normales
+    this.selectedMunicipios.forEach(m => {
+      if (!this.detallePoblacion.municipios[m]) {
+        this.detallePoblacion.municipios[m] = { indicadores: {} };
+
+        this.indicators.forEach(ind => {
+          this.detallePoblacion.municipios[m].indicadores[ind.name] = {
+            total: 0,
+            tipos_poblacion: ind.es_poblacional
+              ? { mujeres: 0, poblacion_afro: 0, discapacidad: 0 }
+              : undefined
+          };
+        });
+      }
+    });
+
+    // 🧹 limpiar municipios eliminados
     Object.keys(this.detallePoblacion.municipios).forEach(m => {
       if (!this.selectedMunicipios.includes(m)) {
         delete this.detallePoblacion.municipios[m];
       }
     });
-
-    this.selectedMunicipios.forEach(m => {
-      if (!this.detallePoblacion.municipios[m]) {
-        this.detallePoblacion.municipios[m] = { indicadores: {} };
-        this.indicators.forEach(ind => {
-          this.detallePoblacion.municipios[m].indicadores[ind.name] = 0;
-        });
-      }
-    });
   }
 
+
+  // =====================================================
+  // 🔢 TOTAL = SUMA POBLACIONAL
+  // =====================================================
+  updateTotalFromPoblacion(municipio: string, ind: IndicatorModel) {
+    const indicador =
+      this.detallePoblacion.municipios[municipio]
+        .indicadores[ind.name];
+
+    const t = indicador.tipos_poblacion;
+    if (!t) return;
+
+    indicador.total =
+      (t.mujeres || 0) +
+      (t.poblacion_afro || 0) +
+      (t.discapacidad || 0);
+  }
+
+  // =====================================================
+  // GUARDAR
+  // =====================================================
   onSubmit(event: Event) {
-
-    // 🚫 Si el submit viene de municipios, NO guardar
-    if (this.skipNextSubmit) {
-      this.skipNextSubmit = false;
-      event.preventDefault();
-      event.stopPropagation();
-      return;
-    }
-
-    // ✅ Submit real (botón Guardar)
+    event.preventDefault();
     this.save();
   }
 
-
-  buildPayload(): RecordCreateRequest {
-    return {
-      component_id: this.form.component_id!,
-      fecha: this.form.fecha,
-      description: this.form.description || null,
-      actividades_realizadas: this.form.actividades_realizadas || null,
-      detalle_poblacion: this.detallePoblacion,
-      evidencia_url: this.form.evidencia_url || null,
-    };
-  }
-
   save() {
-    this.attemptedSubmit = true;
-
-    if (!this.form.component_id || !this.form.description || !this.form.actividades_realizadas) {
+    if (!this.form.component_id ||
+      !this.form.description ||
+      !this.form.actividades_realizadas ||
+      !this.selectedMunicipios.length) {
       this.toast.warning('Completa los campos obligatorios');
       return;
     }
 
-    // 🚨 VALIDACIÓN DE MUNICIPIOS (LA ÚNICA NECESARIA)
-    if (!this.hasMunicipios()) {
-      this.toast.warning('Debes seleccionar al menos un municipio');
-      return;
-    }
+    const payload: RecordCreateRequest = {
+      component_id: this.form.component_id,
+      fecha: this.form.fecha,
+      description: this.form.description,
+      actividades_realizadas: this.form.actividades_realizadas,
+      detalle_poblacion: this.detallePoblacion,
+      evidencia_url: this.form.evidencia_url || null
+    };
 
-    const payload = this.buildPayload();
     const req = this.isEdit
       ? this.recordsService.update(this.id!, payload)
       : this.recordsService.create(payload);
@@ -253,19 +294,6 @@ export class RecordFormComponent {
       this.router.navigate(['records']);
     });
   }
-
-  validateIndicadorValue(municipio: string, ind: IndicatorModel) {
-    const v = this.detallePoblacion.municipios[municipio].indicadores[ind.name];
-    if (v > ind.meta) {
-      this.detallePoblacion.municipios[municipio].indicadores[ind.name] = ind.meta;
-      this.toast.warning(`"${ind.name}" no puede superar ${ind.meta}`);
-    }
-  }
-
-  hasMunicipios(): boolean {
-    return this.selectedMunicipios.length > 0;
-  }
-
 
   cancel() {
     this.router.navigate(['records']);

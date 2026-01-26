@@ -97,13 +97,15 @@ export class RecordDetailComponent {
   getIndicadoresForMunicipio(muni: string) {
     if (!this.record) return [];
 
-    const data = this.record.detalle_poblacion?.municipios?.[muni]?.indicadores;
+    const indicadores =
+      this.record.detalle_poblacion?.municipios?.[muni]?.indicadores;
 
-    if (!data) return [];
+    if (!indicadores) return [];
 
-    return Object.entries(data).map(([key, value]) => ({
-      key,
-      value
+    return Object.entries(indicadores).map(([nombre, data]: any) => ({
+      nombre,
+      total: data.total,
+      tipos: data.tipos_poblacion || null
     }));
   }
 

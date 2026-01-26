@@ -35,7 +35,6 @@
   max-width: 900px;
 }
 
-/* Botón volver */
 .btn-back {
   background: #f1f5f9;
   border: 1px solid #cbd5e1;
@@ -51,7 +50,7 @@
 }
 
 /* ================================
-   METADATA (FECHAS)
+   METADATA
 ================================ */
 .meta-card {
   display: grid;
@@ -79,7 +78,7 @@
 }
 
 /* ================================
-   SECCIONES GENERALES
+   SECCIONES
 ================================ */
 .section {
   background: white;
@@ -103,7 +102,6 @@
   max-width: 1000px;
 }
 
-/* Texto vacío */
 .empty {
   color: #64748b;
   font-style: italic;
@@ -132,16 +130,14 @@
   font-size: 1.05rem;
   font-weight: 800;
   color: #005bbf;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
-/* Indicadores */
+/* ================================
+   INDICADORES
+================================ */
 .indicador-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 0;
-  font-size: 0.95rem;
+  padding: 14px 0;
   border-bottom: 1px dashed #d1d5db;
 }
 
@@ -149,14 +145,41 @@
   border-bottom: none;
 }
 
-.indicador-row span {
+/* Encabezado indicador */
+.indicador-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.indicador-header span {
+  font-size: 0.95rem;
+  font-weight: 600;
   color: #334155;
 }
 
-.indicador-row strong {
-  font-size: 1.1rem;
+.indicador-header strong {
+  font-size: 1.15rem;
   font-weight: 800;
   color: #003b75;
+}
+
+/* ================================
+   DETALLE POBLACIONAL
+================================ */
+.poblacion-detail {
+  margin-top: 10px;
+  padding-left: 14px;
+  border-left: 3px solid #e5e7eb;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px 12px;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.poblacion-detail div {
+  white-space: nowrap;
 }
 
 /* ================================
@@ -209,6 +232,10 @@
   }
 
   .municipios-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .poblacion-detail {
     grid-template-columns: 1fr;
   }
 }

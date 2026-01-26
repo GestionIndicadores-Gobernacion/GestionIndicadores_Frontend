@@ -13,129 +13,177 @@
   <form *ngIf="!loading" (ngSubmit)="save()">
 
     <!-- ========================== -->
-    <!-- 📌 DATOS GENERALES         -->
+    <!-- 📌 UBICACIÓN               -->
     <!-- ========================== -->
     <div class="form-section">
-      <h3 class="section-title">Datos del indicador</h3>
+      <h3 class="section-title">Ubicación del indicador</h3>
 
       <div class="row g-4">
 
-        <!-- STRATEGY -->
-        <div class="col-lg-3 col-md-6">
+        <!-- ESTRATEGIA -->
+        <div class="col-lg-4 col-md-6">
           <label class="form-label">Estrategia</label>
-
-          <select class="form-select" name="strategy" [(ngModel)]="selectedStrategy" (change)="filterComponents()"
-            [class.invalid]="!selectedStrategy && attemptedSubmit" required>
+          <select class="form-select" name="strategy"
+            [(ngModel)]="selectedStrategy"
+            (change)="filterComponents()"
+            [class.invalid]="!selectedStrategy && attemptedSubmit"
+            required>
 
             <option value="" disabled>Seleccionar estrategia...</option>
-            <option *ngFor="let s of strategies" [value]="s.id">{{ s.name }}</option>
+            <option *ngFor="let s of strategies" [value]="s.id">
+              {{ s.name }}
+            </option>
           </select>
-
-          <div class="error-message" *ngIf="!selectedStrategy && attemptedSubmit">
-            Debe seleccionar una estrategia.
-          </div>
         </div>
 
-        <!-- COMPONENT -->
-        <div class="col-lg-3 col-md-6">
+        <!-- COMPONENTE -->
+        <div class="col-lg-4 col-md-6">
           <label class="form-label">Componente</label>
-
-          <select class="form-select" name="component_id" [(ngModel)]="form.component_id" [disabled]="!selectedStrategy"
-            [class.invalid]="!form.component_id && attemptedSubmit" required>
+          <select class="form-select" name="component_id"
+            [(ngModel)]="form.component_id"
+            [disabled]="!selectedStrategy"
+            [class.invalid]="!form.component_id && attemptedSubmit"
+            required>
 
             <option value="" disabled>Seleccionar componente...</option>
-            <option *ngFor="let c of filteredComponents" [value]="c.id">{{ c.name }}</option>
+            <option *ngFor="let c of filteredComponents" [value]="c.id">
+              {{ c.name }}
+            </option>
           </select>
-
-          <div class="error-message" *ngIf="!form.component_id && attemptedSubmit">
-            Debe seleccionar un componente.
-          </div>
         </div>
 
-        <!-- NAME -->
-        <div class="col-lg-4 col-md-6">
-          <label class="form-label">Nombre</label>
+      </div>
+    </div>
 
-          <input class="form-control" type="text" name="name" [(ngModel)]="form.name" required
+    <!-- ========================== -->
+    <!-- 📌 DEFINICIÓN              -->
+    <!-- ========================== -->
+    <div class="form-section">
+      <h3 class="section-title">Definición del indicador</h3>
+
+      <div class="row g-4">
+
+        <!-- NOMBRE -->
+        <div class="col-lg-6 col-md-12">
+          <label class="form-label">Nombre del indicador</label>
+          <input class="form-control"
+            type="text"
+            name="name"
+            [(ngModel)]="form.name"
             [disabled]="!form.component_id"
-            [class.invalid]="(!form.name || form.name.trim().length < 3) && attemptedSubmit">
-
-          <div class="error-message" *ngIf="attemptedSubmit && (!form.name || form.name.trim().length < 3)">
-            <span *ngIf="!form.name">El nombre es obligatorio.</span>
-            <span *ngIf="form.name && form.name.trim().length < 3">Debe tener mínimo 3 caracteres.</span>
-          </div>
+            [class.invalid]="(!form.name || form.name.trim().length < 3) && attemptedSubmit"
+            required>
         </div>
 
         <!-- META -->
         <div class="col-lg-3 col-md-6">
-          <label class="form-label">Meta (valor objetivo)</label>
-
-          <input type="number" class="form-control" name="meta" [(ngModel)]="form.meta" min="1" required
-            [disabled]="!form.component_id" [class.invalid]="attemptedSubmit && (!form.meta || form.meta <= 0)"
-            placeholder="Ej: 100">
-
-          <!-- Error -->
-          <div class="error-message" *ngIf="attemptedSubmit && (!form.meta || form.meta <= 0)">
-            La meta es obligatoria y debe ser mayor a cero.
-          </div>
+          <label class="form-label">Meta</label>
+          <input type="number"
+            class="form-control"
+            name="meta"
+            [(ngModel)]="form.meta"
+            min="1"
+            placeholder="Ej: 100"
+            [disabled]="!form.component_id"
+            [class.invalid]="attemptedSubmit && (!form.meta || form.meta <= 0)"
+            required>
         </div>
 
+      </div>
+    </div>
 
-        <!-- DATA TYPE -->
+    <!-- ========================== -->
+    <!-- 📌 CONFIGURACIÓN           -->
+    <!-- ========================== -->
+    <div class="form-section">
+      <h3 class="section-title">Configuración</h3>
+
+      <div class="row g-4 align-items-end">
+
+        <!-- TIPO DE DATO -->
         <div class="col-lg-3 col-md-6">
           <label class="form-label">Tipo de dato</label>
+          <select class="form-select"
+            name="data_type"
+            [(ngModel)]="form.data_type"
+            [disabled]="!form.component_id"
+            required>
 
-          <select class="form-select" name="data_type" [(ngModel)]="form.data_type" [disabled]="!form.component_id"
-            [class.invalid]="!form.data_type && attemptedSubmit" required>
-
-            <option value="">Seleccione tipo de dato...</option>
+            <option value="">Seleccione...</option>
             <option value="integer">Entero</option>
             <option value="float">Decimal</option>
             <option value="boolean">Booleano</option>
             <option value="string">Texto</option>
             <option value="date">Fecha</option>
           </select>
+        </div>
 
-          <div class="error-message" *ngIf="attemptedSubmit && !form.data_type">
-            Debe seleccionar un tipo de dato.
+        <!-- SWITCHES -->
+        <div class="col-lg-6 col-md-12">
+          <label class="form-label">Comportamiento del indicador</label>
+
+          <div class="d-flex gap-5 mt-2">
+
+            <!-- ES POBLACIONAL -->
+            <div class="d-flex flex-column">
+              <label class="form-label mb-1">Indicador poblacional</label>
+              <label class="switch">
+                <input type="checkbox"
+                  name="es_poblacional"
+                  [(ngModel)]="form.es_poblacional"
+                  [disabled]="!form.component_id">
+                <span class="slider"></span>
+              </label>
+              <small class="text-muted">Mide personas</small>
+            </div>
+
+            <!-- ACTIVO -->
+            <div class="d-flex flex-column">
+              <label class="form-label mb-1">Activo</label>
+              <label class="switch">
+                <input type="checkbox"
+                  name="active"
+                  [(ngModel)]="form.active"
+                  [disabled]="!form.component_id">
+                <span class="slider"></span>
+              </label>
+            </div>
+
           </div>
         </div>
 
       </div>
-
-      <!-- ACTIVO -->
-      <div class="col-lg-2 mt-4 col-md-6 d-flex flex-column">
-        <label class="form-label mb-1">Activo</label>
-        <label class="switch">
-          <input type="checkbox" name="active" [(ngModel)]="form.active" [disabled]="!form.component_id">
-          <span class="slider"></span>
-        </label>
-      </div>
-
     </div>
 
-    <!-- DESCRIPCIÓN -->
+    <!-- ========================== -->
+    <!-- 📌 DESCRIPCIÓN             -->
+    <!-- ========================== -->
     <div class="form-section">
       <h3 class="section-title">Descripción</h3>
 
-      <div class="mb-3">
-        <textarea rows="3" class="form-control" name="description" [(ngModel)]="form.description"
-          placeholder="Descripción del indicador (opcional)" [disabled]="!form.component_id">
-        </textarea>
-      </div>
+      <textarea rows="3"
+        class="form-control"
+        name="description"
+        [(ngModel)]="form.description"
+        placeholder="Descripción del indicador (opcional)"
+        [disabled]="!form.component_id">
+      </textarea>
     </div>
 
-    <!-- BOTONES -->
+    <!-- ========================== -->
+    <!-- 📌 BOTONES                 -->
+    <!-- ========================== -->
     <div class="form-actions">
       <button class="btn-primary" [disabled]="saving">
         {{ saving ? "Guardando..." : (isEdit ? "Actualizar Indicador" : "Crear Indicador") }}
       </button>
 
-      <button type="button" class="btn-secondary-custom" [routerLink]="['/records/indicators']">
+      <button type="button"
+        class="btn-secondary-custom"
+        [routerLink]="['/records/indicators']">
         Cancelar
       </button>
     </div>
 
   </form>
-
 </div>

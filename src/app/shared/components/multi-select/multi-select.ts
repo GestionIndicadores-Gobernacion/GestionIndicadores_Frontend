@@ -70,9 +70,13 @@ export class MultiSelectComponent {
   }
 
   // Eliminar chip
-  remove(item: string) {
+  remove(item: string, event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+
     this.selected = this.selected.filter(x => x !== item);
     this.selectedChange.emit(this.selected);
     this.filter();
   }
+
 }
