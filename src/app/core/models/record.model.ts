@@ -26,7 +26,7 @@ export interface RecordStatsMes {
 // =======================================================
 
 export interface RecordIndicadoresPorMunicipio {
-  [indicador: string]: number;
+  [indicador: string]: RecordIndicadorDetalle;
 }
 
 export interface RecordMunicipioDetalle {
@@ -92,7 +92,7 @@ export interface RecordCreateRequest {
 // ✏ ACTUALIZAR REGISTRO
 // =======================================================
 
-export interface RecordUpdateRequest extends RecordCreateRequest {}
+export interface RecordUpdateRequest extends RecordCreateRequest { }
 
 
 // =======================================================
@@ -120,4 +120,17 @@ export interface RecordFilterParams {
 export interface RecordStatsTipoPoblacion {
   tipo: string;
   total: number;
+}
+
+// 👤 Tipos de población (aún no los usamos)
+export interface RecordTipoPoblacionDetalle {
+  mujeres?: number;
+  poblacion_afro?: number;
+  discapacidad?: number;
+}
+
+// 📊 Detalle por indicador
+export interface RecordIndicadorDetalle {
+  total: number;
+  tipos_poblacion?: RecordTipoPoblacionDetalle;
 }

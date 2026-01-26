@@ -65,17 +65,27 @@
       </div>
 
       <div class="municipios-grid">
-        <div *ngFor="let muni of municipios" class="municipio-card">
 
+        <div *ngFor="let muni of municipios" class="municipio-card">
           <h4>{{ muni }}</h4>
 
-          <div class="indicador-row"
-               *ngFor="let kv of getIndicadoresForMunicipio(muni)">
-            <span>{{ kv.key }}</span>
-            <strong>{{ kv.value }}</strong>
-          </div>
+          <div *ngFor="let ind of getIndicadoresForMunicipio(muni)" class="indicador-row">
 
+            <div class="indicador-header">
+              <span>{{ ind.nombre }}</span>
+              <strong>Total: {{ ind.total }}</strong>
+            </div>
+
+            <!-- DETALLE POBLACIONAL -->
+            <div *ngIf="ind.tipos" class="poblacion-detail">
+              <div>Mujeres: {{ ind.tipos.mujeres }}</div>
+              <div>Población afro: {{ ind.tipos.poblacion_afro }}</div>
+              <div>Discapacidad: {{ ind.tipos.discapacidad }}</div>
+            </div>
+
+          </div>
         </div>
+
       </div>
     </section>
 
@@ -83,10 +93,7 @@
     <section class="section">
       <h3>Evidencia</h3>
 
-      <a *ngIf="record.evidencia_url; else noEv"
-         class="evidence-btn"
-         [href]="record.evidencia_url"
-         target="_blank">
+      <a *ngIf="record.evidencia_url; else noEv" class="evidence-btn" [href]="record.evidencia_url" target="_blank">
         Abrir evidencia
       </a>
 

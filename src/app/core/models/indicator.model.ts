@@ -4,12 +4,13 @@ export interface IndicatorModel {
   name: string;
   description?: string | null;
   data_type: 'string' | 'integer' | 'boolean' | 'date' | 'float';
-  meta: number;        // ⬅️ NUEVO
+  meta: number;
   active: boolean;
   created_at?: string;
   updated_at?: string;
+  es_poblacional: boolean;
 
-    // NUEVO (solo frontend)
+  // solo frontend
   acumulado?: number;
 }
 
@@ -18,8 +19,10 @@ export interface IndicatorCreateRequest {
   name: string;
   description?: string | null;
   data_type: 'string' | 'integer' | 'boolean' | 'date' | 'float';
-  meta: number;        // ⬅️ NUEVO
+  meta: number;
   active?: boolean;
+
+  es_poblacional?: boolean; // 🔥 NUEVO
 }
 
 export interface IndicatorUpdateRequest extends IndicatorCreateRequest {
