@@ -6,13 +6,15 @@ import { ActivityModel } from '../../../../core/models/activity.model';
 import { ActivitiesService } from '../../../../core/services/activities.service';
 import { StrategiesService } from '../../../../core/services/strategy.service';
 import { ToastService } from '../../../../core/services/toast.service';
+import { Pagination } from '../../../../shared/components/pagination/pagination';
 
 @Component({
   selector: 'app-activities-list',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    Pagination
   ],
   templateUrl: './activities-list.html',
   styleUrl: './activities-list.css',

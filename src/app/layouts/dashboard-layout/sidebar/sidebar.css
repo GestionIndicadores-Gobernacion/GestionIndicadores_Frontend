@@ -1,4 +1,6 @@
-/* Sidebar base */
+/* ================================
+   Sidebar base
+================================ */
 .sidebar {
   position: fixed;
   left: 0;
@@ -8,12 +10,19 @@
   background: #003b75;
   color: white;
   padding: 24px 16px;
-  overflow-y: auto;
+  overflow: hidden;
+  /* 🔑 el scroll va en el nav */
   transition: transform 0.3s ease;
   z-index: 999;
-  /* siempre sobre el contenido */
+
+  /* 🔥 CLAVE PARA LOGOUT ABAJO */
+  display: flex;
+  flex-direction: column;
 }
 
+/* ================================
+   Responsive
+================================ */
 
 /* Modo móvil: sidebar oculto */
 @media (max-width: 992px) {
@@ -33,12 +42,64 @@
   }
 }
 
+/* ================================
+   Título
+================================ */
 .sidebar-title {
   font-weight: 700;
   font-size: 1.2rem;
   margin-bottom: 30px;
 }
 
+/* ================================
+   Usuario
+================================ */
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 10px;
+  margin-bottom: 22px;
+  background: rgba(255, 255, 255, 0.10);
+  border-radius: 10px;
+}
+
+.sidebar-user-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #00a9e0;
+  color: white;
+  font-weight: 700;
+  font-size: 1.2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sidebar-user-data .user-name {
+  font-weight: 600;
+  margin: 0;
+  font-size: 0.95rem;
+  color: white;
+}
+
+.sidebar-user-data .user-role {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #e5ecf5;
+}
+
+/* ================================
+   Navegación (SCROLL AQUÍ)
+================================ */
+.sidebar nav {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Links normales */
 .sidebar nav a {
   display: block;
   padding: 12px 14px;
@@ -59,67 +120,14 @@
   color: white;
 }
 
-/* Overlay oscuro para móvil */
-.overlay {
-  position: fixed;
-  top: 64px;
-  left: 0;
-  width: 100%;
-  height: calc(100vh - 64px);
-  background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(2px);
-}
-
-
-/* Bloque de usuario dentro del sidebar */
-.sidebar-user {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 10px;
-  margin-bottom: 22px;
-  background: rgba(255, 255, 255, 0.10);
-  /* transparencia suave */
-  border-radius: 10px;
-}
-
-/* Avatar redondo */
-.sidebar-user-avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: #00a9e0;
-  /* contraste institucional */
-  color: white;
-  font-weight: 700;
-  font-size: 1.2rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* Datos del usuario */
-.sidebar-user-data .user-name {
-  font-weight: 600;
-  margin: 0;
-  font-size: 0.95rem;
-  color: white;
-}
-
-.sidebar-user-data .user-role {
-  margin: 0;
-  font-size: 0.8rem;
-  color: #e5ecf5;
-  /* gris claro */
-}
-
+/* ================================
+   Links deshabilitados
+================================ */
 .disabled-link {
   color: #9ca3af;
-  /* gris suave */
   cursor: not-allowed;
   opacity: 0.7;
   pointer-events: none;
-  /* bloquea el click */
 }
 
 .disabled-link .soon {
@@ -129,8 +137,9 @@
   font-style: italic;
 }
 
-/* ---------- SUBMENÚ ---------- */
-
+/* ================================
+   Submenú
+================================ */
 .submenu {
   margin-left: 14px;
   margin-top: 6px;
@@ -143,23 +152,19 @@
   opacity: 0.9;
 }
 
-/* Header del submenú (Informes) */
+/* Header del submenú */
 .submenu-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.submenu-link {
+.submenu-title {
   flex: 1;
   padding: 12px 14px;
-  border-radius: 8px;
+  font-size: 0.95rem;
   color: #e5ecf5;
-  text-decoration: none;
-}
-
-.submenu-link:hover {
-  background: rgba(255, 255, 255, 0.12);
+  font-weight: 500;
 }
 
 /* Flecha */
@@ -180,15 +185,7 @@
   transform: rotate(90deg);
 }
 
-.submenu-title {
-  flex: 1;
-  padding: 12px 14px;
-  font-size: 0.95rem;
-  color: #e5ecf5;
-  font-weight: 500;
-}
-
-/* Padre activo por contexto (NO navegación) */
+/* Padre activo por contexto */
 .section-active {
   position: relative;
 }
@@ -202,4 +199,41 @@
   width: 3px;
   border-radius: 2px;
   background: #00a9e0;
+}
+
+/* ================================
+   Footer / Logout
+================================ */
+.sidebar-footer {
+  padding: 16px 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.logout-btn {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.25s ease;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ================================
+   Overlay móvil
+================================ */
+.overlay {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  width: 100%;
+  height: calc(100vh - 64px);
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
 }

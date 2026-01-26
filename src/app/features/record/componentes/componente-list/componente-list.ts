@@ -8,12 +8,13 @@ import { ActivitiesService } from '../../../../core/services/activities.service'
 import { ComponentsService } from '../../../../core/services/components.service';
 import { StrategiesService } from '../../../../core/services/strategy.service';
 import { ToastService } from '../../../../core/services/toast.service';
+import { Pagination } from '../../../../shared/components/pagination/pagination';
 
 
 @Component({
   selector: 'app-componente-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, Pagination],
   templateUrl: './componente-list.html',
   styleUrl: './componente-list.css',
 })

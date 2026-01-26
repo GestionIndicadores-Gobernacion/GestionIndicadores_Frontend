@@ -64,34 +64,29 @@
           <td>{{ r.fecha | date }}</td>
 
           <td class="actions-col">
-            <button class="btn-outline" [routerLink]="['/records', r.id]">
-              Ver
-            </button>
+            <div class="actions-wrapper">
+              <button class="btn-outline" [routerLink]="['/records', r.id]">
+                Ver
+              </button>
 
-            <button *ngIf="!isViewer" class="btn-outline-primary" [routerLink]="['/records', r.id, 'edit']">
-              Editar
-            </button>
+              <button *ngIf="!isViewer" class="btn-outline-primary" [routerLink]="['/records', r.id, 'edit']">
+                Editar
+              </button>
 
-            <button *ngIf="!isViewer" class="btn-outline-danger" (click)="deleteRecord(r.id)">
-              Eliminar
-            </button>
+              <button *ngIf="!isViewer" class="btn-outline-danger" (click)="deleteRecord(r.id)">
+                Eliminar
+              </button>
+            </div>
           </td>
+
 
         </tr>
       </tbody>
 
     </table>
 
-    <div class="pagination-container" *ngIf="totalPages > 1">
-      <button class="page-btn" [disabled]="currentPage === 1" (click)="prevPage()">
-        ◀
-      </button>
-
-      <button class="page-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">
-        ▶
-      </button>
-
-    </div>
+    <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="currentPage = $event">
+    </app-pagination>
 
   </div>
 

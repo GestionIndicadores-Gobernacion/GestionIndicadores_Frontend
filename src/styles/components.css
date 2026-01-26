@@ -1,0 +1,82 @@
+/* =====================================================
+   PAGINACIÓN
+===================================================== */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 0;
+}
+
+/* Botones base */
+.page-btn {
+  min-width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid #ccd4dd;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+/* Flechas elegantes */
+.page-btn.prev::before {
+  content: "‹";
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #003b75;
+}
+
+.page-btn.next::before {
+  content: "›";
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #003b75;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #eef2f6;
+}
+
+.page-btn:disabled {
+  cursor: not-allowed;
+}
+
+.page-btn:disabled::before {
+  opacity: 0.4;
+}
+
+/* Texto */
+.page-info {
+  font-weight: 600;
+  color: #003b75;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .pagination-container {
+    gap: 10px;
+    padding: 16px 0;
+  }
+
+  .page-info {
+    font-size: 0.85rem;
+  }
+}
+
+/* =====================================================
+   EMPTY STATE
+===================================================== */
+.empty-state {
+  text-align: center;
+  padding: 40px 0;
+  color: #777;
+  font-size: 1.1rem;
+}
