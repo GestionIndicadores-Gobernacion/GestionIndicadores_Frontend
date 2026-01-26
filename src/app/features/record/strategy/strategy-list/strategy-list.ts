@@ -5,11 +5,12 @@ import { Router } from '@angular/router';
 import { StrategyModel } from '../../../../core/models/strategy.model';
 import { StrategiesService } from '../../../../core/services/strategy.service';
 import { ToastService } from '../../../../core/services/toast.service';
+import { Pagination } from '../../../../shared/components/pagination/pagination';
 
 @Component({
   selector: 'app-strategy-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, Pagination],
   templateUrl: './strategy-list.html',
   styleUrl: './strategy-list.css',
 })

@@ -79,21 +79,9 @@
 
     </table>
 
-    <div class="pagination-container" *ngIf="totalPages > 1">
+    <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="currentPage = $event">
+    </app-pagination>
 
-      <button class="page-btn" [disabled]="currentPage === 1" (click)="currentPage = currentPage - 1">
-        ◀
-      </button>
-
-      <span class="page-info">
-        Página {{ currentPage }} de {{ totalPages }}
-      </span>
-
-      <button class="page-btn" [disabled]="currentPage === totalPages" (click)="currentPage = currentPage + 1">
-        ▶
-      </button>
-
-    </div>
 
 
 

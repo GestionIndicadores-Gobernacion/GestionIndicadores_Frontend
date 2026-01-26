@@ -1,0 +1,84 @@
+.form-container,
+.component-form-container,
+.indicator-form-container,
+.record-form-container {
+    padding: 24px;
+}
+
+.page-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #003b75;
+    margin-bottom: 20px;
+}
+
+.form-section {
+    background: white;
+    padding: 20px;
+    margin-bottom: 18px;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #003b75;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #003b75;
+}
+
+input,
+select,
+textarea {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #ccd4dd;
+    font-size: 0.95rem;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #005bbf;
+}
+
+.form-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 12px;
+}
+
+/* VALIDACIONES */
+input.invalid,
+textarea.invalid {
+    border: 2px solid #C6342D !important;
+    background-color: #fff5f5;
+}
+
+.error-message {
+    color: #C6342D;
+    font-size: 13px;
+    margin-top: 4px;
+}

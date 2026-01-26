@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { SidebarService } from '../../../core/services/sidebar.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 interface MenuItem {
   label: string;
@@ -33,7 +34,8 @@ export class SidebarComponent {
 
   constructor(
     private sidebarService: SidebarService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {
     const userString = localStorage.getItem('user');
     if (userString) {
@@ -97,4 +99,8 @@ export class SidebarComponent {
     ];
   }
 
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/auth/login']);
+  }
 }

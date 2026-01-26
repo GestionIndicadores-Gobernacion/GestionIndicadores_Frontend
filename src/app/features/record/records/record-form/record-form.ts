@@ -15,13 +15,7 @@ import { RecordsService } from '../../../../core/services/records.service';
 import { StrategiesService } from '../../../../core/services/strategy.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { MultiSelectComponent } from '../../../../shared/components/multi-select/multi-select';
-
-
-
-export type TipoPoblacionKey =
-  | 'mujeres'
-  | 'poblacion_afro'
-  | 'discapacidad';
+import { buildTiposPoblacion, TIPOS_POBLACION } from '../../../../core/data/tipos-poblacion';
 
 @Component({
   selector: 'app-record-form',
@@ -33,12 +27,7 @@ export type TipoPoblacionKey =
 export class RecordFormComponent {
   readonly MUNICIPIO_TODO_VALLE = 'Todo el Valle del Cauca';
 
-  tiposPoblacion: { key: TipoPoblacionKey; label: string }[] = [
-    { key: 'mujeres', label: 'Mujeres' },
-    { key: 'poblacion_afro', label: 'Población afro' },
-    { key: 'discapacidad', label: 'Discapacidad' }
-  ];
-
+  tiposPoblacion = TIPOS_POBLACION;
   municipios = MUNICIPIOS_VALLE;
   selectedMunicipios: string[] = [];
 
@@ -208,7 +197,7 @@ export class RecordFormComponent {
         this.detallePoblacion.municipios[this.MUNICIPIO_TODO_VALLE].indicadores[ind.name] = {
           total: 0,
           tipos_poblacion: ind.es_poblacional
-            ? { mujeres: 0, poblacion_afro: 0, discapacidad: 0 }
+            ? buildTiposPoblacion()
             : undefined
         };
       });
@@ -252,12 +241,11 @@ export class RecordFormComponent {
     const t = indicador.tipos_poblacion;
     if (!t) return;
 
-    indicador.total =
-      (t.mujeres || 0) +
-      (t.poblacion_afro || 0) +
-      (t.discapacidad || 0);
+    indicador.total = TIPOS_POBLACION.reduce(
+      (sum, tp) => sum + (t[tp.key] || 0),
+      0
+    );
   }
-
   // =====================================================
   // GUARDAR
   // =====================================================

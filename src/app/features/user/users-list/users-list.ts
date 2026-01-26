@@ -5,13 +5,15 @@ import { UsersService } from '../../../core/services/users.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../../core/services/toast.service';
+import { Pagination } from '../../../shared/components/pagination/pagination';
 
 @Component({
   selector: 'app-users-list',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    Pagination
   ],
   templateUrl: './users-list.html',
   styleUrl: './users-list.css',

@@ -1,0 +1,71 @@
+.table-wrapper {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+}
+
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.custom-table td {
+  line-height: 1.4;
+}
+
+.custom-table th,
+.custom-table td {
+  padding: 12px;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #f0f3f7;
+  vertical-align: middle;
+}
+
+.custom-table thead {
+  background: #eef2f6;
+}
+
+.custom-table th {
+  text-align: left;
+  font-weight: 600;
+  color: #003b75;
+  white-space: nowrap;
+}
+
+.custom-table tr:hover {
+  background: #f8fbff;
+}
+
+/* ACCIONES */
+.actions-col {
+  padding: 8px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* 3 acciones (con wrapper) */
+.actions-wrapper {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 2 acciones (sin wrapper) */
+.actions-col:not(:has(.actions-wrapper)) {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+
+  .actions-wrapper,
+  .actions-col:not(:has(.actions-wrapper)) {
+    flex-direction: column;
+    gap: 6px;
+  }
+}

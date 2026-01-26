@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { AuthService } from '../../../core/services/auth.service';
 import { SidebarService } from '../../../core/services/sidebar.service';
 
 @Component({
@@ -10,15 +9,9 @@ import { SidebarService } from '../../../core/services/sidebar.service';
 })
 export class TopbarComponent {
   constructor(
-    private auth: AuthService,
     private sidebar: SidebarService
 
   ) { }
-
-  logout() {
-    this.auth.logout();
-    window.location.href = '/auth/login';
-  }
 
   toggleSidebar() {
     this.sidebar.toggle();
