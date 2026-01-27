@@ -38,8 +38,8 @@
     @if (item.children) {
     <div class="submenu-header" [class.section-active]="isRecordsSectionActive()">
 
-      <!-- TÍTULO (NO navega) -->
-      <span class="submenu-title">
+      <!-- TÍTULO (ahora también hace toggle) -->
+      <span class="submenu-title" (click)="toggleSection(item.label)">
         {{ item.label }}
       </span>
 
@@ -49,6 +49,7 @@
       </button>
 
     </div>
+
 
     @if (isExpanded(item.label)) {
     <div class="submenu">

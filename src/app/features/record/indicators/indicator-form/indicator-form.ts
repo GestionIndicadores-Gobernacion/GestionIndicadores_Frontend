@@ -160,6 +160,7 @@ export class IndicatorFormComponent {
   save() {
     this.attemptedSubmit = true;
 
+
     if (!this.selectedStrategy ||
       !this.form.component_id ||
       !this.form.name ||
