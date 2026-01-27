@@ -165,6 +165,12 @@
   font-size: 0.95rem;
   color: #e5ecf5;
   font-weight: 500;
+  cursor: pointer;
+}
+
+.submenu-title:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
 }
 
 /* Flecha */
