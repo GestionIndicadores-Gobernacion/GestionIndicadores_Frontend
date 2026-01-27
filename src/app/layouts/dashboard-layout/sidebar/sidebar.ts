@@ -82,9 +82,9 @@ export class SidebarComponent {
       { label: 'Dashboard', route: 'dashboard' },
 
       {
-        label: 'Informes PYBA',
+        label: 'Reportes PYBA',
         children: [
-          { label: 'Informes', route: 'records' },
+          { label: 'Reportes', route: 'records' },
           { label: 'Estrategias', route: 'records/strategies', roles: ['SuperAdmin'] },
           { label: 'Actividades', route: 'records/activities', roles: ['SuperAdmin'] },
           { label: 'Componentes Estratégicos', route: 'records/components', roles: ['SuperAdmin'] },
