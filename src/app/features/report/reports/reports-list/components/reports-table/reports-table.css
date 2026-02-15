@@ -1,0 +1,93 @@
+.table-card {
+    background: white;
+    border: 1px solid #e6e8ef;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.table-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.table-header span {
+    font-size: 13px;
+    color: #666;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+thead {
+    background: #f8f9fc;
+}
+
+th,
+td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+th {
+    font-weight: 600;
+    font-size: 13px;
+    color: #555;
+}
+
+.actions-col {
+    width: 160px;
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-edit {
+    background: #f0f2ff;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.btn-delete {
+    background: #ffecec;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #b00020;
+}
+
+.btn-edit:hover {
+    opacity: 0.85;
+}
+
+.btn-delete:hover {
+    opacity: 0.85;
+}
+
+.empty-table {
+    padding: 24px;
+    text-align: center;
+    color: #777;
+}

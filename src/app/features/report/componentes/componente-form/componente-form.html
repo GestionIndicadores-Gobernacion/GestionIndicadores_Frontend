@@ -1,0 +1,280 @@
+<div class="component-form-container form-container">
+
+  <h2 class="page-title">
+    <i class="bi bi-diagram-3 me-2"></i>
+    {{ isEdit ? "Editar Componente" : "Crear Componente" }}
+  </h2>
+
+  <!-- LOADING -->
+  <div *ngIf="loading" class="loading-box">
+    <div class="spinner"></div>
+  </div>
+
+  <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="submit()">
+
+    <!-- ===================================================== -->
+    <!-- INFORMACIÓN GENERAL -->
+    <!-- ===================================================== -->
+    <div class="form-section">
+
+      <div class="section-header">
+        <div class="title-with-icon">
+          <i class="bi bi-layout-text-window"></i>
+          <h3>Información General</h3>
+        </div>
+      </div>
+
+      <p class="section-description">
+        Define la estructura base del componente dentro de la estrategia seleccionada.
+      </p>
+
+      <div class="general-grid">
+
+        <div class="form-group">
+          <label><i class="bi bi-diagram-2 me-1"></i> Estrategia</label>
+
+          <select formControlName="strategy_id">
+            <option [ngValue]="null" disabled>
+              Seleccione una estrategia...
+            </option>
+            <option *ngFor="let s of strategies" [ngValue]="s.id">
+              {{ s.name }}
+            </option>
+          </select>
+
+          <small class="hint-text">
+            La estrategia determina el contexto general del componente.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label><i class="bi bi-type me-1"></i> Nombre del componente</label>
+
+          <input type="text" formControlName="name" placeholder="Ej: Fortalecimiento institucional" />
+
+          <small class="hint-text">
+            Usa un nombre claro y específico que lo diferencie dentro de la estrategia.
+          </small>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- OBJETIVOS -->
+    <!-- ===================================================== -->
+    <div class="form-section">
+
+      <div class="section-header">
+        <div class="title-with-icon">
+          <i class="bi bi-bullseye"></i>
+          <div>
+            <h3>Objetivos</h3>
+            <small class="hint-text section-hint">
+              Define los resultados que este componente debe alcanzar.
+            </small>
+          </div>
+        </div>
+
+        <button type="button" class="btn-outline-primary btn-sm icon-btn" (click)="addObjective()">
+          <i class="bi bi-plus-lg"></i>
+          Agregar
+        </button>
+      </div>
+
+      <div formArrayName="objectives">
+        <div *ngFor="let o of objectives.controls; let i=index" [formGroupName]="i" class="compact-row">
+
+          <input type="text" formControlName="description" placeholder="Ej: Incrementar cobertura territorial" />
+
+          <button type="button" class="btn-outline-danger btn-sm icon-btn" (click)="removeObjective(i)">
+            <i class="bi bi-trash"></i>
+          </button>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- ACTIVIDADES MGA -->
+    <!-- ===================================================== -->
+    <div class="form-section">
+
+      <div class="section-header">
+        <div class="title-with-icon">
+          <i class="bi bi-list-check"></i>
+          <div>
+            <h3>Actividades MGA</h3>
+            <small class="hint-text section-hint">
+              Actividades principales asociadas al componente.
+            </small>
+          </div>
+        </div>
+
+        <button type="button" class="btn-outline-primary btn-sm icon-btn" (click)="addActivity()">
+          <i class="bi bi-plus-lg"></i>
+          Agregar
+        </button>
+      </div>
+
+      <div formArrayName="mga_activities">
+        <div *ngFor="let a of activities.controls; let i=index" [formGroupName]="i" class="compact-row">
+
+          <input type="text" formControlName="name" placeholder="Ej: Jornadas territoriales" />
+
+          <button type="button" class="btn-outline-danger btn-sm icon-btn" (click)="removeActivity(i)">
+            <i class="bi bi-trash"></i>
+          </button>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- INDICADORES -->
+    <!-- ===================================================== -->
+    <div class="form-section">
+
+      <div class="section-header">
+        <div class="title-with-icon">
+          <i class="bi bi-bar-chart"></i>
+          <div>
+            <h3>Indicadores</h3>
+            <small class="hint-text section-hint">
+              Define los campos que se usarán posteriormente en los reportes.
+            </small>
+          </div>
+        </div>
+
+        <button type="button" class="btn-outline-primary btn-sm icon-btn" (click)="addIndicator()">
+          <i class="bi bi-plus-lg"></i>
+          Agregar Indicador
+        </button>
+      </div>
+
+      <div formArrayName="indicators">
+
+        <div *ngFor="let ind of indicators.controls; let i=index" [formGroupName]="i" class="indicator-card refined">
+
+          <!-- GRID BASE -->
+          <div class="indicator-grid">
+
+            <div>
+              <label><i class="bi bi-type me-1"></i> Nombre</label>
+              <input type="text" formControlName="name" placeholder="Ej: Beneficiarios atendidos" />
+            </div>
+
+            <div>
+              <label><i class="bi bi-ui-checks-grid me-1"></i> Tipo</label>
+              <select formControlName="field_type">
+                <option value="text">Texto</option>
+                <option value="number">Número</option>
+                <option value="select">Selección</option>
+                <option value="sum_group">Grupo poblacional</option>
+              </select>
+
+            </div>
+
+            <div class="indicator-meta">
+              <label class="switch">
+                <input type="checkbox" formControlName="is_required" />
+                <span class="slider"></span>
+              </label>
+              <span class="meta-label">
+                {{ ind.get('is_required')?.value ? 'Obligatorio' : 'Opcional' }}
+              </span>
+            </div>
+
+            <div class="indicator-actions">
+              <button type="button" class="btn-outline-danger btn-sm icon-btn" (click)="removeIndicator(i)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+
+          </div>
+
+          <!-- CONFIG SELECT -->
+          <div *ngIf="ind.get('field_type')?.value === 'select'" class="config-box refined-config">
+
+            <label><i class="bi bi-list-ul me-1"></i> Opciones</label>
+
+            <textarea formControlName="configOptions" rows="3" placeholder="Opción 1&#10;Opción 2"></textarea>
+
+            <small class="hint-text">
+              Cada línea representará una opción seleccionable.
+            </small>
+          </div>
+
+          <!-- CONFIG SUM GROUP -->
+          <div *ngIf="ind.get('field_type')?.value === 'sum_group'" class="config-box refined-config">
+
+            <label><i class="bi bi-people me-1"></i> Campos del grupo</label>
+
+            <textarea formControlName="configFields" rows="3"
+              placeholder="Hombres&#10;Mujeres&#10;Niños&#10;Adulto mayor"></textarea>
+
+            <small class="hint-text">
+              Cada línea será una categoría independiente. El sistema sumará automáticamente.
+            </small>
+          </div>
+
+
+          <!-- METAS ANUALES (SOLO NUMBER) -->
+          <div *ngIf="ind.get('field_type')?.value === 'number'" class="config-box refined-config">
+
+            <label>
+              <i class="bi bi-flag me-1"></i>
+              Metas anuales
+            </label>
+
+            <div formArrayName="targets">
+
+              <div *ngFor="let t of getTargets(i).controls; let j=index" [formGroupName]="j" class="target-row">
+
+                <input type="number" formControlName="year" placeholder="Año" />
+
+                <input type="number" formControlName="target_value" placeholder="Meta" />
+
+                <button type="button" class="btn-outline-danger btn-sm icon-btn" (click)="removeTarget(i, j)">
+                  <i class="bi bi-trash"></i>
+                </button>
+
+              </div>
+
+            </div>
+
+            <button type="button" class="btn-outline-primary btn-sm icon-btn mt-2" (click)="addTarget(i)">
+              <i class="bi bi-plus-lg"></i>
+              Agregar Meta
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- ACCIONES -->
+    <!-- ===================================================== -->
+    <div class="form-actions">
+
+      <button class="btn-primary" [disabled]="saving || form.invalid">
+        <i class="bi bi-check-lg me-1"></i>
+        {{ saving ? "Guardando..." : (isEdit ? "Actualizar" : "Crear") }}
+      </button>
+
+      <button type="button" class="btn-secondary-custom" [routerLink]="['/reports/components']">
+        <i class="bi bi-x-lg me-1"></i>
+        Cancelar
+      </button>
+
+    </div>
+
+  </form>
+</div>

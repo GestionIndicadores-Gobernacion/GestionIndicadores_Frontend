@@ -1,0 +1,35 @@
+<div class="kpi-grid">
+
+    <div class="kpi-card">
+        <div class="kpi-value">{{ totalReports }}</div>
+        <div class="kpi-label">Total Reportes</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-value">{{ totalStrategies }}</div>
+        <div class="kpi-label">Estrategias Activas</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-value">{{ totalComponents }}</div>
+        <div class="kpi-label">Componentes Reportados</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-value">{{ totalZones }}</div>
+        <div class="kpi-label">Zonas Impactadas</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-value">{{ totalIndicators }}</div>
+        <div class="kpi-label">Indicadores Usados</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-value">
+            {{ lastReportDate ? (lastReportDate | date:'short') : '—' }}
+        </div>
+        <div class="kpi-label">Último Reporte</div>
+    </div>
+
+</div>

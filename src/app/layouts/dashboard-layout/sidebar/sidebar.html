@@ -1,88 +1,114 @@
 <div class="sidebar" [class.open]="isOpen">
   <h3 class="sidebar-title">Menú</h3>
 
-  @if (user) {
-  <div class="sidebar-user">
-    <div class="sidebar-user-avatar">
-      {{ user.name.charAt(0) }}
-    </div>
+  <!-- ================= USER INFO ================= -->
+  @if (userName) {
+    <div class="sidebar-user">
 
-    <div class="sidebar-user-data">
-      <p class="user-name">{{ user.name }}</p>
-      <p class="user-role">{{ role }}</p>
+      <!-- AVATAR -->
+      <div class="sidebar-user-avatar">
+        @if (profileImageUrl) {
+          <img [src]="profileImageUrl" alt="Avatar" class="avatar-img" />
+        } @else {
+          {{ userInitial }}
+        }
+      </div>
+
+      <!-- DATA -->
+      <div class="sidebar-user-data">
+        <p class="user-name">{{ userName }}</p>
+
+        <!-- ROLE BADGE -->
+        @if (roleLabel) {
+          <p class="user-role {{ roleLabel }}">
+            {{ roleLabel }}
+          </p>
+        }
+
+        <p class="user-email">{{ userEmail }}</p>
+      </div>
+
     </div>
-  </div>
   }
 
+  <!-- ================= MENU ================= -->
   <nav>
     @for (item of menu; track item.label) {
 
-    @if (canShow(item)) {
+      @if (canShow(item)) {
 
-    <!-- ITEM NORMAL -->
-    @if (item.route && !item.children && !item.disabled) {
-    <a [routerLink]="item.route" routerLinkActive="active">
-      {{ item.label }}
-    </a>
-    }
+        <!-- ITEM NORMAL -->
+        @if (item.route && !item.children && !item.disabled) {
+          <a [routerLink]="item.route" routerLinkActive="active">
+            {{ item.label }}
+          </a>
+        }
 
-    <!-- ITEM DESHABILITADO -->
-    @if (item.disabled) {
-    <a class="disabled-link">
-      {{ item.label }}
-      <span class="soon">(pronto)</span>
-    </a>
-    }
+        <!-- ITEM DESHABILITADO -->
+        @if (item.disabled) {
+          <a class="disabled-link">
+            {{ item.label }}
+            <span class="soon">(En construcción)</span>
+          </a>
+        }
 
-    <!-- ITEM CONTENEDOR (Informes PYBA) -->
-    @if (item.children) {
-    <div class="submenu-header" [class.section-active]="isRecordsSectionActive()">
+        <!-- ITEM CONTENEDOR -->
+        @if (item.children && hasVisibleChildren(item) && !item.disabled) {
 
-      <!-- TÍTULO (ahora también hace toggle) -->
-      <span class="submenu-title" (click)="toggleSection(item.label)">
-        {{ item.label }}
-      </span>
+          <div class="submenu-header"
+               [class.section-active]="isReportsSectionActive()">
 
-      <!-- FLECHA -->
-      <button class="submenu-arrow" type="button" (click)="toggleSection(item.label)">
-        <span [class.open]="isExpanded(item.label)">▸</span>
-      </button>
+            <span class="submenu-title"
+                  (click)="toggleSection(item.label)">
+              {{ item.label }}
+            </span>
 
-    </div>
+            <button class="submenu-arrow"
+                    type="button"
+                    (click)="toggleSection(item.label)">
+              <span [class.open]="isExpanded(item.label)">▸</span>
+            </button>
 
+          </div>
 
-    @if (isExpanded(item.label)) {
-    <div class="submenu">
-      @for (child of item.children; track child.label) {
-      @if (canShow(child)) {
+          @if (isExpanded(item.label)) {
+            <div class="submenu">
+              @for (child of item.children; track child.label) {
 
-      <!-- INFORMES (exact match) -->
-      @if (child.route === 'records') {
-      <a class="submenu-item" [routerLink]="child.route" routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }">
-        {{ child.label }}
-      </a>
+                @if (canShow(child)) {
+
+                  <!-- EXACT MATCH -->
+                  @if (child.route === 'reports') {
+                    <a class="submenu-item"
+                       [routerLink]="child.route"
+                       routerLinkActive="active"
+                       [routerLinkActiveOptions]="{ exact: true }">
+                      {{ child.label }}
+                    </a>
+                  }
+
+                  <!-- RESTO -->
+                  @if (child.route !== 'reports') {
+                    <a class="submenu-item"
+                       [routerLink]="child.route"
+                       routerLinkActive="active">
+                      {{ child.label }}
+                    </a>
+                  }
+
+                }
+
+              }
+            </div>
+          }
+        }
+
       }
-
-      <!-- RESTO DE CHILDREN -->
-      @if (child.route !== 'records') {
-      <a class="submenu-item" [routerLink]="child.route" routerLinkActive="active">
-        {{ child.label }}
-      </a>
-      }
-
-      }
-      }
-    </div>
-    }
-    }
-
-    }
 
     }
   </nav>
 
-  <!-- LOGOUT -->
+  <!-- ================= LOGOUT ================= -->
   <div class="sidebar-footer">
     <button class="logout-btn" (click)="logout()">
       Salir
@@ -91,6 +117,5 @@
 
 </div>
 
-<!-- Overlay móvil -->
-<div class="overlay" *ngIf="isOpen" (click)="closeSidebar()">
-</div>
+<!-- ================= OVERLAY MÓVIL ================= -->
+<div class="overlay" *ngIf="isOpen" (click)="closeSidebar()"></div>

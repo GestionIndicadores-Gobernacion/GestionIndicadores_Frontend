@@ -1,0 +1,75 @@
+<div class="form-container">
+
+    <h2 class="page-title">
+        {{ datasetId ? 'Editar Dataset' : 'Crear Dataset' }}
+    </h2>
+
+    <!-- LOADING -->
+    <div *ngIf="loading" class="loading-box">
+        <div class="spinner"></div>
+    </div>
+
+    <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="submit()">
+
+        <!-- ============================
+         INFORMACIÓN GENERAL
+    ============================ -->
+        <div class="form-section">
+
+            <h3 class="section-title">
+                Información general
+            </h3>
+
+            <div class="form-grid">
+
+                <!-- NOMBRE -->
+                <div class="form-group full">
+                    <label>Nombre</label>
+
+                    <input type="text" formControlName="name" placeholder="Ej: Indicadores ambientales"
+                        [class.invalid]="form.get('name')?.invalid && form.get('name')?.touched" />
+
+                    <span class="hint-text">
+                        El nombre debe ser único.
+                    </span>
+
+                    <div *ngIf="form.get('name')?.touched && form.get('name')?.errors" class="error-message">
+                        <span *ngIf="form.get('name')?.errors?.['required']">
+                            El nombre es obligatorio
+                        </span>
+
+                        <span *ngIf="form.get('name')?.errors?.['backend']">
+                            {{ form.get('name')?.errors?.['backend'] }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- DESCRIPCIÓN -->
+                <div class="form-group full">
+                    <label>Descripción</label>
+
+                    <textarea rows="3" formControlName="description"
+                        placeholder="Descripción opcional del dataset"></textarea>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ============================
+         ACTIONS
+    ============================ -->
+        <div class="form-actions">
+
+            <button type="submit" class="btn-primary" [disabled]="submitting">
+                {{ datasetId ? 'Guardar cambios' : 'Crear Dataset' }}
+            </button>
+
+            <button type="button" class="btn-outline" (click)="cancel()">
+                Cancelar
+            </button>
+
+        </div>
+
+    </form>
+
+</div>

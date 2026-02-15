@@ -1,0 +1,100 @@
+<div class="import-backdrop" (click)="closeModal()">
+    <div class="import-modal" (click)="$event.stopPropagation()">
+
+        <!-- HEADER -->
+        <div class="import-header">
+            <h2>Importar dataset desde Excel</h2>
+
+            <div class="steps">
+                <span class="step" [class.active]="step === 1">1. Archivo</span>
+                <span class="step" [class.active]="step === 2">2. Preview</span>
+                <span class="step" [class.active]="step === 3">3. Campos</span>
+                <span class="step" [class.active]="step === 4">4. Importar</span>
+            </div>
+        </div>
+
+        <!-- BODY -->
+        <div class="import-body">
+
+            <!-- STEP 1 -->
+            <div *ngIf="step === 1" class="step-panel">
+                <input type="file" accept=".xlsx,.xls" (change)="onFile($event)" />
+            </div>
+
+            <!-- STEP 2 -->
+            <div *ngIf="step === 2" class="step-panel">
+                <div *ngFor="let sheet of preview" class="sheet-preview">
+                    <h4>{{ sheet.sheet_name }}</h4>
+                    <p class="muted">
+                        {{ sheet.rows_with_data }} Columnas detectadas
+                    </p>
+
+                    <table class="preview-table">
+                        <thead>
+                            <tr>
+                                <th>Campo</th>
+                                <th>Tipo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let field of sheet.fields">
+                                <td>{{ field.field_name }}</td>
+                                <td>
+                                    <span class="field-badge {{ field.type }}">
+                                        {{ field.type }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- STEP 3 -->
+            <div *ngIf="step === 3" class="step-panel">
+                <div *ngFor="let sheet of preview" class="sheet-preview">
+                    <h4>{{ sheet.sheet_name }}</h4>
+
+                    <div class="field-row" *ngFor="let field of sheet.fields">
+                        <input type="checkbox" [(ngModel)]="field.selected" />
+
+                        <input type="text" [(ngModel)]="field.field_name" [disabled]="!field.selected" />
+
+                        <select [(ngModel)]="field.type" [disabled]="!field.selected">
+                            <option value="text">Texto</option>
+                            <option value="number">Número</option>
+                            <option value="date">Fecha</option>
+                            <option value="boolean">Booleano</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 4 -->
+            <div *ngIf="step === 4" class="step-panel">
+                <p class="muted">Importando dataset…</p>
+
+                <div class="progress">
+                    <div class="bar" [style.width.%]="progress"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- FOOTER -->
+        <div class="modal-actions">
+            <button class="btn-outline-secondary" (click)="prev()" [disabled]="step === 1 || importing">
+                Atrás
+            </button>
+
+            <button class="btn-outline-primary" (click)="next()" *ngIf="step < 3">
+                Siguiente
+            </button>
+
+            <button class="btn-primary" (click)="import()" *ngIf="step === 3" [disabled]="importing">
+                Importar
+            </button>
+        </div>
+
+    </div>
+</div>

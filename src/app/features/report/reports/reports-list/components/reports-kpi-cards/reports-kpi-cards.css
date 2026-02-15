@@ -1,0 +1,30 @@
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.kpi-card {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-3px);
+}
+
+.kpi-value {
+    font-size: 28px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.kpi-label {
+    font-size: 14px;
+    color: #7f8c8d;
+    margin-top: 4px;
+}

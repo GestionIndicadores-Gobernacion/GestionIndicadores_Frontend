@@ -1,0 +1,93 @@
+<div class="list-container">
+
+  <div class="list-header">
+    <h2>Gestión de Componentes</h2>
+
+    <div class="header-actions">
+      <input type="text" class="search-input" placeholder="Buscar por nombre o estrategia..." [(ngModel)]="search"
+        (input)="applyFilter()" />
+
+      <button class="btn-primary" (click)="goToCreate()" [disabled]="loading">
+        Crear Componente
+      </button>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div *ngIf="loading" class="loading-box">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- EMPTY -->
+  <div *ngIf="!loading && paginatedComponents.length === 0" class="empty-state">
+    <p>No hay componentes registrados.</p>
+  </div>
+
+  <!-- TABLE -->
+  <div *ngIf="!loading && paginatedComponents.length > 0" class="table-wrapper">
+
+    <table class="custom-table">
+
+      <thead>
+        <tr>
+          <th (click)="sortBy('name')" class="sortable">
+            Componente
+            <span *ngIf="sortColumn === 'name'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+
+          <th (click)="sortBy('strategy')" class="sortable">
+            Estrategia
+            <span *ngIf="sortColumn === 'strategy'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+
+          <th (click)="sortBy('created_at')" class="sortable">
+            Creado
+            <span *ngIf="sortColumn === 'created_at'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+
+          <th class="text-center">Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let c of paginatedComponents">
+
+          <td class="strong">
+            {{ c.name }}
+          </td>
+
+          <td>
+            {{ strategyMap[c.strategy_id] || '—' }}
+          </td>
+
+          <td>
+            {{ c.created_at | date:'short' }}
+          </td>
+
+          <td class="actions-col">
+            <button class="btn-outline-primary" (click)="goToEdit(c.id)">
+              Editar
+            </button>
+
+            <button class="btn-outline-danger" (click)="deleteComponent(c.id)">
+              Eliminar
+            </button>
+          </td>
+
+        </tr>
+      </tbody>
+
+    </table>
+
+    <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
+    </app-pagination>
+
+  </div>
+
+</div>

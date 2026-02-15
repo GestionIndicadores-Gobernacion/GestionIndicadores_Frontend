@@ -1,0 +1,26 @@
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.custom-table.compact td {
+  padding: 10px 12px;
+}
+
+.input-table {
+  width: 100%;
+  height: 36px;
+}
+
+.section-total {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #555;
+}
+
+.section-total strong {
+  font-size: 16px;
+  color: #1e3a5f;
+}

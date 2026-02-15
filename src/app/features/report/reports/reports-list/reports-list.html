@@ -1,0 +1,117 @@
+<div class="dashboard-container">
+
+    <!-- MODULE SELECTOR -->
+    <div class="reports-selector">
+
+        <!-- CREATE REPORT -->
+        <div class="selector-card action">
+            <h2>Registrar información</h2>
+            <p class="lead">
+                Crea un reporte operativo con resultados del periodo.
+            </p>
+
+            <ul class="card-list">
+                <li>Resumen ejecutivo del avance</li>
+                <li>Actividades realizadas</li>
+                <li>Indicadores medidos</li>
+                <li>Ubicación de la intervención</li>
+            </ul>
+
+            <button class="btn-primary" [routerLink]="['create']">
+                Crear nuevo reporte
+            </button>
+
+        </div>
+
+        <!-- VIEW DASHBOARD -->
+        <div class="selector-card analytics clickable" (click)="toggleDashboard()">
+            <h2>Analizar resultados</h2>
+            <p class="lead">
+                Consulta el comportamiento histórico y la distribución estratégica.
+            </p>
+
+            <ul class="card-list">
+                <li>Tendencia mensual</li>
+                <li>Comparación por estrategia</li>
+                <li>Histórico completo de reportes</li>
+            </ul>
+
+            <span class="expand-indicator">
+                {{ showDashboard ? 'Ocultar panel analítico' : 'Abrir panel analítico' }}
+            </span>
+        </div>
+
+    </div>
+
+
+    <!-- DASHBOARD COLLAPSABLE -->
+    <div *ngIf="showDashboard">
+
+        <!-- LOADING -->
+        <div *ngIf="loading" class="loading-state">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div *ngIf="!loading && reports.length === 0" class="empty-state">
+            <h3>No hay reportes registrados</h3>
+            <p>
+                Cuando se creen reportes, aparecerán aquí con métricas y análisis consolidados.
+            </p>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div *ngIf="!loading && reports.length > 0">
+
+            <!-- INTRO -->
+            <div class="dashboard-intro">
+                <h2>Panel analítico</h2>
+                <p>
+                    Este panel consolida todos los reportes registrados y permite
+                    identificar tendencias, cobertura territorial y distribución
+                    de resultados por estrategia.
+                </p>
+            </div>
+
+            <!-- KPI CARDS -->
+            <app-reports-kpi-cards [reports]="reports">
+            </app-reports-kpi-cards>
+
+            <div class="dashboard-grid">
+
+                <!-- TIMELINE -->
+                <div class="grid-item">
+                    <div class="section-header">
+                        <h3>Evolución mensual</h3>
+                        <p>
+                            Muestra la frecuencia de reportes en el tiempo.
+                            Permite detectar periodos sin registro o incrementos de actividad.
+                        </p>
+                    </div>
+
+                    <app-reports-timeline [reports]="reports">
+                    </app-reports-timeline>
+                </div>
+
+                <!-- TABLE -->
+                <div class="grid-item">
+
+                    <div class="section-header">
+                        <h3>Registros detallados</h3>
+                        <p>
+                            Listado completo de reportes creados. Desde aquí puedes editar
+                            información o eliminar registros incorrectos.
+                        </p>
+                    </div>
+
+                    <app-reports-table [reports]="reports" [strategyMap]="strategyMap" (delete)="deleteReport($event)">
+                    </app-reports-table>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>

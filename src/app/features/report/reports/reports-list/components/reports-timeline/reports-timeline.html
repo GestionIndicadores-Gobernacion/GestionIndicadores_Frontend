@@ -1,0 +1,32 @@
+<div class="chart-card">
+
+    <div class="chart-header">
+        <h3>Reportes por Mes</h3>
+
+        <div class="controls">
+
+            <div class="range-selector">
+                <button (click)="setRange(6)" [class.active]="range === 6">6M</button>
+                <button (click)="setRange(12)" [class.active]="range === 12">12M</button>
+                <button (click)="setRange(0)" [class.active]="range === 0">Todo</button>
+            </div>
+
+            <button (click)="toggleType()">
+                {{ chartType === 'line' ? 'Barra' : 'Línea' }}
+            </button>
+
+        </div>
+    </div>
+
+    <div class="trend-indicator" *ngIf="growthRate !== null">
+        <span [class.positive]="growthRate > 0" [class.negative]="growthRate < 0">
+            {{ growthRate > 0 ? '▲' : '▼' }}
+            {{ growthRate | number:'1.0-1' }}%
+            vs mes anterior
+        </span>
+    </div>
+
+    <canvas baseChart [data]="chartData" [options]="chartOptions" [type]="chartType">
+    </canvas>
+
+</div>

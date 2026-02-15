@@ -1,0 +1,126 @@
+<div class="component-form-container form-container">
+
+  <h2 class="page-title">
+    {{ isEdit ? "Editar Estrategia" : "Crear Estrategia" }}
+  </h2>
+
+  <!-- LOADING -->
+  <div *ngIf="loading" class="loading-box">
+    <div class="spinner"></div>
+  </div>
+
+  <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="submit()">
+
+    <!-- ============================= -->
+    <!-- INFORMACIÓN GENERAL -->
+    <!-- ============================= -->
+    <div class="form-section">
+
+      <!-- Nombre -->
+      <div class="form-group full">
+        <label>Nombre de la estrategia</label>
+
+        <input type="text" formControlName="name" [class.invalid]="showError('name')" />
+
+        <small class="hint-text">
+          Nombre con el que se identificará la estrategia.
+        </small>
+      </div>
+
+      <!-- Objetivo -->
+      <div class="form-group full">
+        <label>Objetivo de la estrategia</label>
+
+        <textarea rows="3" formControlName="objective" [class.invalid]="showError('objective')"></textarea>
+
+        <small class="hint-text">
+          Describe el propósito general que se busca lograr.
+        </small>
+      </div>
+
+      <!-- Meta del producto -->
+      <div class="form-group full">
+        <label>Meta del producto asociada</label>
+
+        <textarea rows="2" formControlName="product_goal_description"
+          [class.invalid]="showError('product_goal_description')"></textarea>
+
+        <small class="hint-text">
+          Define qué resultado medible representa esta estrategia.
+        </small>
+      </div>
+
+    </div>
+
+    <!-- ============================= -->
+    <!-- PROGRAMACIÓN ANUAL -->
+    <!-- ============================= -->
+    <div class="form-section">
+
+      <div class="section-header">
+        <h3>Programación de la Meta</h3>
+
+        <button type="button" class="btn-outline-primary btn-sm" (click)="addYear()">
+          Agregar Año
+        </button>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="custom-table compact">
+
+          <thead>
+            <tr>
+              <th style="width:120px">Año</th>
+              <th>Meta Programada</th>
+              <th style="width:120px"></th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let y of years.controls; let i = index" [formGroup]="y">
+
+              <td class="strong">
+                Año {{ i + 1 }}
+              </td>
+
+              <td>
+                <input type="number" formControlName="value" class="input-table"
+                  placeholder="Ingrese la meta del año" />
+              </td>
+
+              <td>
+                <button type="button" class="btn-outline-danger btn-sm" (click)="removeYear(i)"
+                  *ngIf="years.length > 1">
+                  Eliminar
+                </button>
+              </td>
+
+            </tr>
+          </tbody>
+
+        </table>
+      </div>
+
+      <div class="section-total">
+        Total programado:
+        <strong>{{ total | number:'1.0-2' }}</strong>
+      </div>
+
+    </div>
+
+    <!-- ============================= -->
+    <!-- ACCIONES -->
+    <!-- ============================= -->
+    <div class="form-actions">
+      <button class="btn-primary" [disabled]="saving || form.invalid">
+        {{ saving ? "Guardando..." : (isEdit ? "Actualizar Estrategia" : "Crear Estrategia") }}
+      </button>
+
+      <button type="button" class="btn-secondary-custom" [routerLink]="['/reports/strategies']">
+        Cancelar
+      </button>
+    </div>
+
+  </form>
+
+</div>

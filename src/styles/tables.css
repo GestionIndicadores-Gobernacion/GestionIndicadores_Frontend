@@ -32,23 +32,30 @@
   font-weight: 600;
   color: #003b75;
   white-space: nowrap;
+  text-transform: uppercase;
 }
 
 .custom-table tr:hover {
   background: #f8fbff;
 }
 
-/* ACCIONES */
-.actions-col {
-  padding: 8px;
-  text-align: center;
+.truncate {
+  display: inline-block;
+  max-width: 280px;
+  /* ajusta según tu diseño */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   vertical-align: middle;
 }
 
-/* 3 acciones (con wrapper) */
+.actions-col {
+  text-align: center;
+}
+
 .actions-wrapper {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   justify-content: center;
   align-items: center;
 }

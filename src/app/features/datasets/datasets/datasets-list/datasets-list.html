@@ -1,0 +1,105 @@
+<div class="list-container">
+
+    <!-- HEADER -->
+    <div class="list-header">
+        <h2>Bases de Datos</h2>
+
+        <div class="header-actions">
+            <input type="text" class="search-input" placeholder="Buscar dataset..." [(ngModel)]="searchTerm"
+                (input)="onSearch()" />
+
+            <button class="btn-outline-primary" (click)="openImportModal()" [disabled]="loading">
+                Importar Excel
+            </button>
+
+            <button class="btn-primary" routerLink="/datasets/create" [disabled]="loading">
+                Crear Base de Datos
+            </button>
+        </div>
+    </div>
+
+    <!-- LOADING -->
+    <div *ngIf="loading" class="loading-box">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- ERROR -->
+    <div *ngIf="!loading && error" class="empty-state">
+        <p>{{ error }}</p>
+    </div>
+
+    <!-- EMPTY -->
+    <div *ngIf="!loading && !error && filteredDatasets.length === 0" class="empty-state">
+        <p>No hay datasets registrados.</p>
+    </div>
+
+    <!-- TABLE -->
+    <div *ngIf="!loading && filteredDatasets.length > 0" class="table-wrapper">
+        <table class="custom-table">
+
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Creado</th>
+                    <th>Estado</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr *ngFor="let dataset of paginatedDatasets">
+
+                    <td class="strong">
+                        {{ dataset.name }}
+                    </td>
+
+                    <td>
+                        <span class="truncate" [title]="dataset.description">
+                            {{ dataset.description || 'Sin descripción' }}
+                        </span>
+                    </td>
+
+                    <td>
+                        {{ dataset.created_at | date:'short' }}
+                    </td>
+
+                    <td>
+                        <span class="state-badge" [class.active]="dataset.active" [class.inactive]="!dataset.active">
+                            {{ dataset.active ? 'Activo' : 'Inactivo' }}
+                        </span>
+                    </td>
+
+                    <td class="actions-col">
+                        <div class="actions-wrapper">
+
+                            <button class="btn-outline-primary" [routerLink]="['/datasets', dataset.id]">
+                                Ver
+                            </button>
+
+                            <button class="btn-outline-primary" [routerLink]="['/datasets', dataset.id, 'edit']">
+                                Editar
+                            </button>
+
+                            <button *ngIf="dataset.active" class="btn-outline-danger" (click)="remove(dataset)">
+                                Eliminar
+                            </button>
+
+                        </div>
+                    </td>
+
+                </tr>
+            </tbody>
+
+        </table>
+
+        <!-- PAGINATION -->
+        <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
+        </app-pagination>
+    </div>
+
+</div>
+
+<!-- IMPORT MODAL -->
+<app-import-dataset-modal *ngIf="showImportModal" (close)="onImportClosed()" (imported)="onImportFinished()">
+</app-import-dataset-modal>

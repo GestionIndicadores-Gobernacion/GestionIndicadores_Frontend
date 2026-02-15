@@ -1,0 +1,103 @@
+<div class="list-container">
+
+    <!-- HEADER -->
+    <div class="list-header">
+        <h2>Tablas</h2>
+
+        <div class="header-actions">
+            <button class="btn-primary">+ Nueva tabla</button>
+        </div>
+    </div>
+
+    <!-- SEARCH & FILTER BAR -->
+    <div class="filter-bar">
+
+        <!-- SEARCH -->
+        <div class="filter-search">
+            <input type="text" placeholder="Buscar tabla…" [value]="search()"
+                (input)="search.set($any($event.target).value)" />
+        </div>
+
+        <!-- SORT -->
+        <div class="filter-item">
+            <label>Orden</label>
+            <select [value]="sortBy()" (change)="sortBy.set($any($event.target).value)">
+                <option value="name">Nombre</option>
+                <option value="records">Más registros</option>
+                <option value="fields">Más campos</option>
+            </select>
+        </div>
+
+        <!-- TYPE FILTER -->
+        <div class="filter-item">
+            <label>Tipo de campo</label>
+            <select [value]="fieldTypeFilter()" (change)="fieldTypeFilter.set($any($event.target).value || null)">
+                <option value="">Todos</option>
+                <option value="text">Text</option>
+                <option value="number">Number</option>
+                <option value="date">Date</option>
+                <option value="boolean">Boolean</option>
+                <option value="select">Select</option>
+            </select>
+        </div>
+
+        <!-- CLEAR -->
+        <div class="filter-actions">
+            <button class="btn-outline-secondary" (click)="clearFilters()"
+                [disabled]="!search() && !fieldTypeFilter() && sortBy() === 'name'">
+                Limpiar
+            </button>
+        </div>
+
+    </div>
+
+    <!-- LOADING -->
+    <div *ngIf="loading()" class="loading-box">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- CARDS -->
+    <div *ngIf="!loading() && filteredTables().length" class="cards-grid">
+        <div class="card clickable" *ngFor="let stat of filteredTables()" (click)="goToRecords(stat.table)">
+
+            <div class="card-header">
+                <div>
+                    <div class="card-title">{{ stat.table.name }}</div>
+                    <div class="card-subtitle">Tabla</div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="card-stats">
+                    <div class="card-stat">
+                        <span class="stat-value">{{ stat.recordsCount }}</span>
+                        <span class="stat-label">Registros</span>
+                    </div>
+
+                    <div class="card-stat">
+                        <span class="stat-value">{{ stat.fieldsCount }}</span>
+                        <span class="stat-label">Campos</span>
+                    </div>
+                </div>
+
+                <div class="field-badges">
+                    <span *ngFor="let type of stat.fieldTypes" class="field-badge {{ type }}">
+                        <span class="field-type">{{ type }}</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <button class="btn-outline-primary" (click)="goToRecords(stat.table); $event.stopPropagation()">
+                    Ver registros
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EMPTY -->
+    <div *ngIf="!loading() && !filteredTables().length" class="empty-state">
+        No hay tablas que coincidan con los filtros
+    </div>
+
+</div>

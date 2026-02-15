@@ -1,12 +1,12 @@
 /* CONTENEDORES */
-.records-container {
+.list-container {
   padding: 24px;
   max-width: 1400px;
   margin: 0 auto;
 }
 
 /* HEADER */
-.records-header {
+.list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -14,14 +14,14 @@
   margin-bottom: 16px;
 }
 
-.records-header h2 {
+.list-header h2 {
   font-size: 1.6rem;
   font-weight: 700;
   color: #003b75;
 }
 
 /* Header con UN SOLO botón */
-.records-header > button {
+.list-header>button {
   margin-left: auto;
 }
 
@@ -67,18 +67,18 @@
 
 /* RESPONSIVE */
 @media (max-width: 768px) {
-  .records-header {
+  .list-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
   }
 
-  .records-header h2 {
+  .list-header h2 {
     font-size: 1.4rem;
     line-height: 1.2;
   }
 
-  .records-header > button {
+  .list-header>button {
     margin-left: 0;
     width: 100%;
   }

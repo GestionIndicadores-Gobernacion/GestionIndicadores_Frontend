@@ -1,0 +1,59 @@
+<div class="table-card">
+
+    <!-- HEADER -->
+    <div class="table-header">
+        <h3>Listado de Reportes</h3>
+
+        <input type="text" placeholder="Buscar..." [(ngModel)]="searchTerm" (input)="applyAll()" class="search-input" />
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrapper">
+
+        <table *ngIf="paginatedReports.length > 0">
+
+            <thead>
+                <tr>
+                    <th (click)="sort('id')">ID</th>
+                    <th (click)="sort('report_date')">Fecha</th>
+                    <th (click)="sort('strategy_name')">Estrategia</th>
+                    <th (click)="sort('zone_type')">Zona</th>
+                    <th (click)="sort('intervention_location')">Ubicación</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr *ngFor="let report of paginatedReports">
+
+                    <td>{{ report.id }}</td>
+                    <td>{{ report.report_date | date:'shortDate' }}</td>
+                    <td>{{ strategyName(report.strategy_id) }}</td>
+                    <td>{{ report.zone_type }}</td>
+                    <td>{{ report.intervention_location }}</td>
+
+                    <td class="actions">
+                        <button class="btn-edit" [routerLink]="[report.id, 'edit']">
+                            Editar
+                        </button>
+
+                        <button class="btn-delete" (click)="onDelete(report.id)">
+                            Eliminar
+                        </button>
+                    </td>
+
+                </tr>
+            </tbody>
+        </table>
+
+        <div *ngIf="paginatedReports.length === 0" class="empty-table">
+            No se encontraron resultados.
+        </div>
+
+    </div>
+
+    <!-- PAGINATION -->
+    <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
+    </app-pagination>
+
+</div>

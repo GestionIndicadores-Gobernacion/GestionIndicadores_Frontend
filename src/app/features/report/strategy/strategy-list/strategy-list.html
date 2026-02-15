@@ -1,0 +1,130 @@
+<div class="list-container">
+
+  <!-- HEADER -->
+  <div class="list-header">
+    <h2>Estrategias</h2>
+
+    <div class="header-actions">
+      <input type="text" class="search-input" placeholder="Buscar estrategia..." [(ngModel)]="searchTerm"
+        (input)="onSearch()" />
+
+      <button class="btn-primary" (click)="goToCreate()" [disabled]="loading">
+        Crear Estrategia
+      </button>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div *ngIf="loading" class="loading-box">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- ERROR -->
+  <div *ngIf="!loading && error" class="empty-state">
+    <p>{{ error }}</p>
+  </div>
+
+  <!-- EMPTY -->
+  <div *ngIf="!loading && !error && filteredStrategies.length === 0" class="empty-state">
+    <p>No hay estrategias registradas.</p>
+  </div>
+
+  <!-- TABLE -->
+  <div *ngIf="!loading && filteredStrategies.length > 0" class="table-wrapper">
+    <table class="custom-table">
+
+      <thead>
+        <tr>
+          <th (click)="sortBy('name')" class="sortable">
+            Nombre
+            <span *ngIf="sortColumn === 'name'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+
+          <th (click)="sortBy('objective')" class="sortable">
+            Objetivo
+            <span *ngIf="sortColumn === 'objective'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+
+          <th (click)="sortBy('product_goal_description')" class="sortable">
+            Meta del Producto
+            <span *ngIf="sortColumn === 'product_goal_description'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+
+          <th (click)="sortBy('total_goal')" class="sortable">
+            Total Programado
+            <span *ngIf="sortColumn === 'total_goal'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+
+          <th (click)="sortBy('created_at')" class="sortable">
+            Creado
+            <span *ngIf="sortColumn === 'created_at'">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+
+          <th class="text-center">Acciones</th>
+        </tr>
+      </thead>
+
+
+      <tbody>
+        <tr *ngFor="let s of paginatedStrategies">
+
+          <td class="strong">
+            {{ s.name }}
+          </td>
+
+          <td>
+            <span class="truncate" [title]="s.objective">
+              {{ s.objective }}
+            </span>
+          </td>
+
+          <td>
+            <span class="truncate" [title]="s.product_goal_description">
+              {{ s.product_goal_description }}
+            </span>
+          </td>
+
+          <td>
+            {{ s.total_goal }}
+          </td>
+
+          <td>
+            {{ s.created_at | date:'short' }}
+          </td>
+
+          <td class="actions-col">
+            <div class="actions-wrapper">
+
+              <button class="btn-outline-primary" (click)="goToEdit(s.id)">
+                Editar
+              </button>
+
+              <button class="btn-outline-danger" (click)="deleteStrategy(s.id)">
+                Eliminar
+              </button>
+
+            </div>
+          </td>
+
+        </tr>
+      </tbody>
+
+    </table>
+
+    <!-- PAGINATION -->
+    <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
+    </app-pagination>
+
+  </div>
+
+</div>

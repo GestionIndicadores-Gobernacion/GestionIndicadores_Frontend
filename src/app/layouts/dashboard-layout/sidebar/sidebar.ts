@@ -8,7 +8,7 @@ interface MenuItem {
   label: string;
   route?: string;
   disabled?: boolean;
-  roles?: string[];
+  roles?: number[]; // role_id
   children?: MenuItem[];
 }
 
@@ -22,14 +22,25 @@ interface MenuItem {
 export class SidebarComponent {
 
   isOpen = false;
-  user: any = null;
-  role = '';
 
+  // ===============================
+  // USER INFO (UI ONLY)
+  // ===============================
+  roleId: number | null = null;
+
+  userName = '';
+  userEmail = '';
+  profileImageUrl: string | null = null;
+  userInitial = '';
+  roleLabel = '';
+
+  // ===============================
+  // MENU
+  // ===============================
   menu: MenuItem[] = [];
 
-  // 🔹 estado del colapsable
   expandedSections: Record<string, boolean> = {
-    Informes: true, // abierto por defecto
+    'Reportes PYBA': true,
   };
 
   constructor(
@@ -37,27 +48,48 @@ export class SidebarComponent {
     private router: Router,
     private authService: AuthService
   ) {
+
     const userString = localStorage.getItem('user');
     if (userString) {
-      this.user = JSON.parse(userString);
-      this.role = this.user.role?.name;
+      console.log(JSON.parse(userString));
     }
 
+    // ===============================
+    // USER INFO (FROM BACKEND)
+    // ===============================
+    const user = this.authService.getUser();
+
+    if (user) {
+      this.userName = `${user.first_name} ${user.last_name}`;
+      this.userEmail = user.email;
+      this.profileImageUrl = user.profile_image_url;
+      this.userInitial = this.userName.charAt(0);
+
+      // 🔑 ROL REAL (backend)
+      this.roleLabel = user.role?.name ?? '';
+      this.roleId = user.role?.id ?? null;
+    }
+
+    // ===============================
+    // SIDEBAR STATE
+    // ===============================
     this.sidebarService.isOpen$.subscribe(v => this.isOpen = v);
 
-    // 🔥 AUTO-EXPANDIR INFORMES PYBA SEGÚN RUTA
+    // Auto-expand Reportes cuando la ruta aplica
     this.router.events.subscribe(() => {
-      if (this.isRecordsSectionActive()) {
-        this.expandedSections['Informes PYBA'] = true;
+      if (this.isReportsSectionActive()) {
+        this.expandedSections['Reportes PYBA'] = true;
       }
     });
 
     this.buildMenu();
   }
 
-
-  isRecordsSectionActive(): boolean {
-    return this.router.url.startsWith('/records');
+  // ===============================
+  // ROUTE HELPERS
+  // ===============================
+  isReportsSectionActive(): boolean {
+    return this.router.url.startsWith('/reports');
   }
 
   toggleSection(label: string) {
@@ -68,39 +100,72 @@ export class SidebarComponent {
     return !!this.expandedSections[label];
   }
 
+  // ===============================
+  // PERMISSIONS (UI)
+  // ===============================
   canShow(item: MenuItem): boolean {
     if (!item.roles) return true;
-    return item.roles.includes(this.role);
+    if (!this.roleId) return false;
+
+    return item.roles.includes(this.roleId);
+  }
+
+  hasVisibleChildren(item: MenuItem): boolean {
+    if (!item.children) return false;
+    return item.children.some(child => this.canShow(child));
+  }
+
+  // ===============================
+  // MENU BUILDER
+  // ===============================
+  buildMenu() {
+    this.menu = [
+      {
+        label: 'Dashboard',
+        route: 'dashboard',
+
+      },
+      {
+        label: 'Reportes PYBA',
+        roles: [2, 3],
+        children: [
+          { label: 'Reportes', route: 'reports' },
+
+          { label: 'Estrategias', route: 'reports/strategies', roles: [3] },
+          { label: 'Componentes Estratégicos', route: 'reports/components', roles: [3] },
+        ],
+      },
+      {
+        label: 'Bases de datos',
+        roles: [1, 2, 3],
+        children: [
+          { label: 'Dataset', route: 'datasets' },
+          { label: 'Tablas', route: 'datasets/tables' }
+        ],
+      },
+      {
+        label: 'Planes de acción',
+        disabled: true,
+        roles: [1, 2, 3],
+      },
+      {
+        label: 'Usuarios',
+        route: 'users',
+        disabled: true,
+        roles: [3],
+      },
+    ];
+  }
+
+  // ===============================
+  // LOGOUT
+  // ===============================
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/auth/login']);
   }
 
   closeSidebar() {
     this.sidebarService.close();
-  }
-
-  buildMenu() {
-    this.menu = [
-      { label: 'Dashboard', route: 'dashboard' },
-
-      {
-        label: 'Reportes PYBA',
-        children: [
-          { label: 'Reportes', route: 'records' },
-          { label: 'Estrategias', route: 'records/strategies', roles: ['SuperAdmin'] },
-          { label: 'Actividades', route: 'records/activities', roles: ['SuperAdmin'] },
-          { label: 'Componentes Estratégicos', route: 'records/components', roles: ['SuperAdmin'] },
-          { label: 'Indicadores', route: 'records/indicators', roles: ['SuperAdmin'] },
-        ]
-      }
-      ,
-
-      { label: 'Planes de acción', disabled: true, roles: ['Editor', 'SuperAdmin'] },
-      { label: 'Bases de datos', disabled: true, roles: ['Editor', 'SuperAdmin'] },
-      { label: 'Usuarios', route: 'users', roles: ['SuperAdmin'] }
-    ];
-  }
-
-  logout() {
-    this.authService.logout();
-    this.router.navigate(['/auth/login']);
   }
 }

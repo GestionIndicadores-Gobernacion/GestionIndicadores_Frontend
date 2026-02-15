@@ -1,10 +1,13 @@
-.form-container,
-.component-form-container,
-.indicator-form-container,
-.record-form-container {
+/* ============================
+   FORM CONTAINER
+============================ */
+.form-container {
     padding: 24px;
 }
 
+/* ============================
+   PAGE TITLE
+============================ */
 .page-title {
     font-size: 1.6rem;
     font-weight: 700;
@@ -12,6 +15,9 @@
     margin-bottom: 20px;
 }
 
+/* ============================
+   FORM SECTIONS
+============================ */
 .form-section {
     background: white;
     padding: 20px;
@@ -28,6 +34,9 @@
     color: #003b75;
 }
 
+/* ============================
+   FORM GRID
+============================ */
 .form-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -49,9 +58,14 @@
     color: #003b75;
 }
 
+/* ============================
+   INPUTS
+============================ */
 input,
 select,
 textarea {
+    width: 100%;
+    box-sizing: border-box;
     padding: 10px 12px;
     border-radius: 10px;
     border: 1px solid #ccd4dd;
@@ -64,13 +78,30 @@ textarea:focus {
     border-color: #005bbf;
 }
 
+/* ============================
+   FORM ACTIONS
+============================ */
 .form-actions {
     margin-top: 20px;
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 12px;
 }
 
-/* VALIDACIONES */
+.form-actions button {
+    width: 100%;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+    .form-actions {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================
+   VALIDATIONS
+============================ */
 input.invalid,
 textarea.invalid {
     border: 2px solid #C6342D !important;
@@ -137,4 +168,28 @@ textarea.invalid {
 
 .switch input:disabled+.slider::before {
     background-color: #f3f4f6;
+}
+
+/* ============================
+   HINTS
+============================ */
+.hint-text {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.85rem;
+    color: #6c7a89;
+}
+
+.hint-text.inline {
+    display: inline-block;
+    margin-left: 6px;
+    font-size: 0.8rem;
+}
+
+.hint-dynamic {
+    margin-top: 8px;
+    background: #f4f8ff;
+    border-left: 3px solid #4c82ff;
+    padding: 6px 10px;
+    border-radius: 6px;
 }

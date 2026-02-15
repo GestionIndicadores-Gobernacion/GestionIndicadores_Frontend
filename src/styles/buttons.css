@@ -90,3 +90,29 @@
   transition: 0.25s ease;
   box-shadow: 0 3px 8px rgba(22, 163, 74, 0.25);
 }
+
+.btn-outline-secondary {
+  padding: 8px 16px;
+  border: 1px solid #64748b;
+  background: white;
+  color: #334155;
+  font-weight: 600;
+  font-size: 0.85rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.btn-outline-secondary:hover {
+  background: #f1f5f9;
+}
+
+/* ============================
+   BOTONES DESACTIVADOS
+============================ */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #cbd5e1 !important;
+  border-color: #cbd5e1 !important;
+}

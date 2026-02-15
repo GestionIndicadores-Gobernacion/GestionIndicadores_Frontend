@@ -1,0 +1,229 @@
+/* =====================================
+   COMPONENT FORM - OVERRIDES
+===================================== */
+
+.component-form-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Secciones más compactas */
+.component-form-container .form-section {
+  padding: 18px 22px;
+  margin-bottom: 16px;
+}
+
+/* Headers internos */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.section-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #003b75;
+}
+
+/* =====================================
+   GENERAL GRID
+===================================== */
+
+.general-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 18px;
+}
+
+/* =====================================
+   OBJECTIVES / ACTIVITIES
+===================================== */
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.form-row input {
+  height: 40px;
+}
+
+/* =====================================
+   INDICATORS
+===================================== */
+
+.indicator-card {
+  background: #f9fbfe;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.indicator-card .form-row {
+  grid-template-columns: 2fr 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.inline-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Config select */
+.config-box {
+  margin-top: 12px;
+}
+
+/* =====================================
+   ACTIONS
+===================================== */
+
+.component-form-container .form-actions {
+  margin-top: 28px;
+}
+
+/* =====================================
+   MOBILE
+===================================== */
+
+@media (max-width: 900px) {
+
+  .general-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .indicator-card .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ====================================
+   SECTION DESCRIPTION
+==================================== */
+
+.section-description {
+  margin-bottom: 14px;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.section-hint {
+  font-size: 0.8rem;
+  font-weight: 400;
+  display: block;
+  margin-top: 4px;
+}
+
+/* ====================================
+   COMPACT ROWS
+==================================== */
+
+.compact-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+/* ====================================
+   INDICATOR CARD REFINED
+==================================== */
+
+.indicator-card.refined {
+  background: #f8fbff;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #005bbf;
+  padding: 18px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.indicator-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr auto auto;
+  gap: 16px;
+  align-items: end;
+}
+
+.indicator-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.meta-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.indicator-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.refined-config {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed #dbe3ef;
+}
+
+/* ====================================
+   RESPONSIVE
+==================================== */
+
+@media (max-width: 900px) {
+
+  .indicator-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .compact-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.title-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title-with-icon i {
+  font-size: 1rem;
+  color: #005bbf;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.icon-btn i {
+  font-size: 0.85rem;
+}
+
+.target-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 10px;
+  margin-bottom: 8px;
+  align-items: center;
+}

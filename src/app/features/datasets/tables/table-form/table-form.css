@@ -1,0 +1,136 @@
+/* =========================
+   EXCEL TABLE STYLE
+========================= */
+
+.excel-table {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+/* HEADER Y FILAS */
+.excel-header,
+.excel-row {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 1fr 1fr 40px;
+    align-items: start;
+    /* clave para contenido vertical */
+    gap: 0.75rem;
+    padding: 0.75rem;
+}
+
+.excel-header {
+    background: #f8fafc;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.excel-row {
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.excel-row:last-child {
+    border-bottom: none;
+}
+
+/* INPUTS DENTRO DE LA TABLA */
+.excel-row input,
+.excel-row select {
+    width: 100%;
+}
+
+/* =========================
+   COLUMNA (LABEL + SLUG)
+========================= */
+
+.excel-cell.column-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.technical-name {
+    font-size: 11px;
+    color: #6b7280;
+    line-height: 1.2;
+}
+
+.technical-name strong {
+    font-family: monospace;
+    color: #374151;
+}
+
+/* =========================
+   CHECK / OPTIONS INFO
+========================= */
+
+.options-indicator,
+.options-count {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+/* =========================
+   BOTÓN ICONO
+========================= */
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.btn-icon.danger {
+    color: #dc2626;
+}
+
+/* =========================
+   SELECT OPTIONS (FILA COMPLETA)
+========================= */
+
+.select-options-box {
+    grid-column: 1 / -1;
+    background: #f8fafc;
+    padding: 0.75rem;
+    border-radius: 6px;
+    margin-top: 0.5rem;
+}
+
+/* OPCIONES INDIVIDUALES */
+.option-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.option-chip:last-child {
+    margin-bottom: 0;
+}
+
+.option-chip input {
+    flex: 1;
+}
+
+.option-chip button {
+    border: none;
+    background: transparent;
+    color: #dc2626;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+/* =========================
+   HINTS / TEXTOS AUXILIARES
+========================= */
+
+.section-hint {
+    font-size: 0.8rem;
+    font-weight: normal;
+    color: #64748b;
+    margin-left: 0.5rem;
+}

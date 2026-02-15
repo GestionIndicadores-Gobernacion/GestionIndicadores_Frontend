@@ -1,0 +1,119 @@
+<div class="list-container">
+
+    <!-- HEADER -->
+    <div class="list-header airtable-header">
+        <h2>Registros</h2>
+
+        <div class="header-actions">
+            <input type="text" class="search-input" placeholder="Buscar en todos los campos…" [ngModel]="searchTerm()"
+                (ngModelChange)="searchTerm.set($event); onSearchChange()" />
+
+            <button class="btn-outline-secondary" (click)="goBack()">
+                ← Volver
+            </button>
+        </div>
+    </div>
+
+    <!-- ERROR -->
+    <div *ngIf="error()" class="error">
+        {{ error() }}
+    </div>
+
+    <!-- TABLE -->
+    <div *ngIf="!loading() && !error()" class="table-wrapper">
+        <table class="custom-table records-table airtable-table">
+
+            <!-- HEADER -->
+            <thead>
+
+                <!-- SORT HEADER -->
+                <tr>
+                    <th *ngFor="let field of fields(); trackBy: trackByField; let i = index"
+                        (click)="toggleSort(field.name)" class="sortable th-truncate" [class.sticky-col]="i === 0"
+                        [attr.title]="field.label">
+                        <span class="th-label">
+                            {{ field.label }}
+                        </span>
+
+                        <span *ngIf="sortField() === field.name">
+                            {{ sortDirection() === 'asc' ? '▲' : '▼' }}
+                        </span>
+
+                        <span class="resize-handle"></span>
+                    </th>
+
+                    <th class="actions-col sticky-actions">
+                        Acciones
+                    </th>
+                </tr>
+
+                <!-- FILTER ROW -->
+                <tr class="filters-row">
+                    <th *ngFor="let field of fields(); let i = index" [class.sticky-col]="i === 0">
+                        <input type="text" placeholder="Filtrar…" [ngModel]="columnFilters()[field.name]"
+                            (ngModelChange)="onColumnFilterChange(field.name, $event)" />
+                    </th>
+
+                    <th class="sticky-actions"></th>
+                </tr>
+            </thead>
+
+            <!-- BODY -->
+            <tbody>
+                <tr *ngFor="let record of records(); trackBy: trackByRecord">
+                    <td *ngFor="let field of fields(); let i = index" [class.sticky-col]="i === 0">
+                        <div class="cell-content" [attr.title]="record.data[field.name]">
+
+                            <ng-container [ngSwitch]="field.type">
+
+                                <input *ngSwitchCase="'text'" type="text" [(ngModel)]="record.data[field.name]"
+                                    (blur)="updateRecord(record)" />
+
+                                <input *ngSwitchCase="'number'" type="number" [(ngModel)]="record.data[field.name]"
+                                    (blur)="updateRecord(record)" />
+
+                                <input *ngSwitchCase="'date'" type="date" [(ngModel)]="record.data[field.name]"
+                                    (blur)="updateRecord(record)" />
+
+                                <input *ngSwitchCase="'boolean'" type="checkbox" [(ngModel)]="record.data[field.name]"
+                                    (change)="updateRecord(record)" />
+
+                                <select *ngSwitchCase="'select'" [(ngModel)]="record.data[field.name]"
+                                    (change)="updateRecord(record)">
+                                    <option [ngValue]="null">—</option>
+                                    <option *ngFor="let opt of field.options" [ngValue]="opt">
+                                        {{ opt }}
+                                    </option>
+                                </select>
+
+                                <span *ngSwitchDefault class="cell-text">
+                                    {{ record.data[field.name] ?? '—' }}
+                                </span>
+
+                            </ng-container>
+
+                        </div>
+                    </td>
+
+                    <td class="actions-col sticky-actions">
+                        <button class="btn-outline-danger" (click)="deleteRecord(record)">
+                            🗑
+                        </button>
+                    </td>
+                </tr>
+
+                <tr *ngIf="records().length === 0">
+                    <td [attr.colspan]="fields().length + 1" class="empty">
+                        No hay registros
+                    </td>
+                </tr>
+            </tbody>
+
+        </table>
+    </div>
+
+    <!-- PAGINATION -->
+    <app-pagination [currentPage]="currentPage()" [totalPages]="totalPages()" (pageChange)="onPageChange($event)">
+    </app-pagination>
+
+</div>

@@ -1,0 +1,253 @@
+<div class="report-form-container form-container">
+
+    <!-- ===================================================== -->
+    <!-- HEADER -->
+    <!-- ===================================================== -->
+    <h2 class="page-title with-context">
+        <i class="bi bi-clipboard-data me-2"></i>
+        {{ isEdit ? 'Editar reporte de ejecución' : 'Nuevo reporte de ejecución' }}
+    </h2>
+
+    <p class="page-subtitle">
+        Registra el avance operativo del componente seleccionado en la fecha indicada.
+    </p>
+
+    <!-- LOADING -->
+    <div *ngIf="loading" class="loading-box">
+        <div class="spinner"></div>
+    </div>
+
+    <form *ngIf="!loading" (ngSubmit)="save()">
+
+        <!-- ===================================================== -->
+        <!-- CONTEXTO DEL REPORTE -->
+        <!-- ===================================================== -->
+        <div class="form-section context-section">
+
+            <div class="section-header">
+                <div class="title-with-icon">
+                    <i class="bi bi-diagram-2"></i>
+                    <h3>Contexto del reporte</h3>
+                </div>
+            </div>
+
+            <p class="section-description">
+                Define el marco operativo donde se ejecutaron las actividades reportadas.
+            </p>
+
+            <div class="context-date">
+                <label><i class="bi bi-calendar-event me-1"></i> Fecha del reporte</label>
+                <input type="date" [(ngModel)]="form.report_date" name="report_date" (change)="onDateChange()"
+                    required />
+            </div>
+
+            <div class="context-grid">
+
+                <div class="form-group">
+                    <label><i class="bi bi-diagram-3 me-1"></i> Estrategia</label>
+                    <select [(ngModel)]="form.strategy_id" name="strategy_id" required (change)="onStrategyChange()">
+                        <option [ngValue]="null" disabled>Seleccionar estrategia...</option>
+                        <option *ngFor="let s of strategies" [ngValue]="s.id">{{ s.name }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="bi bi-box-seam me-1"></i> Componente</label>
+                    <select [(ngModel)]="form.component_id" name="component_id" [disabled]="!form.strategy_id" required
+                        (change)="onComponentChange()">
+                        <option [ngValue]="null" disabled>Seleccionar componente...</option>
+                        <option *ngFor="let c of components" [ngValue]="c.id">{{ c.name }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="bi bi-geo-alt me-1"></i> Ubicación</label>
+                    <select [(ngModel)]="form.intervention_location" name="intervention_location" required>
+                        <option [ngValue]="null" disabled>Seleccionar municipio...</option>
+                        <option *ngFor="let m of municipios" [ngValue]="m">{{ m }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="bi bi-map me-1"></i> Zona</label>
+                    <select [(ngModel)]="form.zone_type" name="zone_type" required>
+                        <option [ngValue]="null" disabled>Seleccionar...</option>
+                        <option value="Urbana">Urbana</option>
+                        <option value="Rural">Rural</option>
+                    </select>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ===================================================== -->
+        <!-- DESCRIPCIÓN DE LA EJECUCIÓN -->
+        <!-- ===================================================== -->
+        <div class="form-section narrative-section">
+
+            <div class="section-header">
+                <div class="title-with-icon">
+                    <i class="bi bi-journal-text"></i>
+                    <h3>Descripción de la ejecución</h3>
+                </div>
+            </div>
+
+            <div class="narrative-grid">
+
+                <div class="form-group">
+                    <label>Resumen ejecutivo</label>
+                    <textarea [(ngModel)]="form.executive_summary" name="executive_summary" rows="5"
+                        required></textarea>
+                    <small class="hint-text">
+                        Síntesis del resultado obtenido durante el periodo reportado.
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label>Actividades realizadas</label>
+                    <textarea [(ngModel)]="form.activities_performed" name="activities_performed" rows="5"
+                        required></textarea>
+                    <small class="hint-text">
+                        Detalle operativo de las acciones ejecutadas.
+                    </small>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ===================================================== -->
+        <!-- MEDICIÓN DE INDICADORES -->
+        <!-- ===================================================== -->
+        <div *ngIf="indicators.length" class="form-section indicators-section">
+
+            <div class="section-header">
+                <div class="title-with-icon">
+                    <i class="bi bi-bar-chart-line"></i>
+                    <h3>Medición de indicadores</h3>
+                </div>
+            </div>
+
+            <p class="section-description">
+                Registra los valores obtenidos en la ejecución del componente.
+            </p>
+
+            <div class="indicators-container">
+
+                <div *ngFor="let ind of indicators" class="indicator-card refined">
+
+                    <!-- HEADER -->
+                    <div class="indicator-header">
+                        <div class="indicator-title">
+
+                            {{ ind.name }}
+
+                            <span *ngIf="getTargetForIndicator(ind) as meta" class="meta-badge">
+                                Meta {{ form.report_date | date:'yyyy' }}: {{ meta }}
+                            </span>
+
+                            <span *ngIf="form.report_date && !getTargetForIndicator(ind)"
+                                class="meta-badge meta-missing">
+                                Sin meta {{ form.report_date | date:'yyyy' }}
+                            </span>
+
+                        </div>
+                    </div>
+
+                    <!-- NUMBER -->
+                    <ng-container *ngIf="ind.field_type === 'number'">
+                        <div class="indicator-body number-body">
+
+                            <input type="number" class="number-input" [(ngModel)]="indicatorValues[ind.id]"
+                                name="ind_{{ind.id}}" placeholder="Ingrese valor" />
+
+                            <div class="progress-wrapper" *ngIf="form.report_date">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" [ngClass]="getProgressClass(ind)"
+                                        [style.width.%]="getProgressPercentage(ind)">
+                                    </div>
+                                </div>
+                                <span class="progress-label">
+                                    {{ getProgressPercentage(ind) }}%
+                                </span>
+                            </div>
+
+                        </div>
+                    </ng-container>
+
+                    <!-- TEXT -->
+                    <ng-container *ngIf="ind.field_type === 'text'">
+                        <textarea rows="3" [(ngModel)]="indicatorValues[ind.id]" name="ind_{{ind.id}}"
+                            placeholder="Describa el resultado..."></textarea>
+                    </ng-container>
+
+                    <!-- SELECT -->
+                    <ng-container *ngIf="ind.field_type === 'select'">
+                        <select [(ngModel)]="indicatorValues[ind.id]" name="ind_{{ind.id}}">
+                            <option [ngValue]="null" disabled>Seleccionar...</option>
+                            <option *ngFor="let op of ind.config?.options" [ngValue]="op">{{ op }}</option>
+                        </select>
+                    </ng-container>
+
+                    <!-- SUM GROUP -->
+                    <ng-container *ngIf="ind.field_type === 'sum_group'">
+
+                        <div class="sum-group-grid">
+                            <div *ngFor="let field of ind.config?.fields" class="sum-field">
+                                <label>{{ field }}</label>
+
+                                <input type="number" [value]="getSumGroupValue(ind.id, field)"
+                                    (input)="setSumGroupValue(ind.id, field, $any($event.target).value)"
+                                    placeholder="0" />
+                            </div>
+                        </div>
+
+                        <div class="sum-total">
+                            Total: {{ getSumGroupTotal(ind.id) }}
+                        </div>
+
+                    </ng-container>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ===================================================== -->
+        <!-- EVIDENCIA -->
+        <!-- ===================================================== -->
+        <div class="form-section">
+
+            <div class="section-header">
+                <div class="title-with-icon">
+                    <i class="bi bi-link-45deg"></i>
+                    <h3>Evidencia</h3>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Link de evidencia</label>
+                <input type="text" [(ngModel)]="form.evidence_link" name="evidence_link"
+                    placeholder="https://drive.google.com/..." />
+            </div>
+
+        </div>
+
+        <!-- ===================================================== -->
+        <!-- ACTIONS -->
+        <!-- ===================================================== -->
+        <div class="form-actions">
+
+            <button class="btn-primary" [disabled]="saving">
+                <i class="bi bi-check-lg me-1"></i>
+                {{ saving ? 'Guardando...' : (isEdit ? 'Actualizar' : 'Crear') }}
+            </button>
+
+            <button type="button" class="btn-secondary-custom" (click)="cancel()">
+                <i class="bi bi-x-lg me-1"></i>
+                Cancelar
+            </button>
+
+        </div>
+
+    </form>
+</div>
