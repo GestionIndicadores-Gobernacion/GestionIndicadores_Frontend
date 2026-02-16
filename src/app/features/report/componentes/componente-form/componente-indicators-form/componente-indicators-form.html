@@ -1,0 +1,332 @@
+<div class="p-6 space-y-4" [formGroup]="parentForm">
+    <div formArrayName="indicators">
+
+        <div *ngFor="let ind of indicators.controls; let i=index" [formGroupName]="i"
+            class="border border-zinc-200 rounded-xl p-5 space-y-4">
+
+            <!-- Base Grid -->
+            <div class="grid md:grid-cols-12 gap-4 items-start">
+
+                <!-- Nombre -->
+                <div class="md:col-span-5 space-y-1.5">
+                    <label class="block text-xs font-medium text-zinc-700">
+                        Nombre *
+                    </label>
+                    <input type="text" formControlName="name" [class.border-red-300]="hasError(i, 'name')" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                           bg-white text-zinc-900
+                           focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                           transition-colors duration-150 uppercase" placeholder="Ej: BENEFICIARIOS ATENDIDOS" />
+                    <p *ngIf="hasError(i, 'name')" class="text-xs text-red-600">
+                        {{ getErrorMessage(i, 'name') }}
+                    </p>
+                    <p *ngIf="!hasError(i, 'name')" class="text-xs text-zinc-500">
+                        Se convertirá automáticamente a MAYÚSCULAS
+                    </p>
+                </div>
+
+                <!-- Tipo -->
+                <div class="md:col-span-4 space-y-1.5">
+                    <label class="block text-xs font-medium text-zinc-700">
+                        Tipo *
+                    </label>
+                    <select formControlName="field_type" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                       bg-white text-zinc-900
+                       focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                       transition-colors duration-150 cursor-pointer">
+                        <option value="text">Texto</option>
+                        <option value="number">Número</option>
+                        <option value="select">Selección simple</option>
+                        <option value="multi_select">Selección múltiple</option>
+                        <option value="sum_group">Grupo poblacional</option>
+                        <option value="grouped_data">Datos agrupados</option>
+                    </select>
+                </div>
+
+                <!-- Required + Delete -->
+                <div class="md:col-span-3 space-y-1.5">
+                    <label class="block text-xs font-medium text-zinc-700 invisible">
+                        Acciones
+                    </label>
+                    <div class="flex items-center gap-2">
+
+                        <!-- Toggle Required -->
+                        <label class="flex items-center gap-2 px-3 py-2 text-xs font-medium text-zinc-700 
+                          bg-zinc-50 border border-zinc-200 rounded-lg cursor-pointer
+                          hover:bg-zinc-100 transition-colors duration-150">
+                            <input type="checkbox" formControlName="is_required" class="w-4 h-4 text-zinc-900 border-zinc-300 rounded 
+                       focus:ring-1 focus:ring-zinc-900 cursor-pointer" />
+                            <span>{{ ind.get('is_required')?.value ? 'Obligatorio' : 'Opcional' }}</span>
+                        </label>
+
+                        <!-- Delete Button -->
+                        <button type="button" (click)="removeIndicator(i)" class="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 
+                     rounded-lg transition-colors duration-150 cursor-pointer" title="Eliminar indicador">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Config: SELECT Options -->
+            <div *ngIf="ind.get('field_type')?.value === 'select'"
+                class="bg-zinc-50 border border-zinc-200 rounded-lg p-4 space-y-2">
+                <label class="block text-xs font-medium text-zinc-700">
+                    Opciones *
+                </label>
+                <textarea formControlName="configOptions" rows="3" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                 bg-white text-zinc-900 resize-none uppercase
+                 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                 transition-colors duration-150" placeholder="OPCIÓN 1&#10;OPCIÓN 2&#10;OPCIÓN 3"></textarea>
+                <p class="text-xs text-zinc-500">
+                    Cada línea = una opción. Auto-formato: MAYÚSCULAS, sin espacios extras
+                </p>
+            </div>
+
+            <!-- Config: MULTI_SELECT Options -->
+            <div *ngIf="ind.get('field_type')?.value === 'multi_select'"
+                class="bg-zinc-50 border border-zinc-200 rounded-lg p-4 space-y-2">
+                <label class="block text-xs font-medium text-zinc-700">
+                    Opciones (selección múltiple) *
+                </label>
+                <textarea formControlName="configOptions" rows="3" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                 bg-white text-zinc-900 resize-none uppercase
+                 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                 transition-colors duration-150" placeholder="GATO&#10;PERRO&#10;CONEJO&#10;AVE"></textarea>
+                <p class="text-xs text-zinc-500">
+                    Selección múltiple. Auto-formato: MAYÚSCULAS, sin duplicados
+                </p>
+            </div>
+
+            <!-- Config: SUM GROUP Fields -->
+            <div *ngIf="ind.get('field_type')?.value === 'sum_group'"
+                class="bg-zinc-50 border border-zinc-200 rounded-lg p-4 space-y-2">
+                <label class="block text-xs font-medium text-zinc-700">
+                    Campos del grupo *
+                </label>
+                <textarea formControlName="configFields" rows="3" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                 bg-white text-zinc-900 resize-none
+                 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                 transition-colors duration-150"
+                    placeholder="Hombres&#10;Mujeres&#10;Niños&#10;Adulto Mayor"></textarea>
+                <p class="text-xs text-zinc-500">
+                    Auto-formato: Primera Letra Mayúscula. El sistema sumará automáticamente
+                </p>
+            </div>
+
+            <!-- Config: GROUPED_DATA -->
+            <div *ngIf="ind.get('field_type')?.value === 'grouped_data'"
+                class="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-4">
+
+                <div class="flex items-start gap-2">
+                    <svg class="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div class="flex-1">
+                        <p class="text-xs font-medium text-amber-900 mb-1">Datos agrupados dinámicamente</p>
+                        <p class="text-xs text-amber-700">
+                            Este tipo de campo creará subcampos para cada opción seleccionada en otro campo de tipo
+                            "Selección múltiple".
+                            <strong>Primero debes crear un campo de selección múltiple antes de este.</strong>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Parent Field Selector -->
+                <div>
+                    <label class="block text-xs font-medium text-zinc-700 mb-1.5">
+                        Campo padre (selección múltiple) *
+                    </label>
+                    <select formControlName="configParentField" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900
+                         focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900">
+                        <option [ngValue]="null">-- Selecciona el campo padre --</option>
+                        <option *ngFor="let parentInd of getMultiSelectIndicators(i)"
+                            [ngValue]="parentInd.get('name')?.value">
+                            {{ parentInd.get('name')?.value }}
+                        </option>
+                    </select>
+                    <p class="text-xs text-zinc-500 mt-1">
+                        Por cada opción seleccionada en este campo, se crearán los subcampos definidos abajo
+                    </p>
+                </div>
+
+                <!-- Opción: Calcular total automático -->
+                <div class="p-3 bg-white border border-zinc-200 rounded-lg">
+                    <label class="flex items-start gap-3 cursor-pointer">
+                        <input type="checkbox" formControlName="configAutoTotal"
+                            class="mt-0.5 w-4 h-4 text-zinc-900 border-zinc-300 rounded focus:ring-zinc-900" />
+                        <div>
+                            <p class="text-xs font-medium text-zinc-700">Calcular total automáticamente</p>
+                            <p class="text-xs text-zinc-500 mt-0.5">
+                                Agrega campo "Total" que suma todos los subcampos numéricos
+                            </p>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Sub-fields List -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="block text-xs font-medium text-zinc-700">
+                            Subcampos *
+                        </label>
+                        <button type="button" (click)="addSubField(i)"
+                            class="px-2.5 py-1 text-xs font-medium text-zinc-700 bg-white border border-zinc-200 rounded-md hover:border-zinc-300 hover:text-zinc-900 transition-colors">
+                            + Agregar subcampo
+                        </button>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div *ngFor="let subField of getSubFields(i); let j = index"
+                            class="bg-white border border-zinc-200 rounded-lg p-3 space-y-2">
+
+                            <div class="grid grid-cols-12 gap-2">
+                                <!-- Nombre técnico -->
+                                <div class="col-span-4">
+                                    <label class="block text-xs font-medium text-zinc-600 mb-1">
+                                        Nombre técnico *
+                                    </label>
+                                    <input type="text" [value]="subField.name"
+                                        (input)="updateSubField(i, j, 'name', $event)" placeholder="vacunados"
+                                        class="w-full px-2 py-1.5 text-xs border border-zinc-200 rounded bg-white lowercase focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900" />
+                                    <p class="text-xs text-zinc-400 mt-0.5">
+                                        Auto: minúsculas, espacios→_
+                                    </p>
+                                </div>
+
+                                <!-- Tipo -->
+                                <div class="col-span-3">
+                                    <label class="block text-xs font-medium text-zinc-600 mb-1">Tipo *</label>
+                                    <select [value]="subField.type" (change)="updateSubField(i, j, 'type', $event)"
+                                        class="w-full px-2 py-1.5 text-xs border border-zinc-200 rounded bg-white focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900">
+                                        <option value="number">Número</option>
+                                        <option value="text">Texto</option>
+                                    </select>
+                                </div>
+
+                                <!-- Etiqueta visible -->
+                                <div class="col-span-4">
+                                    <label class="block text-xs font-medium text-zinc-600 mb-1">Etiqueta visible
+                                        *</label>
+                                    <input type="text" [value]="subField.label"
+                                        (input)="updateSubField(i, j, 'label', $event)" placeholder="Vacunados"
+                                        class="w-full px-2 py-1.5 text-xs border border-zinc-200 rounded bg-white focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900" />
+                                    <p class="text-xs text-zinc-400 mt-0.5">
+                                        Auto: Primera Mayúscula
+                                    </p>
+                                </div>
+
+                                <!-- Eliminar -->
+                                <div class="col-span-1 flex items-end">
+                                    <button type="button" (click)="removeSubField(i, j)"
+                                        class="w-full p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                                        title="Eliminar">
+                                        <svg class="w-4 h-4 mx-auto" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div *ngIf="getSubFields(i).length === 0"
+                            class="text-xs text-zinc-400 text-center py-4 border border-dashed border-zinc-300 rounded-lg">
+                            No hay subcampos. Usa el botón "Agregar subcampo" para crear uno.
+                        </div>
+                    </div>
+
+                    <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div>
+                                <p class="text-xs font-medium text-blue-900 mb-1">Ejemplo práctico:</p>
+                                <p class="text-xs text-blue-700">
+                                    Si el campo padre es "TIPO DE ANIMAL" con opciones: GATO, PERRO<br>
+                                    Y defines: "vacunados" (número), "esterilizados" (número)<br>
+                                    Y activas "calcular total automático"<br>
+                                    <strong>En el reporte aparecerá para GATO:</strong> Vacunados, Esterilizados,
+                                    <strong>Total</strong> (suma automática)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- METAS ANUALES (NUMBER, SUM_GROUP y GROUPED_DATA) -->
+            <div *ngIf="ind.get('field_type')?.value === 'number' || ind.get('field_type')?.value === 'sum_group' || ind.get('field_type')?.value === 'grouped_data'"
+                class="bg-zinc-50 border border-zinc-200 rounded-lg p-4 space-y-3">
+
+                <div class="flex items-center justify-between">
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-700">
+                            Metas anuales
+                        </label>
+                        <p class="text-xs text-zinc-500 mt-0.5" *ngIf="ind.get('field_type')?.value === 'grouped_data'">
+                            La meta aplica al total consolidado de todos los grupos
+                        </p>
+                    </div>
+                    <button type="button" (click)="addTarget(i)" class="px-2.5 py-1 text-xs font-medium text-zinc-700 bg-white border border-zinc-200
+                   rounded-md hover:border-zinc-300 hover:text-zinc-900 
+                   transition-colors duration-150 cursor-pointer">
+                        Agregar meta
+                    </button>
+                </div>
+
+                <div formArrayName="targets" class="space-y-2">
+                    <div *ngFor="let t of getTargets(i).controls; let j=index" [formGroupName]="j"
+                        class="flex items-center gap-2">
+
+                        <div>
+                            <input type="number" formControlName="year" class="w-24 px-3 py-1.5 text-sm border border-zinc-200 rounded-lg
+                         bg-white text-zinc-900
+                         focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                         transition-colors duration-150" placeholder="Año" />
+                        </div>
+
+                        <div class="flex-1">
+                            <input type="number" formControlName="target_value" step="0.01" class="w-full px-3 py-1.5 text-sm border border-zinc-200 rounded-lg
+                         bg-white text-zinc-900
+                         focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                         transition-colors duration-150" placeholder="Meta (número positivo)" />
+                        </div>
+
+                        <button type="button" (click)="removeTarget(i, j)" class="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 
+                     rounded-md transition-colors duration-150 cursor-pointer" title="Eliminar meta">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+
+                    </div>
+
+                    <div *ngIf="getTargets(i).length === 0" class="text-xs text-zinc-400 text-center py-2">
+                        No hay metas definidas. Opcionales para datos agrupados.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div *ngIf="indicators.length === 0" class="text-sm text-zinc-400 text-center py-8">
+            No hay indicadores. Usa el botón "Agregar indicador" para crear uno.
+        </div>
+
+    </div>
+</div>

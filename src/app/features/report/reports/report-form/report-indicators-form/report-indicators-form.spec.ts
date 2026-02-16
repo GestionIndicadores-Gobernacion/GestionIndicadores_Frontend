@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ReportIndicatorsForm } from './report-indicators-form';
+import { ReportIndicatorsFormComponent } from './report-indicators-form';
 
-describe('ReportIndicatorsForm', () => {
-  let component: ReportIndicatorsForm;
-  let fixture: ComponentFixture<ReportIndicatorsForm>;
+describe('ReportIndicatorsFormComponent', () => {
+  let component: ReportIndicatorsFormComponent;
+  let fixture: ComponentFixture<ReportIndicatorsFormComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ReportIndicatorsForm]
+      imports: [ReportIndicatorsFormComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ReportIndicatorsForm);
+    fixture = TestBed.createComponent(ReportIndicatorsFormComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

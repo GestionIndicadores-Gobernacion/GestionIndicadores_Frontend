@@ -8,6 +8,12 @@ export const USERS_ROUTES: Routes = [
         .then(m => m.UsersListComponent),
   },
   {
+    path: 'me',
+    loadComponent: () =>
+      import('./my-profile/my-profile')
+        .then(m => m.MyProfileComponent),
+  },
+  {
     path: 'create',
     loadComponent: () =>
       import('./user-form/user-form')
