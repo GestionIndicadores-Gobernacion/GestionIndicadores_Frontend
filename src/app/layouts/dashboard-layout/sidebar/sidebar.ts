@@ -1,14 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
+import { Subscription, filter } from 'rxjs';
 import { SidebarService } from '../../../core/services/sidebar.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { MenuService } from '../../../core/services/menu.service';
 
 interface MenuItem {
   label: string;
   route?: string;
   disabled?: boolean;
-  roles?: number[]; // role_id
+  roles?: number[];
+  icon?: string;
   children?: MenuItem[];
 }
 
@@ -19,15 +22,17 @@ interface MenuItem {
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
 })
-export class SidebarComponent {
-
-  isOpen = false;
+export class SidebarComponent implements OnInit, OnDestroy {
 
   // ===============================
-  // USER INFO (UI ONLY)
+  // SIDEBAR STATE
+  // ===============================
+  isOpen = false; // Cerrado por defecto en móvil
+
+  // ===============================
+  // USER INFO
   // ===============================
   roleId: number | null = null;
-
   userName = '';
   userEmail = '';
   profileImageUrl: string | null = null;
@@ -43,46 +48,79 @@ export class SidebarComponent {
     'Reportes PYBA': true,
   };
 
+  // ===============================
+  // SUBSCRIPTIONS
+  // ===============================
+  private sidebarSubscription?: Subscription;
+  private routerSubscription?: Subscription;
+
   constructor(
     private sidebarService: SidebarService,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private menuService: MenuService,
   ) {
-
-    const userString = localStorage.getItem('user');
-    if (userString) {
-      console.log(JSON.parse(userString));
-    }
-
-    // ===============================
-    // USER INFO (FROM BACKEND)
-    // ===============================
+    // ===== USER DATA =====
     const user = this.authService.getUser();
 
     if (user) {
       this.userName = `${user.first_name} ${user.last_name}`;
       this.userEmail = user.email;
       this.profileImageUrl = user.profile_image_url;
-      this.userInitial = this.userName.charAt(0);
-
-      // 🔑 ROL REAL (backend)
+      this.userInitial = this.userName.charAt(0).toUpperCase();
       this.roleLabel = user.role?.name ?? '';
       this.roleId = user.role?.id ?? null;
     }
 
-    // ===============================
-    // SIDEBAR STATE
-    // ===============================
-    this.sidebarService.isOpen$.subscribe(v => this.isOpen = v);
+    // ===== MENU =====
+    this.menu = this.menuService.getMenu();
+  }
 
-    // Auto-expand Reportes cuando la ruta aplica
-    this.router.events.subscribe(() => {
-      if (this.isReportsSectionActive()) {
-        this.expandedSections['Reportes PYBA'] = true;
-      }
+  ngOnInit() {
+    // ===== SIDEBAR STATE =====
+    this.sidebarSubscription = this.sidebarService.isOpen$.subscribe(v => {
+      this.isOpen = v;
     });
 
-    this.buildMenu();
+    // ===== AUTO EXPAND SECTION ON NAVIGATION =====
+    this.routerSubscription = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        if (this.isReportsSectionActive()) {
+          this.expandedSections['Reportes PYBA'] = true;
+        }
+
+        // Auto-close sidebar on mobile after navigation
+        if (window.innerWidth < 768) {
+          this.sidebarService.close();
+        }
+      });
+
+    // Check initial route
+    if (this.isReportsSectionActive()) {
+      this.expandedSections['Reportes PYBA'] = true;
+    }
+
+    // Set initial state based on screen size
+    if (window.innerWidth >= 768) {
+      this.sidebarService.open();
+    }
+  }
+
+  ngOnDestroy() {
+    this.sidebarSubscription?.unsubscribe();
+    this.routerSubscription?.unsubscribe();
+  }
+
+  // ===============================
+  // TOGGLE
+  // ===============================
+  toggleSidebar() {
+    this.sidebarService.toggle();
+  }
+
+  closeSidebar() {
+    this.sidebarService.close();
   }
 
   // ===============================
@@ -101,12 +139,11 @@ export class SidebarComponent {
   }
 
   // ===============================
-  // PERMISSIONS (UI)
+  // PERMISSIONS
   // ===============================
   canShow(item: MenuItem): boolean {
     if (!item.roles) return true;
     if (!this.roleId) return false;
-
     return item.roles.includes(this.roleId);
   }
 
@@ -116,56 +153,10 @@ export class SidebarComponent {
   }
 
   // ===============================
-  // MENU BUILDER
-  // ===============================
-  buildMenu() {
-    this.menu = [
-      {
-        label: 'Dashboard',
-        route: 'dashboard',
-
-      },
-      {
-        label: 'Reportes PYBA',
-        roles: [2, 3],
-        children: [
-          { label: 'Reportes', route: 'reports' },
-
-          { label: 'Estrategias', route: 'reports/strategies', roles: [3] },
-          { label: 'Componentes Estratégicos', route: 'reports/components', roles: [3] },
-        ],
-      },
-      {
-        label: 'Bases de datos',
-        roles: [1, 2, 3],
-        children: [
-          { label: 'Dataset', route: 'datasets' },
-          { label: 'Tablas', route: 'datasets/tables' }
-        ],
-      },
-      {
-        label: 'Planes de acción',
-        disabled: true,
-        roles: [1, 2, 3],
-      },
-      {
-        label: 'Usuarios',
-        route: 'users',
-        disabled: true,
-        roles: [3],
-      },
-    ];
-  }
-
-  // ===============================
   // LOGOUT
   // ===============================
   logout() {
     this.authService.logout();
     this.router.navigate(['/auth/login']);
-  }
-
-  closeSidebar() {
-    this.sidebarService.close();
   }
 }

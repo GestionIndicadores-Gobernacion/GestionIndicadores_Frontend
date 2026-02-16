@@ -1,9 +1,5 @@
-@import 'ngx-toastr/toastr.css';
+@import "tailwindcss";
 
-@import './styles/base.css';
-@import './styles/buttons.css';
-@import './styles/tables.css';
-@import './styles/forms.css';
-@import './styles/components.css';
-@import './styles/cards.css';
-@import './styles/utils.css';
+.bi {
+    line-height: 0;
+}

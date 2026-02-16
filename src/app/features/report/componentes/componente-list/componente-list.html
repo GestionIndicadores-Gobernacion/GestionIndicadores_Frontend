@@ -1,92 +1,166 @@
-<div class="list-container">
+<div class="min-h-screen bg-zinc-50">
 
-  <div class="list-header">
-    <h2>Gestión de Componentes</h2>
+  <!-- PAGE HEADER -->
+  <div class="border-b border-zinc-200 bg-white">
+    <div class="max-w-7xl mx-auto px-6 py-8">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-semibold text-zinc-900 tracking-tight">
+            Componentes
+          </h1>
+          <p class="text-sm text-zinc-500 mt-1">
+            Gestión de componentes por estrategia
+          </p>
+        </div>
 
-    <div class="header-actions">
-      <input type="text" class="search-input" placeholder="Buscar por nombre o estrategia..." [(ngModel)]="search"
-        (input)="applyFilter()" />
-
-      <button class="btn-primary" (click)="goToCreate()" [disabled]="loading">
-        Crear Componente
-      </button>
+        <button (click)="goToCreate()" [disabled]="loading" class="px-4 py-2 text-sm font-medium text-white bg-zinc-900 rounded-lg
+                 hover:bg-black transition-colors duration-150
+                 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+          Crear componente
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- LOADING -->
-  <div *ngIf="loading" class="loading-box">
-    <div class="spinner"></div>
-  </div>
+  <div class="max-w-7xl mx-auto px-6 py-8">
 
-  <!-- EMPTY -->
-  <div *ngIf="!loading && paginatedComponents.length === 0" class="empty-state">
-    <p>No hay componentes registrados.</p>
-  </div>
+    <!-- SEARCH BAR -->
+    <div class="mb-6">
+      <div class="relative max-w-md">
+        <input type="text" placeholder="Buscar por nombre o estrategia..." [(ngModel)]="search" (input)="applyFilter()"
+          class="w-full pl-10 pr-4 py-2 text-sm border border-zinc-200 rounded-lg
+                 bg-white text-zinc-900 placeholder:text-zinc-400
+                 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                 transition-colors duration-150" />
 
-  <!-- TABLE -->
-  <div *ngIf="!loading && paginatedComponents.length > 0" class="table-wrapper">
+        <!-- Search Icon -->
+        <svg class="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+    </div>
 
-    <table class="custom-table">
+    <!-- LOADING STATE -->
+    <div *ngIf="loading" class="bg-white border border-zinc-200 rounded-2xl p-12">
+      <div class="flex flex-col items-center justify-center gap-3">
+        <div class="w-5 h-5 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin"></div>
+        <p class="text-sm text-zinc-500">Cargando componentes...</p>
+      </div>
+    </div>
 
-      <thead>
-        <tr>
-          <th (click)="sortBy('name')" class="sortable">
-            Componente
-            <span *ngIf="sortColumn === 'name'">
-              {{ sortDirection === 'asc' ? '▲' : '▼' }}
-            </span>
-          </th>
+    <!-- EMPTY STATE -->
+    <div *ngIf="!loading && paginatedComponents.length === 0" class="bg-white border border-zinc-200 rounded-2xl p-12">
+      <div class="text-center">
+        <h3 class="text-base font-semibold text-zinc-900">
+          No hay componentes registrados
+        </h3>
+        <p class="text-sm text-zinc-500 mt-2">
+          Comienza creando tu primer componente
+        </p>
+      </div>
+    </div>
 
-          <th (click)="sortBy('strategy')" class="sortable">
-            Estrategia
-            <span *ngIf="sortColumn === 'strategy'">
-              {{ sortDirection === 'asc' ? '▲' : '▼' }}
-            </span>
-          </th>
+    <!-- TABLE -->
+    <div *ngIf="!loading && paginatedComponents.length > 0" class="space-y-4">
 
-          <th (click)="sortBy('created_at')" class="sortable">
-            Creado
-            <span *ngIf="sortColumn === 'created_at'">
-              {{ sortDirection === 'asc' ? '▲' : '▼' }}
-            </span>
-          </th>
+      <!-- Table Container -->
+      <div class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full">
 
-          <th class="text-center">Acciones</th>
-        </tr>
-      </thead>
+            <thead class="bg-zinc-50 border-b border-zinc-200">
+              <tr>
+                <th (click)="sortBy('name')" class="px-4 py-3 text-left text-xs font-medium text-zinc-700 uppercase tracking-wider
+                         cursor-pointer hover:text-zinc-900 transition-colors duration-150">
+                  <div class="flex items-center gap-1.5">
+                    Componente
+                    <span *ngIf="sortColumn === 'name'" class="text-zinc-900">
+                      {{ sortDirection === 'asc' ? '↑' : '↓' }}
+                    </span>
+                  </div>
+                </th>
 
-      <tbody>
-        <tr *ngFor="let c of paginatedComponents">
+                <th (click)="sortBy('strategy')" class="px-4 py-3 text-left text-xs font-medium text-zinc-700 uppercase tracking-wider
+                         cursor-pointer hover:text-zinc-900 transition-colors duration-150">
+                  <div class="flex items-center gap-1.5">
+                    Estrategia
+                    <span *ngIf="sortColumn === 'strategy'" class="text-zinc-900">
+                      {{ sortDirection === 'asc' ? '↑' : '↓' }}
+                    </span>
+                  </div>
+                </th>
 
-          <td class="strong">
-            {{ c.name }}
-          </td>
+                <th (click)="sortBy('created_at')" class="px-4 py-3 text-left text-xs font-medium text-zinc-700 uppercase tracking-wider
+                         cursor-pointer hover:text-zinc-900 transition-colors duration-150">
+                  <div class="flex items-center gap-1.5">
+                    Creado
+                    <span *ngIf="sortColumn === 'created_at'" class="text-zinc-900">
+                      {{ sortDirection === 'asc' ? '↑' : '↓' }}
+                    </span>
+                  </div>
+                </th>
 
-          <td>
-            {{ strategyMap[c.strategy_id] || '—' }}
-          </td>
+                <th class="px-4 py-3 text-right text-xs font-medium text-zinc-700 uppercase tracking-wider">
+                  Acciones
+                </th>
+              </tr>
+            </thead>
 
-          <td>
-            {{ c.created_at | date:'short' }}
-          </td>
+            <tbody class="bg-white divide-y divide-zinc-100">
+              <tr *ngFor="let c of paginatedComponents" class="hover:bg-zinc-50 transition-colors duration-150">
 
-          <td class="actions-col">
-            <button class="btn-outline-primary" (click)="goToEdit(c.id)">
-              Editar
-            </button>
+                <td class="px-4 py-3 text-sm font-medium text-zinc-900">
+                  {{ c.name }}
+                </td>
 
-            <button class="btn-outline-danger" (click)="deleteComponent(c.id)">
-              Eliminar
-            </button>
-          </td>
+                <td class="px-4 py-3 text-sm text-zinc-600">
+                  {{ strategyMap[c.strategy_id] || '—' }}
+                </td>
 
-        </tr>
-      </tbody>
+                <td class="px-4 py-3 text-sm text-zinc-600">
+                  {{ c.created_at | date:'dd/MM/yyyy' }}
+                </td>
 
-    </table>
+                <td class="px-4 py-3 text-right">
+                  <div class="flex items-center justify-end gap-1">
 
-    <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
-    </app-pagination>
+                    <button (click)="goToEdit(c.id)" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium 
+                             text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 
+                             rounded-md transition-colors duration-150 cursor-pointer" title="Editar componente">
+                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Editar
+                    </button>
+
+                    <button (click)="deleteComponent(c.id)" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium 
+                             text-red-600 hover:text-red-700 hover:bg-red-50 
+                             rounded-md transition-colors duration-150 cursor-pointer" title="Eliminar componente">
+                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Eliminar
+                    </button>
+
+                  </div>
+                </td>
+
+              </tr>
+            </tbody>
+
+          </table>
+        </div>
+      </div>
+
+      <!-- PAGINATION -->
+      <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
+      </app-pagination>
+
+    </div>
 
   </div>
 

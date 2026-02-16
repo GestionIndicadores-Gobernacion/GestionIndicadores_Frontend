@@ -1,126 +1,207 @@
-<div class="component-form-container form-container">
+<div class="min-h-screen bg-zinc-50">
 
-  <h2 class="page-title">
-    {{ isEdit ? "Editar Estrategia" : "Crear Estrategia" }}
-  </h2>
-
-  <!-- LOADING -->
-  <div *ngIf="loading" class="loading-box">
-    <div class="spinner"></div>
+  <!-- PAGE HEADER -->
+  <div class="border-b border-zinc-200 bg-white">
+    <div class="max-w-4xl mx-auto px-6 py-8">
+      <div class="flex items-start justify-between">
+        <div class="space-y-1">
+          <h1 class="text-2xl font-semibold text-zinc-900 tracking-tight">
+            {{ isEdit ? 'Editar estrategia' : 'Nueva estrategia' }}
+          </h1>
+          <p class="text-sm text-zinc-500">
+            {{ isEdit ? 'Actualiza la información de la estrategia' : 'Define los objetivos y metas programadas' }}
+          </p>
+        </div>
+        <button type="button" [routerLink]="['/reports/strategies']"
+          class="text-sm text-zinc-400 hover:text-zinc-900 transition-colors duration-150 cursor-pointer">
+          Cancelar
+        </button>
+      </div>
+    </div>
   </div>
 
-  <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="submit()">
+  <!-- FORM CONTAINER -->
+  <div class="max-w-4xl mx-auto px-6 py-10">
 
-    <!-- ============================= -->
-    <!-- INFORMACIÓN GENERAL -->
-    <!-- ============================= -->
-    <div class="form-section">
-
-      <!-- Nombre -->
-      <div class="form-group full">
-        <label>Nombre de la estrategia</label>
-
-        <input type="text" formControlName="name" [class.invalid]="showError('name')" />
-
-        <small class="hint-text">
-          Nombre con el que se identificará la estrategia.
-        </small>
+    <!-- LOADING STATE -->
+    <div *ngIf="loading" class="bg-white border border-zinc-200 rounded-2xl p-12">
+      <div class="flex flex-col items-center justify-center gap-3">
+        <div class="w-5 h-5 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin"></div>
+        <p class="text-sm text-zinc-500">Cargando formulario...</p>
       </div>
-
-      <!-- Objetivo -->
-      <div class="form-group full">
-        <label>Objetivo de la estrategia</label>
-
-        <textarea rows="3" formControlName="objective" [class.invalid]="showError('objective')"></textarea>
-
-        <small class="hint-text">
-          Describe el propósito general que se busca lograr.
-        </small>
-      </div>
-
-      <!-- Meta del producto -->
-      <div class="form-group full">
-        <label>Meta del producto asociada</label>
-
-        <textarea rows="2" formControlName="product_goal_description"
-          [class.invalid]="showError('product_goal_description')"></textarea>
-
-        <small class="hint-text">
-          Define qué resultado medible representa esta estrategia.
-        </small>
-      </div>
-
     </div>
 
-    <!-- ============================= -->
-    <!-- PROGRAMACIÓN ANUAL -->
-    <!-- ============================= -->
-    <div class="form-section">
+    <!-- FORM -->
+    <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="submit()" class="space-y-1">
 
-      <div class="section-header">
-        <h3>Programación de la Meta</h3>
+      <!-- ====== INFORMACIÓN GENERAL ====== -->
+      <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
 
-        <button type="button" class="btn-outline-primary btn-sm" (click)="addYear()">
-          Agregar Año
+        <!-- Section Header -->
+        <div class="px-6 py-4 border-b border-zinc-100">
+          <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-900">
+            Información general
+          </h2>
+        </div>
+
+        <!-- Fields -->
+        <div class="p-6 space-y-5">
+
+          <!-- Nombre -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-medium text-zinc-700">
+              Nombre de la estrategia
+            </label>
+            <input type="text" formControlName="name" [class.border-red-300]="showError('name')"
+              [class.focus:border-red-500]="showError('name')" [class.focus:ring-red-500]="showError('name')" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                     bg-white text-zinc-900
+                     focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                     transition-colors duration-150" placeholder="Ej: Estrategia de desarrollo comunitario" />
+            <p class="text-xs text-zinc-500">
+              Nombre con el que se identificará la estrategia
+            </p>
+          </div>
+
+          <!-- Objetivo -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-medium text-zinc-700">
+              Objetivo de la estrategia
+            </label>
+            <textarea rows="3" formControlName="objective" [class.border-red-300]="showError('objective')"
+              [class.focus:border-red-500]="showError('objective')" [class.focus:ring-red-500]="showError('objective')"
+              class="w-full px-3 py-2.5 text-sm border border-zinc-200 rounded-lg
+                     bg-white text-zinc-900 resize-none
+                     focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                     transition-colors duration-150"
+              placeholder="Describe el propósito general que se busca lograr..."></textarea>
+            <p class="text-xs text-zinc-500">
+              Describe el propósito general que se busca lograr
+            </p>
+          </div>
+
+          <!-- Meta del producto -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-medium text-zinc-700">
+              Meta del producto asociada
+            </label>
+            <textarea rows="2" formControlName="product_goal_description"
+              [class.border-red-300]="showError('product_goal_description')"
+              [class.focus:border-red-500]="showError('product_goal_description')"
+              [class.focus:ring-red-500]="showError('product_goal_description')" class="w-full px-3 py-2.5 text-sm border border-zinc-200 rounded-lg
+                     bg-white text-zinc-900 resize-none
+                     focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                     transition-colors duration-150"
+              placeholder="Define qué resultado medible representa esta estrategia..."></textarea>
+            <p class="text-xs text-zinc-500">
+              Define qué resultado medible representa esta estrategia
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ====== PROGRAMACIÓN ANUAL ====== -->
+      <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
+
+        <!-- Section Header -->
+        <div class="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
+          <div>
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-900">
+              Programación de la meta
+            </h2>
+            <p class="text-xs text-zinc-500 mt-0.5">
+              Define las metas anuales de la estrategia
+            </p>
+          </div>
+
+          <button type="button" (click)="addYear()" class="px-3 py-1.5 text-xs font-medium text-zinc-700 bg-white border border-zinc-200
+                   rounded-lg hover:border-zinc-300 hover:text-zinc-900 
+                   transition-colors duration-150 cursor-pointer">
+            Agregar año
+          </button>
+        </div>
+
+        <!-- Years Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full">
+
+            <thead class="bg-zinc-50 border-b border-zinc-200">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-zinc-700 uppercase tracking-wider w-32">
+                  Año
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-zinc-700 uppercase tracking-wider">
+                  Meta programada
+                </th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-zinc-700 uppercase tracking-wider w-32">
+
+                </th>
+              </tr>
+            </thead>
+
+            <tbody class="bg-white divide-y divide-zinc-100">
+              <tr *ngFor="let y of years.controls; let i = index" [formGroup]="y"
+                class="hover:bg-zinc-50 transition-colors duration-150">
+
+                <td class="px-6 py-3 text-sm font-medium text-zinc-900">
+                  Año {{ i + 1 }}
+                </td>
+
+                <td class="px-6 py-3">
+                  <input type="number" formControlName="value" class="w-full px-3 py-1.5 text-sm border border-zinc-200 rounded-lg
+                           bg-white text-zinc-900
+                           focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                           transition-colors duration-150" placeholder="Ingrese la meta del año" />
+                </td>
+
+                <td class="px-6 py-3 text-right">
+                  <button type="button" (click)="removeYear(i)" *ngIf="years.length > 1" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium 
+                           text-red-600 hover:text-red-700 hover:bg-red-50 
+                           rounded-md transition-colors duration-150 cursor-pointer">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Eliminar
+                  </button>
+                </td>
+
+              </tr>
+            </tbody>
+
+          </table>
+        </div>
+
+        <!-- Total -->
+        <div class="px-6 py-4 border-t border-zinc-100 bg-zinc-50">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-medium text-zinc-700">
+              Total programado
+            </span>
+            <span class="text-lg font-semibold text-zinc-900">
+              {{ total | number:'1.0-2' }}
+            </span>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ====== ACCIONES ====== -->
+      <div class="pt-6 flex items-center justify-end gap-3">
+        <button type="button" [routerLink]="['/reports/strategies']" class="px-4 py-2 text-sm font-medium text-zinc-600 
+                 hover:text-zinc-900 transition-colors duration-150 cursor-pointer">
+          Cancelar
+        </button>
+
+        <button type="submit" class="px-6 py-2 text-sm font-medium text-white bg-zinc-900 rounded-lg
+                 hover:bg-black transition-colors duration-150
+                 disabled:opacity-40 disabled:cursor-not-allowed" [disabled]="saving || form.invalid">
+          {{ saving ? 'Guardando...' : (isEdit ? 'Actualizar estrategia' : 'Crear estrategia') }}
         </button>
       </div>
 
-      <div class="table-wrapper">
-        <table class="custom-table compact">
+    </form>
 
-          <thead>
-            <tr>
-              <th style="width:120px">Año</th>
-              <th>Meta Programada</th>
-              <th style="width:120px"></th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr *ngFor="let y of years.controls; let i = index" [formGroup]="y">
-
-              <td class="strong">
-                Año {{ i + 1 }}
-              </td>
-
-              <td>
-                <input type="number" formControlName="value" class="input-table"
-                  placeholder="Ingrese la meta del año" />
-              </td>
-
-              <td>
-                <button type="button" class="btn-outline-danger btn-sm" (click)="removeYear(i)"
-                  *ngIf="years.length > 1">
-                  Eliminar
-                </button>
-              </td>
-
-            </tr>
-          </tbody>
-
-        </table>
-      </div>
-
-      <div class="section-total">
-        Total programado:
-        <strong>{{ total | number:'1.0-2' }}</strong>
-      </div>
-
-    </div>
-
-    <!-- ============================= -->
-    <!-- ACCIONES -->
-    <!-- ============================= -->
-    <div class="form-actions">
-      <button class="btn-primary" [disabled]="saving || form.invalid">
-        {{ saving ? "Guardando..." : (isEdit ? "Actualizar Estrategia" : "Crear Estrategia") }}
-      </button>
-
-      <button type="button" class="btn-secondary-custom" [routerLink]="['/reports/strategies']">
-        Cancelar
-      </button>
-    </div>
-
-  </form>
+  </div>
 
 </div>

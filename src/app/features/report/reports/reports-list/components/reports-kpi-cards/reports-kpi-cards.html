@@ -1,35 +1,63 @@
-<div class="kpi-grid">
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
 
-    <div class="kpi-card">
-        <div class="kpi-value">{{ totalReports }}</div>
-        <div class="kpi-label">Total Reportes</div>
+  <!-- Total Reportes -->
+  <div class="bg-white border border-zinc-200 rounded-2xl p-5">
+    <div class="text-2xl font-semibold text-zinc-900 tracking-tight">
+      {{ totalReports }}
     </div>
+    <div class="text-xs text-zinc-500 mt-1.5">
+      Total reportes
+    </div>
+  </div>
 
-    <div class="kpi-card">
-        <div class="kpi-value">{{ totalStrategies }}</div>
-        <div class="kpi-label">Estrategias Activas</div>
+  <!-- Estrategias Activas -->
+  <div class="bg-white border border-zinc-200 rounded-2xl p-5">
+    <div class="text-2xl font-semibold text-zinc-900 tracking-tight">
+      {{ totalStrategies }}
     </div>
+    <div class="text-xs text-zinc-500 mt-1.5">
+      Estrategias activas
+    </div>
+  </div>
 
-    <div class="kpi-card">
-        <div class="kpi-value">{{ totalComponents }}</div>
-        <div class="kpi-label">Componentes Reportados</div>
+  <!-- Componentes Reportados -->
+  <div class="bg-white border border-zinc-200 rounded-2xl p-5">
+    <div class="text-2xl font-semibold text-zinc-900 tracking-tight">
+      {{ totalComponents }}
     </div>
+    <div class="text-xs text-zinc-500 mt-1.5">
+      Componentes reportados
+    </div>
+  </div>
 
-    <div class="kpi-card">
-        <div class="kpi-value">{{ totalZones }}</div>
-        <div class="kpi-label">Zonas Impactadas</div>
+  <!-- Zonas Impactadas -->
+  <div class="bg-white border border-zinc-200 rounded-2xl p-5">
+    <div class="text-2xl font-semibold text-zinc-900 tracking-tight">
+      {{ totalZones }}
     </div>
+    <div class="text-xs text-zinc-500 mt-1.5">
+      Zonas impactadas
+    </div>
+  </div>
 
-    <div class="kpi-card">
-        <div class="kpi-value">{{ totalIndicators }}</div>
-        <div class="kpi-label">Indicadores Usados</div>
+  <!-- Indicadores Usados -->
+  <div class="bg-white border border-zinc-200 rounded-2xl p-5">
+    <div class="text-2xl font-semibold text-zinc-900 tracking-tight">
+      {{ totalIndicators }}
     </div>
+    <div class="text-xs text-zinc-500 mt-1.5">
+      Indicadores usados
+    </div>
+  </div>
 
-    <div class="kpi-card">
-        <div class="kpi-value">
-            {{ lastReportDate ? (lastReportDate | date:'short') : '—' }}
-        </div>
-        <div class="kpi-label">Último Reporte</div>
+  <!-- Último Reporte -->
+  <div class="bg-white border border-zinc-200 rounded-2xl p-5">
+    <div class="text-sm font-medium text-zinc-900 tracking-tight leading-tight">
+      {{ lastReportDate ? (lastReportDate | date:'dd/MM/yy') : '—' }}
     </div>
+    <div class="text-xs text-zinc-500 mt-1.5">
+      Último reporte
+    </div>
+  </div>
 
 </div>

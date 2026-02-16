@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Topbar } from './topbar';
+import { ReportIndicatorsForm } from './report-indicators-form';
 
-describe('Topbar', () => {
-  let component: Topbar;
-  let fixture: ComponentFixture<Topbar>;
+describe('ReportIndicatorsForm', () => {
+  let component: ReportIndicatorsForm;
+  let fixture: ComponentFixture<ReportIndicatorsForm>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Topbar]
+      imports: [ReportIndicatorsForm]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(Topbar);
+    fixture = TestBed.createComponent(ReportIndicatorsForm);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

@@ -1,253 +1,294 @@
-<div class="report-form-container form-container">
+<div class="min-h-screen bg-zinc-50">
 
-    <!-- ===================================================== -->
-    <!-- HEADER -->
-    <!-- ===================================================== -->
-    <h2 class="page-title with-context">
-        <i class="bi bi-clipboard-data me-2"></i>
-        {{ isEdit ? 'Editar reporte de ejecución' : 'Nuevo reporte de ejecución' }}
-    </h2>
-
-    <p class="page-subtitle">
-        Registra el avance operativo del componente seleccionado en la fecha indicada.
-    </p>
-
-    <!-- LOADING -->
-    <div *ngIf="loading" class="loading-box">
-        <div class="spinner"></div>
+    <!-- Header -->
+    <div class="border-b border-zinc-200 bg-white">
+        <div class="max-w-4xl mx-auto px-6 py-8">
+            <div class="flex items-start justify-between">
+                <div class="space-y-1">
+                    <h1 class="text-2xl font-semibold text-zinc-900 tracking-tight">
+                        {{ isEdit ? 'Editar reporte' : 'Nuevo reporte' }}
+                    </h1>
+                    <p class="text-sm text-zinc-500">
+                        Registro operativo de la intervención
+                    </p>
+                </div>
+                <button type="button" (click)="cancel()"
+                    class="text-sm text-zinc-400 hover:text-zinc-900 transition-colors duration-150 cursor-pointer">
+                    Cancelar
+                </button>
+            </div>
+        </div>
     </div>
 
-    <form *ngIf="!loading" (ngSubmit)="save()">
+    <!-- Form Container -->
+    <div class="max-w-4xl mx-auto px-6 py-10">
 
-        <!-- ===================================================== -->
-        <!-- CONTEXTO DEL REPORTE -->
-        <!-- ===================================================== -->
-        <div class="form-section context-section">
+        <form *ngIf="!loading" (ngSubmit)="save()" class="space-y-6">
 
-            <div class="section-header">
-                <div class="title-with-icon">
-                    <i class="bi bi-diagram-2"></i>
-                    <h3>Contexto del reporte</h3>
-                </div>
-            </div>
+            <!-- ====== UBICACIÓN Y CONTEXTO ====== -->
+            <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
 
-            <p class="section-description">
-                Define el marco operativo donde se ejecutaron las actividades reportadas.
-            </p>
-
-            <div class="context-date">
-                <label><i class="bi bi-calendar-event me-1"></i> Fecha del reporte</label>
-                <input type="date" [(ngModel)]="form.report_date" name="report_date" (change)="onDateChange()"
-                    required />
-            </div>
-
-            <div class="context-grid">
-
-                <div class="form-group">
-                    <label><i class="bi bi-diagram-3 me-1"></i> Estrategia</label>
-                    <select [(ngModel)]="form.strategy_id" name="strategy_id" required (change)="onStrategyChange()">
-                        <option [ngValue]="null" disabled>Seleccionar estrategia...</option>
-                        <option *ngFor="let s of strategies" [ngValue]="s.id">{{ s.name }}</option>
-                    </select>
+                <div class="px-6 py-4 border-b border-zinc-100">
+                    <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-900">
+                        Ubicación y contexto
+                    </h2>
+                    <p class="text-xs text-zinc-500 mt-0.5">
+                        Define dónde y cuándo se realizó la intervención
+                    </p>
                 </div>
 
-                <div class="form-group">
-                    <label><i class="bi bi-box-seam me-1"></i> Componente</label>
-                    <select [(ngModel)]="form.component_id" name="component_id" [disabled]="!form.strategy_id" required
-                        (change)="onComponentChange()">
-                        <option [ngValue]="null" disabled>Seleccionar componente...</option>
-                        <option *ngFor="let c of components" [ngValue]="c.id">{{ c.name }}</option>
-                    </select>
-                </div>
+                <div class="p-6 space-y-4">
 
-                <div class="form-group">
-                    <label><i class="bi bi-geo-alt me-1"></i> Ubicación</label>
-                    <select [(ngModel)]="form.intervention_location" name="intervention_location" required>
-                        <option [ngValue]="null" disabled>Seleccionar municipio...</option>
-                        <option *ngFor="let m of municipios" [ngValue]="m">{{ m }}</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label><i class="bi bi-map me-1"></i> Zona</label>
-                    <select [(ngModel)]="form.zone_type" name="zone_type" required>
-                        <option [ngValue]="null" disabled>Seleccionar...</option>
-                        <option value="Urbana">Urbana</option>
-                        <option value="Rural">Rural</option>
-                    </select>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- ===================================================== -->
-        <!-- DESCRIPCIÓN DE LA EJECUCIÓN -->
-        <!-- ===================================================== -->
-        <div class="form-section narrative-section">
-
-            <div class="section-header">
-                <div class="title-with-icon">
-                    <i class="bi bi-journal-text"></i>
-                    <h3>Descripción de la ejecución</h3>
-                </div>
-            </div>
-
-            <div class="narrative-grid">
-
-                <div class="form-group">
-                    <label>Resumen ejecutivo</label>
-                    <textarea [(ngModel)]="form.executive_summary" name="executive_summary" rows="5"
-                        required></textarea>
-                    <small class="hint-text">
-                        Síntesis del resultado obtenido durante el periodo reportado.
-                    </small>
-                </div>
-
-                <div class="form-group">
-                    <label>Actividades realizadas</label>
-                    <textarea [(ngModel)]="form.activities_performed" name="activities_performed" rows="5"
-                        required></textarea>
-                    <small class="hint-text">
-                        Detalle operativo de las acciones ejecutadas.
-                    </small>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- ===================================================== -->
-        <!-- MEDICIÓN DE INDICADORES -->
-        <!-- ===================================================== -->
-        <div *ngIf="indicators.length" class="form-section indicators-section">
-
-            <div class="section-header">
-                <div class="title-with-icon">
-                    <i class="bi bi-bar-chart-line"></i>
-                    <h3>Medición de indicadores</h3>
-                </div>
-            </div>
-
-            <p class="section-description">
-                Registra los valores obtenidos en la ejecución del componente.
-            </p>
-
-            <div class="indicators-container">
-
-                <div *ngFor="let ind of indicators" class="indicator-card refined">
-
-                    <!-- HEADER -->
-                    <div class="indicator-header">
-                        <div class="indicator-title">
-
-                            {{ ind.name }}
-
-                            <span *ngIf="getTargetForIndicator(ind) as meta" class="meta-badge">
-                                Meta {{ form.report_date | date:'yyyy' }}: {{ meta }}
-                            </span>
-
-                            <span *ngIf="form.report_date && !getTargetForIndicator(ind)"
-                                class="meta-badge meta-missing">
-                                Sin meta {{ form.report_date | date:'yyyy' }}
-                            </span>
-
+                    <!-- Hint -->
+                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                        <div class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p class="text-xs text-amber-800">
+                                <strong class="font-medium">Importante:</strong> Selecciona la fecha exacta de la
+                                intervención, el municipio y zona donde se ejecutó. Luego elige la estrategia y
+                                componente al que pertenece esta actividad.
+                            </p>
                         </div>
                     </div>
 
-                    <!-- NUMBER -->
-                    <ng-container *ngIf="ind.field_type === 'number'">
-                        <div class="indicator-body number-body">
+                    <!-- Fields Grid -->
+                    <div class="grid grid-cols-12 gap-4">
 
-                            <input type="number" class="number-input" [(ngModel)]="indicatorValues[ind.id]"
-                                name="ind_{{ind.id}}" placeholder="Ingrese valor" />
+                        <!-- Fecha -->
+                        <div class="col-span-12 sm:col-span-3 space-y-1.5">
+                            <label class="block text-xs font-medium text-zinc-700">
+                                Fecha <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" [max]="todayDate" [(ngModel)]="form.report_date" name="report_date"
+                                required class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                                 bg-white text-zinc-900
+                                 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                                 transition-colors duration-150" />
+                        </div>
 
-                            <div class="progress-wrapper" *ngIf="form.report_date">
-                                <div class="progress-bar">
-                                    <div class="progress-fill" [ngClass]="getProgressClass(ind)"
-                                        [style.width.%]="getProgressPercentage(ind)">
+                        <!-- Municipio -->
+                        <div class="col-span-12 sm:col-span-5 space-y-1.5">
+                            <label class="block text-xs font-medium text-zinc-700">
+                                Municipio <span class="text-red-500">*</span>
+                            </label>
+                            <select [(ngModel)]="form.intervention_location" name="intervention_location" required
+                                class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                                 bg-white text-zinc-900 cursor-pointer
+                                 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                                 transition-colors duration-150">
+                                <option [ngValue]="null" disabled>Seleccionar municipio</option>
+                                <option *ngFor="let m of municipios" [ngValue]="m">{{ m }}</option>
+                            </select>
+                        </div>
+
+                        <!-- Zona -->
+                        <div class="col-span-12 sm:col-span-4 space-y-1.5">
+                            <label class="block text-xs font-medium text-zinc-700">
+                                Zona <span class="text-red-500">*</span>
+                            </label>
+                            <select [(ngModel)]="form.zone_type" name="zone_type" required class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                                 bg-white text-zinc-900 cursor-pointer
+                                 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                                 transition-colors duration-150">
+                                <option [ngValue]="null" disabled>Seleccionar zona</option>
+                                <option value="Urbana">Urbana</option>
+                                <option value="Rural">Rural</option>
+                            </select>
+                        </div>
+
+                        <!-- Estrategia -->
+                        <div class="col-span-12 sm:col-span-7 space-y-1.5">
+                            <label class="block text-xs font-medium text-zinc-700">
+                                Estrategia <span class="text-red-500">*</span>
+                            </label>
+                            <select [(ngModel)]="form.strategy_id" name="strategy_id" (change)="onStrategyChange()"
+                                required class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                                 bg-white text-zinc-900 cursor-pointer
+                                 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                                 transition-colors duration-150">
+                                <option [ngValue]="null" disabled>Seleccionar estrategia</option>
+                                <option *ngFor="let s of strategies" [ngValue]="s.id">{{ s.name }}</option>
+                            </select>
+                        </div>
+
+                        <!-- Componente -->
+                        <div class="col-span-12 sm:col-span-5 space-y-1.5">
+                            <label class="block text-xs font-medium text-zinc-700">
+                                Componente <span class="text-red-500">*</span>
+                            </label>
+                            <select [(ngModel)]="form.component_id" name="component_id" [disabled]="!form.strategy_id"
+                                (change)="onComponentChange()" required class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                                 bg-white text-zinc-900 cursor-pointer
+                                 disabled:bg-zinc-50 disabled:text-zinc-400 disabled:cursor-not-allowed
+                                 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                                 transition-colors duration-150">
+                                <option [ngValue]="null" disabled>Seleccionar componente</option>
+                                <option *ngFor="let c of components" [ngValue]="c.id">{{ c.name }}</option>
+                            </select>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- ====== DESCRIPCIÓN ====== -->
+            <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
+
+                <div class="px-6 py-4 border-b border-zinc-100">
+                    <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-900">
+                        Descripción de actividades
+                    </h2>
+                    <p class="text-xs text-zinc-500 mt-0.5">
+                        Documenta los resultados y actividades realizadas durante la intervención
+                    </p>
+                </div>
+
+                <div class="p-6 space-y-4">
+
+                    <!-- Hint -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <div class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                            <div class="space-y-1.5">
+                                <p class="text-xs font-medium text-blue-900">
+                                    Guía para completar esta sección:
+                                </p>
+                                <div class="grid md:grid-cols-2 gap-3">
+                                    <div>
+                                        <p class="text-xs font-medium text-blue-800 mb-0.5">Resultado obtenido:</p>
+                                        <ul class="text-xs text-blue-700 space-y-0.5 list-disc list-inside">
+                                            <li>Logros principales alcanzados</li>
+                                            <li>Número de beneficiarios atendidos</li>
+                                            <li>Impacto directo en la comunidad</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-medium text-blue-800 mb-0.5">Actividades realizadas:</p>
+                                        <ul class="text-xs text-blue-700 space-y-0.5 list-disc list-inside">
+                                            <li>Acciones específicas ejecutadas</li>
+                                            <li>Lugares y recursos utilizados</li>
+                                            <li>Aliados o instituciones involucradas</li>
+                                        </ul>
                                     </div>
                                 </div>
-                                <span class="progress-label">
-                                    {{ getProgressPercentage(ind) }}%
-                                </span>
-                            </div>
-
-                        </div>
-                    </ng-container>
-
-                    <!-- TEXT -->
-                    <ng-container *ngIf="ind.field_type === 'text'">
-                        <textarea rows="3" [(ngModel)]="indicatorValues[ind.id]" name="ind_{{ind.id}}"
-                            placeholder="Describa el resultado..."></textarea>
-                    </ng-container>
-
-                    <!-- SELECT -->
-                    <ng-container *ngIf="ind.field_type === 'select'">
-                        <select [(ngModel)]="indicatorValues[ind.id]" name="ind_{{ind.id}}">
-                            <option [ngValue]="null" disabled>Seleccionar...</option>
-                            <option *ngFor="let op of ind.config?.options" [ngValue]="op">{{ op }}</option>
-                        </select>
-                    </ng-container>
-
-                    <!-- SUM GROUP -->
-                    <ng-container *ngIf="ind.field_type === 'sum_group'">
-
-                        <div class="sum-group-grid">
-                            <div *ngFor="let field of ind.config?.fields" class="sum-field">
-                                <label>{{ field }}</label>
-
-                                <input type="number" [value]="getSumGroupValue(ind.id, field)"
-                                    (input)="setSumGroupValue(ind.id, field, $any($event.target).value)"
-                                    placeholder="0" />
                             </div>
                         </div>
+                    </div>
 
-                        <div class="sum-total">
-                            Total: {{ getSumGroupTotal(ind.id) }}
+                    <!-- Fields Grid -->
+                    <div class="grid md:grid-cols-2 gap-6">
+
+                        <!-- Resultado obtenido -->
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-medium text-zinc-700">
+                                Resultado obtenido <span class="text-red-500">*</span>
+                            </label>
+                            <textarea rows="6" [(ngModel)]="form.executive_summary" name="executive_summary"
+                                placeholder="Ej: Se realizó jornada de esterilización con 45 animales atendidos..."
+                                required class="w-full px-3 py-2.5 text-sm border border-zinc-200 rounded-lg
+                                 bg-white text-zinc-900 resize-none
+                                 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                                 transition-colors duration-150"></textarea>
                         </div>
 
-                    </ng-container>
+                        <!-- Actividades realizadas -->
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-medium text-zinc-700">
+                                Actividades realizadas <span class="text-red-500">*</span>
+                            </label>
+                            <textarea rows="6" [(ngModel)]="form.activities_performed" name="activities_performed"
+                                placeholder="Ej: Jornada de sensibilización en 3 instituciones educativas..." required
+                                class="w-full px-3 py-2.5 text-sm border border-zinc-200 rounded-lg
+                                 bg-white text-zinc-900 resize-none
+                                 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                                 transition-colors duration-150"></textarea>
+                        </div>
 
+                    </div>
+                </div>
+            </section>
+
+            <!-- ====== INDICADORES ====== -->
+            <app-report-indicators-form *ngIf="indicators.length" [indicators]="indicators"
+                [reportDate]="form.report_date" [(values)]="indicatorValues">
+            </app-report-indicators-form>
+
+            <!-- ====== EVIDENCIA ====== -->
+            <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
+
+                <div class="px-6 py-4 border-b border-zinc-100">
+                    <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-900">
+                        Evidencia fotográfica
+                    </h2>
+                    <p class="text-xs text-zinc-500 mt-0.5">
+                        Opcional - Comparte fotos de la intervención
+                    </p>
                 </div>
 
-            </div>
-        </div>
+                <div class="p-6 space-y-4">
 
-        <!-- ===================================================== -->
-        <!-- EVIDENCIA -->
-        <!-- ===================================================== -->
-        <div class="form-section">
+                    <!-- Hint -->
+                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                        <div class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <p class="text-xs text-purple-800">
+                                <strong class="font-medium">Tip:</strong> Sube las fotos a una carpeta de Google Drive y
+                                comparte el enlace aquí. Asegúrate de que el enlace tenga permisos de visualización para
+                                cualquier persona con el link.
+                            </p>
+                        </div>
+                    </div>
 
-            <div class="section-header">
-                <div class="title-with-icon">
-                    <i class="bi bi-link-45deg"></i>
-                    <h3>Evidencia</h3>
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-medium text-zinc-700">
+                            Enlace a Google Drive
+                        </label>
+                        <input type="url" [(ngModel)]="form.evidence_link" name="evidence_link"
+                            placeholder="https://drive.google.com/..." class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                               bg-white text-zinc-900
+                               focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                               transition-colors duration-150" />
+                    </div>
                 </div>
+            </section>
+
+            <!-- ====== ACCIONES ====== -->
+            <div class="pt-6 flex items-center justify-end gap-3">
+                <button type="button" (click)="cancel()" class="px-4 py-2 text-sm font-medium text-zinc-600 
+                         hover:text-zinc-900 transition-colors duration-150 cursor-pointer">
+                    Cancelar
+                </button>
+
+                <button type="submit" [disabled]="saving || !isFormValid()" class="px-6 py-2 text-sm font-medium text-white bg-zinc-900 rounded-lg
+                         hover:bg-black transition-colors duration-150 cursor-pointer
+                         disabled:opacity-40 disabled:cursor-not-allowed">
+                    {{ saving ? 'Guardando...' : 'Guardar reporte' }}
+                </button>
             </div>
 
-            <div class="form-group">
-                <label>Link de evidencia</label>
-                <input type="text" [(ngModel)]="form.evidence_link" name="evidence_link"
-                    placeholder="https://drive.google.com/..." />
+        </form>
+
+        <!-- Loading State -->
+        <div *ngIf="loading" class="flex items-center justify-center py-20">
+            <div class="flex items-center gap-3 text-sm text-zinc-500">
+                <div class="w-4 h-4 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin"></div>
+                Cargando formulario...
             </div>
-
         </div>
 
-        <!-- ===================================================== -->
-        <!-- ACTIONS -->
-        <!-- ===================================================== -->
-        <div class="form-actions">
-
-            <button class="btn-primary" [disabled]="saving">
-                <i class="bi bi-check-lg me-1"></i>
-                {{ saving ? 'Guardando...' : (isEdit ? 'Actualizar' : 'Crear') }}
-            </button>
-
-            <button type="button" class="btn-secondary-custom" (click)="cancel()">
-                <i class="bi bi-x-lg me-1"></i>
-                Cancelar
-            </button>
-
-        </div>
-
-    </form>
+    </div>
 </div>

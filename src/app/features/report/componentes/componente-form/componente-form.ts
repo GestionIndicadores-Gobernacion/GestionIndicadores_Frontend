@@ -131,8 +131,9 @@ export class ComponenteFormComponent implements OnInit {
     }) as FormGroup;
 
 
-    // SOLO NUMBER TIENE TARGETS
-    if ((data?.field_type || 'text') === 'number') {
+    // NUMBER y SUM_GROUP TIENEN TARGETS
+    const fieldType = data?.field_type || 'text';
+    if (fieldType === 'number' || fieldType === 'sum_group') {
 
       const targetsArray = this.fb.array<FormGroup>([]);
 
@@ -160,15 +161,43 @@ export class ComponenteFormComponent implements OnInit {
     }
 
     this.indicators.push(group);
+
+    // LISTENER: Cuando cambia el tipo de campo, agregar/quitar targets
+    group.get('field_type')?.valueChanges.subscribe((newType: string) => {
+      this.onFieldTypeChange(group, newType);
+    });
+  }
+
+  // Manejar cambio de tipo de campo
+  private onFieldTypeChange(indicatorGroup: FormGroup, newType: string) {
+    const needsTargets = newType === 'number' || newType === 'sum_group';
+    const hasTargets = indicatorGroup.contains('targets');
+
+    if (needsTargets && !hasTargets) {
+      // Agregar targets si el tipo lo requiere y no los tiene
+      const targetsArray = this.fb.array<FormGroup>([
+        this.fb.group({
+          id: [null],
+          year: [new Date().getFullYear(), Validators.required],
+          target_value: [null, [Validators.required, Validators.min(0.0001)]]
+        })
+      ]);
+      indicatorGroup.addControl('targets', targetsArray);
+    } else if (!needsTargets && hasTargets) {
+      // Remover targets si el tipo no los requiere
+      indicatorGroup.removeControl('targets');
+    }
   }
 
 
   getTargets(indicatorIndex: number): FormArray<FormGroup> {
-    return this.indicators.at(indicatorIndex).get('targets') as FormArray;
+    const targetsControl = this.indicators.at(indicatorIndex).get('targets');
+    return targetsControl as FormArray<FormGroup> || this.fb.array<FormGroup>([]);
   }
 
   addTarget(indicatorIndex: number) {
-    this.getTargets(indicatorIndex).push(
+    const targetsArray = this.getTargets(indicatorIndex);
+    targetsArray.push(
       this.fb.group({
         id: [null],
         year: [new Date().getFullYear(), Validators.required],
@@ -225,18 +254,24 @@ export class ComponenteFormComponent implements OnInit {
   // SUBMIT
   // =====================
 
+  // =====================
+  // SUBMIT CON DEBUG
+  // =====================
+
   submit() {
+    console.log('=== INICIO SUBMIT ===');
 
     if (this.form.invalid) {
+      console.log('Formulario inválido');
       this.form.markAllAsTouched();
       return;
     }
 
     this.saving = true;
-
     this.form.get('strategy_id')?.enable();
 
     const raw = this.form.value;
+    console.log('1. Form raw value:', raw);
 
     const payload = {
       strategy_id: raw.strategy_id,
@@ -250,52 +285,99 @@ export class ComponenteFormComponent implements OnInit {
         name: a.name
       })),
 
-      indicators: raw.indicators.map((i: any) => ({
-        name: i.name,
-        field_type: i.field_type,
-        is_required: i.is_required,
+      indicators: raw.indicators.map((i: any, index: number) => {
+        console.log(`\n--- Procesando indicador ${index}: ${i.name} ---`);
+        console.log('Field type:', i.field_type);
+        console.log('Raw targets:', i.targets);
 
-        config:
-          i.field_type === 'select'
-            ? {
-              options: i.configOptions
-                .split('\n')
-                .map((o: string) => o.trim())
-                .filter((o: string) => o)
-            }
-            : i.field_type === 'sum_group'
-              ? {
-                fields: i.configFields
-                  .split('\n')
-                  .map((o: string) => o.trim())
-                  .filter((o: string) => o)
-              }
-              : null,
+        const indicator: any = {
+          name: i.name,
+          field_type: i.field_type,
+          is_required: i.is_required,
+          config: null,
+          targets: []
+        };
 
-        targets: i.field_type === 'number'
-          ? (i.targets || []).map((t: any) => ({
-            year: Number(t.year),
-            target_value: Number(t.target_value)
-          }))
-          : []
-      }))
+        // Config for SELECT
+        if (i.field_type === 'select') {
+          indicator.config = {
+            options: i.configOptions
+              .split('\n')
+              .map((o: string) => o.trim())
+              .filter((o: string) => o)
+          };
+          console.log('Config SELECT:', indicator.config);
+        }
+
+        // Config for SUM_GROUP
+        else if (i.field_type === 'sum_group') {
+          indicator.config = {
+            fields: i.configFields
+              .split('\n')
+              .map((o: string) => o.trim())
+              .filter((o: string) => o)
+          };
+          console.log('Config SUM_GROUP:', indicator.config);
+        }
+
+        // Targets for NUMBER and SUM_GROUP
+        if (i.field_type === 'number' || i.field_type === 'sum_group') {
+          console.log('Este indicador DEBE tener targets');
+          console.log('¿Tiene array de targets?', Array.isArray(i.targets));
+          console.log('Cantidad de targets:', i.targets?.length);
+
+          if (i.targets && Array.isArray(i.targets)) {
+            indicator.targets = i.targets.map((t: any) => {
+              const target = {
+                year: Number(t.year),
+                target_value: Number(t.target_value)
+              };
+              console.log('Target procesado:', target);
+              return target;
+            });
+          } else {
+            console.warn('⚠️ NO HAY TARGETS en el form pero debería haberlos!');
+          }
+        }
+
+        console.log('Indicador final:', indicator);
+        return indicator;
+      })
     };
 
+    console.log('\n=== PAYLOAD FINAL ===');
+    console.log(JSON.stringify(payload, null, 2));
 
+    console.log('\n=== INDICADORES CON TARGETS ===');
+    payload.indicators.forEach((ind: any, i: number) => {
+      if (ind.targets && ind.targets.length > 0) {
+        console.log(`${i}. ${ind.name} (${ind.field_type}):`, ind.targets);
+      }
+    });
 
     const req = this.isEdit
       ? this.service.update(this.id!, payload)
       : this.service.create(payload);
 
     req.subscribe({
-      next: () => {
+      next: (response) => {
+        console.log('\n=== RESPUESTA DEL SERVIDOR ===');
+        console.log('Response completa:', response);
+        console.log('Indicadores en respuesta:', response.indicators);
+
         this.toast.success('Componente guardado correctamente');
         this.router.navigate(['/reports/components']);
       },
       error: err => {
+        console.error('\n=== ERROR DEL SERVIDOR ===');
+        console.error('Error completo:', err);
+        console.error('Error body:', err.error);
+
         this.toast.error(err.error?.message || 'Error al guardar');
         this.saving = false;
       }
     });
   }
+
+
 }

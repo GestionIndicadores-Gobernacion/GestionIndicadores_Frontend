@@ -139,4 +139,16 @@ export class ReportsTableComponent implements OnChanges {
   strategyName(id: number): string {
     return this.strategyMap[id] || '—';
   }
+
+  // Formatea el zone_type para mostrar solo el valor sin el enum prefix
+  formatZoneType(zoneType: string): string {
+    if (!zoneType) return '—';
+
+    // Si viene como "ZoneTypeEnum.URBANA", extraer solo "URBANA"
+    const parts = zoneType.split('.');
+    const value = parts.length > 1 ? parts[1] : zoneType;
+
+    // Capitalizar solo la primera letra: "URBANA" -> "Urbana"
+    return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+  }
 }

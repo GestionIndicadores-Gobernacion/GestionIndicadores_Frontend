@@ -37,12 +37,12 @@ export class ComponentsService {
     );
   }
 
-  create(body: ComponentCreateRequest): Observable<ComponentModel> {
-    return this.http.post<ComponentModel>(this.api, body);
+  create(body: ComponentCreateRequest): Observable<ComponentDetailResponse> {
+    return this.http.post<ComponentDetailResponse>(this.api, body);
   }
 
-  update(id: number, body: ComponentUpdateRequest): Observable<ComponentModel> {
-    return this.http.put<ComponentModel>(`${this.api}/${id}`, body);
+  update(id: number, body: ComponentUpdateRequest): Observable<ComponentDetailResponse> {
+    return this.http.put<ComponentDetailResponse>(`${this.api}/${id}`, body);
   }
 
   delete(id: number): Observable<void> {

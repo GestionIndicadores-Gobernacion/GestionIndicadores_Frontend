@@ -1,121 +1,161 @@
-<div class="sidebar" [class.open]="isOpen">
-  <h3 class="sidebar-title">Menú</h3>
+<!-- SIDEBAR -->
+<aside class="fixed md:relative top-0 left-0 h-screen bg-white border-r border-zinc-200
+         flex flex-col z-40
+         transition-all duration-200 ease-out" [class.-translate-x-full]="!isOpen" [class.translate-x-0]="isOpen"
+  [class.w-72]="isOpen" [class.w-20]="!isOpen" [class.md:translate-x-0]="true">
 
-  <!-- ================= USER INFO ================= -->
-  @if (userName) {
-    <div class="sidebar-user">
+  <!-- HEADER -->
+  <div class="px-6 pt-6 pb-4 flex items-center justify-between border-b border-zinc-100">
 
-      <!-- AVATAR -->
-      <div class="sidebar-user-avatar">
+    <h3 class="text-lg font-semibold text-zinc-900 tracking-tight" [class.hidden]="!isOpen">
+      Menú
+    </h3>
+
+    <!-- Toggle button (desktop only) -->
+    <button (click)="toggleSidebar()"
+      class="p-2 rounded-lg hover:bg-zinc-100 transition-colors cursor-pointer hidden md:block" title="Colapsar menú">
+      <svg class="w-5 h-5 text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          [attr.d]="isOpen ? 'M11 19l-7-7 7-7m8 14l-7-7 7-7' : 'M13 5l7 7-7 7M5 5l7 7-7 7'" />
+      </svg>
+    </button>
+
+    <!-- Close button (mobile only) -->
+    <button (click)="closeSidebar()" class="p-2 rounded-lg hover:bg-zinc-100 transition-colors cursor-pointer md:hidden"
+      title="Cerrar menú">
+      <svg class="w-5 h-5 text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+
+  </div>
+
+  <!-- USER PROFILE -->
+  @if (userName && isOpen) {
+  <div class="px-4 py-4 border-b border-zinc-100">
+
+    <div class="flex items-center gap-3 rounded-xl border border-zinc-200 p-3 bg-zinc-50">
+
+      <div
+        class="w-10 h-10 rounded-full bg-zinc-900 text-white flex items-center justify-center text-sm font-semibold overflow-hidden shrink-0">
         @if (profileImageUrl) {
-          <img [src]="profileImageUrl" alt="Avatar" class="avatar-img" />
+        <img [src]="profileImageUrl" alt="Profile" class="w-full h-full object-cover" />
         } @else {
-          {{ userInitial }}
+        {{ userInitial }}
         }
       </div>
 
-      <!-- DATA -->
-      <div class="sidebar-user-data">
-        <p class="user-name">{{ userName }}</p>
+      <div class="leading-tight min-w-0 flex-1">
+        <p class="text-sm font-medium text-zinc-900 truncate">{{ userName }}</p>
 
-        <!-- ROLE BADGE -->
         @if (roleLabel) {
-          <p class="user-role {{ roleLabel }}">
-            {{ roleLabel }}
-          </p>
+        <p class="text-xs text-zinc-500">{{ roleLabel }}</p>
         }
 
-        <p class="user-email">{{ userEmail }}</p>
+        <p class="text-xs text-zinc-400 truncate">{{ userEmail }}</p>
       </div>
 
     </div>
+
+  </div>
   }
 
-  <!-- ================= MENU ================= -->
-  <nav>
+  <!-- NAVIGATION MENU -->
+  <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+
     @for (item of menu; track item.label) {
+    @if (canShow(item)) {
 
-      @if (canShow(item)) {
+    <!-- SIMPLE LINK -->
+    @if (item.route && !item.children && !item.disabled) {
+    <a [routerLink]="item.route" routerLinkActive="bg-zinc-900 text-white" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-zinc-700
+             hover:bg-zinc-100 transition-colors cursor-pointer group" [class.justify-center]="!isOpen"
+      [title]="!isOpen ? item.label : ''">
 
-        <!-- ITEM NORMAL -->
-        @if (item.route && !item.children && !item.disabled) {
-          <a [routerLink]="item.route" routerLinkActive="active">
-            {{ item.label }}
-          </a>
-        }
-
-        <!-- ITEM DESHABILITADO -->
-        @if (item.disabled) {
-          <a class="disabled-link">
-            {{ item.label }}
-            <span class="soon">(En construcción)</span>
-          </a>
-        }
-
-        <!-- ITEM CONTENEDOR -->
-        @if (item.children && hasVisibleChildren(item) && !item.disabled) {
-
-          <div class="submenu-header"
-               [class.section-active]="isReportsSectionActive()">
-
-            <span class="submenu-title"
-                  (click)="toggleSection(item.label)">
-              {{ item.label }}
-            </span>
-
-            <button class="submenu-arrow"
-                    type="button"
-                    (click)="toggleSection(item.label)">
-              <span [class.open]="isExpanded(item.label)">▸</span>
-            </button>
-
-          </div>
-
-          @if (isExpanded(item.label)) {
-            <div class="submenu">
-              @for (child of item.children; track child.label) {
-
-                @if (canShow(child)) {
-
-                  <!-- EXACT MATCH -->
-                  @if (child.route === 'reports') {
-                    <a class="submenu-item"
-                       [routerLink]="child.route"
-                       routerLinkActive="active"
-                       [routerLinkActiveOptions]="{ exact: true }">
-                      {{ child.label }}
-                    </a>
-                  }
-
-                  <!-- RESTO -->
-                  @if (child.route !== 'reports') {
-                    <a class="submenu-item"
-                       [routerLink]="child.route"
-                       routerLinkActive="active">
-                      {{ child.label }}
-                    </a>
-                  }
-
-                }
-
-              }
-            </div>
-          }
-        }
-
+      @if (item.icon) {
+      <span class="text-lg shrink-0">{{ item.icon }}</span>
       }
 
+      <span class="truncate" [class.hidden]="!isOpen">
+        {{ item.label }}
+      </span>
+    </a>
     }
+
+    <!-- DISABLED ITEM -->
+    @if (item.disabled) {
+    <div class="flex items-center justify-between px-3 py-2 text-sm text-zinc-400 rounded-lg cursor-not-allowed"
+      [class.justify-center]="!isOpen">
+      <span [class.hidden]="!isOpen">{{ item.label }}</span>
+      <span class="text-[10px] bg-zinc-200 text-zinc-600 px-2 py-0.5 rounded" [class.hidden]="!isOpen">
+        pronto
+      </span>
+    </div>
+    }
+
+    <!-- SECTION WITH CHILDREN -->
+    @if (item.children && hasVisibleChildren(item) && !item.disabled) {
+
+    <div class="space-y-1">
+
+      <button type="button" (click)="toggleSection(item.label)" class="w-full flex items-center justify-between px-3 py-2 text-sm font-medium text-zinc-700
+               rounded-lg hover:bg-zinc-100 transition-colors cursor-pointer" [class.justify-center]="!isOpen">
+
+        <span class="truncate" [class.hidden]="!isOpen">
+          {{ item.label }}
+        </span>
+
+        <svg class="w-4 h-4 text-zinc-400 transition-transform shrink-0" [class.rotate-90]="isExpanded(item.label)"
+          [class.hidden]="!isOpen" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+
+      </button>
+
+      @if (isExpanded(item.label) && isOpen) {
+      <div class="ml-3 space-y-1 border-l-2 border-zinc-200 pl-3">
+
+        @for (child of item.children; track child.label) {
+        @if (canShow(child)) {
+
+        <a class="block px-3 py-2 rounded-lg text-sm text-zinc-600
+                 hover:bg-zinc-100 hover:text-zinc-900 transition-colors cursor-pointer" [routerLink]="child.route"
+          routerLinkActive="bg-zinc-900 text-white hover:text-white"
+          [routerLinkActiveOptions]="{ exact: child.route === 'reports' }">
+          {{ child.label }}
+        </a>
+
+        }
+        }
+
+      </div>
+      }
+
+    </div>
+    }
+
+    }
+    }
+
   </nav>
 
-  <!-- ================= LOGOUT ================= -->
-  <div class="sidebar-footer">
-    <button class="logout-btn" (click)="logout()">
-      Salir
+  <!-- FOOTER -->
+  <div class="p-4 border-t border-zinc-200">
+    <button (click)="logout()" class="w-full flex items-center justify-center gap-2 text-sm font-medium 
+             bg-zinc-900 text-white py-2.5 rounded-lg 
+             hover:bg-black transition-all cursor-pointer" [title]="!isOpen ? 'Salir' : ''">
+
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+      </svg>
+
+      <span [class.hidden]="!isOpen">Salir</span>
     </button>
   </div>
 
-</div>
+</aside>
 
-<!-- ================= OVERLAY MÓVIL ================= -->
-<div class="overlay" *ngIf="isOpen" (click)="closeSidebar()"></div>
+<!-- MOBILE OVERLAY -->
+<div *ngIf="isOpen" (click)="closeSidebar()" class="fixed inset-0 bg-black/30 backdrop-blur-sm z-30 md:hidden">
+</div>
