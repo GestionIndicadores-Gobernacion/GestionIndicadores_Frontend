@@ -9,20 +9,17 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
 
-      // 🚫 NO mostrar toast en endpoints de auth
-      if (
-        req.url.includes('/auth/me') ||
-        req.url.includes('/auth/refresh')
-      ) {
-        return throwError(() => error);
-      }
+      console.error('ERROR COMPLETO:', error);
 
       let message = 'Error desconocido';
 
-      // 🔎 LOG REAL
-      console.error('ERROR COMPLETO:', error);
+      // 1️⃣ JWT / flask-jwt-extended
+      if (typeof error.error?.msg === 'string') {
+        message = error.error.msg;
+      }
 
-      if (error.error?.errors) {
+      // 2️⃣ Errores de validación (Marshmallow)
+      else if (error.error?.errors) {
         const errors = error.error.errors;
         const firstKey = Object.keys(errors)[0];
         const firstError = errors[firstKey];
@@ -33,25 +30,18 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           message = firstError;
         }
       }
+
+      // 3️⃣ Mensaje plano
       else if (typeof error.error?.message === 'string') {
         message = error.error.message;
       }
+
+      // 4️⃣ Red / CORS
       else if (error.status === 0) {
         message = 'No hay conexión con el servidor.';
       }
-      else if (
-        error.status === 401 &&
-        error.error?.msg === 'Token has expired'
-      ) {
-        // 🔐 Sesión expirada → logout silencioso
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
 
-        toast.warning('Tu sesión expiró. Inicia sesión nuevamente.');
-        window.location.href = '/login';
-
-        return throwError(() => error);
-      }
+      // 5️⃣ Auth
       else if (error.status === 401) {
         message = 'No autorizado o token inválido.';
       }
@@ -63,5 +53,6 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       toast.error(message);
       return throwError(() => error);
     })
+
   );
 };

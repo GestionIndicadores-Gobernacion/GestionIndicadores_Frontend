@@ -1,0 +1,362 @@
+<div class="min-h-screen bg-zinc-50">
+
+  <!-- PAGE HEADER -->
+  <div class="border-b border-zinc-200 bg-white">
+    <div class="max-w-5xl mx-auto px-6 py-8">
+      <div class="flex items-start justify-between">
+        <div class="space-y-1">
+          <h1 class="text-2xl font-semibold text-zinc-900 tracking-tight">
+            {{ isEdit ? 'Editar componente' : 'Nuevo componente' }}
+          </h1>
+          <p class="text-sm text-zinc-500">
+            {{ isEdit ? 'Actualiza la información del componente' : 'Define la estructura y objetivos del componente' }}
+          </p>
+        </div>
+        <button type="button" [routerLink]="['/reports/components']"
+          class="text-sm text-zinc-400 hover:text-zinc-900 transition-colors duration-150 cursor-pointer">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORM CONTAINER -->
+  <div class="max-w-5xl mx-auto px-6 py-10">
+
+    <!-- LOADING STATE -->
+    <div *ngIf="loading" class="bg-white border border-zinc-200 rounded-2xl p-12">
+      <div class="flex flex-col items-center justify-center gap-3">
+        <div class="w-5 h-5 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin"></div>
+        <p class="text-sm text-zinc-500">Cargando formulario...</p>
+      </div>
+    </div>
+
+    <!-- FORM -->
+    <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
+
+      <!-- ====== INFORMACIÓN GENERAL ====== -->
+      <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
+
+        <div class="px-6 py-4 border-b border-zinc-100">
+          <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-900">
+            Información general
+          </h2>
+          <p class="text-xs text-zinc-500 mt-0.5">
+            Define la estructura base del componente dentro de la estrategia seleccionada
+          </p>
+        </div>
+
+        <div class="p-6 grid md:grid-cols-2 gap-5">
+
+          <!-- Estrategia -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-medium text-zinc-700">
+              Estrategia
+            </label>
+            <select formControlName="strategy_id" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                     bg-white text-zinc-900
+                     focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                     transition-colors duration-150 cursor-pointer">
+              <option [ngValue]="null" disabled>Seleccione una estrategia...</option>
+              <option *ngFor="let s of strategies" [ngValue]="s.id">{{ s.name }}</option>
+            </select>
+            <p class="text-xs text-zinc-500">
+              La estrategia determina el contexto general del componente
+            </p>
+          </div>
+
+          <!-- Nombre -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-medium text-zinc-700">
+              Nombre del componente
+            </label>
+            <input type="text" formControlName="name" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                     bg-white text-zinc-900
+                     focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                     transition-colors duration-150" placeholder="Ej: Fortalecimiento institucional" />
+            <p class="text-xs text-zinc-500">
+              Usa un nombre claro y específico
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ====== OBJETIVOS ====== -->
+      <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
+
+        <div class="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
+          <div>
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-900">
+              Objetivos
+            </h2>
+            <p class="text-xs text-zinc-500 mt-0.5">
+              Define los resultados que este componente debe alcanzar
+            </p>
+          </div>
+
+          <button type="button" (click)="addObjective()" class="px-3 py-1.5 text-xs font-medium text-zinc-700 bg-white border border-zinc-200
+                   rounded-lg hover:border-zinc-300 hover:text-zinc-900 
+                   transition-colors duration-150 cursor-pointer">
+            Agregar
+          </button>
+        </div>
+
+        <div class="p-6 space-y-3" formArrayName="objectives">
+          <div *ngFor="let o of objectives.controls; let i=index" [formGroupName]="i" class="flex items-center gap-2">
+
+            <input type="text" formControlName="description" class="flex-1 px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                     bg-white text-zinc-900
+                     focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                     transition-colors duration-150" placeholder="Ej: Incrementar cobertura territorial" />
+
+            <button type="button" (click)="removeObjective(i)" class="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 
+                     rounded-lg transition-colors duration-150 cursor-pointer" title="Eliminar objetivo">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+
+          </div>
+
+          <div *ngIf="objectives.length === 0" class="text-sm text-zinc-400 text-center py-4">
+            No hay objetivos. Usa el botón "Agregar" para crear uno.
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== ACTIVIDADES MGA ====== -->
+      <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
+
+        <div class="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
+          <div>
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-900">
+              Actividades MGA
+            </h2>
+            <p class="text-xs text-zinc-500 mt-0.5">
+              Actividades principales asociadas al componente
+            </p>
+          </div>
+
+          <button type="button" (click)="addActivity()" class="px-3 py-1.5 text-xs font-medium text-zinc-700 bg-white border border-zinc-200
+                   rounded-lg hover:border-zinc-300 hover:text-zinc-900 
+                   transition-colors duration-150 cursor-pointer">
+            Agregar
+          </button>
+        </div>
+
+        <div class="p-6 space-y-3" formArrayName="mga_activities">
+          <div *ngFor="let a of activities.controls; let i=index" [formGroupName]="i" class="flex items-center gap-2">
+
+            <input type="text" formControlName="name" class="flex-1 px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                     bg-white text-zinc-900
+                     focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                     transition-colors duration-150" placeholder="Ej: Jornadas territoriales" />
+
+            <button type="button" (click)="removeActivity(i)" class="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 
+                     rounded-lg transition-colors duration-150 cursor-pointer" title="Eliminar actividad">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+
+          </div>
+
+          <div *ngIf="activities.length === 0" class="text-sm text-zinc-400 text-center py-4">
+            No hay actividades. Usa el botón "Agregar" para crear una.
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== INDICADORES ====== -->
+      <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
+
+        <div class="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
+          <div>
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-900">
+              Indicadores
+            </h2>
+            <p class="text-xs text-zinc-500 mt-0.5">
+              Define los campos que se usarán posteriormente en los reportes
+            </p>
+          </div>
+
+          <button type="button" (click)="addIndicator()" class="px-3 py-1.5 text-xs font-medium text-zinc-700 bg-white border border-zinc-200
+                   rounded-lg hover:border-zinc-300 hover:text-zinc-900 
+                   transition-colors duration-150 cursor-pointer">
+            Agregar indicador
+          </button>
+        </div>
+
+        <div class="p-6 space-y-4" formArrayName="indicators">
+
+          <div *ngFor="let ind of indicators.controls; let i=index" [formGroupName]="i"
+            class="border border-zinc-200 rounded-xl p-5 space-y-4">
+
+            <!-- Base Grid -->
+            <div class="grid md:grid-cols-12 gap-4 items-start">
+
+              <!-- Nombre -->
+              <div class="md:col-span-5 space-y-1.5">
+                <label class="block text-xs font-medium text-zinc-700">
+                  Nombre
+                </label>
+                <input type="text" formControlName="name" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                         bg-white text-zinc-900
+                         focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                         transition-colors duration-150" placeholder="Ej: Beneficiarios atendidos" />
+              </div>
+
+              <!-- Tipo -->
+              <div class="md:col-span-4 space-y-1.5">
+                <label class="block text-xs font-medium text-zinc-700">
+                  Tipo
+                </label>
+                <select formControlName="field_type" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                         bg-white text-zinc-900
+                         focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                         transition-colors duration-150 cursor-pointer">
+                  <option value="text">Texto</option>
+                  <option value="number">Número</option>
+                  <option value="select">Selección</option>
+                  <option value="sum_group">Grupo poblacional</option>
+                </select>
+              </div>
+
+              <!-- Required + Delete -->
+              <div class="md:col-span-3 space-y-1.5">
+                <label class="block text-xs font-medium text-zinc-700 invisible">
+                  Acciones
+                </label>
+                <div class="flex items-center gap-2">
+
+                  <!-- Toggle Required -->
+                  <label class="flex items-center gap-2 px-3 py-2 text-xs font-medium text-zinc-700 
+                                bg-zinc-50 border border-zinc-200 rounded-lg cursor-pointer
+                                hover:bg-zinc-100 transition-colors duration-150">
+                    <input type="checkbox" formControlName="is_required" class="w-4 h-4 text-zinc-900 border-zinc-300 rounded 
+                             focus:ring-1 focus:ring-zinc-900 cursor-pointer" />
+                    <span>{{ ind.get('is_required')?.value ? 'Obligatorio' : 'Opcional' }}</span>
+                  </label>
+
+                  <!-- Delete Button -->
+                  <button type="button" (click)="removeIndicator(i)" class="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 
+                           rounded-lg transition-colors duration-150 cursor-pointer" title="Eliminar indicador">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Config: SELECT Options -->
+            <div *ngIf="ind.get('field_type')?.value === 'select'"
+              class="bg-zinc-50 border border-zinc-200 rounded-lg p-4 space-y-2">
+              <label class="block text-xs font-medium text-zinc-700">
+                Opciones
+              </label>
+              <textarea formControlName="configOptions" rows="3" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                       bg-white text-zinc-900 resize-none
+                       focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                       transition-colors duration-150" placeholder="Opción 1&#10;Opción 2&#10;Opción 3"></textarea>
+              <p class="text-xs text-zinc-500">
+                Cada línea representará una opción seleccionable
+              </p>
+            </div>
+
+            <!-- Config: SUM GROUP Fields -->
+            <div *ngIf="ind.get('field_type')?.value === 'sum_group'"
+              class="bg-zinc-50 border border-zinc-200 rounded-lg p-4 space-y-2">
+              <label class="block text-xs font-medium text-zinc-700">
+                Campos del grupo
+              </label>
+              <textarea formControlName="configFields" rows="3" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                       bg-white text-zinc-900 resize-none
+                       focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                       transition-colors duration-150"
+                placeholder="Hombres&#10;Mujeres&#10;Niños&#10;Adulto mayor"></textarea>
+              <p class="text-xs text-zinc-500">
+                Cada línea será una categoría independiente. El sistema sumará automáticamente
+              </p>
+            </div>
+
+            <!-- METAS ANUALES (NUMBER y SUM_GROUP) -->
+            <div *ngIf="ind.get('field_type')?.value === 'number' || ind.get('field_type')?.value === 'sum_group'"
+              class="bg-zinc-50 border border-zinc-200 rounded-lg p-4 space-y-3">
+
+              <div class="flex items-center justify-between">
+                <label class="block text-xs font-medium text-zinc-700">
+                  Metas anuales
+                </label>
+                <button type="button" (click)="addTarget(i)" class="px-2.5 py-1 text-xs font-medium text-zinc-700 bg-white border border-zinc-200
+                         rounded-md hover:border-zinc-300 hover:text-zinc-900 
+                         transition-colors duration-150 cursor-pointer">
+                  Agregar meta
+                </button>
+              </div>
+
+              <div formArrayName="targets" class="space-y-2">
+                <div *ngFor="let t of getTargets(i).controls; let j=index" [formGroupName]="j"
+                  class="flex items-center gap-2">
+
+                  <input type="number" formControlName="year" class="w-24 px-3 py-1.5 text-sm border border-zinc-200 rounded-lg
+                           bg-white text-zinc-900
+                           focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                           transition-colors duration-150" placeholder="Año" />
+
+                  <input type="number" formControlName="target_value" class="flex-1 px-3 py-1.5 text-sm border border-zinc-200 rounded-lg
+                           bg-white text-zinc-900
+                           focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                           transition-colors duration-150" placeholder="Meta" />
+
+                  <button type="button" (click)="removeTarget(i, j)" class="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 
+                           rounded-md transition-colors duration-150 cursor-pointer" title="Eliminar meta">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+
+                </div>
+
+                <div *ngIf="getTargets(i).length === 0" class="text-xs text-zinc-400 text-center py-2">
+                  No hay metas definidas
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          <div *ngIf="indicators.length === 0" class="text-sm text-zinc-400 text-center py-8">
+            No hay indicadores. Usa el botón "Agregar indicador" para crear uno.
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ====== ACCIONES ====== -->
+      <div class="pt-6 flex items-center justify-end gap-3">
+        <button type="button" [routerLink]="['/reports/components']" class="px-4 py-2 text-sm font-medium text-zinc-600 
+                 hover:text-zinc-900 transition-colors duration-150 cursor-pointer">
+          Cancelar
+        </button>
+
+        <button type="submit" class="px-6 py-2 text-sm font-medium text-white bg-zinc-900 rounded-lg
+                 hover:bg-black transition-colors duration-150
+                 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer" [disabled]="saving || form.invalid">
+          {{ saving ? 'Guardando...' : (isEdit ? 'Actualizar componente' : 'Crear componente') }}
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+
+</div>

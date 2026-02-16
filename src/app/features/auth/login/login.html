@@ -1,53 +1,82 @@
-<div class="login-card">
-  <h2>Gestión de Indicadores</h2>
-  <p class="subtitle">Iniciar sesión</p>
+<form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)" class="space-y-7">
 
-  <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)">
-
-    <!-- ===========================
-        EMAIL
-    ============================ -->
-    <div class="field">
-      <label>Correo</label>
-
-      <input type="email" name="email" [(ngModel)]="email" #emailCtrl="ngModel" required email
-        [class.invalid]="showError(emailCtrl)" />
-
-      <!-- MENSAJES DE ERROR -->
-      <div class="error-message" *ngIf="showError(emailCtrl)">
-        <span *ngIf="emailCtrl.errors?.['required']">
-          El correo es obligatorio.
-        </span>
-        <span *ngIf="emailCtrl.errors?.['email']">
-          Debe ser un correo válido.
-        </span>
-      </div>
-    </div>
-
-    <!-- ===========================
-        PASSWORD
-    ============================ -->
-    <div class="field">
-      <label>Contraseña</label>
-
-      <input type="password" name="password" [(ngModel)]="password" #passwordCtrl="ngModel" required minlength="3"
-        [class.invalid]="showError(passwordCtrl)" />
-
-      <!-- MENSAJES DE ERROR -->
-      <div class="error-message" *ngIf="showError(passwordCtrl)">
-        <span *ngIf="passwordCtrl.errors?.['required']">
-          La contraseña es obligatoria.
-        </span>
-        <span *ngIf="passwordCtrl.errors?.['minlength']">
-          Debe tener al menos 3 caracteres.
-        </span>
-      </div>
-    </div>
-
-
-    <button class="btn" type="submit">
+  <!-- TITULO -->
+  <div class="text-center">
+    <h2 class="text-xl font-semibold text-zinc-900">
       Iniciar sesión
-    </button>
+    </h2>
+  </div>
 
-  </form>
-</div>
+  <!-- ================= EMAIL ================= -->
+  <div class="space-y-2">
+    <label class="text-sm font-medium text-zinc-700">
+      Correo electrónico
+    </label>
+
+    <input type="email" name="email" [(ngModel)]="email" #emailCtrl="ngModel" required email
+      placeholder="correo@ejemplo.com" class="w-full rounded-lg
+             border bg-zinc-50
+             px-3 py-2.5 text-sm text-zinc-900
+             outline-none transition-all duration-150
+             placeholder:text-zinc-400
+
+             focus:bg-white focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900
+
+             disabled:opacity-60" [ngClass]="{
+        'border-zinc-300': !showError(emailCtrl),
+        'border-rose-400 ring-1 ring-rose-400 focus:ring-rose-500 focus:border-rose-500 bg-white': showError(emailCtrl)
+      }" />
+
+    <!-- ERRORES -->
+    <div *ngIf="showError(emailCtrl)" class="text-xs text-rose-500 mt-1">
+      <span *ngIf="emailCtrl.errors?.['required']">
+        El correo es obligatorio.
+      </span>
+      <span *ngIf="emailCtrl.errors?.['email']">
+        Debe ser un correo válido.
+      </span>
+    </div>
+  </div>
+
+  <!-- ================= PASSWORD ================= -->
+  <div class="space-y-2">
+    <label class="text-sm font-medium text-zinc-700">
+      Contraseña
+    </label>
+
+    <input type="password" name="password" [(ngModel)]="password" #passwordCtrl="ngModel" required minlength="3"
+      placeholder="••••••••" class="w-full rounded-lg
+             border bg-zinc-50
+             px-3 py-2.5 text-sm text-zinc-900
+             outline-none transition-all duration-150
+             placeholder:text-zinc-400
+
+             focus:bg-white focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900" [ngClass]="{
+        'border-zinc-300': !showError(passwordCtrl),
+        'border-rose-400 ring-1 ring-rose-400 focus:ring-rose-500 focus:border-rose-500 bg-white': showError(passwordCtrl)
+      }" />
+
+    <!-- ERRORES -->
+    <div *ngIf="showError(passwordCtrl)" class="text-xs text-rose-500 mt-1">
+      <span *ngIf="passwordCtrl.errors?.['required']">
+        La contraseña es obligatoria.
+      </span>
+      <span *ngIf="passwordCtrl.errors?.['minlength']">
+        Debe tener al menos 3 caracteres.
+      </span>
+    </div>
+  </div>
+
+  <!-- BOTON -->
+  <button type="submit" [disabled]="loginForm.invalid" class="w-full
+         bg-zinc-900 hover:bg-black active:scale-[0.99]
+         text-white text-sm font-medium
+         py-2.5 rounded-lg
+         transition-all duration-150
+         cursor-pointer
+         disabled:bg-zinc-300 disabled:text-zinc-500 disabled:cursor-not-allowed">
+    Iniciar sesión
+  </button>
+
+
+</form>

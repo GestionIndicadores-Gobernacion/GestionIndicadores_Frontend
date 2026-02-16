@@ -1,0 +1,175 @@
+<div class="min-h-screen bg-zinc-50">
+
+    <!-- PAGE HEADER -->
+    <div class="border-b border-zinc-200 bg-white">
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl font-semibold text-zinc-900 tracking-tight">
+                        Tablas
+                    </h1>
+                    <p class="text-sm text-zinc-500 mt-1">
+                        Explora y gestiona las tablas de tu base de datos
+                    </p>
+                </div>
+
+                <button class="px-4 py-2 text-sm font-medium text-white bg-zinc-900 rounded-lg
+                 hover:bg-black transition-colors duration-150 cursor-pointer">
+                    Nueva tabla
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 py-8">
+
+        <!-- SEARCH & FILTERS BAR -->
+        <div class="bg-white border border-zinc-200 rounded-2xl p-4 mb-6">
+            <div class="flex flex-wrap items-center gap-3">
+
+                <!-- SEARCH -->
+                <div class="flex-1 min-w-[240px]">
+                    <div class="relative">
+                        <input type="text" placeholder="Buscar tabla..." [value]="search()"
+                            (input)="search.set($any($event.target).value)" class="w-full pl-10 pr-4 py-2 text-sm border border-zinc-200 rounded-lg
+                     bg-white text-zinc-900 placeholder:text-zinc-400
+                     focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                     transition-colors duration-150" />
+
+                        <svg class="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- SORT -->
+                <div class="space-y-1">
+                    <label class="block text-[10px] font-medium text-zinc-600 uppercase tracking-wide">
+                        Orden
+                    </label>
+                    <select [value]="sortBy()" (change)="sortBy.set($any($event.target).value)" class="px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                   bg-white text-zinc-900
+                   focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                   transition-colors duration-150 cursor-pointer">
+                        <option value="name">Nombre</option>
+                        <option value="records">Más registros</option>
+                        <option value="fields">Más campos</option>
+                    </select>
+                </div>
+
+                <!-- TYPE FILTER -->
+                <div class="space-y-1">
+                    <label class="block text-[10px] font-medium text-zinc-600 uppercase tracking-wide">
+                        Tipo de campo
+                    </label>
+                    <select [value]="fieldTypeFilter()"
+                        (change)="fieldTypeFilter.set($any($event.target).value || null)" class="px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                   bg-white text-zinc-900
+                   focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                   transition-colors duration-150 cursor-pointer">
+                        <option value="">Todos</option>
+                        <option value="text">Text</option>
+                        <option value="number">Number</option>
+                        <option value="date">Date</option>
+                        <option value="boolean">Boolean</option>
+                        <option value="select">Select</option>
+                    </select>
+                </div>
+
+                <!-- CLEAR BUTTON -->
+                <div class="flex items-end">
+                    <button (click)="clearFilters()" [disabled]="!search() && !fieldTypeFilter() && sortBy() === 'name'"
+                        class="px-3 py-2 text-sm font-medium text-zinc-600 bg-white border border-zinc-200 rounded-lg
+                   hover:bg-zinc-50 hover:text-zinc-900 transition-colors duration-150
+                   disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+                        Limpiar
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- LOADING STATE -->
+        <div *ngIf="loading()" class="bg-white border border-zinc-200 rounded-2xl p-12">
+            <div class="flex flex-col items-center justify-center gap-3">
+                <div class="w-5 h-5 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin"></div>
+                <p class="text-sm text-zinc-500">Cargando tablas...</p>
+            </div>
+        </div>
+
+        <!-- CARDS GRID -->
+        <div *ngIf="!loading() && filteredTables().length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+            <div *ngFor="let stat of filteredTables()" (click)="goToRecords(stat.table)" class="bg-white border border-zinc-200 rounded-2xl p-5 
+                  hover:border-zinc-300 hover:shadow-sm
+                  transition-all duration-150 cursor-pointer group">
+
+                <!-- HEADER -->
+                <div class="mb-4">
+                    <h3 class="text-base font-semibold text-zinc-900 group-hover:text-black transition-colors">
+                        {{ stat.table.name }}
+                    </h3>
+                    <p class="text-xs text-zinc-500 mt-0.5">
+                        Tabla
+                    </p>
+                </div>
+
+                <!-- STATS -->
+                <div class="flex items-center gap-6 mb-4 pb-4 border-b border-zinc-100">
+
+                    <div class="flex-1">
+                        <div class="text-2xl font-semibold text-zinc-900 tracking-tight">
+                            {{ stat.recordsCount }}
+                        </div>
+                        <div class="text-xs text-zinc-500 mt-0.5">
+                            Registros
+                        </div>
+                    </div>
+
+                    <div class="flex-1">
+                        <div class="text-2xl font-semibold text-zinc-900 tracking-tight">
+                            {{ stat.fieldsCount }}
+                        </div>
+                        <div class="text-xs text-zinc-500 mt-0.5">
+                            Campos
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- FIELD TYPE BADGES -->
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                    <span *ngFor="let type of stat.fieldTypes" class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium uppercase tracking-wide
+                       bg-zinc-100 text-zinc-700">
+                        {{ type }}
+                    </span>
+                </div>
+
+                <!-- ACTION BUTTON -->
+                <button (click)="goToRecords(stat.table); $event.stopPropagation()" class="w-full px-3 py-2 text-sm font-medium text-zinc-700 bg-zinc-50 border border-zinc-200 rounded-lg
+                 hover:bg-zinc-100 hover:border-zinc-300 hover:text-zinc-900
+                 transition-colors duration-150 cursor-pointer">
+                    Ver registros
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div *ngIf="!loading() && !filteredTables().length" class="bg-white border border-zinc-200 rounded-2xl p-12">
+            <div class="text-center">
+                <h3 class="text-base font-semibold text-zinc-900">
+                    No hay tablas disponibles
+                </h3>
+                <p class="text-sm text-zinc-500 mt-2">
+                    No se encontraron tablas que coincidan con los filtros aplicados
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+</div>

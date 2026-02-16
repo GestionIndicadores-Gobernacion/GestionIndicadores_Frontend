@@ -1,14 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
+import { Subscription, filter } from 'rxjs';
 import { SidebarService } from '../../../core/services/sidebar.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { MenuService } from '../../../core/services/menu.service';
 
 interface MenuItem {
   label: string;
   route?: string;
   disabled?: boolean;
-  roles?: string[];
+  roles?: number[];
+  icon?: string;
   children?: MenuItem[];
 }
 
@@ -19,45 +22,112 @@ interface MenuItem {
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit, OnDestroy {
 
-  isOpen = false;
-  user: any = null;
-  role = '';
+  // ===============================
+  // SIDEBAR STATE
+  // ===============================
+  isOpen = false; // Cerrado por defecto en móvil
 
+  // ===============================
+  // USER INFO
+  // ===============================
+  roleId: number | null = null;
+  userName = '';
+  userEmail = '';
+  profileImageUrl: string | null = null;
+  userInitial = '';
+  roleLabel = '';
+
+  // ===============================
+  // MENU
+  // ===============================
   menu: MenuItem[] = [];
 
-  // 🔹 estado del colapsable
   expandedSections: Record<string, boolean> = {
-    Informes: true, // abierto por defecto
+    'Reportes PYBA': true,
   };
+
+  // ===============================
+  // SUBSCRIPTIONS
+  // ===============================
+  private sidebarSubscription?: Subscription;
+  private routerSubscription?: Subscription;
 
   constructor(
     private sidebarService: SidebarService,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private menuService: MenuService,
   ) {
-    const userString = localStorage.getItem('user');
-    if (userString) {
-      this.user = JSON.parse(userString);
-      this.role = this.user.role?.name;
+    // ===== USER DATA =====
+    const user = this.authService.getUser();
+
+    if (user) {
+      this.userName = `${user.first_name} ${user.last_name}`;
+      this.userEmail = user.email;
+      this.profileImageUrl = user.profile_image_url;
+      this.userInitial = this.userName.charAt(0).toUpperCase();
+      this.roleLabel = user.role?.name ?? '';
+      this.roleId = user.role?.id ?? null;
     }
 
-    this.sidebarService.isOpen$.subscribe(v => this.isOpen = v);
-
-    // 🔥 AUTO-EXPANDIR INFORMES PYBA SEGÚN RUTA
-    this.router.events.subscribe(() => {
-      if (this.isRecordsSectionActive()) {
-        this.expandedSections['Informes PYBA'] = true;
-      }
-    });
-
-    this.buildMenu();
+    // ===== MENU =====
+    this.menu = this.menuService.getMenu();
   }
 
+  ngOnInit() {
+    // ===== SIDEBAR STATE =====
+    this.sidebarSubscription = this.sidebarService.isOpen$.subscribe(v => {
+      this.isOpen = v;
+    });
 
-  isRecordsSectionActive(): boolean {
-    return this.router.url.startsWith('/records');
+    // ===== AUTO EXPAND SECTION ON NAVIGATION =====
+    this.routerSubscription = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        if (this.isReportsSectionActive()) {
+          this.expandedSections['Reportes PYBA'] = true;
+        }
+
+        // Auto-close sidebar on mobile after navigation
+        if (window.innerWidth < 768) {
+          this.sidebarService.close();
+        }
+      });
+
+    // Check initial route
+    if (this.isReportsSectionActive()) {
+      this.expandedSections['Reportes PYBA'] = true;
+    }
+
+    // Set initial state based on screen size
+    if (window.innerWidth >= 768) {
+      this.sidebarService.open();
+    }
+  }
+
+  ngOnDestroy() {
+    this.sidebarSubscription?.unsubscribe();
+    this.routerSubscription?.unsubscribe();
+  }
+
+  // ===============================
+  // TOGGLE
+  // ===============================
+  toggleSidebar() {
+    this.sidebarService.toggle();
+  }
+
+  closeSidebar() {
+    this.sidebarService.close();
+  }
+
+  // ===============================
+  // ROUTE HELPERS
+  // ===============================
+  isReportsSectionActive(): boolean {
+    return this.router.url.startsWith('/reports');
   }
 
   toggleSection(label: string) {
@@ -68,37 +138,23 @@ export class SidebarComponent {
     return !!this.expandedSections[label];
   }
 
+  // ===============================
+  // PERMISSIONS
+  // ===============================
   canShow(item: MenuItem): boolean {
     if (!item.roles) return true;
-    return item.roles.includes(this.role);
+    if (!this.roleId) return false;
+    return item.roles.includes(this.roleId);
   }
 
-  closeSidebar() {
-    this.sidebarService.close();
+  hasVisibleChildren(item: MenuItem): boolean {
+    if (!item.children) return false;
+    return item.children.some(child => this.canShow(child));
   }
 
-  buildMenu() {
-    this.menu = [
-      { label: 'Dashboard', route: 'dashboard' },
-
-      {
-        label: 'Informes PYBA',
-        children: [
-          { label: 'Informes', route: 'records' },
-          { label: 'Estrategias', route: 'records/strategies', roles: ['SuperAdmin'] },
-          { label: 'Actividades', route: 'records/activities', roles: ['SuperAdmin'] },
-          { label: 'Componentes Estratégicos', route: 'records/components', roles: ['SuperAdmin'] },
-          { label: 'Indicadores', route: 'records/indicators', roles: ['SuperAdmin'] },
-        ]
-      }
-      ,
-
-      { label: 'Planes de acción', disabled: true, roles: ['Editor', 'SuperAdmin'] },
-      { label: 'Bases de datos', disabled: true, roles: ['Editor', 'SuperAdmin'] },
-      { label: 'Usuarios', route: 'users', roles: ['SuperAdmin'] }
-    ];
-  }
-
+  // ===============================
+  // LOGOUT
+  // ===============================
   logout() {
     this.authService.logout();
     this.router.navigate(['/auth/login']);

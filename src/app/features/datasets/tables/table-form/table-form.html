@@ -1,0 +1,152 @@
+<div class="form-container">
+
+  <h2 class="page-title">
+    {{ tableId ? 'Editar Tabla' : 'Crear Tabla' }}
+  </h2>
+
+  <!-- LOADING -->
+  <div *ngIf="loading" class="loading-box">
+    <div class="spinner"></div>
+  </div>
+
+  <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="submit()">
+
+    <!-- =========================
+     INFORMACIÓN GENERAL
+    ========================= -->
+    <div class="form-section">
+
+      <h3 class="section-title">Información general</h3>
+
+      <div class="form-grid">
+
+        <!-- DATASET -->
+        <div class="form-group full">
+          <label>Dataset</label>
+          <select formControlName="dataset_id">
+            <option value="">Seleccione un dataset</option>
+            <option *ngFor="let ds of datasets" [value]="ds.id">
+              {{ ds.name }}
+            </option>
+          </select>
+        </div>
+
+        <!-- NOMBRE -->
+        <div class="form-group full">
+          <label>Nombre de la tabla</label>
+          <input type="text" formControlName="name" placeholder="Ej: usuarios" />
+        </div>
+
+        <!-- DESCRIPCIÓN -->
+        <div class="form-group full">
+          <label>Descripción</label>
+          <textarea rows="3" formControlName="description" placeholder="Descripción opcional"></textarea>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- =========================
+ CAMPOS (ESTILO EXCEL)
+========================= -->
+    <!-- =========================
+ CAMPOS (ESTILO EXCEL)
+========================= -->
+    <div class="form-section">
+
+      <h3 class="section-title">
+        Campos de la tabla
+        <span class="hint-text">(como columnas de Excel)</span>
+      </h3>
+
+      <!-- 🔴 formArrayName envuelve TODO -->
+      <div class="excel-table" formArrayName="fields">
+
+        <!-- HEADER -->
+        <div class="excel-header">
+          <span>Columna</span>
+          <span>Tipo</span>
+          <span>Obligatorio</span>
+          <span>Opciones</span>
+          <span></span>
+        </div>
+
+        <!-- ROWS -->
+        <div class="excel-row" *ngFor="let field of fields.controls; let i = index" [formGroupName]="i">
+
+          <!-- COLUMNA -->
+          <div class="excel-cell column-cell">
+            <input type="text" formControlName="label" placeholder="Ej: Fecha de nacimiento" />
+
+            <small class="technical-name" *ngIf="field.get('label')?.value">
+              Nombre técnico:
+              <strong>{{ slugify(field.get('label')?.value) }}</strong>
+            </small>
+          </div>
+
+          <!-- TYPE -->
+          <select formControlName="type">
+            <option value="text">Texto</option>
+            <option value="number">Número</option>
+            <option value="date">Fecha</option>
+            <option value="boolean">Sí / No</option>
+            <option value="select">Lista</option>
+          </select>
+
+          <!-- REQUIRED -->
+          <label class="switch">
+            <input type="checkbox" formControlName="required" />
+            <span class="slider"></span>
+          </label>
+
+          <!-- OPTIONS INFO -->
+          <span class="options-count">
+            {{
+            field.get('type')?.value === 'select'
+            ? getOptions(i).length + ' opciones'
+            : '—'
+            }}
+          </span>
+
+          <!-- REMOVE -->
+          <button type="button" class="btn-icon danger" (click)="removeField(i)">
+            ✕
+          </button>
+
+          <!-- SELECT OPTIONS (fila completa) -->
+          <div *ngIf="field.get('type')?.value === 'select'" class="select-options-box" formArrayName="options">
+            <div class="option-chip" *ngFor="let _ of getOptions(i).controls; let j = index">
+              <input [formControlName]="j" placeholder="Opción" />
+              <button type="button" (click)="removeOption(i, j)">✕</button>
+            </div>
+
+            <button type="button" class="btn-outline-primary small" (click)="addOption(i)">
+              + Agregar opción
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+      <button type="button" class="btn-outline-primary" (click)="addField()">
+        + Agregar columna
+      </button>
+
+    </div>
+
+    <!-- =========================
+     ACTIONS
+    ========================= -->
+    <div class="form-actions">
+      <button type="submit" class="btn-primary" [disabled]="submitting">
+        {{ tableId ? 'Guardar cambios' : 'Crear tabla' }}
+      </button>
+
+      <button type="button" class="btn-outline" (click)="cancel()">
+        Cancelar
+      </button>
+    </div>
+
+  </form>
+</div>

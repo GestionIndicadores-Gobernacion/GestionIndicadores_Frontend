@@ -1,0 +1,63 @@
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+
+  <!-- Total Reportes -->
+  <div class="bg-white border border-zinc-200 rounded-2xl p-5">
+    <div class="text-2xl font-semibold text-zinc-900 tracking-tight">
+      {{ totalReports }}
+    </div>
+    <div class="text-xs text-zinc-500 mt-1.5">
+      Total reportes
+    </div>
+  </div>
+
+  <!-- Estrategias Activas -->
+  <div class="bg-white border border-zinc-200 rounded-2xl p-5">
+    <div class="text-2xl font-semibold text-zinc-900 tracking-tight">
+      {{ totalStrategies }}
+    </div>
+    <div class="text-xs text-zinc-500 mt-1.5">
+      Estrategias activas
+    </div>
+  </div>
+
+  <!-- Componentes Reportados -->
+  <div class="bg-white border border-zinc-200 rounded-2xl p-5">
+    <div class="text-2xl font-semibold text-zinc-900 tracking-tight">
+      {{ totalComponents }}
+    </div>
+    <div class="text-xs text-zinc-500 mt-1.5">
+      Componentes reportados
+    </div>
+  </div>
+
+  <!-- Zonas Impactadas -->
+  <div class="bg-white border border-zinc-200 rounded-2xl p-5">
+    <div class="text-2xl font-semibold text-zinc-900 tracking-tight">
+      {{ totalZones }}
+    </div>
+    <div class="text-xs text-zinc-500 mt-1.5">
+      Zonas impactadas
+    </div>
+  </div>
+
+  <!-- Indicadores Usados -->
+  <div class="bg-white border border-zinc-200 rounded-2xl p-5">
+    <div class="text-2xl font-semibold text-zinc-900 tracking-tight">
+      {{ totalIndicators }}
+    </div>
+    <div class="text-xs text-zinc-500 mt-1.5">
+      Indicadores usados
+    </div>
+  </div>
+
+  <!-- Último Reporte -->
+  <div class="bg-white border border-zinc-200 rounded-2xl p-5">
+    <div class="text-sm font-medium text-zinc-900 tracking-tight leading-tight">
+      {{ lastReportDate ? (lastReportDate | date:'dd/MM/yy') : '—' }}
+    </div>
+    <div class="text-xs text-zinc-500 mt-1.5">
+      Último reporte
+    </div>
+  </div>
+
+</div>
