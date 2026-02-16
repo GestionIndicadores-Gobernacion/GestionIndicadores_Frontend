@@ -1,0 +1,271 @@
+<div class="min-h-screen bg-zinc-50">
+
+    <!-- HEADER -->
+    <div class="border-b border-zinc-200 bg-white">
+        <div class="max-w-4xl mx-auto px-6 py-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-semibold text-zinc-900 tracking-tight">
+                        Mi Perfil
+                    </h1>
+                    <p class="text-sm text-zinc-500 mt-1">
+                        Gestiona tu información personal y credenciales
+                    </p>
+                </div>
+
+                <button *ngIf="!isEditing" (click)="toggleEdit()" class="px-4 py-2 text-sm font-medium text-zinc-700 bg-white border border-zinc-200
+                 rounded-lg hover:border-zinc-300 hover:text-zinc-900
+                 transition-colors duration-150 cursor-pointer">
+                    Editar perfil
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto px-6 py-10">
+
+        <!-- LOADING -->
+        <div *ngIf="loading" class="bg-white border border-zinc-200 rounded-2xl p-12">
+            <div class="flex flex-col items-center justify-center gap-3">
+                <div class="w-5 h-5 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin"></div>
+                <p class="text-sm text-zinc-500">Cargando perfil...</p>
+            </div>
+        </div>
+
+        <div *ngIf="!loading" class="space-y-6">
+
+            <!-- VISTA DE LECTURA -->
+            <div *ngIf="!isEditing" class="space-y-6">
+
+                <!-- Foto de perfil e info básica -->
+                <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
+                    <div class="px-6 py-8">
+                        <div class="flex items-center gap-6">
+                            <!-- Avatar grande -->
+                            <div
+                                class="w-24 h-24 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-900 flex items-center justify-center text-3xl font-bold text-white shadow-lg">
+                                {{ user.first_name.charAt(0) }}{{ user.last_name.charAt(0) }}
+                            </div>
+
+                            <div class="flex-1">
+                                <h2 class="text-2xl font-semibold text-zinc-900">
+                                    {{ user.first_name }} {{ user.last_name }}
+                                </h2>
+                                <p class="text-sm text-zinc-500 mt-1">
+                                    {{ user.email }}
+                                </p>
+                                <div class="mt-3 flex items-center gap-3">
+                                    <span class="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                                        {{ user.role?.name || 'Sin rol' }}
+                                    </span>
+                                    <span *ngIf="user.is_active"
+                                        class="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                        Activo
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Información personal -->
+                <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-zinc-100">
+                        <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-900">
+                            Información personal
+                        </h3>
+                    </div>
+
+                    <div class="p-6">
+                        <dl class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <dt class="text-xs font-medium text-zinc-500 mb-1">Nombre</dt>
+                                <dd class="text-sm font-medium text-zinc-900">{{ user.first_name }}</dd>
+                            </div>
+
+                            <div>
+                                <dt class="text-xs font-medium text-zinc-500 mb-1">Apellido</dt>
+                                <dd class="text-sm font-medium text-zinc-900">{{ user.last_name }}</dd>
+                            </div>
+
+                            <div>
+                                <dt class="text-xs font-medium text-zinc-500 mb-1">Correo electrónico</dt>
+                                <dd class="text-sm font-medium text-zinc-900">{{ user.email }}</dd>
+                            </div>
+
+                            <div>
+                                <dt class="text-xs font-medium text-zinc-500 mb-1">Rol</dt>
+                                <dd class="text-sm font-medium text-zinc-900">{{ user.role?.name || 'Sin rol' }}</dd>
+                            </div>
+
+                            <div>
+                                <dt class="text-xs font-medium text-zinc-500 mb-1">Cuenta creada</dt>
+                                <dd class="text-sm font-medium text-zinc-900">{{ user.created_at | date: 'dd/MM/yyyy' }}
+                                </dd>
+                            </div>
+
+                            <div>
+                                <dt class="text-xs font-medium text-zinc-500 mb-1">Última actualización</dt>
+                                <dd class="text-sm font-medium text-zinc-900">{{ user.updated_at | date: 'dd/MM/yyyy
+                                    HH:mm' }}</dd>
+                            </div>
+                        </dl>
+                    </div>
+                </section>
+
+                <!-- Cambiar contraseña -->
+                <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-zinc-100">
+                        <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-900">
+                            Seguridad
+                        </h3>
+                    </div>
+
+                    <div class="p-6">
+                        <button (click)="showChangePassword = !showChangePassword" class="px-4 py-2 text-sm font-medium text-zinc-700 bg-white border border-zinc-200
+                     rounded-lg hover:border-zinc-300 hover:text-zinc-900
+                     transition-colors duration-150 cursor-pointer">
+                            {{ showChangePassword ? 'Cancelar' : 'Cambiar contraseña' }}
+                        </button>
+
+                        <!-- Form cambio de contraseña -->
+                        <div *ngIf="showChangePassword" class="mt-6 space-y-4 max-w-md">
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-medium text-zinc-700">
+                                    Nueva contraseña *
+                                </label>
+                                <input type="password" [(ngModel)]="passwordForm.newPassword"
+                                    [class.border-red-300]="attemptedPasswordChange && !passwordForm.newPassword" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                         bg-white text-zinc-900
+                         focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                         transition-colors duration-150" placeholder="Mínimo 6 caracteres" />
+                                <p *ngIf="attemptedPasswordChange && !passwordForm.newPassword"
+                                    class="text-xs text-red-600">
+                                    La contraseña es obligatoria
+                                </p>
+                                <p *ngIf="attemptedPasswordChange && passwordForm.newPassword && passwordForm.newPassword.length < 6"
+                                    class="text-xs text-red-600">
+                                    Mínimo 6 caracteres
+                                </p>
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-medium text-zinc-700">
+                                    Confirmar contraseña *
+                                </label>
+                                <input type="password" [(ngModel)]="passwordForm.confirmPassword"
+                                    [class.border-red-300]="attemptedPasswordChange && passwordForm.newPassword !== passwordForm.confirmPassword"
+                                    class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                         bg-white text-zinc-900
+                         focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                         transition-colors duration-150" placeholder="Repite la contraseña" />
+                                <p *ngIf="attemptedPasswordChange && passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword"
+                                    class="text-xs text-red-600">
+                                    Las contraseñas no coinciden
+                                </p>
+                            </div>
+
+                            <div class="flex items-center gap-3 pt-2">
+                                <button (click)="changePassword()" [disabled]="savingPassword" class="px-4 py-2 text-sm font-medium text-white bg-zinc-900 rounded-lg
+                         hover:bg-black transition-colors duration-150
+                         disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+                                    {{ savingPassword ? 'Guardando...' : 'Guardar contraseña' }}
+                                </button>
+                                <button (click)="cancelPasswordChange()" type="button" class="px-4 py-2 text-sm font-medium text-zinc-600 
+                         hover:text-zinc-900 transition-colors duration-150 cursor-pointer">
+                                    Cancelar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- MODO EDICIÓN -->
+            <form *ngIf="isEditing" (ngSubmit)="saveProfile()" class="space-y-6">
+
+                <!-- Información personal -->
+                <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-zinc-100">
+                        <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-900">
+                            Editar información personal
+                        </h3>
+                    </div>
+
+                    <div class="p-6 grid md:grid-cols-2 gap-5">
+
+                        <!-- Nombre -->
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-medium text-zinc-700">
+                                Nombre *
+                            </label>
+                            <input type="text" [(ngModel)]="editForm.first_name" name="first_name" required
+                                [class.border-red-300]="attemptedSubmit && !editForm.first_name" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                       bg-white text-zinc-900
+                       focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                       transition-colors duration-150" placeholder="Juan" />
+                            <p *ngIf="attemptedSubmit && !editForm.first_name" class="text-xs text-red-600">
+                                El nombre es obligatorio
+                            </p>
+                        </div>
+
+                        <!-- Apellido -->
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-medium text-zinc-700">
+                                Apellido *
+                            </label>
+                            <input type="text" [(ngModel)]="editForm.last_name" name="last_name" required
+                                [class.border-red-300]="attemptedSubmit && !editForm.last_name" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                       bg-white text-zinc-900
+                       focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                       transition-colors duration-150" placeholder="Pérez" />
+                            <p *ngIf="attemptedSubmit && !editForm.last_name" class="text-xs text-red-600">
+                                El apellido es obligatorio
+                            </p>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="space-y-1.5 md:col-span-2">
+                            <label class="block text-xs font-medium text-zinc-700">
+                                Correo electrónico *
+                            </label>
+                            <input type="email" [(ngModel)]="editForm.email" name="email" required
+                                [class.border-red-300]="attemptedSubmit && (!editForm.email || !isValidEmail(editForm.email))"
+                                class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                       bg-white text-zinc-900
+                       focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                       transition-colors duration-150" placeholder="usuario@gobernacion.gov.co" />
+                            <p *ngIf="attemptedSubmit && !editForm.email" class="text-xs text-red-600">
+                                El correo es obligatorio
+                            </p>
+                            <p *ngIf="attemptedSubmit && editForm.email && !isValidEmail(editForm.email)"
+                                class="text-xs text-red-600">
+                                Ingresa un correo válido
+                            </p>
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- Botones -->
+                <div class="flex items-center justify-end gap-3">
+                    <button type="button" (click)="cancelEdit()" class="px-4 py-2 text-sm font-medium text-zinc-600 
+                   hover:text-zinc-900 transition-colors duration-150 cursor-pointer">
+                        Cancelar
+                    </button>
+
+                    <button type="submit" [disabled]="saving" class="px-6 py-2 text-sm font-medium text-white bg-zinc-900 rounded-lg
+                   hover:bg-black transition-colors duration-150
+                   disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+                        {{ saving ? 'Guardando...' : 'Guardar cambios' }}
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>

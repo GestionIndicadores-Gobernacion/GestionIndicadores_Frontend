@@ -1,9 +1,13 @@
 export interface UserModel {
   id: number;
-  name: string;
+  first_name: string;
+  last_name: string;
   email: string;
-  role_id: number;
-  role?: RoleModel;    // viene del backend
+  profile_image_url?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  role?: RoleModel;
 }
 
 export interface RoleModel {
@@ -12,17 +16,21 @@ export interface RoleModel {
 }
 
 export interface UserCreateRequest {
-  name: string;
+  first_name: string;
+  last_name: string;
   email: string;
   password: string;
-  role_id: number;
+  role_id?: number;
+  profile_image_url?: string;
 }
 
 export interface UserUpdateRequest {
-  name?: string;
+  first_name?: string;
+  last_name?: string;
   email?: string;
   password?: string;
   role_id?: number;
+  profile_image_url?: string;
 }
 
 export interface UserResponse extends UserModel {}
