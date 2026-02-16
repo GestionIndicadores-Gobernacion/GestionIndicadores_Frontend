@@ -1,0 +1,62 @@
+.dataset-list-container {
+    padding: 24px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+h2 {
+    margin: 0;
+}
+
+.state-box {
+    padding: 16px;
+    background: #f5f7fa;
+    border-radius: 6px;
+    color: #555;
+}
+
+.state-box.error {
+    background: #ffecec;
+    color: #b30000;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 12px;
+    border-bottom: 1px solid #e0e0e0;
+    text-align: left;
+}
+
+.description {
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.actions {
+    white-space: nowrap;
+}
+
+.status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: #e6f4ea;
+    color: #137333;
+    font-size: 13px;
+}
+
+.status.inactive {
+    background: #f1f1f1;
+    color: #777;
+}

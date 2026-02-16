@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { LoaderComponent } from '../../shared/components/loader/loader';
 import { SidebarComponent } from './sidebar/sidebar';
-import { TopbarComponent } from './topbar/topbar';
+import { SidebarService } from '../../core/services/sidebar.service';
 
 @Component({
   selector: 'app-dashboard-layout',
@@ -12,12 +12,16 @@ import { TopbarComponent } from './topbar/topbar';
     CommonModule,
     RouterOutlet,
     SidebarComponent,
-    TopbarComponent,
     LoaderComponent
   ],
   templateUrl: './dashboard-layout.html',
   styleUrl: './dashboard-layout.css',
 })
 export class DashboardLayoutComponent {
+  private sidebarService = inject(SidebarService);
+
+  toggleSidebar() {
+    this.sidebarService.toggle();
+  }
 
 }

@@ -3,45 +3,45 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
-import {
-  RecordModel,
-  RecordStatsMes,
-  RecordStatsMunicipio
-} from '../models/record.model';
+// import {
+//   ReportModel,
+//   ReportStatsMes,
+//   ReportStatsMunicipio
+// } from '../models/report.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DashboardService {
 
-  private api = `${environment.apiUrl}/record`;
+  private api = `${environment.apiUrl}/report`;
   private compsApi = `${environment.apiUrl}/component`;
   private indsApi = `${environment.apiUrl}/indicator`;
 
   constructor(private http: HttpClient) { }
 
-  // ======================
-  // 📌 1. ESTADÍSTICAS
-  // ======================
+  // // ======================
+  // // 📌 1. ESTADÍSTICAS
+  // // ======================
 
-  getRecordsByMunicipio() {
-    return this.http.get<RecordStatsMunicipio[]>(`${this.api}/stats/municipios`);
-  }
+  // getReportsByMunicipio() {
+  //   return this.http.get<ReportStatsMunicipio[]>(`${this.api}/stats/municipios`);
+  // }
 
-  getRecordsByMes() {
-    return this.http.get<RecordStatsMes[]>(`${this.api}/stats/mes`);
-  }
+  // getReportsByMes() {
+  //   return this.http.get<ReportStatsMes[]>(`${this.api}/stats/mes`);
+  // }
 
-  getLatestRecords(limit = 5) {
-    const params = new HttpParams().set('limit', limit);
-    return this.http.get<RecordModel[]>(`${this.api}/latest`, { params });
-  }
+  // getLatestReports(limit = 5) {
+  //   const params = new HttpParams().set('limit', limit);
+  //   return this.http.get<ReportModel[]>(`${this.api}/latest`, { params });
+  // }
 
-  getRecordsByEstrategia() {
+  getReportsByEstrategia() {
     return this.http.get<any[]>(`${this.api}/stats/estrategias`);
   }
 
-  getRecordsByComponent(estrategiaId?: number) {
+  getReportsByComponent(estrategiaId?: number) {
     let params = new HttpParams();
 
     if (estrategiaId) {

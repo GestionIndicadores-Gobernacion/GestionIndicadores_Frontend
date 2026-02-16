@@ -1,3 +1,32 @@
-<div class="auth-wrapper">
-  <router-outlet></router-outlet>
+<div class="min-h-screen w-full bg-zinc-100 flex items-center justify-center px-6">
+
+  <!-- textura sutil de fondo -->
+  <div class="absolute inset-0 pointer-events-none">
+    <div class="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-white to-transparent"></div>
+  </div>
+
+  <!-- Card -->
+  <div
+    class="relative w-full max-w-md
+           bg-white
+           border border-zinc-200
+           rounded-2xl
+           shadow-[0_10px_30px_-12px_rgba(0,0,0,0.15)]
+           p-10">
+
+    <!-- Header -->
+    <div class="text-center mb-8 select-none">
+      <h1 class="text-2xl font-semibold tracking-tight text-zinc-900">
+        Sistema de Indicadores
+      </h1>
+
+      <p class="text-sm text-zinc-500 mt-2">
+        Plataforma de seguimiento y reportes
+      </p>
+    </div>
+
+    <!-- contenido -->
+    <router-outlet></router-outlet>
+
+  </div>
 </div>

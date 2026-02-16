@@ -1,0 +1,108 @@
+/* =========================
+   HEADER TRUNCATION
+========================= */
+.th-truncate {
+  min-width: 160px;
+  max-width: 220px;
+}
+
+.th-label {
+  display: inline-block;
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* =========================
+   CELL CONTENT
+========================= */
+.cell-content {
+  min-width: 160px;
+  max-width: 280px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cell-text {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* =========================
+   INPUTS
+========================= */
+.records-table input,
+.records-table select {
+  width: 100%;
+  max-width: 100%;
+  border: none;
+  background: transparent;
+  padding: 6px 8px;
+  font-size: 0.9rem;
+}
+
+.records-table input:focus,
+.records-table select:focus {
+  outline: none;
+  background: #ffffff;
+  border: 1px solid #005bbf;
+  border-radius: 6px;
+  white-space: normal;
+}
+
+/* =========================
+   STICKY COLUMNS
+========================= */
+.sticky-col {
+  position: sticky;
+  left: 0;
+  background: white;
+  z-index: 2;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.04);
+}
+
+.sticky-actions {
+  position: sticky;
+  right: 0;
+  background: white;
+  z-index: 2;
+  box-shadow: -2px 0 6px rgba(0, 0, 0, 0.04);
+}
+
+/* =========================
+   FILTER ROW
+========================= */
+.filters-row input {
+  width: 100%;
+  padding: 4px 6px;
+  font-size: 0.8rem;
+}
+
+/* =========================
+   RESIZE HANDLE
+========================= */
+th {
+  position: relative;
+}
+
+.resize-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+}
+
+/* =========================
+   EMPTY STATE
+========================= */
+.empty {
+  padding: 24px;
+  text-align: center;
+  color: #64748b;
+}

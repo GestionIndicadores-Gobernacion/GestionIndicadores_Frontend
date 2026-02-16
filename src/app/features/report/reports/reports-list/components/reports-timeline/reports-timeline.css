@@ -1,0 +1,57 @@
+.chart-card {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.06);
+  height: 420px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.range-selector button,
+.controls button {
+  border: none;
+  background: #f1f5f9;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.range-selector button.active {
+  background: #2563eb;
+  color: white;
+}
+
+.toggles {
+  margin: 8px 0;
+  font-size: 13px;
+  display: flex;
+  gap: 16px;
+}
+
+.trend-indicator {
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.positive { color: #16a34a; }
+.negative { color: #dc2626; }
+
+.insights {
+  font-size: 13px;
+  margin-bottom: 8px;
+  color: #334155;
+}

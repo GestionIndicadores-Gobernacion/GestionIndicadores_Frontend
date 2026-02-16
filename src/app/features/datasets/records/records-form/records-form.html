@@ -1,0 +1,60 @@
+<div class="form-container" *ngIf="!loading">
+
+    <h2 class="page-title">
+        {{ recordId ? 'Editar registro' : 'Nuevo registro' }}
+    </h2>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+
+        <div class="form-grid">
+
+            <div class="form-group full" *ngFor="let field of fields; trackBy: trackByName">
+                <label>
+                    {{ field.label }}
+                    <span *ngIf="field.required" class="required">*</span>
+                </label>
+
+                <!-- TEXT -->
+                <input *ngIf="field.type === 'text'" type="text" [formControlName]="field.name" />
+
+                <!-- NUMBER -->
+                <input *ngIf="field.type === 'number'" type="number" [formControlName]="field.name" />
+
+                <!-- DATE -->
+                <input *ngIf="field.type === 'date'" type="date" [formControlName]="field.name" />
+
+                <!-- BOOLEAN -->
+                <label *ngIf="field.type === 'boolean'" class="switch">
+                    <input type="checkbox" [formControlName]="field.name" />
+                    <span class="slider"></span>
+                </label>
+
+                <!-- SELECT -->
+                <select *ngIf="field.type === 'select'" [formControlName]="field.name">
+                    <option value="">Seleccione…</option>
+                    <option *ngFor="let opt of field.options" [value]="opt">
+                        {{ opt }}
+                    </option>
+                </select>
+
+                <!-- ERROR -->
+                <small class="error-text" *ngIf="form.get(field.name)?.touched && form.get(field.name)?.invalid">
+                    Este campo es obligatorio
+                </small>
+
+            </div>
+
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary" [disabled]="submitting">
+                {{ recordId ? 'Guardar cambios' : 'Crear registro' }}
+            </button>
+
+            <button type="button" class="btn-outline" (click)="cancel()">
+                Cancelar
+            </button>
+        </div>
+
+    </form>
+</div>

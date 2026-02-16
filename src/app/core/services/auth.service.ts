@@ -1,8 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { LoginRequest, LoginResponse } from '../models/auth.model';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { jwtDecode } from 'jwt-decode';
+
+import { LoginRequest, LoginResponse } from '../models/auth.model';
+
+interface JwtPayload {
+  sub: number;
+  role_id: number;
+  exp: number;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -11,7 +19,7 @@ export class AuthService {
 
   private api = `${environment.apiUrl}/auth`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   // =====================================================
   // 1️⃣ LOGIN
@@ -34,32 +42,61 @@ export class AuthService {
   }
 
   // =====================================================
-  // 3️⃣ OBTENER TOKENS
+  // 3️⃣ OBTENER TOKENS / USER
   // =====================================================
-  getAccessToken() {
+  getAccessToken(): string | null {
     return localStorage.getItem('access_token');
   }
 
-  getRefreshToken() {
+  getRefreshToken(): string | null {
     return localStorage.getItem('refresh_token');
   }
 
-  getUser() {
+  getUser(): any | null {
     const raw = localStorage.getItem('user');
     return raw ? JSON.parse(raw) : null;
   }
 
   // =====================================================
-  // 4️⃣ VALIDAR PERFIL (verifica token)
-  //      GET /auth/me
+  // 4️⃣ JWT HELPERS (FUENTE DE VERDAD)
   // =====================================================
-  me() {
+  getTokenPayload(): JwtPayload | null {
+    const token = this.getAccessToken();
+    if (!token) return null;
+
+    try {
+      return jwtDecode<JwtPayload>(token);
+    } catch {
+      return null;
+    }
+  }
+
+  isTokenExpired(): boolean {
+    const payload = this.getTokenPayload();
+    if (!payload) return true;
+
+    const now = Math.floor(Date.now() / 1000);
+    return payload.exp < now;
+  }
+
+  isAuthenticated(): boolean {
+    return !!this.getAccessToken() && !this.isTokenExpired();
+  }
+
+  hasRole(roleId: number): boolean {
+    const payload = this.getTokenPayload();
+    return payload?.role_id === roleId;
+  }
+
+  // =====================================================
+  // 5️⃣ PERFIL (NO USAR COMO GUARD)
+  // =====================================================
+  me(): Observable<any> {
     return this.http.get(`${this.api}/me`);
   }
 
   // =====================================================
-  // 5️⃣ REFRESH TOKEN
-  //      POST /auth/refresh (usa refresh token)
+  // 6️⃣ REFRESH TOKEN
   // =====================================================
   refreshToken(): Observable<{ access_token: string }> {
     const refresh = this.getRefreshToken();
@@ -80,9 +117,9 @@ export class AuthService {
   }
 
   // =====================================================
-  // 6️⃣ LOGOUT
+  // 7️⃣ LOGOUT
   // =====================================================
-  logout() {
+  logout(): void {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');

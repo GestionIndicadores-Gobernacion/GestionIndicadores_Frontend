@@ -1,0 +1,61 @@
+<!-- Timeline Chart Card -->
+<div class="space-y-4">
+
+    <!-- Header with Controls -->
+    <div class="flex items-start justify-between gap-4">
+
+        <!-- Title -->
+        <h3 class="text-sm font-semibold text-zinc-900">
+            Reportes por mes
+        </h3>
+
+        <!-- Controls Group -->
+        <div class="flex items-center gap-2">
+
+            <!-- Range Selector -->
+            <div class="inline-flex items-center bg-zinc-100 rounded-lg p-0.5">
+                <button (click)="setRange(6)" [class.bg-white]="range === 6" [class.text-zinc-900]="range === 6"
+                    [class.text-zinc-500]="range !== 6"
+                    class="px-2.5 py-1 text-xs font-medium rounded-md transition-colors duration-150">
+                    6M
+                </button>
+                <button (click)="setRange(12)" [class.bg-white]="range === 12" [class.text-zinc-900]="range === 12"
+                    [class.text-zinc-500]="range !== 12"
+                    class="px-2.5 py-1 text-xs font-medium rounded-md transition-colors duration-150">
+                    12M
+                </button>
+                <button (click)="setRange(0)" [class.bg-white]="range === 0" [class.text-zinc-900]="range === 0"
+                    [class.text-zinc-500]="range !== 0"
+                    class="px-2.5 py-1 text-xs font-medium rounded-md transition-colors duration-150">
+                    Todo
+                </button>
+            </div>
+
+            <!-- Chart Type Toggle -->
+            <button (click)="toggleType()" class="px-3 py-1 text-xs font-medium text-zinc-600 bg-white border border-zinc-200 
+               rounded-lg hover:border-zinc-300 hover:text-zinc-900 transition-colors duration-150">
+                {{ chartType === 'line' ? 'Barras' : 'Línea' }}
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- Trend Indicator -->
+    <div *ngIf="growthRate !== null" class="inline-flex items-center gap-1.5 text-xs">
+        <span [class.text-zinc-900]="growthRate > 0" [class.text-zinc-500]="growthRate < 0" class="font-medium">
+            {{ growthRate > 0 ? '↑' : '↓' }}
+            {{ growthRate | number:'1.0-1' }}%
+        </span>
+        <span class="text-zinc-500">
+            vs mes anterior
+        </span>
+    </div>
+
+    <!-- Chart Canvas -->
+    <div class="pt-2">
+        <canvas baseChart [data]="chartData" [options]="chartOptions" [type]="chartType">
+        </canvas>
+    </div>
+
+</div>
