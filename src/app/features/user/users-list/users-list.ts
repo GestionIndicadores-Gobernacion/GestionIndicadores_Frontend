@@ -1,24 +1,21 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
-import { UserModel } from '../../../core/models/user.model';
-import { UsersService } from '../../../core/services/users.service';
+import { Component, OnInit } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
+import { UserModel } from '../../../core/models/user.model';
+import { UsersService } from '../../../core/services/users.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { Pagination } from '../../../shared/components/pagination/pagination';
 
 @Component({
   selector: 'app-users-list',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    Pagination
-  ],
-  templateUrl: './users-list.html',
-  styleUrl: './users-list.css',
+  imports: [CommonModule, FormsModule, RouterModule],
+  templateUrl: './users-list.html'
 })
-export class UsersListComponent {
+export class UsersListComponent implements OnInit {
+
+  Math = Math; // Para usar Math.min en el template
 
   currentPage = 1;
   pageSize = 10;
@@ -28,7 +25,6 @@ export class UsersListComponent {
   loading = true;
   search = '';
 
-  // ORDENAMIENTO -------------------
   sortColumn: keyof UserModel | '' = '';
   sortDirection: 'asc' | 'desc' = 'asc';
 
@@ -50,7 +46,10 @@ export class UsersListComponent {
         this.filteredUsers = res;
         this.loading = false;
       },
-      error: () => this.loading = false
+      error: () => {
+        this.toast.error('Error cargando usuarios');
+        this.loading = false;
+      }
     });
   }
 
@@ -58,10 +57,13 @@ export class UsersListComponent {
     const term = this.search.toLowerCase();
 
     this.filteredUsers = this.users.filter(u =>
-      u.name.toLowerCase().includes(term) ||
+      u.first_name.toLowerCase().includes(term) ||
+      u.last_name.toLowerCase().includes(term) ||
       u.email.toLowerCase().includes(term) ||
       (u.role?.name?.toLowerCase().includes(term))
     );
+
+    this.currentPage = 1; // Reset a página 1 al buscar
   }
 
   get sortedUsers(): UserModel[] {
@@ -95,46 +97,34 @@ export class UsersListComponent {
     }
   }
 
-  goCreate() {
-    this.router.navigate(['/users/create']);
-  }
-
-  goEdit(id: number) {
-    this.router.navigate(['/users', id, 'edit']);
-  }
   deleteUser(id: number) {
-
     const user = this.users.find(u => u.id === id);
 
-    // 🚫 BLOQUEAR ELIMINACIÓN DEL ADMIN PRINCIPAL
-    if (user?.email === 'admin@gobernacion.gov.co') {
-      this.toast.error("No puedes eliminar el usuario principal de administración.");
-      return; // ❗ Se sale y NO sigue con el flujo
+    // Bloquear eliminación del admin principal
+    if (this.isMainAdmin(user!)) {
+      this.toast.error("No puedes desactivar el usuario principal de administración.");
+      return;
     }
 
     this.toast.confirm(
-      "¿Eliminar usuario?",
-      "Esta acción no se puede deshacer."
+      "¿Desactivar usuario?",
+      "El usuario ya no podrá acceder al sistema."
     ).then(result => {
-
       if (!result.isConfirmed) return;
 
       this.usersService.delete(id).subscribe({
         next: () => {
-          this.toast.success("Usuario eliminado correctamente");
+          this.toast.success("Usuario desactivado correctamente");
           this.loadUsers();
         },
         error: () => {
-          // El interceptor muestra el error exacto}
+          this.toast.error("Error al desactivar usuario");
         }
       });
-
     });
   }
 
   isMainAdmin(user: UserModel): boolean {
     return user.email === 'admin@gobernacion.gov.co';
   }
-
-
 }

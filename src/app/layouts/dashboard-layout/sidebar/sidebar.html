@@ -30,14 +30,15 @@
 
   </div>
 
-  <!-- USER PROFILE -->
+  <!-- USER PROFILE (CLICKEABLE) -->
   @if (userName && isOpen) {
   <div class="px-4 py-4 border-b border-zinc-100">
 
-    <div class="flex items-center gap-3 rounded-xl border border-zinc-200 p-3 bg-zinc-50">
+    <a [routerLink]="['/users/me']" class="flex items-center gap-3 rounded-xl border border-zinc-200 p-3 bg-zinc-50
+              hover:bg-zinc-100 hover:border-zinc-300 transition-all cursor-pointer group">
 
-      <div
-        class="w-10 h-10 rounded-full bg-zinc-900 text-white flex items-center justify-center text-sm font-semibold overflow-hidden shrink-0">
+      <div class="w-10 h-10 rounded-full bg-zinc-900 text-white flex items-center justify-center text-sm font-semibold overflow-hidden shrink-0
+               group-hover:ring-2 group-hover:ring-zinc-900 group-hover:ring-offset-2 transition-all">
         @if (profileImageUrl) {
         <img [src]="profileImageUrl" alt="Profile" class="w-full h-full object-cover" />
         } @else {
@@ -46,7 +47,7 @@
       </div>
 
       <div class="leading-tight min-w-0 flex-1">
-        <p class="text-sm font-medium text-zinc-900 truncate">{{ userName }}</p>
+        <p class="text-sm font-medium text-zinc-900 truncate group-hover:text-black">{{ userName }}</p>
 
         @if (roleLabel) {
         <p class="text-xs text-zinc-500">{{ roleLabel }}</p>
@@ -55,7 +56,7 @@
         <p class="text-xs text-zinc-400 truncate">{{ userEmail }}</p>
       </div>
 
-    </div>
+    </a>
 
   </div>
   }

@@ -22,6 +22,11 @@ export class UsersService {
     return this.http.get<UserResponse>(`${this.api}/${id}`);
   }
 
+  /** Obtener usuario actual (me) */
+  getMe(): Observable<UserResponse> {
+    return this.http.get<UserResponse>(`${this.api}/me`);
+  }
+
   /** Crear usuario */
   create(body: UserCreateRequest): Observable<UserResponse> {
     return this.http.post<UserResponse>(this.api, body);
@@ -32,8 +37,8 @@ export class UsersService {
     return this.http.put<UserResponse>(`${this.api}/${id}`, body);
   }
 
-  /** Eliminar usuario */
-  delete(id: number): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`${this.api}/${id}`);
+  /** Eliminar usuario (soft delete) */
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.api}/${id}`);
   }
 }

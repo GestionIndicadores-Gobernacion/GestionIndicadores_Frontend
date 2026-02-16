@@ -43,7 +43,6 @@ export class MenuService {
       {
         label: 'Usuarios',
         route: 'users',
-        disabled: true,
         roles: [3],
       },
     ];
