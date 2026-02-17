@@ -19,8 +19,13 @@ export class ComponenteIndicatorsFormComponent {
 
   @Input() parentForm!: FormGroup;
 
-  // Array temporal para manejar subcampos en la UI
   private subFieldsArrays: Map<number, any[]> = new Map();
+
+  // =====================
+  // DRAG & DROP STATE
+  // =====================
+  draggedIndex: number | null = null;
+  dragOverIndex: number | null = null;
 
   constructor(private fb: FormBuilder) { }
 
@@ -33,24 +38,97 @@ export class ComponenteIndicatorsFormComponent {
   }
 
   // =====================
+  // DRAG & DROP HANDLERS
+  // =====================
+
+  onDragStart(event: DragEvent, index: number) {
+    this.draggedIndex = index;
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', index.toString());
+    }
+  }
+
+  onDragOver(event: DragEvent, index: number) {
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+    if (this.draggedIndex !== null && this.draggedIndex !== index) {
+      this.dragOverIndex = index;
+    }
+  }
+
+  onDragLeave(event: DragEvent) {
+    // Solo limpiar si salimos del contenedor del indicador
+    const relatedTarget = event.relatedTarget as HTMLElement;
+    const currentTarget = event.currentTarget as HTMLElement;
+    if (!currentTarget.contains(relatedTarget)) {
+      this.dragOverIndex = null;
+    }
+  }
+
+  onDrop(event: DragEvent, dropIndex: number) {
+    event.preventDefault();
+    if (this.draggedIndex === null || this.draggedIndex === dropIndex) {
+      this.resetDragState();
+      return;
+    }
+
+    this.moveIndicator(this.draggedIndex, dropIndex);
+    this.resetDragState();
+  }
+
+  onDragEnd() {
+    this.resetDragState();
+  }
+
+  private resetDragState() {
+    this.draggedIndex = null;
+    this.dragOverIndex = null;
+  }
+
+  private moveIndicator(fromIndex: number, toIndex: number) {
+    const indicators = this.indicators;
+    const control = indicators.at(fromIndex);
+
+    // Reconstruir subFieldsArrays con los nuevos índices
+    const newSubFieldsArrays: Map<number, any[]> = new Map();
+    this.subFieldsArrays.forEach((value, key) => {
+      if (key === fromIndex) {
+        newSubFieldsArrays.set(toIndex, value);
+      } else {
+        let newKey = key;
+        if (fromIndex < toIndex) {
+          // Moviendo hacia abajo: los que estaban entre from+1 y to bajan un índice
+          if (key > fromIndex && key <= toIndex) newKey = key - 1;
+        } else {
+          // Moviendo hacia arriba: los que estaban entre to y from-1 suben un índice
+          if (key >= toIndex && key < fromIndex) newKey = key + 1;
+        }
+        newSubFieldsArrays.set(newKey, value);
+      }
+    });
+    this.subFieldsArrays = newSubFieldsArrays;
+
+    // Mover el control en el FormArray
+    indicators.removeAt(fromIndex);
+    indicators.insert(toIndex, control);
+  }
+
+  // =====================
   // SANITIZACIÓN Y VALIDACIÓN
   // =====================
 
-  /**
-   * Sanitiza nombres técnicos: convierte a minúsculas, reemplaza espacios y caracteres especiales
-   */
   sanitizeTechnicalName(value: string): string {
     return value
       .toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Quitar tildes
-      .replace(/[^a-z0-9]/g, '_') // Reemplazar caracteres especiales con _
-      .replace(/_+/g, '_') // Evitar múltiples _ consecutivos
-      .replace(/^_|_$/g, ''); // Quitar _ al inicio y final
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_|_$/g, '');
   }
 
-  /**
-   * Capitaliza primera letra de cada palabra
-   */
   capitalizeWords(value: string): string {
     return value
       .split(' ')
@@ -58,16 +136,10 @@ export class ComponenteIndicatorsFormComponent {
       .join(' ');
   }
 
-  /**
-   * Sanitiza opciones: trim y uppercase
-   */
   sanitizeOption(value: string): string {
     return value.trim().toUpperCase();
   }
 
-  /**
-   * Sanitiza opciones al perder el foco (SELECT / MULTI_SELECT)
-   */
   sanitizeOptionsOnBlur(indicatorIndex: number) {
     const control = this.indicators.at(indicatorIndex).get('configOptions');
     if (!control?.value) return;
@@ -81,9 +153,6 @@ export class ComponenteIndicatorsFormComponent {
     control.setValue(sanitized, { emitEvent: false });
   }
 
-  /**
-   * Sanitiza campos al perder el foco (SUM_GROUP)
-   */
   sanitizeFieldsOnBlur(indicatorIndex: number) {
     const control = this.indicators.at(indicatorIndex).get('configFields');
     if (!control?.value) return;
@@ -114,7 +183,6 @@ export class ComponenteIndicatorsFormComponent {
       configSubFields: [this.formatSubFieldsForTextarea(data?.config?.sub_fields) || '']
     }) as FormGroup;
 
-    // Validación en tiempo real para el nombre del indicador
     group.get('name')?.valueChanges.subscribe(value => {
       if (value && typeof value === 'string') {
         const sanitized = value.toUpperCase();
@@ -235,11 +303,7 @@ export class ComponenteIndicatorsFormComponent {
 
   addSubField(indicatorIndex: number) {
     const subFields = this.getSubFields(indicatorIndex);
-    subFields.push({
-      name: '',
-      type: 'number',
-      label: ''
-    });
+    subFields.push({ name: '', type: 'number', label: '' });
     this.syncSubFieldsToForm(indicatorIndex);
   }
 
@@ -254,7 +318,6 @@ export class ComponenteIndicatorsFormComponent {
     const subFields = this.getSubFields(indicatorIndex);
 
     if (subFields[subFieldIndex]) {
-      // Sanitización según el campo
       if (field === 'name') {
         value = this.sanitizeTechnicalName(value);
       } else if (field === 'label') {
@@ -315,18 +378,10 @@ export class ComponenteIndicatorsFormComponent {
   getErrorMessage(indicatorIndex: number, fieldName: string): string {
     const control = this.indicators.at(indicatorIndex).get(fieldName);
 
-    if (control?.hasError('required')) {
-      return 'Este campo es obligatorio';
-    }
-    if (control?.hasError('minlength')) {
-      return 'Mínimo 3 caracteres';
-    }
-    if (control?.hasError('min')) {
-      return 'Valor debe ser mayor a 0';
-    }
-    if (control?.hasError('max')) {
-      return 'Año inválido';
-    }
+    if (control?.hasError('required')) return 'Este campo es obligatorio';
+    if (control?.hasError('minlength')) return 'Mínimo 3 caracteres';
+    if (control?.hasError('min')) return 'Valor debe ser mayor a 0';
+    if (control?.hasError('max')) return 'Año inválido';
 
     return '';
   }
