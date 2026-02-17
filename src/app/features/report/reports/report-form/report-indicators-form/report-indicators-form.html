@@ -48,6 +48,7 @@
                     <ng-container *ngIf="ind.field_type === 'number'">
                         <input type="number" [ngModel]="values[getIndicatorId(ind)]"
                             (ngModelChange)="setValue(getIndicatorId(ind), $event)" placeholder="0"
+                            [required]="ind.is_required"
                             class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150" />
                     </ng-container>
 
@@ -55,15 +56,16 @@
                     <ng-container *ngIf="ind.field_type === 'text'">
                         <textarea rows="2" [ngModel]="values[getIndicatorId(ind)]"
                             (ngModelChange)="setValue(getIndicatorId(ind), $event)" placeholder="Escribe aquí..."
+                            [required]="ind.is_required"
                             class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 resize-none focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150"></textarea>
                     </ng-container>
 
                     <!-- SELECT -->
                     <ng-container *ngIf="ind.field_type === 'select'">
                         <select [ngModel]="values[getIndicatorId(ind)]"
-                            (ngModelChange)="setValue(getIndicatorId(ind), $event)"
+                            (ngModelChange)="setValue(getIndicatorId(ind), $event)" [required]="ind.is_required"
                             class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 cursor-pointer focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150">
-                            <option [ngValue]="null">Seleccionar opción</option>
+                            <option [ngValue]="null" disabled>Seleccionar opción</option>
                             <option *ngFor="let op of ind.config?.options" [ngValue]="op">{{ op }}</option>
                         </select>
                     </ng-container>
@@ -75,10 +77,15 @@
                                 class="flex items-center gap-3 p-2.5 border border-zinc-200 rounded-lg hover:bg-zinc-50 transition-colors cursor-pointer"
                                 (click)="toggleMultiSelectOption(getIndicatorId(ind), option)">
                                 <input type="checkbox" [checked]="isMultiSelectSelected(getIndicatorId(ind), option)"
-                                    class="w-4 h-4 text-zinc-900 border-zinc-300 rounded focus:ring-zinc-900 cursor-pointer" />
-                                <label class="flex-1 text-sm text-zinc-700 cursor-pointer">{{ option }}</label>
+                                    class="w-4 h-4 text-zinc-900 border-zinc-300 rounded focus:ring-zinc-900 cursor-pointer pointer-events-none" />
+                                <label class="flex-1 text-sm text-zinc-700 cursor-pointer select-none">{{ option
+                                    }}</label>
                             </div>
                         </div>
+                        <p *ngIf="ind.is_required && (!values[getIndicatorId(ind)] || values[getIndicatorId(ind)].length === 0)"
+                            class="text-xs text-red-500 mt-1">
+                            Debes seleccionar al menos una opción
+                        </p>
                     </ng-container>
 
                     <!-- SUM_GROUP -->
@@ -90,7 +97,7 @@
                                     <label class="flex-1 text-xs text-zinc-700 leading-tight">{{ field }}</label>
                                     <input type="number" [ngModel]="values[getIndicatorId(ind)]?.[field]"
                                         (ngModelChange)="setSumValue(getIndicatorId(ind), field, $event)"
-                                        placeholder="0"
+                                        placeholder="0" min="0"
                                         class="w-24 px-3 py-1.5 text-sm text-right border border-zinc-200 rounded-lg bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150" />
                                 </div>
                             </div>
@@ -130,7 +137,7 @@
                                         <input *ngIf="subField.type === 'number'" type="number"
                                             [ngModel]="getGroupedValue(getIndicatorId(ind), groupKey, subField.name)"
                                             (ngModelChange)="setGroupedValue(getIndicatorId(ind), groupKey, subField.name, $event)"
-                                            placeholder="0"
+                                            placeholder="0" min="0"
                                             class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900" />
 
                                         <!-- Sub-field: TEXT -->
@@ -141,7 +148,7 @@
                                             class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 resize-none focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"></textarea>
                                     </div>
 
-                                    <!-- TOTAL AUTOMÁTICO -->
+                                    <!-- TOTAL AUTOMÁTICO POR GRUPO -->
                                     <div *ngIf="ind.config?.auto_total"
                                         class="flex items-center justify-between p-3 bg-zinc-900 rounded-lg mt-3">
                                         <span
@@ -152,10 +159,19 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- TOTAL GENERAL (suma de todos los grupos) -->
+                            <div *ngIf="ind.config?.auto_total && getSelectedOptionsForGroupedData(ind).length > 1"
+                                class="flex items-center justify-between p-4 bg-gradient-to-r from-zinc-900 to-zinc-800 rounded-lg shadow-lg">
+                                <span class="text-sm font-bold text-white uppercase tracking-wide">Total General</span>
+                                <span class="text-xl font-black text-white tabular-nums">
+                                    {{ getGroupedGrandTotal(getIndicatorId(ind), ind.config?.sub_fields) }}
+                                </span>
+                            </div>
                         </div>
                     </ng-container>
                 </div>
-            </div>|
+            </div>
         </div>
     </div>
 
