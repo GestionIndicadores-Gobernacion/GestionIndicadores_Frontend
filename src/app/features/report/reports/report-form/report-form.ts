@@ -86,7 +86,7 @@ export class ReportFormComponent implements OnInit {
   }
 
   isFormValid(): boolean {
-    return !!(
+    const basicFieldsValid = !!(
       this.form.strategy_id &&
       this.form.component_id &&
       this.form.report_date &&
@@ -95,6 +95,47 @@ export class ReportFormComponent implements OnInit {
       this.form.intervention_location &&
       this.form.zone_type
     );
+
+    if (!basicFieldsValid) return false;
+
+    // Validar indicadores requeridos
+    const requiredIndicatorsValid = this.indicators
+      .filter(ind => ind.is_required)
+      .every(ind => this.isIndicatorValid(ind));
+
+    return requiredIndicatorsValid;
+  }
+
+  isIndicatorValid(ind: ComponentIndicatorModel): boolean {
+    const value = this.indicatorValues[ind.id!];
+
+    switch (ind.field_type) {
+      case 'select':
+        return value !== null && value !== undefined && value !== '';
+
+      case 'multi_select':
+        return Array.isArray(value) && value.length > 0;
+
+      case 'number':
+        return value !== null && value !== undefined && value !== '';
+
+      case 'text':
+        return value !== null && value !== undefined && String(value).trim() !== '';
+
+      case 'sum_group':
+        // Al menos un campo debe tener valor > 0
+        if (!value || typeof value !== 'object') return false;
+        return Object.values(value).some(v => Number(v) > 0);
+
+      case 'grouped_data':
+        // Debe haber al menos un grupo con datos
+        if (!value || typeof value !== 'object') return false;
+        const groups = Object.keys(value);
+        return groups.length > 0;
+
+      default:
+        return true;
+    }
   }
 
   openDate(input: HTMLInputElement) {
@@ -200,10 +241,88 @@ export class ReportFormComponent implements OnInit {
   // =====================================================
 
   buildIndicatorValues(): ReportIndicatorValue[] {
-    return this.indicators.map(ind => ({
-      indicator_id: ind.id!,
-      value: this.indicatorValues[ind.id!] ?? null
-    }));
+    return this.indicators.map(ind => {
+      const rawValue = this.indicatorValues[ind.id!];
+      let finalValue: any;
+
+      // Handle different field types
+      switch (ind.field_type) {
+        case 'multi_select':
+          // Multi-select debe ser un array, nunca null
+          finalValue = Array.isArray(rawValue) ? rawValue : [];
+          break;
+
+        case 'sum_group':
+          // Sum group debe ser un objeto con todos los campos como números
+          finalValue = {};
+          if (rawValue && typeof rawValue === 'object') {
+            Object.keys(rawValue).forEach(field => {
+              const val = rawValue[field];
+              // Convertir a número, si está vacío usar 0
+              if (val !== '' && val !== null && val !== undefined) {
+                const numValue = Number(val);
+                finalValue[field] = !isNaN(numValue) ? numValue : 0;
+              } else {
+                finalValue[field] = 0;
+              }
+            });
+          }
+          break;
+
+        case 'grouped_data':
+          // Grouped data debe ser un objeto anidado con todos los sub-campos
+          finalValue = {};
+
+          if (rawValue && typeof rawValue === 'object') {
+            // Para cada grupo, incluir todos los sub-fields
+            Object.keys(rawValue).forEach(groupKey => {
+              finalValue[groupKey] = {};
+
+              // Incluir todos los sub-fields definidos en la config
+              ind.config?.sub_fields?.forEach((subField: any) => {
+                const value = rawValue[groupKey]?.[subField.name];
+
+                if (subField.type === 'number') {
+                  // Para números: convertir a número, si está vacío usar 0
+                  if (value !== null && value !== undefined && value !== '') {
+                    const numValue = Number(value);
+                    finalValue[groupKey][subField.name] = !isNaN(numValue) ? numValue : 0;
+                  } else {
+                    finalValue[groupKey][subField.name] = 0;
+                  }
+                } else {
+                  // Para texto: convertir a string, si está vacío usar string vacío
+                  finalValue[groupKey][subField.name] = value ? String(value) : '';
+                }
+              });
+            });
+          }
+          break;
+
+        case 'number':
+          // Number puede ser null si está vacío
+          finalValue = rawValue !== '' && rawValue != null ? Number(rawValue) : null;
+          break;
+
+        case 'text':
+          // Text puede ser null si está vacío
+          finalValue = rawValue || null;
+          break;
+
+        case 'select':
+          // Select puede ser null si no se seleccionó nada
+          finalValue = rawValue || null;
+          break;
+
+        default:
+          finalValue = rawValue ?? null;
+      }
+
+      return {
+        indicator_id: ind.id!,
+        value: finalValue
+      };
+    });
   }
 
   save(): void {
@@ -211,7 +330,27 @@ export class ReportFormComponent implements OnInit {
     this.attemptedSubmit = true;
 
     if (!this.isFormValid()) {
-      this.toast.error('Revisa los campos marcados');
+      // Identificar qué campos faltan
+      const missingFields: string[] = [];
+
+      if (!this.form.strategy_id) missingFields.push('Estrategia');
+      if (!this.form.component_id) missingFields.push('Componente');
+      if (!this.form.report_date) missingFields.push('Fecha');
+      if (!this.form.executive_summary) missingFields.push('Resultado obtenido');
+      if (!this.form.activities_performed) missingFields.push('Actividades realizadas');
+      if (!this.form.intervention_location) missingFields.push('Municipio');
+      if (!this.form.zone_type) missingFields.push('Zona');
+
+      // Verificar indicadores requeridos
+      this.indicators
+        .filter(ind => ind.is_required && !this.isIndicatorValid(ind))
+        .forEach(ind => missingFields.push(ind.name));
+
+      if (missingFields.length > 0) {
+        this.toast.error(`Campos requeridos faltantes: ${missingFields.join(', ')}`);
+      } else {
+        this.toast.error('Revisa los campos marcados');
+      }
       return;
     }
 
@@ -229,6 +368,15 @@ export class ReportFormComponent implements OnInit {
       indicator_values: this.buildIndicatorValues()
     };
 
+    // DEBUG: Ver qué se está enviando
+    console.log('=== PAYLOAD COMPLETO ===');
+    console.log(JSON.stringify(payload, null, 2));
+    console.log('=== INDICATOR VALUES ===');
+    payload.indicator_values.forEach(iv => {
+      const ind = this.indicators.find(i => i.id === iv.indicator_id);
+      console.log(`${ind?.name} (${ind?.field_type}):`, iv.value);
+    });
+
     const request = this.isEdit
       ? this.reportsService.update(this.id!, payload)
       : this.reportsService.create(payload);
@@ -238,7 +386,8 @@ export class ReportFormComponent implements OnInit {
         this.toast.success(this.isEdit ? 'Reporte actualizado' : 'Reporte creado');
         this.router.navigate(['reports']);
       },
-      error: () => {
+      error: (err) => {
+        console.error('ERROR DEL BACKEND:', err);
         this.toast.error('Error al guardar');
         this.saving = false;
       }
