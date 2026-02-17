@@ -65,6 +65,38 @@ export class ComponenteIndicatorsFormComponent {
     return value.trim().toUpperCase();
   }
 
+  /**
+   * Sanitiza opciones al perder el foco (SELECT / MULTI_SELECT)
+   */
+  sanitizeOptionsOnBlur(indicatorIndex: number) {
+    const control = this.indicators.at(indicatorIndex).get('configOptions');
+    if (!control?.value) return;
+
+    const sanitized = control.value
+      .split('\n')
+      .map((line: string) => this.sanitizeOption(line))
+      .filter((line: string) => line.length > 0)
+      .join('\n');
+
+    control.setValue(sanitized, { emitEvent: false });
+  }
+
+  /**
+   * Sanitiza campos al perder el foco (SUM_GROUP)
+   */
+  sanitizeFieldsOnBlur(indicatorIndex: number) {
+    const control = this.indicators.at(indicatorIndex).get('configFields');
+    if (!control?.value) return;
+
+    const sanitized = control.value
+      .split('\n')
+      .map((line: string) => this.capitalizeWords(line.trim()))
+      .filter((line: string) => line.length > 0)
+      .join('\n');
+
+    control.setValue(sanitized, { emitEvent: false });
+  }
+
   // =====================
   // INDICATORS CRUD
   // =====================
@@ -88,40 +120,6 @@ export class ComponenteIndicatorsFormComponent {
         const sanitized = value.toUpperCase();
         if (sanitized !== value) {
           group.get('name')?.setValue(sanitized, { emitEvent: false });
-        }
-      }
-    });
-
-    // Validación para opciones (SELECT y MULTI_SELECT)
-    group.get('configOptions')?.valueChanges.subscribe(value => {
-      if (value && typeof value === 'string') {
-        const lines = value.split('\n');
-        const sanitized = lines
-          .map(line => this.sanitizeOption(line))
-          .filter(line => line.length > 0)
-          .join('\n');
-
-        if (sanitized !== value) {
-          setTimeout(() => {
-            group.get('configOptions')?.setValue(sanitized, { emitEvent: false });
-          }, 300); // Debounce para no interrumpir al usuario
-        }
-      }
-    });
-
-    // Validación para campos de SUM_GROUP
-    group.get('configFields')?.valueChanges.subscribe(value => {
-      if (value && typeof value === 'string') {
-        const lines = value.split('\n');
-        const sanitized = lines
-          .map(line => this.capitalizeWords(line.trim()))
-          .filter(line => line.length > 0)
-          .join('\n');
-
-        if (sanitized !== value) {
-          setTimeout(() => {
-            group.get('configFields')?.setValue(sanitized, { emitEvent: false });
-          }, 300);
         }
       }
     });
