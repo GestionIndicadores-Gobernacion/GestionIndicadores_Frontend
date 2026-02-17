@@ -78,12 +78,12 @@
                 <label class="block text-xs font-medium text-zinc-700">
                     Opciones *
                 </label>
-                <textarea formControlName="configOptions" rows="3" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                <textarea formControlName="configOptions" (blur)="sanitizeOptionsOnBlur(i)" rows="3" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
                  bg-white text-zinc-900 resize-none uppercase
                  focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
                  transition-colors duration-150" placeholder="OPCIÓN 1&#10;OPCIÓN 2&#10;OPCIÓN 3"></textarea>
                 <p class="text-xs text-zinc-500">
-                    Cada línea = una opción. Auto-formato: MAYÚSCULAS, sin espacios extras
+                    Cada línea = una opción. Auto-formato al salir del campo: MAYÚSCULAS, sin espacios extras
                 </p>
             </div>
 
@@ -93,12 +93,12 @@
                 <label class="block text-xs font-medium text-zinc-700">
                     Opciones (selección múltiple) *
                 </label>
-                <textarea formControlName="configOptions" rows="3" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                <textarea formControlName="configOptions" (blur)="sanitizeOptionsOnBlur(i)" rows="3" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
                  bg-white text-zinc-900 resize-none uppercase
                  focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
                  transition-colors duration-150" placeholder="GATO&#10;PERRO&#10;CONEJO&#10;AVE"></textarea>
                 <p class="text-xs text-zinc-500">
-                    Selección múltiple. Auto-formato: MAYÚSCULAS, sin duplicados
+                    Selección múltiple. Auto-formato al salir del campo: MAYÚSCULAS, sin duplicados
                 </p>
             </div>
 
@@ -108,13 +108,13 @@
                 <label class="block text-xs font-medium text-zinc-700">
                     Campos del grupo *
                 </label>
-                <textarea formControlName="configFields" rows="3" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
+                <textarea formControlName="configFields" (blur)="sanitizeFieldsOnBlur(i)" rows="3" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
                  bg-white text-zinc-900 resize-none
                  focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
                  transition-colors duration-150"
                     placeholder="Hombres&#10;Mujeres&#10;Niños&#10;Adulto Mayor"></textarea>
                 <p class="text-xs text-zinc-500">
-                    Auto-formato: Primera Letra Mayúscula. El sistema sumará automáticamente
+                    Auto-formato al salir del campo: Primera Letra Mayúscula. El sistema sumará automáticamente
                 </p>
             </div>
 

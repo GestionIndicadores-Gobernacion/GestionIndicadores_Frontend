@@ -120,31 +120,34 @@ export class ReportIndicatorsFormComponent implements OnChanges {
   // =========================
 
   setGroupedValue(indicatorId: number, groupKey: string, fieldName: string, value: any) {
-    if (!this.values[indicatorId]) {
-      this.values[indicatorId] = {};
-    }
-    if (!this.values[indicatorId][groupKey]) {
-      this.values[indicatorId][groupKey] = {};
-    }
-
     const subField = this.getSubFieldConfig(indicatorId, fieldName);
 
+    let parsedValue: any;
     if (subField?.type === 'number') {
-      // Para números: almacenar como número, si está vacío usar 0
       if (value !== null && value !== undefined && value !== '') {
         const numValue = Number(value);
-        this.values[indicatorId][groupKey][fieldName] = !isNaN(numValue) ? numValue : 0;
+        parsedValue = !isNaN(numValue) ? numValue : 0;
       } else {
-        this.values[indicatorId][groupKey][fieldName] = 0;
+        parsedValue = 0;
       }
     } else {
-      // Para texto: almacenar como string, si está vacío usar string vacío
-      this.values[indicatorId][groupKey][fieldName] = value ? String(value) : '';
+      parsedValue = value ? String(value) : '';
     }
+
+    // Crear nuevas referencias en todos los niveles para que Angular detecte el cambio
+    this.values = {
+      ...this.values,
+      [indicatorId]: {
+        ...this.values[indicatorId],
+        [groupKey]: {
+          ...(this.values[indicatorId]?.[groupKey] || {}),
+          [fieldName]: parsedValue
+        }
+      }
+    };
 
     this.emit();
   }
-
   getGroupedValue(indicatorId: number, groupKey: string, fieldName: string): any {
     const value = this.values[indicatorId]?.[groupKey]?.[fieldName];
 
