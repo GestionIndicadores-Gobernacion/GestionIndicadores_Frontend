@@ -1,11 +1,10 @@
-import { Component, Input, SimpleChanges } from '@angular/core';
-import { ReportModel } from '../../../../../../core/models/report.model';
+import {
+  Component, Input, Output, EventEmitter, OnChanges, SimpleChanges
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgChartsModule } from 'ng2-charts';
-import {
-  ChartConfiguration,
-  ChartType
-} from 'chart.js';
+import { ChartConfiguration } from 'chart.js';
+import { AggregateByMonth } from '../../../../../../core/models/report-aggregate.model';
 
 @Component({
   selector: 'app-reports-timeline',
@@ -14,168 +13,154 @@ import {
   templateUrl: './reports-timeline.html',
   styleUrl: './reports-timeline.css',
 })
-export class ReportsTimelineComponent {
+export class ReportsTimelineComponent implements OnChanges {
 
-  @Input() reports: ReportModel[] = [];
+  @Input() byMonth: AggregateByMonth[] = [];
+  @Input() strategyIds: number[] = [];
+  @Input() strategyMap: Record<number, string> = {};
+  @Input() selectedStrategyId: number | null = null;
+  // Año del reporte más reciente — define el año visible al entrar
+  @Input() initialYear: number = new Date().getFullYear();
 
-  range: number = 12; // default 12 meses
-  growthRate: number | null = null;
-  chartType: 'line' | 'bar' = 'line';
-  currentYear: number = new Date().getFullYear();
+  @Output() strategyChange = new EventEmitter<number>();
 
-  toggleType(): void {
-    this.chartType = this.chartType === 'line' ? 'bar' : 'line';
-  }
+  showChart = true;
+  isFullscreen = false;
+  selectedYear: number = this.initialYear;
+  availableYears: number[] = [];
 
-  setRange(months: number): void {
-    this.range = months;
-    this.buildChart();
-  }
+  private readonly MONTHS = [
+    'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+    'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
+  ];
 
-  chartData: ChartConfiguration<'line'>['data'] = {
+  chartData: ChartConfiguration<'bar'>['data'] = {
     labels: [],
-    datasets: [
-      {
-        data: [],
-        label: 'Reportes por Mes',
-        fill: true,
-        tension: 0.3
-      }
-    ]
+    datasets: []
   };
 
-  chartOptions: ChartConfiguration<'line' | 'bar'>['options'] = {
+  chartOptions: ChartConfiguration<'bar'>['options'] = {
     responsive: true,
     maintainAspectRatio: false,
-    animation: { duration: 800 },
-    interaction: {
-      mode: 'index',
-      intersect: false
-    },
+    animation: { duration: 500 },
+    interaction: { mode: 'index', intersect: false },
     plugins: {
       legend: { position: 'top' },
       tooltip: {
         callbacks: {
-          label: (ctx) =>
-            `${ctx.dataset.label}: ${ctx.parsed.y} reportes`
+          label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y} reportes`
         }
       }
     },
     scales: {
-      x: {
-        ticks: {
-          autoSkip: true,
-          maxRotation: 0
-        }
-      },
-      y: {
-        beginAtZero: true
-      }
+      x: { stacked: true, ticks: { autoSkip: false, maxRotation: 0 } },
+      y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1, precision: 0 } }
     }
   };
 
-
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['reports']) {
+    // Cuando llegan nuevos datos de byMonth, recalcular años y graficar
+    if (changes['byMonth'] && this.byMonth.length) {
+      this.computeAvailableYears();
       this.buildChart();
+    }
+    // Cuando el padre cambia el año inicial (nueva estrategia seleccionada)
+    if (changes['initialYear'] && changes['initialYear'].currentValue) {
+      this.selectedYear = changes['initialYear'].currentValue;
+      this.computeAvailableYears();
+      this.buildChart();
+    }
+    if (changes['selectedStrategyId']) {
+      setTimeout(() => this.scrollToActiveTab(), 50);
+    }
+  }
+
+  onStrategySelect(id: number): void {
+    this.strategyChange.emit(id);
+  }
+
+  selectYear(year: number): void {
+    this.selectedYear = year;
+    this.buildChart();
+  }
+
+  toggleFullscreen(): void {
+    this.isFullscreen = !this.isFullscreen;
+    if (this.isFullscreen) {
+      setTimeout(() => {
+        setTimeout(() => {
+          this.showChart = false;
+          setTimeout(() => {
+            this.buildChart();
+            this.showChart = true;
+            this.scrollToActiveTab('modal-tabs');
+          }, 0);
+        }, 0);
+      }, 0);
+    }
+  }
+
+  private computeAvailableYears(): void {
+    const yearsInData = new Set(
+      this.byMonth.map(e => Number(e.month.split('-')[0]))
+    );
+    yearsInData.add(new Date().getFullYear());
+    this.availableYears = Array.from(yearsInData).sort((a, b) => b - a);
+
+    // Si el año seleccionado no está disponible, usar el más reciente con datos
+    if (!this.availableYears.includes(this.selectedYear)) {
+      this.selectedYear = this.availableYears[0];
+    }
+  }
+
+  private scrollToActiveTab(containerId?: string): void {
+    const selector = containerId
+      ? `#${containerId} [data-active="true"]`
+      : '[data-active="true"]';
+    const activeTab = document.querySelector(selector) as HTMLElement;
+    if (activeTab) {
+      activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
   }
 
   private buildChart(): void {
-
-    if (!this.reports.length) return;
-
-    const grouped: Record<string, number> = {};
-
-    this.reports.forEach(r => {
-      const date = new Date(r.created_at);
-      const key = `${date.getFullYear()}-${date.getMonth()}`;
-      grouped[key] = (grouped[key] || 0) + 1;
-    });
-
-    // Crear rango continuo de meses
-    const allMonths: string[] = [];
-
-    const minDate = new Date(
-      Math.min(...this.reports.map(r => new Date(r.created_at).getTime()))
-    );
-
-    const maxDate = new Date(
-      Math.max(...this.reports.map(r => new Date(r.created_at).getTime()))
-    );
-
-    let cursor = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
-
-    while (cursor <= maxDate) {
-      allMonths.push(`${cursor.getFullYear()}-${cursor.getMonth()}`);
-      cursor.setMonth(cursor.getMonth() + 1);
-    }
-
-    let entries = allMonths.map(key => ({
-      key,
-      count: grouped[key] || 0
-    }));
-
-    if (this.range > 0) {
-      entries = entries.slice(-this.range);
-    }
-
-    const labels = entries.map(e => {
-      const [year, month] = e.key.split('-').map(Number);
-      return new Date(year, month).toLocaleDateString('es-ES', {
-        month: 'short',
-        year: 'numeric'
+    const grouped: Record<string, { urbana: number; rural: number }> = {};
+    this.byMonth
+      .filter(e => Number(e.month.split('-')[0]) === this.selectedYear)
+      .forEach(e => {
+        grouped[e.month] = { urbana: e.urbana, rural: e.rural };
       });
+
+    const urbanaData = Array.from({ length: 12 }, (_, i) => {
+      const key = `${this.selectedYear}-${String(i + 1).padStart(2, '0')}`;
+      return grouped[key]?.urbana ?? 0;
     });
 
-    const values = entries.map(e => e.count);
-
-    // Crecimiento mensual
-    if (values.length >= 2) {
-      const last = values.at(-1)!;
-      const prev = values.at(-2)!;
-      this.growthRate = prev === 0 ? 100 : ((last - prev) / prev) * 100;
-    }
-
-    // Comparación interanual
-    const currentYearData = entries
-      .filter(e => Number(e.key.split('-')[0]) === this.currentYear)
-      .map(e => e.count);
-
-    const previousYearData = entries
-      .filter(e => Number(e.key.split('-')[0]) === this.currentYear - 1)
-      .map(e => e.count);
-
-    const movingAverage = values.map((v, i, arr) =>
-      i === 0 ? v : (v + arr[i - 1]) / 2
-    );
+    const ruralData = Array.from({ length: 12 }, (_, i) => {
+      const key = `${this.selectedYear}-${String(i + 1).padStart(2, '0')}`;
+      return grouped[key]?.rural ?? 0;
+    });
 
     this.chartData = {
-      labels,
+      labels: this.MONTHS,
       datasets: [
         {
-          data: values,
-          label: 'Reportes',
-          fill: this.chartType === 'line',
-          tension: 0.4,
-          borderWidth: 2
+          data: urbanaData,
+          label: 'Urbana',
+          backgroundColor: 'rgba(16, 185, 129, 0.7)',
+          borderColor: 'rgba(16, 185, 129, 1)',
+          borderWidth: 1,
+          borderRadius: 4,
         },
         {
-          data: movingAverage,
-          label: 'Promedio móvil',
-          borderDash: [5, 5],
-          fill: false,
-          tension: 0.4
-        },
-        {
-          data: previousYearData.length ? previousYearData : [],
-          label: `Año ${this.currentYear - 1}`,
-          borderDash: [2, 2],
-          fill: false,
-          tension: 0.3
+          data: ruralData,
+          label: 'Rural',
+          backgroundColor: 'rgba(99, 102, 241, 0.7)',
+          borderColor: 'rgba(99, 102, 241, 1)',
+          borderWidth: 1,
+          borderRadius: 4,
         }
       ]
     };
   }
-
 }
