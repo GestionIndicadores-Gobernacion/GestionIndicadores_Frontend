@@ -173,31 +173,49 @@ export class ReportFormComponent implements OnInit {
   }
 
   loadReport(): void {
-
     if (!this.id) return;
-
     this.loading = true;
 
     this.reportsService.getById(this.id).subscribe({
       next: (report: ReportModel) => {
 
-        this.form = {
-          strategy_id: report.strategy_id,
-          component_id: report.component_id,
-          report_date: report.report_date,
-          executive_summary: report.executive_summary,
-          activities_performed: report.activities_performed,
-          intervention_location: report.intervention_location,
-          zone_type: report.zone_type,
-          evidence_link: report.evidence_link || ''
-        };
+        this.form.strategy_id = report.strategy_id;
+        this.form.component_id = report.component_id;
+        this.form.report_date = report.report_date;
+        this.form.executive_summary = report.executive_summary;
+        this.form.activities_performed = report.activities_performed;
+        this.form.intervention_location = report.intervention_location;
+        this.form.zone_type = this.normalizeZoneType(report.zone_type);
+        this.form.evidence_link = report.evidence_link || '';
 
+        // Cargar componentes de la estrategia (para el select de componente)
         this.onStrategyChange(false);
-        this.onComponentChange(false);
 
+        // Indicadores que ya tienen valor guardado en el reporte
+        const indicatorsFromReport = report.indicator_values
+          ?.filter(iv => iv.indicator)
+          .map(iv => iv.indicator as ComponentIndicatorModel) ?? [];
+
+        // Indicadores actuales del componente (puede tener nuevos desde que se creó el reporte)
+        const component = this.allComponents.find(c => c.id === this.form.component_id) as any;
+        const currentIndicators: ComponentIndicatorModel[] = component?.indicators || [];
+
+        if (indicatorsFromReport.length > 0) {
+          // Merge: indicadores del reporte + nuevos del componente que no existían antes
+          const reportIndicatorIds = new Set(indicatorsFromReport.map(i => i.id));
+          const newIndicators = currentIndicators.filter(i => !reportIndicatorIds.has(i.id));
+          this.indicators = [...indicatorsFromReport, ...newIndicators];
+        } else {
+          // Fallback: backend aún no devuelve metadatos — usar indicadores actuales
+          this.indicators = currentIndicators;
+        }
+
+        // Asignar valores con nueva referencia para que Angular detecte el cambio
+        const newValues: Record<number, any> = {};
         report.indicator_values.forEach(iv => {
-          this.indicatorValues[iv.indicator_id] = iv.value;
+          newValues[iv.indicator_id] = iv.value;
         });
+        this.indicatorValues = newValues;
 
         this.loading = false;
       },
@@ -206,6 +224,14 @@ export class ReportFormComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+  
+  private normalizeZoneType(value: any): ZoneType | null {
+    if (!value) return null;
+    const str = String(value).toLowerCase();
+    if (str.includes('urbana')) return 'Urbana';
+    if (str.includes('rural')) return 'Rural';
+    return null;
   }
 
   onStrategyChange(reset = true): void {
@@ -245,45 +271,39 @@ export class ReportFormComponent implements OnInit {
       const rawValue = this.indicatorValues[ind.id!];
       let finalValue: any;
 
-      // Handle different field types
       switch (ind.field_type) {
+
         case 'multi_select':
-          // Multi-select debe ser un array, nunca null
           finalValue = Array.isArray(rawValue) ? rawValue : [];
           break;
 
         case 'sum_group':
-          // Sum group debe ser un objeto con todos los campos como números
           finalValue = {};
-          if (rawValue && typeof rawValue === 'object') {
-            Object.keys(rawValue).forEach(field => {
-              const val = rawValue[field];
-              // Convertir a número, si está vacío usar 0
-              if (val !== '' && val !== null && val !== undefined) {
-                const numValue = Number(val);
-                finalValue[field] = !isNaN(numValue) ? numValue : 0;
-              } else {
-                finalValue[field] = 0;
-              }
-            });
-          }
+          // Iterar los campos definidos en el CONFIG, no los del valor
+          // Así se incluyen todos los campos aunque el usuario no los haya tocado
+          const configFields: string[] = ind.config?.fields ?? [];
+          configFields.forEach(field => {
+            // field puede ser string o {name: string}
+            const fieldName = typeof field === 'string' ? field : (field as any).name;
+            if (!fieldName) return;
+            const val = rawValue?.[fieldName];
+            if (val !== '' && val !== null && val !== undefined) {
+              const numValue = Number(val);
+              finalValue[fieldName] = !isNaN(numValue) ? numValue : 0;
+            } else {
+              finalValue[fieldName] = 0;
+            }
+          });
           break;
 
         case 'grouped_data':
-          // Grouped data debe ser un objeto anidado con todos los sub-campos
           finalValue = {};
-
           if (rawValue && typeof rawValue === 'object') {
-            // Para cada grupo, incluir todos los sub-fields
             Object.keys(rawValue).forEach(groupKey => {
               finalValue[groupKey] = {};
-
-              // Incluir todos los sub-fields definidos en la config
               ind.config?.sub_fields?.forEach((subField: any) => {
                 const value = rawValue[groupKey]?.[subField.name];
-
                 if (subField.type === 'number') {
-                  // Para números: convertir a número, si está vacío usar 0
                   if (value !== null && value !== undefined && value !== '') {
                     const numValue = Number(value);
                     finalValue[groupKey][subField.name] = !isNaN(numValue) ? numValue : 0;
@@ -291,7 +311,6 @@ export class ReportFormComponent implements OnInit {
                     finalValue[groupKey][subField.name] = 0;
                   }
                 } else {
-                  // Para texto: convertir a string, si está vacío usar string vacío
                   finalValue[groupKey][subField.name] = value ? String(value) : '';
                 }
               });
@@ -300,17 +319,14 @@ export class ReportFormComponent implements OnInit {
           break;
 
         case 'number':
-          // Number puede ser null si está vacío
-          finalValue = rawValue !== '' && rawValue != null ? Number(rawValue) : null;
+          finalValue = rawValue !== '' && rawValue != null ? Number(rawValue) : 0;
           break;
 
         case 'text':
-          // Text puede ser null si está vacío
           finalValue = rawValue || null;
           break;
 
         case 'select':
-          // Select puede ser null si no se seleccionó nada
           finalValue = rawValue || null;
           break;
 

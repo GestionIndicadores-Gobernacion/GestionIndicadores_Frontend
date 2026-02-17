@@ -18,7 +18,6 @@ export class ReportIndicatorsFormComponent implements OnChanges {
   @Output() valuesChange = new EventEmitter<Record<number, any>>();
 
   ngOnChanges(changes: SimpleChanges): void {
-    // Cuando cambian los indicadores o los valores, inicializar grouped_data
     if (changes['indicators'] || changes['values']) {
       this.initializeGroupedDataIndicators();
     }
@@ -37,16 +36,14 @@ export class ReportIndicatorsFormComponent implements OnChanges {
           this.values[ind.id!] = {};
         }
 
-        // Para cada grupo seleccionado, inicializar todos los sub-campos
+        // Inicializar sub-campos para grupos seleccionados
         selectedGroups.forEach(groupKey => {
           if (!this.values[ind.id!][groupKey]) {
             this.values[ind.id!][groupKey] = {};
           }
 
-          // Inicializar cada sub-campo si no existe
           ind.config?.sub_fields?.forEach((subField: any) => {
             if (!(subField.name in this.values[ind.id!][groupKey])) {
-              // Inicializar según el tipo - números con 0, texto con string vacío
               if (subField.type === 'number') {
                 this.values[ind.id!][groupKey][subField.name] = 0;
               } else {
@@ -56,13 +53,16 @@ export class ReportIndicatorsFormComponent implements OnChanges {
           });
         });
 
-        // Eliminar grupos que ya no están seleccionados
-        const currentGroups = Object.keys(this.values[ind.id!] || {});
-        currentGroups.forEach(groupKey => {
-          if (!selectedGroups.includes(groupKey)) {
-            delete this.values[ind.id!][groupKey];
-          }
-        });
+        // Solo eliminar grupos que no están seleccionados SI hay grupos seleccionados
+        // Si selectedGroups está vacío (valores aún no cargados), no borrar nada
+        if (selectedGroups.length > 0) {
+          const currentGroups = Object.keys(this.values[ind.id!] || {});
+          currentGroups.forEach(groupKey => {
+            if (!selectedGroups.includes(groupKey)) {
+              delete this.values[ind.id!][groupKey];
+            }
+          });
+        }
       }
     });
   }
@@ -73,6 +73,8 @@ export class ReportIndicatorsFormComponent implements OnChanges {
 
   setValue(indicatorId: number, value: any) {
     this.values[indicatorId] = value;
+    // Reinicializar grouped_data cuando cambia un multi_select
+    this.initializeGroupedDataIndicators();
     this.emit();
   }
 
@@ -80,7 +82,6 @@ export class ReportIndicatorsFormComponent implements OnChanges {
     if (!this.values[indicatorId]) {
       this.values[indicatorId] = {};
     }
-    // Convertir a número, si está vacío usar 0
     if (value !== '' && value !== null && value !== undefined) {
       const numValue = Number(value);
       this.values[indicatorId][field] = !isNaN(numValue) ? numValue : 0;
@@ -106,7 +107,7 @@ export class ReportIndicatorsFormComponent implements OnChanges {
       this.values[indicatorId].push(option);
     }
 
-    // Si este es un indicador padre de grouped_data, reinicializar
+    // Reinicializar grouped_data cuando cambia el multi_select padre
     this.initializeGroupedDataIndicators();
     this.emit();
   }
@@ -134,7 +135,6 @@ export class ReportIndicatorsFormComponent implements OnChanges {
       parsedValue = value ? String(value) : '';
     }
 
-    // Crear nuevas referencias en todos los niveles para que Angular detecte el cambio
     this.values = {
       ...this.values,
       [indicatorId]: {
@@ -148,25 +148,20 @@ export class ReportIndicatorsFormComponent implements OnChanges {
 
     this.emit();
   }
+
   getGroupedValue(indicatorId: number, groupKey: string, fieldName: string): any {
     const value = this.values[indicatorId]?.[groupKey]?.[fieldName];
-
-    // Retornar valor apropiado según el tipo
     const subField = this.getSubFieldConfig(indicatorId, fieldName);
     if (subField?.type === 'number') {
-      // Para inputs de tipo number, retornar el número o 0 si está vacío
       return value !== null && value !== undefined && value !== '' ? value : 0;
     }
-    // Para texto, retornar string vacío si no hay valor
     return value !== null && value !== undefined ? value : '';
   }
 
   getSelectedOptionsForGroupedData(ind: ComponentIndicatorModel): string[] {
     if (!ind.config?.parent_field) return [];
-
     const parentIndicator = this.indicators.find(i => i.name === ind.config?.parent_field);
     if (!parentIndicator) return [];
-
     return this.values[parentIndicator.id!] || [];
   }
 
@@ -186,19 +181,15 @@ export class ReportIndicatorsFormComponent implements OnChanges {
   }
 
   getTarget(ind: ComponentIndicatorModel): number | null {
-    // Para grouped_data, buscar la meta en el indicador o en las metas del componente
     if (ind.field_type === 'grouped_data') {
-      // Si el indicador tiene targets propios, usarlos
       if (this.reportDate && ind.targets?.length) {
         const year = new Date(this.reportDate).getFullYear();
         const t = ind.targets.find(t => t.year === year);
         if (t) return t.target_value;
       }
-      // Si no, mostrar "Sin meta" (que es correcto para grouped_data)
       return null;
     }
 
-    // Para number y sum_group, buscar metas normalmente
     if (ind.field_type !== 'number' && ind.field_type !== 'sum_group') {
       return null;
     }
@@ -232,23 +223,16 @@ export class ReportIndicatorsFormComponent implements OnChanges {
     switch (ind.field_type) {
       case 'select':
         return value !== null && value !== undefined && value !== '';
-
       case 'multi_select':
         return Array.isArray(value) && value.length > 0;
-
       case 'number':
         return value !== null && value !== undefined && value !== '';
-
       case 'text':
         return value !== null && value !== undefined && value.trim() !== '';
-
       case 'sum_group':
-        // Al menos un campo debe tener valor > 0
         if (!value || typeof value !== 'object') return false;
         return Object.values(value).some(v => Number(v) > 0);
-
       case 'grouped_data':
-        // Todos los grupos seleccionados deben tener al menos un campo con valor
         if (!value || typeof value !== 'object') return false;
         const groups = Object.keys(value);
         if (groups.length === 0) return false;
@@ -256,7 +240,6 @@ export class ReportIndicatorsFormComponent implements OnChanges {
           const groupData = value[groupKey];
           return Object.values(groupData).some(v => v !== null && v !== undefined && v !== '' && v !== 0);
         });
-
       default:
         return true;
     }
@@ -282,7 +265,6 @@ export class ReportIndicatorsFormComponent implements OnChanges {
     return total;
   }
 
-  // TOTAL GENERAL (suma de todos los grupos)
   getGroupedGrandTotal(indicatorId: number, subFields: any[]): number {
     const allGroups = this.values[indicatorId];
     if (!allGroups || typeof allGroups !== 'object') return 0;

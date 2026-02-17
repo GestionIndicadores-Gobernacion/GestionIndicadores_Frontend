@@ -8,6 +8,11 @@ import {
   ReportUpdateRequest
 } from '../models/report.model';
 
+import {
+  StrategyAggregate,
+  ComponentAggregate
+} from '../models/report-aggregate.model';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -17,53 +22,35 @@ export class ReportsService {
 
   constructor(private http: HttpClient) { }
 
-  // =====================================================
-  // GET ALL
-  // =====================================================
   getAll() {
     return this.http.get<ReportModel[]>(this.api);
   }
 
-  // =====================================================
-  // GET BY ID
-  // =====================================================
   getById(id: number) {
     return this.http.get<ReportModel>(`${this.api}/${id}`);
   }
 
-  // =====================================================
-  // CREATE
-  // =====================================================
   create(body: ReportCreateRequest) {
     return this.http.post<ReportModel>(this.api, body);
   }
 
-  // =====================================================
-  // UPDATE
-  // =====================================================
   update(id: number, body: ReportUpdateRequest) {
     return this.http.put<ReportModel>(`${this.api}/${id}`, body);
   }
 
-  // =====================================================
-  // DELETE
-  // =====================================================
   delete(id: number) {
     return this.http.delete<void>(`${this.api}/${id}`);
   }
 
-  // =====================================================
-  // AGGREGATES
-  // =====================================================
-  aggregateByComponent(componentId: number) {
-    return this.http.get(
-      `${this.api}/aggregate/component/${componentId}`
+  aggregateByStrategy(strategyId: number) {
+    return this.http.get<StrategyAggregate>(
+      `${this.api}/aggregate/strategy/${strategyId}`
     );
   }
 
-  aggregateByStrategy(strategyId: number) {
-    return this.http.get(
-      `${this.api}/aggregate/strategy/${strategyId}`
+  aggregateByComponent(componentId: number) {
+    return this.http.get<ComponentAggregate>(
+      `${this.api}/aggregate/component/${componentId}`
     );
   }
 }

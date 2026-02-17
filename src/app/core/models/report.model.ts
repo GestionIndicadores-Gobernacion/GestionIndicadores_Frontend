@@ -5,12 +5,27 @@
 export type ZoneType = 'Urbana' | 'Rural';
 
 // =======================================================
+// 📊 INDICATOR METADATA (viene del backend en modo lectura)
+// =======================================================
+
+export interface IndicatorMeta {
+  id: number;
+  name: string;
+  field_type: string;
+  is_required: boolean;
+  config?: Record<string, any> | null;
+  targets?: { year: number; target_value: number }[];
+}
+
+// =======================================================
 // 📊 INDICATOR VALUE
 // =======================================================
 
 export interface ReportIndicatorValue {
   indicator_id: number;
-  value: number | string | Record<string, number> | null;
+  value: number | string | Record<string, any> | null;
+  // Solo presente en respuestas del backend (GET), no en requests (POST/PUT)
+  indicator?: IndicatorMeta;
 }
 
 // =======================================================
