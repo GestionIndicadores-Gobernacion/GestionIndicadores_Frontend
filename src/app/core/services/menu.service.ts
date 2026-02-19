@@ -27,6 +27,7 @@ export class MenuService {
 
       {
         label: 'Bases de datos',
+        disabled: true,
         roles: [1, 2, 3],
         children: [
           { label: 'Dataset', route: 'datasets' },
@@ -39,7 +40,6 @@ export class MenuService {
         disabled: true,
         roles: [1, 2, 3],
       },
-
       {
         label: 'Usuarios',
         route: 'users',

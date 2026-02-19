@@ -111,14 +111,19 @@
               </td>
 
               <!-- Rol -->
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+              <td class="px-6 py-4 whitespace-nowrap align-middle">
+                <span class="px-2 py-1 text-xs font-medium rounded-full" [ngClass]="{
+                    'bg-orange-100 text-orange-800': user.role?.name === 'admin',
+                    'bg-blue-100 text-blue-800':     user.role?.name === 'editor',
+                    'bg-zinc-100 text-zinc-700':     user.role?.name === 'viewer',
+                    'bg-yellow-100 text-yellow-800': !user.role?.name
+                  }">
                   {{ user.role?.name || 'Sin rol' }}
                 </span>
               </td>
 
               <!-- Estado -->
-              <td class="px-6 py-4 whitespace-nowrap">
+              <td class="px-6 py-4 whitespace-nowrap align-middle">
                 <span *ngIf="user.is_active"
                   class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
                   Activo
@@ -161,8 +166,9 @@
       <div *ngIf="totalPages > 1" class="border-t border-zinc-200 px-6 py-4">
         <div class="flex items-center justify-between">
           <p class="text-sm text-zinc-600">
-            Mostrando {{ (currentPage - 1) * pageSize + 1 }} a {{ Math.min(currentPage * pageSize, sortedUsers.length)
-            }} de {{ sortedUsers.length }} usuarios
+            Mostrando {{ (currentPage - 1) * pageSize + 1 }} a
+            {{ Math.min(currentPage * pageSize, sortedUsers.length) }}
+            de {{ sortedUsers.length }} usuarios
           </p>
 
           <div class="flex items-center gap-2">

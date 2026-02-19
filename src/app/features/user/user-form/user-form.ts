@@ -150,6 +150,8 @@ export class UserFormComponent implements OnInit {
         payload.profile_image_url = this.form.profile_image_url.trim();
       }
 
+      console.log('Payload enviado al backend:', JSON.stringify(payload, null, 2));
+
       this.usersService.update(this.userId!, payload).subscribe({
         next: () => {
           this.toast.success('Usuario actualizado correctamente');
@@ -173,6 +175,8 @@ export class UserFormComponent implements OnInit {
       if (this.form.profile_image_url.trim() !== '') {
         payload.profile_image_url = this.form.profile_image_url.trim();
       }
+
+      console.log('Payload enviado al backend:', JSON.stringify(payload, null, 2));
 
       this.usersService.create(payload).subscribe({
         next: () => {
