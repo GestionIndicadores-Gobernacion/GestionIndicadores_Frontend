@@ -84,6 +84,7 @@
                     <app-reports-kpi-cards [reports]="reports"></app-reports-kpi-cards>
                 </div>
 
+                <!-- ── Timeline + Tabla ───────────────────────────────────── -->
                 <div class="grid lg:grid-cols-2 gap-6 mt-6">
 
                     <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
@@ -94,9 +95,16 @@
                             </p>
                         </div>
                         <div class="p-6">
-                            <app-reports-timeline [byMonth]="byMonth" [strategyIds]="strategyIds"
-                                [strategyMap]="strategyMap" [selectedStrategyId]="selectedStrategyId"
-                                [initialYear]="initialYear" (strategyChange)="onStrategyChange($event)">
+                            <app-reports-timeline
+                                [byMonth]="byMonth"
+                                [strategyIds]="strategyIds"
+                                [strategyMap]="strategyMap"
+                                [selectedStrategyId]="selectedStrategyId"
+                                [initialYear]="initialYear"
+                                [components]="components"
+                                [componentAggregate]="componentAggregate"
+                                (strategyChange)="onStrategyChange($event)"
+                                (componentChange)="onComponentChange($event)">
                             </app-reports-timeline>
                         </div>
                     </section>
@@ -114,6 +122,23 @@
                     </section>
 
                 </div>
+
+                <!-- ── Mapa de cobertura ───────────────────────────────────── -->
+                <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden mt-6">
+                    <div class="px-6 py-4 border-b border-zinc-100">
+                        <h3 class="text-sm font-semibold text-zinc-900">Mapa de cobertura</h3>
+                        <p class="text-xs text-zinc-500 mt-0.5">
+                            Distribución geográfica por municipio del Valle del Cauca
+                        </p>
+                    </div>
+                    <div style="height: 560px;">
+                        <app-reports-map
+                            [reports]="reports"
+                            [strategyMap]="strategyMap"
+                            [componentMap]="componentMap">
+                        </app-reports-map>
+                    </div>
+                </section>
 
             </div>
 
