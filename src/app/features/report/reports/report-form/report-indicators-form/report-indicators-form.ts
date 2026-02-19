@@ -3,6 +3,7 @@ import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from
 import { FormsModule } from '@angular/forms';
 import { ComponentIndicatorModel } from '../../../../../core/models/component.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { environment } from '../../../../../../environments/environment.prod';
 
 @Component({
   selector: 'app-report-indicators-form',
@@ -315,7 +316,7 @@ export class ReportIndicatorsFormComponent implements OnChanges {
     // Si tienes report_id disponible como @Input, agrégalo aquí:
     // formData.append('report_id', String(this.reportId));
 
-    this.http.post<any>('/api/files/upload', formData).subscribe({
+    this.http.post<any>(`${environment.apiUrl}/files/upload`, formData).subscribe({
       next: (result) => {
         this.uploadingFor = null;
         this.setValue(indicatorId, result);
