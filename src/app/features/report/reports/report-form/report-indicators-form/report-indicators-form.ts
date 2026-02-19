@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ComponentIndicatorModel } from '../../../../../core/models/component.model';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
   selector: 'app-report-indicators-form',
@@ -16,6 +17,12 @@ export class ReportIndicatorsFormComponent implements OnChanges {
 
   @Input() values: Record<number, any> = {};
   @Output() valuesChange = new EventEmitter<Record<number, any>>();
+
+  // Estado de uploads
+  uploadingFor: number | null = null;
+  uploadErrors: Record<number, string> = {};
+
+  constructor(private http: HttpClient) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['indicators'] || changes['values']) {
@@ -240,6 +247,8 @@ export class ReportIndicatorsFormComponent implements OnChanges {
           const groupData = value[groupKey];
           return Object.values(groupData).some(v => v !== null && v !== undefined && v !== '' && v !== 0);
         });
+      case 'file_attachment':
+        return value !== null && value !== undefined && !!value.file_url;
       default:
         return true;
     }
@@ -275,4 +284,55 @@ export class ReportIndicatorsFormComponent implements OnChanges {
     });
     return grandTotal;
   }
+
+  // =========================
+  // FILE ATTACHMENT
+  // =========================
+
+  getFileValue(indicatorId: number): { file_name: string; file_url: string; file_size_mb: number } | null {
+    const val = this.values[indicatorId];
+    if (val && typeof val === 'object' && val.file_url) return val;
+    return null;
+  }
+
+  getAcceptString(ind: ComponentIndicatorModel): string {
+    const types = ind.config?.allowed_types;
+    if (!types || types.length === 0) return '*/*';
+    return types.map((t: string) => `.${t}`).join(',');
+  }
+
+  onFileSelected(event: Event, indicatorId: number) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    this.uploadErrors[indicatorId] = '';
+    this.uploadingFor = indicatorId;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    // Si tienes report_id disponible como @Input, agrégalo aquí:
+    // formData.append('report_id', String(this.reportId));
+
+    this.http.post<any>('/api/files/upload', formData).subscribe({
+      next: (result) => {
+        this.uploadingFor = null;
+        this.setValue(indicatorId, result);
+        // Limpiar el input para permitir volver a seleccionar el mismo archivo
+        input.value = '';
+      },
+      error: (err) => {
+        this.uploadingFor = null;
+        this.uploadErrors[indicatorId] = err.error?.errors?.file || 'Error al subir el archivo';
+        input.value = '';
+      }
+    });
+  }
+
+  removeFile(indicatorId: number) {
+    this.setValue(indicatorId, null);
+    this.uploadErrors[indicatorId] = '';
+  }
+
 }

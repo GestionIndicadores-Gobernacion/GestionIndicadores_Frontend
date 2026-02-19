@@ -180,7 +180,9 @@ export class ComponenteIndicatorsFormComponent {
       configFields: [data?.config?.fields?.join('\n') || ''],
       configParentField: [data?.config?.parent_field || null],
       configAutoTotal: [data?.config?.auto_total || false],
-      configSubFields: [this.formatSubFieldsForTextarea(data?.config?.sub_fields) || '']
+      configSubFields: [this.formatSubFieldsForTextarea(data?.config?.sub_fields) || ''],
+      configAllowedTypes: [data?.config?.allowed_types?.join(', ') || ''],   // ← AGREGAR
+      configMaxSizeMb: [data?.config?.max_size_mb || null]                   // ← AGREGAR
     }) as FormGroup;
 
     group.get('name')?.valueChanges.subscribe(value => {
@@ -420,6 +422,22 @@ export class ComponenteIndicatorsFormComponent {
           auto_total: i.configAutoTotal || false,
           sub_fields: this.parseSubFieldsFromTextarea(i.configSubFields)
         };
+      } else if (i.field_type === 'file_attachment') {              // ← NUEVO
+        const allowedTypes = i.configAllowedTypes
+          ? i.configAllowedTypes
+            .split(',')
+            .map((t: string) => t.trim().toLowerCase())
+            .filter((t: string) => t.length > 0)
+          : [];
+
+        indicator.config = {
+          ...(allowedTypes.length > 0 && { allowed_types: allowedTypes }),
+          ...(i.configMaxSizeMb && { max_size_mb: Number(i.configMaxSizeMb) })
+        };
+
+        if (Object.keys(indicator.config).length === 0) {
+          indicator.config = null;
+        }
       }
 
       if (i.field_type === 'number' || i.field_type === 'sum_group' || i.field_type === 'grouped_data') {
