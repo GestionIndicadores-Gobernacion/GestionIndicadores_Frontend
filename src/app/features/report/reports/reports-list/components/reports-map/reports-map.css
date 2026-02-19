@@ -1,0 +1,51 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+/* Fix Leaflet default icon paths */
+.leaflet-default-icon-path {
+  background-image: url('https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png');
+}
+
+/* Asegurar que el mapa se renderice por encima del contenido */
+.leaflet-container {
+  height: 100% !important;
+  width: 100% !important;
+  font-family: inherit;
+  border-radius: 0;
+}
+
+/* Tooltip personalizado */
+.leaflet-tooltip {
+  border-radius: 8px !important;
+  border: 1px solid #e4e4e7 !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+  padding: 6px 10px !important;
+  background: white !important;
+}
+
+.leaflet-tooltip::before {
+  border-top-color: #e4e4e7 !important;
+}
+
+/* Scrollbar delgado para listas */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 3px;
+}
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #d4d4d8;
+  border-radius: 3px;
+}
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* line-clamp */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
