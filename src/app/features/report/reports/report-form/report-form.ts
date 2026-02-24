@@ -48,7 +48,6 @@ export class ReportFormComponent implements OnInit {
 
   municipios = MUNICIPIOS_VALLE;
 
-  // Fecha máxima (hoy) en formato YYYY-MM-DD
   todayDate: string;
 
   form = {
@@ -70,7 +69,6 @@ export class ReportFormComponent implements OnInit {
     private reportsService: ReportsService,
     private toast: ToastService
   ) {
-    // Calcular fecha de hoy en formato YYYY-MM-DD
     const today = new Date();
     this.todayDate = today.toISOString().split('T')[0];
   }
@@ -98,7 +96,6 @@ export class ReportFormComponent implements OnInit {
 
     if (!basicFieldsValid) return false;
 
-    // Validar indicadores requeridos
     const requiredIndicatorsValid = this.indicators
       .filter(ind => ind.is_required)
       .every(ind => this.isIndicatorValid(ind));
@@ -123,15 +120,17 @@ export class ReportFormComponent implements OnInit {
         return value !== null && value !== undefined && String(value).trim() !== '';
 
       case 'sum_group':
-        // Al menos un campo debe tener valor > 0
         if (!value || typeof value !== 'object') return false;
         return Object.values(value).some(v => Number(v) > 0);
 
       case 'grouped_data':
-        // Debe haber al menos un grupo con datos
         if (!value || typeof value !== 'object') return false;
-        const groups = Object.keys(value);
-        return groups.length > 0;
+        return Object.keys(value).length > 0;
+
+      case 'categorized_group':
+        // Válido si al menos una categoría fue seleccionada
+        if (!value || !Array.isArray(value.selected_categories)) return false;
+        return value.selected_categories.length > 0;
 
       default:
         return true;
@@ -143,7 +142,6 @@ export class ReportFormComponent implements OnInit {
   }
 
   loadBaseData(): void {
-
     this.loading = true;
 
     this.strategiesService.getAll().subscribe({
@@ -178,7 +176,6 @@ export class ReportFormComponent implements OnInit {
 
     this.reportsService.getById(this.id).subscribe({
       next: (report: ReportModel) => {
-
         this.form.strategy_id = report.strategy_id;
         this.form.component_id = report.component_id;
         this.form.report_date = report.report_date;
@@ -188,29 +185,23 @@ export class ReportFormComponent implements OnInit {
         this.form.zone_type = this.normalizeZoneType(report.zone_type);
         this.form.evidence_link = report.evidence_link || '';
 
-        // Cargar componentes de la estrategia (para el select de componente)
         this.onStrategyChange(false);
 
-        // Indicadores que ya tienen valor guardado en el reporte
         const indicatorsFromReport = report.indicator_values
           ?.filter(iv => iv.indicator)
           .map(iv => iv.indicator as ComponentIndicatorModel) ?? [];
 
-        // Indicadores actuales del componente (puede tener nuevos desde que se creó el reporte)
         const component = this.allComponents.find(c => c.id === this.form.component_id) as any;
         const currentIndicators: ComponentIndicatorModel[] = component?.indicators || [];
 
         if (indicatorsFromReport.length > 0) {
-          // Merge: indicadores del reporte + nuevos del componente que no existían antes
           const reportIndicatorIds = new Set(indicatorsFromReport.map(i => i.id));
           const newIndicators = currentIndicators.filter(i => !reportIndicatorIds.has(i.id));
           this.indicators = [...indicatorsFromReport, ...newIndicators];
         } else {
-          // Fallback: backend aún no devuelve metadatos — usar indicadores actuales
           this.indicators = currentIndicators;
         }
 
-        // Asignar valores con nueva referencia para que Angular detecte el cambio
         const newValues: Record<number, any> = {};
         report.indicator_values.forEach(iv => {
           newValues[iv.indicator_id] = iv.value;
@@ -225,7 +216,7 @@ export class ReportFormComponent implements OnInit {
       }
     });
   }
-  
+
   private normalizeZoneType(value: any): ZoneType | null {
     if (!value) return null;
     const str = String(value).toLowerCase();
@@ -235,7 +226,6 @@ export class ReportFormComponent implements OnInit {
   }
 
   onStrategyChange(reset = true): void {
-
     this.components = this.allComponents.filter(
       c => c.strategy_id === this.form.strategy_id
     );
@@ -248,7 +238,6 @@ export class ReportFormComponent implements OnInit {
   }
 
   onComponentChange(reset = true): void {
-
     if (!this.form.component_id) return;
 
     const component = this.allComponents.find(
@@ -279,20 +268,13 @@ export class ReportFormComponent implements OnInit {
 
         case 'sum_group':
           finalValue = {};
-          // Iterar los campos definidos en el CONFIG, no los del valor
-          // Así se incluyen todos los campos aunque el usuario no los haya tocado
           const configFields: string[] = ind.config?.fields ?? [];
           configFields.forEach(field => {
-            // field puede ser string o {name: string}
             const fieldName = typeof field === 'string' ? field : (field as any).name;
             if (!fieldName) return;
             const val = rawValue?.[fieldName];
-            if (val !== '' && val !== null && val !== undefined) {
-              const numValue = Number(val);
-              finalValue[fieldName] = !isNaN(numValue) ? numValue : 0;
-            } else {
-              finalValue[fieldName] = 0;
-            }
+            const numValue = Number(val);
+            finalValue[fieldName] = (!isNaN(numValue) && val !== '' && val !== null) ? numValue : 0;
           });
           break;
 
@@ -304,17 +286,60 @@ export class ReportFormComponent implements OnInit {
               ind.config?.sub_fields?.forEach((subField: any) => {
                 const value = rawValue[groupKey]?.[subField.name];
                 if (subField.type === 'number') {
-                  if (value !== null && value !== undefined && value !== '') {
-                    const numValue = Number(value);
-                    finalValue[groupKey][subField.name] = !isNaN(numValue) ? numValue : 0;
-                  } else {
-                    finalValue[groupKey][subField.name] = 0;
-                  }
+                  const numValue = Number(value);
+                  finalValue[groupKey][subField.name] = (!isNaN(numValue) && value !== null && value !== undefined && value !== '') ? numValue : 0;
                 } else {
                   finalValue[groupKey][subField.name] = value ? String(value) : '';
                 }
               });
             });
+          }
+          break;
+
+        case 'categorized_group':
+          // Estructura:
+          // {
+          //   selected_categories: ["Canino"],
+          //   data: { "Canino": { "Hembra": { "vacunados": 3, ... }, "Macho": { ... } } },
+          //   sub_sections: { "red_animalia": { "vacunados": 2, ... } }
+          // }
+          if (!rawValue || !Array.isArray(rawValue.selected_categories)) {
+            finalValue = { selected_categories: [], data: {}, sub_sections: {} };
+          } else {
+            // Limpiar y normalizar todos los valores numéricos
+            const cleanData: Record<string, any> = {};
+            const groups: string[] = ind.config?.groups || [];
+            const metrics: any[] = ind.config?.metrics || [];
+
+            rawValue.selected_categories.forEach((cat: string) => {
+              cleanData[cat] = {};
+              groups.forEach(group => {
+                cleanData[cat][group] = {};
+                metrics.forEach(metric => {
+                  const val = rawValue.data?.[cat]?.[group]?.[metric.key];
+                  const num = Number(val);
+                  cleanData[cat][group][metric.key] = !isNaN(num) ? num : 0;
+                });
+              });
+            });
+
+            // Limpiar sub_sections
+            const cleanSubSections: Record<string, any> = {};
+            const subSections: any[] = ind.config?.sub_sections || [];
+            subSections.forEach(section => {
+              cleanSubSections[section.key] = {};
+              metrics.forEach(metric => {
+                const val = rawValue.sub_sections?.[section.key]?.[metric.key];
+                const num = Number(val);
+                cleanSubSections[section.key][metric.key] = !isNaN(num) ? num : 0;
+              });
+            });
+
+            finalValue = {
+              selected_categories: rawValue.selected_categories,
+              data: cleanData,
+              sub_sections: cleanSubSections
+            };
           }
           break;
 
@@ -342,11 +367,9 @@ export class ReportFormComponent implements OnInit {
   }
 
   save(): void {
-
     this.attemptedSubmit = true;
 
     if (!this.isFormValid()) {
-      // Identificar qué campos faltan
       const missingFields: string[] = [];
 
       if (!this.form.strategy_id) missingFields.push('Estrategia');
@@ -357,7 +380,6 @@ export class ReportFormComponent implements OnInit {
       if (!this.form.intervention_location) missingFields.push('Municipio');
       if (!this.form.zone_type) missingFields.push('Zona');
 
-      // Verificar indicadores requeridos
       this.indicators
         .filter(ind => ind.is_required && !this.isIndicatorValid(ind))
         .forEach(ind => missingFields.push(ind.name));
@@ -384,14 +406,8 @@ export class ReportFormComponent implements OnInit {
       indicator_values: this.buildIndicatorValues()
     };
 
-    // DEBUG: Ver qué se está enviando
     console.log('=== PAYLOAD COMPLETO ===');
     console.log(JSON.stringify(payload, null, 2));
-    console.log('=== INDICATOR VALUES ===');
-    payload.indicator_values.forEach(iv => {
-      const ind = this.indicators.find(i => i.id === iv.indicator_id);
-      console.log(`${ind?.name} (${ind?.field_type}):`, iv.value);
-    });
 
     const request = this.isEdit
       ? this.reportsService.update(this.id!, payload)
