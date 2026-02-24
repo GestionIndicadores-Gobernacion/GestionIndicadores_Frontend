@@ -95,15 +95,10 @@
                             </p>
                         </div>
                         <div class="p-6">
-                            <app-reports-timeline
-                                [byMonth]="byMonth"
-                                [strategyIds]="strategyIds"
-                                [strategyMap]="strategyMap"
-                                [selectedStrategyId]="selectedStrategyId"
-                                [initialYear]="initialYear"
-                                [components]="components"
-                                [componentAggregate]="componentAggregate"
-                                (strategyChange)="onStrategyChange($event)"
+                            <app-reports-timeline [byMonth]="byMonth" [strategyIds]="strategyIds"
+                                [strategyMap]="strategyMap" [selectedStrategyId]="selectedStrategyId"
+                                [initialYear]="initialYear" [components]="components"
+                                [componentAggregate]="componentAggregate" (strategyChange)="onStrategyChange($event)"
                                 (componentChange)="onComponentChange($event)">
                             </app-reports-timeline>
                         </div>
@@ -116,7 +111,7 @@
                         </div>
                         <div class="p-6">
                             <app-reports-table [reports]="reports" [strategyMap]="strategyMap"
-                                (delete)="deleteReport($event)">
+                                [componentMap]="componentMap" (delete)="deleteReport($event)">
                             </app-reports-table>
                         </div>
                     </section>
@@ -132,10 +127,7 @@
                         </p>
                     </div>
                     <div style="height: 560px;">
-                        <app-reports-map
-                            [reports]="reports"
-                            [strategyMap]="strategyMap"
-                            [componentMap]="componentMap">
+                        <app-reports-map [reports]="reports" [strategyMap]="strategyMap" [componentMap]="componentMap">
                         </app-reports-map>
                     </div>
                 </section>
