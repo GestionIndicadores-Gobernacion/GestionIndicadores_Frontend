@@ -16,6 +16,7 @@ export class ReportsTableComponent implements OnChanges {
 
   @Input() reports: ReportModel[] = [];
   @Input() strategyMap: Record<number, string> = {};
+  @Input() componentMap: Record<number, string> = {};
 
   @Output() delete = new EventEmitter<number>();
 
@@ -60,7 +61,8 @@ export class ReportsTableComponent implements OnChanges {
         r.activities_performed.toLowerCase().includes(term) ||
         r.intervention_location.toLowerCase().includes(term) ||
         r.zone_type.toLowerCase().includes(term) ||
-        this.strategyName(r.strategy_id).toLowerCase().includes(term)
+        this.strategyName(r.strategy_id).toLowerCase().includes(term) ||
+        this.componentName(r.component_id).toLowerCase().includes(term)
       );
     });
 
@@ -140,7 +142,10 @@ export class ReportsTableComponent implements OnChanges {
     return this.strategyMap[id] || '—';
   }
 
-  // Formatea el zone_type para mostrar solo el valor sin el enum prefix
+  componentName(id: number): string {
+    return this.componentMap[id] || '—';
+  }
+
   formatZoneType(zoneType: string): string {
     if (!zoneType) return '—';
 

@@ -35,7 +35,6 @@ export class ReportsListComponent implements OnInit {
 
   reports: ReportModel[] = [];
   strategyMap: Record<number, string> = {};
-  /** component_id → component_name, construido al cargar reportes */
   componentMap: Record<number, string> = {};
   strategyIds: number[] = [];
 
@@ -54,7 +53,7 @@ export class ReportsListComponent implements OnInit {
     private reportsService: ReportsService,
     private strategiesService: StrategiesService,
     private toast: ToastService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadData();
@@ -118,6 +117,7 @@ export class ReportsListComponent implements OnInit {
     this.reportsService.getAll().subscribe({
       next: reports => {
         this.reports = reports;
+        console.log('component_ids en reportes:', [...new Set(reports.map(r => r.component_id))]);
         this.loading = false;
 
         const mostRecent = reports[0] ?? null;
@@ -126,15 +126,16 @@ export class ReportsListComponent implements OnInit {
           this.initialYear = new Date(mostRecent.report_date).getFullYear();
         }
 
-        // Cargar aggregates de TODAS las estrategias para poblar componentMap completo
         const uniqueStrategyIds = [...new Set(reports.map(r => r.strategy_id))];
         uniqueStrategyIds.forEach(id => {
           this.reportsService.aggregateByStrategy(id).subscribe({
             next: agg => {
-              for (const c of agg.by_component) {
-                this.componentMap = { ...this.componentMap, [c.component_id]: c.component_name };
-              }
-              // El aggregate de la estrategia más reciente también llena el timeline
+              console.log('by_component del aggregate:', agg.by_component);
+              const newEntries = Object.fromEntries(
+                agg.by_component.map(c => [c.component_id, c.component_name])
+              );
+              this.componentMap = { ...this.componentMap, ...newEntries };
+
               if (id === this.selectedStrategyId) {
                 this.strategyAggregate = agg;
                 this.byMonth = agg.by_month;
@@ -154,10 +155,11 @@ export class ReportsListComponent implements OnInit {
         this.strategyAggregate = agg;
         this.byMonth = agg.by_month;
         this.components = agg.by_component;
-        // Enriquecer componentMap con lo que devuelve el aggregate
-        for (const c of agg.by_component) {
-          this.componentMap[c.component_id] = c.component_name;
-        }
+
+        const newEntries = Object.fromEntries(
+          agg.by_component.map(c => [c.component_id, c.component_name])
+        );
+        this.componentMap = { ...this.componentMap, ...newEntries };
       },
       error: () => {
         this.strategyAggregate = null;
