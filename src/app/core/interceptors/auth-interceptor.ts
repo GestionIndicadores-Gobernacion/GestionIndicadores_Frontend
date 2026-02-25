@@ -7,37 +7,37 @@ import { catchError, switchMap, throwError } from 'rxjs';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
   const router = inject(Router);
+  const isRefresh = req.url.includes('/auth/refresh');
+  const isLogin = req.url.includes('/auth/login');
+
+  // ✅ Si el token ya expiró localmente, refrescar antes de enviar
+  if (!isRefresh && !isLogin && auth.isTokenExpired() && auth.getRefreshToken()) {
+    return auth.refreshToken().pipe(
+      switchMap(res => {
+        return next(req.clone({
+          setHeaders: { Authorization: `Bearer ${res.access_token}` }
+        }));
+      }),
+      catchError(() => {
+        auth.logout();
+        router.navigate(['/auth/login']);
+        return throwError(() => new Error('Session expired'));
+      })
+    );
+  }
 
   const access = auth.getAccessToken();
-
-  // ⚠️ NO meter access token al refresh
-  const isRefresh = req.url.includes('/auth/refresh');
-
-  let authReq = req;
-
-  if (access && !isRefresh) {
-    authReq = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${access}`,
-      },
-    });
-  }
+  const authReq = access && !isRefresh
+    ? req.clone({ setHeaders: { Authorization: `Bearer ${access}` } })
+    : req;
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401 && !isRefresh) {
         return auth.refreshToken().pipe(
-          switchMap(res => {
-            const newToken = res.access_token;
-
-            const retryReq = req.clone({
-              setHeaders: {
-                Authorization: `Bearer ${newToken}`,
-              },
-            });
-
-            return next(retryReq);
-          }),
+          switchMap(res => next(req.clone({
+            setHeaders: { Authorization: `Bearer ${res.access_token}` }
+          }))),
           catchError(() => {
             auth.logout();
             router.navigate(['/auth/login']);
@@ -45,7 +45,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           })
         );
       }
-
       return throwError(() => error);
     })
   );
