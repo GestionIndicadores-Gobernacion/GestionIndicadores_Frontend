@@ -19,7 +19,7 @@ export class AuthService {
 
   private api = `${environment.apiUrl}/auth`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // =====================================================
   // 1️⃣ LOGIN
@@ -114,6 +114,15 @@ export class AuthService {
         localStorage.setItem('access_token', res.access_token);
       })
     );
+  }
+
+  // Agrega este método junto a isTokenExpired()
+  isTokenExpiringSoon(marginSeconds = 60): boolean {
+    const payload = this.getTokenPayload();
+    if (!payload) return true;
+
+    const now = Math.floor(Date.now() / 1000);
+    return payload.exp - now < marginSeconds; // vence en menos de 60 seg
   }
 
   // =====================================================
