@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
 import { ReportModel } from '../../../../core/models/report.model';
@@ -18,6 +18,8 @@ import { ReportsTimelineComponent } from './components/reports-timeline/reports-
 import { ReportsMapComponent } from './components/reports-map/reports-map';
 import { UsersService } from '../../../../core/services/users.service';
 import { ReportsAuditLogComponent } from './components/reports-audit-log/reports-audit-log';
+
+import { catchError, forkJoin, of } from 'rxjs';
 
 @Component({
   selector: 'app-reports-list',
@@ -49,8 +51,8 @@ export class ReportsListComponent implements OnInit {
   selectedStrategyId: number | null = null;
   initialYear: number = new Date().getFullYear();
 
+  loading = true;
   showDashboard = true;
-  loading = false;
 
   currentUserId: number | null = null;
   isAdmin = false;
@@ -59,15 +61,28 @@ export class ReportsListComponent implements OnInit {
     private reportsService: ReportsService,
     private strategiesService: StrategiesService,
     private usersService: UsersService,
-    private toast: ToastService
+    private toast: ToastService,
+    private cd: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
     this.usersService.getMe().subscribe(user => {
       this.currentUserId = user.id;
       this.isAdmin = user.role?.name === 'admin';
+      this.cd.detectChanges();
     });
+
     this.loadData();
+  }
+
+  private emptyAggregate(strategyId: number): StrategyAggregate {
+    return {
+      strategy_id: strategyId,
+      total_reports: 0,
+      by_component: [],
+      by_month: [],
+      by_zone: { Urbana: 0, Rural: 0 }
+    };
   }
 
   toggleDashboard(): void {
@@ -85,9 +100,16 @@ export class ReportsListComponent implements OnInit {
       this.componentAggregate = null;
       return;
     }
+
     this.reportsService.aggregateByComponent(componentId).subscribe({
-      next: agg => { this.componentAggregate = agg; },
-      error: () => { this.componentAggregate = null; }
+      next: agg => {
+        this.componentAggregate = agg;
+        this.cd.detectChanges();
+      },
+      error: () => {
+        this.componentAggregate = null;
+        this.cd.detectChanges();
+      }
     });
   }
 
@@ -95,94 +117,115 @@ export class ReportsListComponent implements OnInit {
     this.toast.confirm('Eliminar reporte', 'Esta acción no se puede deshacer.')
       .then(result => {
         if (!result.isConfirmed) return;
+
         this.reportsService.delete(id).subscribe({
           next: () => {
             this.reports = this.reports.filter(r => r.id !== id);
             this.toast.success('Reporte eliminado correctamente');
             if (this.selectedStrategyId) this.loadAggregate(this.selectedStrategyId);
+            this.cd.detectChanges();
           },
           error: () => this.toast.error('Error al eliminar el reporte')
         });
       });
   }
 
-  // ═══════════════════════════════════════
-  // DATA LOADING
-  // ═══════════════════════════════════════
-
   private loadData(): void {
-    this.loading = true;
     this.strategiesService.getAll().subscribe({
       next: strategies => {
         this.strategyMap = Object.fromEntries(strategies.map(s => [s.id, s.name]));
-        this.strategyIds = strategies
-          .sort((a, b) => a.name.localeCompare(b.name))
-          .map(s => s.id);
+        this.strategyIds = strategies.sort((a, b) => a.name.localeCompare(b.name)).map(s => s.id);
         this.loadReports();
       },
-      error: () => { this.loading = false; }
+      error: () => {
+        this.strategyMap = {};
+        this.strategyIds = [];
+        this.cd.detectChanges();
+      }
     });
   }
 
   private loadReports(): void {
     this.reportsService.getAll().subscribe({
       next: reports => {
-        this.reports = reports;
-        console.log('component_ids en reportes:', [...new Set(reports.map(r => r.component_id))]);
-        this.loading = false;
 
-        const mostRecent = reports[0] ?? null;
-        if (mostRecent) {
-          this.selectedStrategyId = mostRecent.strategy_id;
-          this.initialYear = new Date(mostRecent.report_date).getFullYear();
+        this.reports = reports ?? [];
+
+        if (this.reports.length === 0) {
+          this.strategyAggregate = null;
+          this.byMonth = [];
+          this.components = [];
+          this.componentMap = {};
+          this.loading = false;
+          this.cd.detectChanges();
+          return;
         }
 
-        const uniqueStrategyIds = [...new Set(reports.map(r => r.strategy_id))];
-        uniqueStrategyIds.forEach(id => {
-          this.reportsService.aggregateByStrategy(id).subscribe({
-            next: agg => {
-              console.log('by_component del aggregate:', agg.by_component);
-              const newEntries = Object.fromEntries(
-                agg.by_component.map(c => [c.component_id, c.component_name])
-              );
-              this.componentMap = { ...this.componentMap, ...newEntries };
+        const mostRecent = this.reports[0];
+        this.selectedStrategyId = mostRecent.strategy_id;
+        this.initialYear = new Date(mostRecent.report_date).getFullYear();
 
-              if (id === this.selectedStrategyId) {
-                this.strategyAggregate = agg;
-                this.byMonth = agg.by_month;
-                this.components = agg.by_component;
-              }
+        const uniqueStrategyIds = [...new Set(this.reports.map(r => r.strategy_id))];
+
+        const requests = uniqueStrategyIds.map(id =>
+          this.reportsService.aggregateByStrategy(id).pipe(
+            catchError(() => of(this.emptyAggregate(id)))
+          )
+        );
+
+        forkJoin(requests).subscribe(aggregates => {
+
+          const fullComponentMap: Record<number, string> = {};
+
+          aggregates.forEach((agg, index) => {
+            const strategyId = uniqueStrategyIds[index];
+
+            agg.by_component.forEach(c => {
+              fullComponentMap[c.component_id] = c.component_name;
+            });
+
+            if (strategyId === this.selectedStrategyId) {
+              this.strategyAggregate = agg;
+              this.byMonth = agg.by_month;
+              this.components = agg.by_component;
             }
           });
+
+          this.componentMap = fullComponentMap;
+
+          // 🔥 CLAVE: refresca la vista UNA SOLA VEZ cuando todo terminó
+          this.loading = false;
+          this.cd.detectChanges();
         });
-      },
-      error: () => { this.loading = false; }
-    });
-  }
 
-  private loadAggregate(strategyId: number): void {
-    this.reportsService.aggregateByStrategy(strategyId).subscribe({
-      next: agg => {
-        this.strategyAggregate = agg;
-        this.byMonth = agg.by_month;
-        this.components = agg.by_component;
-
-        const newEntries = Object.fromEntries(
-          agg.by_component.map(c => [c.component_id, c.component_name])
-        );
-        this.componentMap = { ...this.componentMap, ...newEntries };
       },
       error: () => {
+        this.reports = [];
         this.strategyAggregate = null;
         this.byMonth = [];
         this.components = [];
+        this.loading = false;
+        this.cd.detectChanges();
       }
     });
   }
 
-  // ═══════════════════════════════════════
-  // DERIVED METRICS
-  // ═══════════════════════════════════════
+  private loadAggregate(strategyId: number): void {
+    this.reportsService.aggregateByStrategy(strategyId).pipe(
+      catchError(() => of(this.emptyAggregate(strategyId)))
+    ).subscribe(agg => {
+      this.strategyAggregate = agg;
+      this.byMonth = agg.by_month;
+      this.components = agg.by_component;
+
+      const newEntries = Object.fromEntries(
+        agg.by_component.map(c => [c.component_id, c.component_name])
+      );
+
+      this.componentMap = { ...this.componentMap, ...newEntries };
+      this.cd.detectChanges();
+    });
+  }
 
   get totalReports(): number { return this.reports.length; }
 

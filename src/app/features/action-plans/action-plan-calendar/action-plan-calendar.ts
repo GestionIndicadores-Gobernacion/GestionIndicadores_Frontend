@@ -28,11 +28,10 @@ interface CalendarDay {
   plans: ActionPlanModel[];
 }
 
-// Actividad aplanada para el calendario
 export interface FlatActivity {
-  plan:      ActionPlanModel;
+  plan: ActionPlanModel;
   objective: ActionPlanObjectiveModel;
-  activity:  ActionPlanActivityModel;
+  activity: ActionPlanActivityModel;
 }
 
 @Component({
@@ -52,37 +51,43 @@ export interface FlatActivity {
 })
 export class ActionPlanCalendarComponent implements OnInit {
 
-  plans:              ActionPlanModel[] = [];
-  strategies:         StrategyModel[]   = [];
-  components:         ComponentModel[]  = [];
-  filteredComponents: ComponentModel[]  = [];
+  plans: ActionPlanModel[] = [];
+  strategies: StrategyModel[] = [];
+  components: ComponentModel[] = [];
+  filteredComponents: ComponentModel[] = [];
 
-  selectedStrategyId:  number | null = null;
+  selectedStrategyId: number | null = null;
   selectedComponentId: number | null = null;
 
-  currentDate  = new Date();
+  currentDate = new Date();
   calendarDays: CalendarDay[] = [];
 
-  loading         = false;
+  loading = false;
   showCreateModal = false;
   showReportModal = false;
-  selectedPlan:      ActionPlanModel         | null = null;
+  selectedPlan: ActionPlanModel | null = null;
   selectedObjective: ActionPlanObjectiveModel | null = null;
-  selectedActivity:  ActionPlanActivityModel  | null = null;
+  selectedActivity: ActionPlanActivityModel | null = null;
+
+  canViewAudit = false;
 
   viewMode: 'calendar' | 'agenda' = 'calendar';
   hoveredFlat: (FlatActivity & { x: number; y: number }) | null = null;
 
-  readonly MONTHS   = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  readonly WEEKDAYS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  // ── FILTROS RÁPIDOS ──
+  activeStatusFilter: 'all' | ActionPlanStatus = 'all';
+  filterByBoss = false;
+
+  readonly MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+  readonly WEEKDAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
   constructor(
     private actionPlanService: ActionPlanService,
     private strategiesService: StrategiesService,
     private componentsService: ComponentsService,
-    private toast:  ToastService,
+    private toast: ToastService,
     private ngZone: NgZone,
-    private cdr:    ChangeDetectorRef
+    private cdr: ChangeDetectorRef
   ) { }
 
   // ═══════════════════════════════════════
@@ -90,6 +95,8 @@ export class ActionPlanCalendarComponent implements OnInit {
   // ═══════════════════════════════════════
 
   ngOnInit(): void {
+    const role = localStorage.getItem('role');
+    this.canViewAudit = role === 'admin' || role === 'superadmin';
     this.loadStrategies();
     this.loadPlans();
   }
@@ -119,10 +126,10 @@ export class ActionPlanCalendarComponent implements OnInit {
 
   private loadPlans(): void {
     const filters: ActionPlanFilters = {
-      strategy_id:  this.selectedStrategyId  ?? undefined,
+      strategy_id: this.selectedStrategyId ?? undefined,
       component_id: this.selectedComponentId ?? undefined,
       month: this.currentDate.getMonth() + 1,
-      year:  this.currentDate.getFullYear(),
+      year: this.currentDate.getFullYear(),
     };
     this.actionPlanService.getAll(filters).pipe(
       catchError(() => of([]))
@@ -133,10 +140,69 @@ export class ActionPlanCalendarComponent implements OnInit {
   }
 
   // ═══════════════════════════════════════
-  // HELPERS — aplanar actividades
+  // FILTROS RÁPIDOS
   // ═══════════════════════════════════════
 
-  /** Devuelve todas las actividades de un plan aplanadas con su objetivo */
+  toggleStatusFilter(filter: 'all' | ActionPlanStatus): void {
+    this.activeStatusFilter = filter;
+    this.buildCalendar();
+    this.cdr.detectChanges();
+  }
+
+  toggleBossFilter(): void {
+    this.filterByBoss = !this.filterByBoss;
+    this.buildCalendar();
+    this.cdr.detectChanges();
+  }
+
+  get displayPlans(): ActionPlanModel[] {
+    let result = this.plans;
+
+    if (this.activeStatusFilter !== 'all') {
+      result = result.map(plan => ({
+        ...plan,
+        plan_objectives: (plan.plan_objectives ?? []).map(obj => ({
+          ...obj,
+          activities: (obj.activities ?? []).filter(act =>
+            act.status === this.activeStatusFilter
+          )
+        })).filter(obj => obj.activities.length > 0)
+      })).filter(plan => plan.plan_objectives.length > 0);
+    }
+
+    if (this.filterByBoss) {
+      result = result.map(plan => ({
+        ...plan,
+        plan_objectives: (plan.plan_objectives ?? []).map(obj => ({
+          ...obj,
+          activities: (obj.activities ?? []).filter(act =>
+            act.requires_boss_assistance === true
+          )
+        })).filter(obj => obj.activities.length > 0)
+      })).filter(plan => plan.plan_objectives.length > 0);
+    }
+
+    return result;
+  }
+
+  get filteredPlansCount(): number {
+    return this.displayPlans.reduce((total, plan) =>
+      total + (plan.plan_objectives ?? []).reduce((t, obj) =>
+        t + (obj.activities ?? []).length, 0), 0);
+  }
+
+  getDisplayPlansForDay(day: CalendarDay): ActionPlanModel[] {
+    return this.displayPlans.filter(plan =>
+      (plan.plan_objectives ?? []).some(obj =>
+        (obj.activities ?? []).some(act => this.activityFallsOnDay(act, day.date))
+      )
+    );
+  }
+
+  // ═══════════════════════════════════════
+  // HELPERS
+  // ═══════════════════════════════════════
+
   flatActivities(plan: ActionPlanModel): FlatActivity[] {
     const result: FlatActivity[] = [];
     for (const obj of plan.plan_objectives ?? []) {
@@ -147,19 +213,17 @@ export class ActionPlanCalendarComponent implements OnInit {
     return result;
   }
 
-  /** Verifica si una actividad cae en el día dado */
   activityFallsOnDay(activity: ActionPlanActivityModel, date: Date): boolean {
     const { y, m, d } = this.parseDateOnly(activity.delivery_date);
-    const calYear  = this.currentDate.getFullYear();
+    const calYear = this.currentDate.getFullYear();
     const calMonth = this.currentDate.getMonth();
     if (y !== calYear || m !== calMonth) return false;
     return d === date.getDate() && m === date.getMonth() && y === date.getFullYear();
   }
 
   countActivitiesInDay(day: CalendarDay): number {
-    return day.plans.reduce((total, plan) => {
-      return total + this.flatActivities(plan).filter(f => this.activityFallsOnDay(f.activity, day.date)).length;
-    }, 0);
+    return this.getDisplayPlansForDay(day).reduce((total, plan) =>
+      total + this.flatActivities(plan).filter(f => this.activityFallsOnDay(f.activity, day.date)).length, 0);
   }
 
   getStaffNames(activity: ActionPlanActivityModel): string {
@@ -216,14 +280,14 @@ export class ActionPlanCalendarComponent implements OnInit {
   }
 
   // ═══════════════════════════════════════
-  // FILTROS
+  // FILTROS ESTRATEGIA / COMPONENTE
   // ═══════════════════════════════════════
 
   onStrategyChange(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
-    this.selectedStrategyId  = value ? +value : null;
+    this.selectedStrategyId = value ? +value : null;
     this.selectedComponentId = null;
-    this.filteredComponents  = this.selectedStrategyId
+    this.filteredComponents = this.selectedStrategyId
       ? this.components.filter(c => c.strategy_id === this.selectedStrategyId)
       : [];
     this.loadPlans();
@@ -239,22 +303,22 @@ export class ActionPlanCalendarComponent implements OnInit {
   // MODALES
   // ═══════════════════════════════════════
 
-  openCreateModal(): void  { this.showCreateModal = true; }
+  openCreateModal(): void { this.showCreateModal = true; }
   closeCreateModal(): void { this.showCreateModal = false; }
 
   openReportModal(plan: ActionPlanModel, objective: ActionPlanObjectiveModel, activity: ActionPlanActivityModel, event: Event): void {
     event.stopPropagation();
-    this.selectedPlan      = plan;
+    this.selectedPlan = plan;
     this.selectedObjective = objective;
-    this.selectedActivity  = activity;
-    this.showReportModal   = true;
+    this.selectedActivity = activity;
+    this.showReportModal = true;
   }
 
   closeReportModal(): void {
-    this.showReportModal   = false;
-    this.selectedPlan      = null;
+    this.showReportModal = false;
+    this.selectedPlan = null;
     this.selectedObjective = null;
-    this.selectedActivity  = null;
+    this.selectedActivity = null;
   }
 
   onPlanCreated(): void {
@@ -276,7 +340,7 @@ export class ActionPlanCalendarComponent implements OnInit {
         if (!result.isConfirmed) return;
         this.ngZone.run(() => {
           this.actionPlanService.deleteActivity(activityId).subscribe({
-            next:  () => { this.loadPlans(); this.toast.success('Actividad eliminada'); },
+            next: () => { this.loadPlans(); this.toast.success('Actividad eliminada'); },
             error: () => this.toast.error('Error al eliminar')
           });
         });
@@ -302,18 +366,18 @@ export class ActionPlanCalendarComponent implements OnInit {
 
   statusClass(status: ActionPlanStatus): string {
     const map: Record<ActionPlanStatus, string> = {
-      'Realizado':    'bg-emerald-50 text-emerald-700 border-emerald-200',
+      'Realizado': 'bg-emerald-50 text-emerald-700 border-emerald-200',
       'En Ejecución': 'bg-blue-50 text-blue-700 border-blue-200',
-      'Pendiente':    'bg-red-50 text-red-700 border-red-200',
+      'Pendiente': 'bg-red-50 text-red-700 border-red-200',
     };
     return map[status];
   }
 
   statusDot(status: ActionPlanStatus): string {
     const map: Record<ActionPlanStatus, string> = {
-      'Realizado':    'bg-emerald-500',
+      'Realizado': 'bg-emerald-500',
       'En Ejecución': 'bg-blue-500',
-      'Pendiente':    'bg-red-500',
+      'Pendiente': 'bg-red-500',
     };
     return map[status];
   }
@@ -334,15 +398,15 @@ export class ActionPlanCalendarComponent implements OnInit {
   // ═══════════════════════════════════════
 
   private buildCalendar(): void {
-    const year  = this.currentDate.getFullYear();
+    const year = this.currentDate.getFullYear();
     const month = this.currentDate.getMonth();
     const today = new Date();
 
-    const firstDay      = new Date(year, month, 1);
-    const lastDay       = new Date(year, month + 1, 0);
-    const startPadding  = firstDay.getDay();
-    const endPadding    = 6 - lastDay.getDay();
-    const lastDayPrevM  = new Date(year, month, 0).getDate();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startPadding = firstDay.getDay();
+    const endPadding = 6 - lastDay.getDay();
+    const lastDayPrevM = new Date(year, month, 0).getDate();
 
     const days: CalendarDay[] = [];
 
@@ -351,8 +415,10 @@ export class ActionPlanCalendarComponent implements OnInit {
     }
 
     for (let d = 1; d <= lastDay.getDate(); d++) {
-      const date    = new Date(year, month, d);
-      const isToday = date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
+      const date = new Date(year, month, d);
+      const isToday = date.getDate() === today.getDate() &&
+        date.getMonth() === today.getMonth() &&
+        date.getFullYear() === today.getFullYear();
 
       const plansOfDay = this.plans.filter(plan =>
         (plan.plan_objectives ?? []).some(obj =>

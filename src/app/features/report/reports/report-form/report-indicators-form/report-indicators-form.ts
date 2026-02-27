@@ -14,7 +14,7 @@ import { environment } from '../../../../../../environments/environment.prod';
 export class ReportIndicatorsFormComponent implements OnChanges {
 
   @Input() indicators: ComponentIndicatorModel[] = [];
-  @Input() reportDate!: string;
+  @Input() reportDate: string | null = null;
 
   @Input() values: Record<number, any> = {};
   @Output() valuesChange = new EventEmitter<Record<number, any>>();
@@ -340,15 +340,15 @@ export class ReportIndicatorsFormComponent implements OnChanges {
     if (!ind.is_required) return true;
     const value = this.values[ind.id!];
     switch (ind.field_type) {
-      case 'select':            return value !== null && value !== undefined && value !== '';
-      case 'multi_select':      return Array.isArray(value) && value.length > 0;
-      case 'number':            return value !== null && value !== undefined && value !== '';
-      case 'text':              return value !== null && value !== undefined && value.trim() !== '';
-      case 'sum_group':         return !!value && typeof value === 'object' && Object.values(value).some(v => Number(v) > 0);
-      case 'grouped_data':      return !!value && typeof value === 'object' && Object.keys(value).length > 0;
-      case 'file_attachment':   return !!value?.file_url;
+      case 'select': return value !== null && value !== undefined && value !== '';
+      case 'multi_select': return Array.isArray(value) && value.length > 0;
+      case 'number': return value !== null && value !== undefined && value !== '';
+      case 'text': return value !== null && value !== undefined && value.trim() !== '';
+      case 'sum_group': return !!value && typeof value === 'object' && Object.values(value).some(v => Number(v) > 0);
+      case 'grouped_data': return !!value && typeof value === 'object' && Object.keys(value).length > 0;
+      case 'file_attachment': return !!value?.file_url;
       case 'categorized_group': return Array.isArray(value?.selected_categories) && value.selected_categories.length > 0;
-      default:                  return true;
+      default: return true;
     }
   }
 

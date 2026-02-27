@@ -28,7 +28,7 @@ export class MenuService {
       {
         label: 'Bases de datos',
         disabled: true,
-        roles: [1, 2, 3],
+        roles: [3],
         children: [
           { label: 'Dataset', route: 'datasets' },
           { label: 'Tablas', route: 'datasets/tables' }

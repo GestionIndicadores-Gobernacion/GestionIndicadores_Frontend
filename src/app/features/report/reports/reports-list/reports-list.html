@@ -17,8 +17,8 @@
         <!-- PRIMARY ACTIONS -->
         <div class="grid md:grid-cols-2 gap-4">
 
-            <a [routerLink]="['create']" class="group block bg-white border border-zinc-200 rounded-2xl p-6
-                       hover:border-zinc-300 transition-colors duration-150 cursor-pointer">
+            <a [routerLink]="['create']"
+                class="group block bg-white border border-zinc-200 rounded-2xl p-6 hover:border-zinc-300 transition-colors duration-150 cursor-pointer">
                 <div class="flex items-start justify-between mb-4">
                     <div class="flex-1">
                         <h2 class="text-base font-semibold text-zinc-900">Registrar reporte</h2>
@@ -34,44 +34,42 @@
                 </p>
             </a>
 
-            <button (click)="toggleDashboard()" class="group text-left bg-white border border-zinc-200 rounded-2xl p-6
-                       hover:border-zinc-300 transition-colors duration-150 cursor-pointer w-full">
+            <button (click)="toggleDashboard()" [disabled]="loading"
+                class="group text-left bg-white border border-zinc-200 rounded-2xl p-6 hover:border-zinc-300 transition-colors duration-150 cursor-pointer w-full disabled:cursor-default">
                 <div class="flex items-start justify-between mb-4">
                     <div class="flex-1">
                         <h2 class="text-base font-semibold text-zinc-900">Panel analítico</h2>
                         <p class="text-sm text-zinc-500 mt-1">Tendencias, cobertura y distribución estratégica</p>
                     </div>
-                    <div class="flex items-center justify-center w-5 h-5 text-zinc-400 group-hover:text-zinc-900
-                                transition-colors duration-150 font-medium text-lg">
+                    <div *ngIf="loading"
+                        class="w-5 h-5 border-2 border-zinc-200 border-t-zinc-500 rounded-full animate-spin shrink-0">
+                    </div>
+                    <div *ngIf="!loading"
+                        class="flex items-center justify-center w-5 h-5 text-zinc-400 group-hover:text-zinc-900 transition-colors duration-150 font-medium text-lg">
                         {{ showDashboard ? '−' : '+' }}
                     </div>
                 </div>
                 <p class="text-xs text-zinc-500">
-                    {{ showDashboard ? 'Ocultar métricas y visualizaciones' : 'Abrir métricas consolidadas' }}
+                    <span *ngIf="loading">Cargando datos...</span>
+                    <span *ngIf="!loading">{{ showDashboard ? 'Ocultar métricas y visualizaciones' : 'Abrir métricas
+                        consolidadas' }}</span>
                 </p>
             </button>
 
         </div>
 
         <!-- DASHBOARD -->
-        <div *ngIf="showDashboard" class="space-y-6">
+        <div *ngIf="showDashboard && !loading" class="space-y-6">
 
-            <div *ngIf="loading" class="bg-white border border-zinc-200 rounded-2xl p-12">
-                <div class="flex flex-col items-center justify-center gap-3">
-                    <div class="w-5 h-5 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin"></div>
-                    <p class="text-sm text-zinc-500">Cargando información...</p>
-                </div>
-            </div>
-
-            <div *ngIf="!loading && reports.length === 0"
-                class="bg-white border border-zinc-200 rounded-2xl p-12 text-center">
+            <!-- EMPTY STATE -->
+            <div *ngIf="reports.length === 0" class="bg-white border border-zinc-200 rounded-2xl p-12 text-center">
                 <h3 class="text-base font-semibold text-zinc-900">Aún no existen reportes</h3>
                 <p class="text-sm text-zinc-500 mt-2">
                     Cuando se registren actividades aparecerán métricas consolidadas aquí
                 </p>
             </div>
 
-            <div *ngIf="!loading && reports.length > 0">
+            <div *ngIf="reports.length > 0">
 
                 <div class="bg-white border border-zinc-200 rounded-2xl p-6">
                     <h2 class="text-base font-semibold text-zinc-900">Resumen general</h2>
@@ -84,7 +82,6 @@
                     <app-reports-kpi-cards [reports]="reports"></app-reports-kpi-cards>
                 </div>
 
-                <!-- ── Timeline + Tabla ───────────────────────────────────── -->
                 <div class="grid lg:grid-cols-2 gap-6 mt-6">
 
                     <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
@@ -119,7 +116,7 @@
 
                 </div>
 
-                <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden mt-6">
+                <section *ngIf="isAdmin" class="bg-white border border-zinc-200 rounded-2xl overflow-hidden mt-6">
                     <div class="px-6 py-4 border-b border-zinc-100">
                         <h3 class="text-sm font-semibold text-zinc-900">Historial de acciones</h3>
                         <p class="text-xs text-zinc-500 mt-0.5">Registro de creación, edición y eliminación</p>
@@ -129,7 +126,6 @@
                     </div>
                 </section>
 
-                <!-- ── Mapa de cobertura ───────────────────────────────────── -->
                 <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden mt-6">
                     <div class="px-6 py-4 border-b border-zinc-100">
                         <h3 class="text-sm font-semibold text-zinc-900">Mapa de cobertura</h3>

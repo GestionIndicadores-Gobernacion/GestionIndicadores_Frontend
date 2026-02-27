@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ReportModel } from '../../../../../../core/models/report.model';
@@ -17,10 +17,13 @@ export class ReportsTableComponent implements OnChanges {
   @Input() reports: ReportModel[] = [];
   @Input() strategyMap: Record<number, string> = {};
   @Input() componentMap: Record<number, string> = {};
-  @Input() currentUserId: number | null = null;   // ← NUEVO
-  @Input() isAdmin = false;                        // ← NUEVO
+  @Input() currentUserId: number | null = null;
+  @Input() isAdmin = false;
 
   @Output() delete = new EventEmitter<number>();
+
+  // VIEW MODE
+  viewMode: 'all' | 'mine' = 'all';
 
   // SEARCH
   searchTerm = '';
@@ -37,11 +40,17 @@ export class ReportsTableComponent implements OnChanges {
   filteredReports: ReportModel[] = [];
   paginatedReports: ReportModel[] = [];
 
-  ngOnChanges(): void {
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['reports'] || changes['strategyMap'] || changes['componentMap']) {
+      this.applyAll();
+    }
+  }
+
+  setViewMode(mode: 'all' | 'mine') {
+    this.viewMode = mode;
     this.applyAll();
   }
 
-  // ← NUEVO
   canModify(report: ReportModel): boolean {
     if (this.isAdmin) return true;
     if (report.user_id === null || report.user_id === undefined) return false;
@@ -55,20 +64,35 @@ export class ReportsTableComponent implements OnChanges {
   }
 
   applyFilter(): void {
+
     const term = this.searchTerm.toLowerCase().trim();
+
     this.filteredReports = this.reports.filter(r => {
+
+      // FILTRO MIS REPORTES
+      if (this.viewMode === 'mine' && !this.isOwner(r)) return false;
+
+      // FILTRO BUSQUEDA
+      if (!term) return true;
+
       return (
         r.id.toString().includes(term) ||
-        r.executive_summary.toLowerCase().includes(term) ||
-        r.activities_performed.toLowerCase().includes(term) ||
-        r.intervention_location.toLowerCase().includes(term) ||
-        r.zone_type.toLowerCase().includes(term) ||
+        (r.executive_summary ?? '').toLowerCase().includes(term) ||
+        (r.activities_performed ?? '').toLowerCase().includes(term) ||
+        (r.intervention_location ?? '').toLowerCase().includes(term) ||
+        (r.zone_type ?? '').toLowerCase().includes(term) ||
         this.strategyName(r.strategy_id).toLowerCase().includes(term) ||
         this.componentName(r.component_id).toLowerCase().includes(term)
       );
     });
+
     this.totalPages = Math.ceil(this.filteredReports.length / this.pageSize) || 1;
     this.currentPage = 1;
+  }
+
+  isOwner(report: ReportModel): boolean {
+    if (this.isAdmin) return true;
+    return report.user_id === this.currentUserId;
   }
 
   sort(column: keyof ReportModel | 'strategy_name'): void {
@@ -84,15 +108,24 @@ export class ReportsTableComponent implements OnChanges {
 
   applySort(): void {
     this.filteredReports.sort((a, b) => {
+
       let valA: any;
       let valB: any;
 
-      if (this.sortColumn === 'strategy_name') {
-        valA = this.strategyName(a.strategy_id);
-        valB = this.strategyName(b.strategy_id);
-      } else {
-        valA = a[this.sortColumn];
-        valB = b[this.sortColumn];
+      switch (this.sortColumn) {
+        case 'strategy_name':
+          valA = this.strategyName(a.strategy_id);
+          valB = this.strategyName(b.strategy_id);
+          break;
+
+        case 'component_id':
+          valA = this.componentName(a.component_id);
+          valB = this.componentName(b.component_id);
+          break;
+
+        default:
+          valA = a[this.sortColumn as keyof ReportModel];
+          valB = b[this.sortColumn as keyof ReportModel];
       }
 
       if (valA == null) return 1;

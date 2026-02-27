@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActionPlanCreateRequest, ActionPlanObjectiveModel } from '../../../../core/models/action-plan.model';
+import { forkJoin } from 'rxjs';
+import { ActionPlanCreateRequest } from '../../../../core/models/action-plan.model';
 import { ComponentModel, ComponentObjectiveModel } from '../../../../core/models/component.model';
 import { StrategyModel } from '../../../../core/models/strategy.model';
 import { ActionPlanService } from '../../../../core/services/action-plan.service';
@@ -9,21 +10,18 @@ import { ComponentsService } from '../../../../core/services/components.service'
 import { StrategiesService } from '../../../../core/services/strategies.service';
 
 interface ActivityForm {
-  name:                     string;
-  deliverable:              string;
-  delivery_date:            string;
+  name: string;
+  deliverable: string;
+  delivery_date: string;
   requires_boss_assistance: boolean;
-  support_staff:            { name: string }[];
+  support_staff: { name: string }[];
 }
 
 interface ObjectiveForm {
-  // Para objetivos del componente: se elige del select
-  objective_id:   number | null;
-  // Para objetivos nuevos: se escribe texto libre
+  objective_id: number | null;
   objective_text: string;
-  // Indica si es un objetivo nuevo (texto libre) o del componente
-  isNew:          boolean;
-  activities:     ActivityForm[];
+  isNew: boolean;
+  activities: ActivityForm[];
 }
 
 @Component({
@@ -35,66 +33,63 @@ interface ObjectiveForm {
 })
 export class ActionPlanCreateModalComponent implements OnInit {
 
-  @Output() close   = new EventEmitter<void>();
+  @Output() close = new EventEmitter<void>();
   @Output() created = new EventEmitter<void>();
 
-  // ═══════════════════════════════════════
-  // STATE
-  // ═══════════════════════════════════════
+  strategies: StrategyModel[] = [];
+  components: ComponentModel[] = [];
+  filteredComponents: ComponentModel[] = [];
+  objectives: ComponentObjectiveModel[] = [];
 
-  strategies:         StrategyModel[]          = [];
-  components:         ComponentModel[]          = [];
-  filteredComponents: ComponentModel[]          = [];
-  objectives:         ComponentObjectiveModel[] = [];
-
-  loading = false;
-  saving  = false;
+  loading = true;
+  saving = false;
   errors: Record<string, string> = {};
 
-  // ═══════════════════════════════════════
-  // FORM
-  // ═══════════════════════════════════════
-
   form: {
-    strategy_id:     number;
-    component_id:    number;
-    responsible:     string;
+    strategy_id: number;
+    component_id: number;
+    responsible: string;
     plan_objectives: ObjectiveForm[];
   } = {
-    strategy_id:     0,
-    component_id:    0,
-    responsible:     '',
-    plan_objectives: [],
-  };
+      strategy_id: 0,
+      component_id: 0,
+      responsible: '',
+      plan_objectives: [],
+    };
 
   constructor(
     private actionPlanService: ActionPlanService,
     private strategiesService: StrategiesService,
     private componentsService: ComponentsService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
-    this.loading = true;
-    this.strategiesService.getAll().subscribe({
-      next: s => { this.strategies = s; this.loading = false; },
-      error: () => { this.loading = false; }
-    });
-    this.componentsService.getAll().subscribe({
-      next: c => { this.components = c; }
+    forkJoin({
+      strategies: this.strategiesService.getAll(),
+      components: this.componentsService.getAll()
+    }).subscribe({
+      next: ({ strategies, components }) => {
+        this.strategies = strategies;
+        this.components = components;
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
-  // ═══════════════════════════════════════
-  // SELECTS ENCADENADOS
-  // ═══════════════════════════════════════
-
   onStrategyChange(): void {
     this.form.component_id = 0;
-    this.objectives        = [];
+    this.objectives = [];
     this.form.plan_objectives = [];
     this.filteredComponents = this.form.strategy_id
       ? this.components.filter(c => c.strategy_id === +this.form.strategy_id)
       : [];
+    this.cdr.detectChanges();
   }
 
   onComponentChange(): void {
@@ -105,40 +100,36 @@ export class ActionPlanCreateModalComponent implements OnInit {
     this.componentsService.getById(+this.form.component_id).subscribe({
       next: detail => {
         this.objectives = detail.objectives ?? [];
-        // Auto-agregar el primer objetivo del componente obligatoriamente
         if (this.objectives.length > 0) {
           this.form.plan_objectives = [{
-            objective_id:   this.objectives[0].id ?? null,
+            objective_id: this.objectives[0].id ?? null,
             objective_text: '',
-            isNew:          false,
-            activities:     [this.newActivity()],
+            isNew: false,
+            activities: [this.newActivity()],
           }];
         }
+        this.cdr.detectChanges();
       }
     });
   }
-
-  // ═══════════════════════════════════════
-  // OBJETIVOS
-  // ═══════════════════════════════════════
 
   addObjectiveFromComponent(): void {
     const next = this.nextAvailableObjective;
     if (!next) return;
     this.form.plan_objectives.push({
-      objective_id:   next.id ?? null,
+      objective_id: next.id ?? null,
       objective_text: '',
-      isNew:          false,
-      activities:     [this.newActivity()],
+      isNew: false,
+      activities: [this.newActivity()],
     });
   }
 
   addNewObjective(): void {
     this.form.plan_objectives.push({
-      objective_id:   null,
+      objective_id: null,
       objective_text: '',
-      isNew:          true,
-      activities:     [this.newActivity()],
+      isNew: true,
+      activities: [this.newActivity()],
     });
   }
 
@@ -153,17 +144,13 @@ export class ActionPlanCreateModalComponent implements OnInit {
     return found ? found.description : 'Objetivo del componente';
   }
 
-  // ═══════════════════════════════════════
-  // ACTIVIDADES
-  // ═══════════════════════════════════════
-
   private newActivity(): ActivityForm {
     return {
-      name:                     '',
-      deliverable:              '',
-      delivery_date:            '',
+      name: '',
+      deliverable: '',
+      delivery_date: '',
       requires_boss_assistance: false,
-      support_staff:            [],
+      support_staff: [],
     };
   }
 
@@ -187,7 +174,6 @@ export class ActionPlanCreateModalComponent implements OnInit {
 
   trackByIndex(index: number): number { return index; }
 
-  /** Verdadero si quedan objetivos del componente que aún no están en el plan */
   get hasAvailableComponentObjectives(): boolean {
     if (!this.objectives.length) return false;
     const usedIds = new Set(
@@ -198,7 +184,6 @@ export class ActionPlanCreateModalComponent implements OnInit {
     return this.objectives.some(o => !usedIds.has(o.id!));
   }
 
-  /** Próximo objetivo del componente que no esté ya en el plan */
   get nextAvailableObjective(): ComponentObjectiveModel | null {
     const usedIds = new Set(
       this.form.plan_objectives
@@ -208,55 +193,42 @@ export class ActionPlanCreateModalComponent implements OnInit {
     return this.objectives.find(o => !usedIds.has(o.id!)) ?? null;
   }
 
-  // ═══════════════════════════════════════
-  // SUBMIT
-  // ═══════════════════════════════════════
-
   submit(): void {
     this.errors = {};
 
-    if (!this.form.strategy_id || +this.form.strategy_id === 0) {
+    if (!this.form.strategy_id || +this.form.strategy_id === 0)
       this.errors['strategy_id'] = 'Debes seleccionar una estrategia.';
-    }
-    if (!this.form.component_id || +this.form.component_id === 0) {
+    if (!this.form.component_id || +this.form.component_id === 0)
       this.errors['component_id'] = 'Debes seleccionar un componente.';
-    }
-    if (this.form.plan_objectives.length === 0) {
+    if (this.form.plan_objectives.length === 0)
       this.errors['plan_objectives'] = 'Debes tener al menos un objetivo.';
-    }
 
-    // Validar que objetivos nuevos tengan texto
     const missingText = this.form.plan_objectives.some(o => o.isNew && !o.objective_text.trim());
-    if (missingText) {
+    if (missingText)
       this.errors['plan_objectives'] = 'Los objetivos nuevos deben tener descripción.';
-    }
 
-    // Validar actividades
     for (const obj of this.form.plan_objectives) {
-      if (obj.activities.some(a => !a.name.trim())) {
+      if (obj.activities.some(a => !a.name.trim()))
         this.errors['activities'] = 'Todas las actividades deben tener nombre.';
-      }
-      if (obj.activities.some(a => !a.deliverable.trim())) {
+      if (obj.activities.some(a => !a.deliverable.trim()))
         this.errors['activities'] = 'Todas las actividades deben tener entregable.';
-      }
-      if (obj.activities.some(a => !a.delivery_date)) {
+      if (obj.activities.some(a => !a.delivery_date))
         this.errors['activities'] = 'Todas las actividades deben tener fecha de entrega.';
-      }
     }
 
     if (Object.keys(this.errors).length > 0) return;
 
     const payload: ActionPlanCreateRequest = {
-      strategy_id:  +this.form.strategy_id,
+      strategy_id: +this.form.strategy_id,
       component_id: +this.form.component_id,
-      responsible:  this.form.responsible.trim() || null,
+      responsible: this.form.responsible.trim() || null,
       plan_objectives: this.form.plan_objectives.map(obj => ({
-        objective_id:   obj.isNew ? null : (obj.objective_id ? +obj.objective_id : null),
+        objective_id: obj.isNew ? null : (obj.objective_id ? +obj.objective_id : null),
         objective_text: obj.isNew ? obj.objective_text.trim() : null,
         activities: obj.activities.map(a => ({
-          name:                     a.name.trim(),
-          deliverable:              a.deliverable.trim(),
-          delivery_date:            a.delivery_date,
+          name: a.name.trim(),
+          deliverable: a.deliverable.trim(),
+          delivery_date: a.delivery_date,
           requires_boss_assistance: a.requires_boss_assistance,
           support_staff: a.support_staff
             .filter(s => s.name.trim())
@@ -271,6 +243,7 @@ export class ActionPlanCreateModalComponent implements OnInit {
       error: (err) => {
         this.saving = false;
         if (err?.error?.errors) this.errors = err.error.errors;
+        this.cdr.detectChanges();
       }
     });
   }

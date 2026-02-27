@@ -7,7 +7,6 @@ import localeEs from '@angular/common/locales/es';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth-interceptor';
 import { errorInterceptor } from './core/interceptors/error-interceptor';
-import { loadingInterceptor } from './core/interceptors/loading-interceptor';
 
 registerLocaleData(localeEs);
 
@@ -19,7 +18,6 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([
         authInterceptor,      // 1️⃣ primero agrega token / maneja refresh
         errorInterceptor,     // 2️⃣ luego maneja errores globales
-        loadingInterceptor,   // 3️⃣ loader siempre al final
       ])
     ),
     { provide: LOCALE_ID, useValue: 'es' }   // 👈 importante
