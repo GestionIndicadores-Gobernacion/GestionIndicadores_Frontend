@@ -34,11 +34,12 @@ export interface ReportIndicatorValue {
 
 export interface ReportModel {
   id: number;
+  user_id?: number | null;        // ← NUEVO
 
   strategy_id: number;
   component_id: number;
 
-  report_date: string; // ISO date (YYYY-MM-DD)
+  report_date: string;
 
   executive_summary: string;
   activities_performed: string;
