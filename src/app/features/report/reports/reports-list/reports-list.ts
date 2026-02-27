@@ -16,6 +16,8 @@ import { ReportsKpiCardsComponent } from './components/reports-kpi-cards/reports
 import { ReportsTableComponent } from './components/reports-table/reports-table';
 import { ReportsTimelineComponent } from './components/reports-timeline/reports-timeline';
 import { ReportsMapComponent } from './components/reports-map/reports-map';
+import { UsersService } from '../../../../core/services/users.service';
+import { ReportsAuditLogComponent } from './components/reports-audit-log/reports-audit-log';
 
 @Component({
   selector: 'app-reports-list',
@@ -27,6 +29,7 @@ import { ReportsMapComponent } from './components/reports-map/reports-map';
     ReportsTimelineComponent,
     ReportsTableComponent,
     ReportsMapComponent,
+    ReportsAuditLogComponent
   ],
   templateUrl: './reports-list.html',
   styleUrl: './reports-list.css',
@@ -49,13 +52,21 @@ export class ReportsListComponent implements OnInit {
   showDashboard = true;
   loading = false;
 
+  currentUserId: number | null = null;
+  isAdmin = false;
+
   constructor(
     private reportsService: ReportsService,
     private strategiesService: StrategiesService,
+    private usersService: UsersService,
     private toast: ToastService
   ) { }
 
   ngOnInit(): void {
+    this.usersService.getMe().subscribe(user => {
+      this.currentUserId = user.id;
+      this.isAdmin = user.role?.name === 'admin';
+    });
     this.loadData();
   }
 

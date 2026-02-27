@@ -19,6 +19,7 @@ import { ActionPlanReportModalComponent } from '../modals/action-plan-report-mod
 import { ActionPlanListComponent } from '../action-plan-list/action-plan-list';
 import { PlansCountByStatusPipe } from '../pipes/action-plan-status.pipe';
 import { catchError, of } from 'rxjs';
+import { ActionPlanAuditLogComponent } from '../action-plan-audit-log/action-plan-audit-log';
 
 interface CalendarDay {
   date: Date;
@@ -43,7 +44,8 @@ export interface FlatActivity {
     PlansCountByStatusPipe,
     ActionPlanCreateModalComponent,
     ActionPlanReportModalComponent,
-    ActionPlanListComponent
+    ActionPlanListComponent,
+    ActionPlanAuditLogComponent
   ],
   templateUrl: './action-plan-calendar.html',
   styleUrl: './action-plan-calendar.css',

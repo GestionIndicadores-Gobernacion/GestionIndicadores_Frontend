@@ -52,8 +52,7 @@
             </div>
 
             <!-- Requiere jefe -->
-            <span *ngIf="item.activity.requires_boss_assistance"
-                class="inline-block mt-1.5 text-xs px-2 py-0.5 bg-amber-50 text-amber-700
+            <span *ngIf="item.activity.requires_boss_assistance" class="inline-block mt-1.5 text-xs px-2 py-0.5 bg-amber-50 text-amber-700
                        border border-amber-200 rounded-full">
                 Requiere jefe
             </span>
@@ -65,12 +64,11 @@
                 [ngClass]="statusClass(item.activity.status!)">
                 {{ item.activity.status }}
             </span>
-            <button (click)="onReport(item.plan, item.objective, item.activity, $event)"
-                class="text-xs text-zinc-500 hover:text-zinc-900 border border-zinc-200
+            <button (click)="onReport(item.plan, item.objective, item.activity, $event)" class="text-xs text-zinc-500 hover:text-zinc-900 border border-zinc-200
                        rounded-lg px-2.5 py-1 hover:border-zinc-300 transition-colors">
                 {{ item.activity.status === 'Realizado' ? 'Ver' : 'Reportar' }}
             </button>
-            <button (click)="onDelete(item.activity.id!, $event)"
+            <button *ngIf="canModify(item.plan)" (click)="onDelete(item.activity.id!, $event)"
                 class="p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

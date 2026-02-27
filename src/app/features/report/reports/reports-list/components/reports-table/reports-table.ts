@@ -8,7 +8,7 @@ import { Pagination } from '../../../../../../shared/components/pagination/pagin
 @Component({
   selector: 'app-reports-table',
   standalone: true,
-  imports: [CommonModule, RouterModule, Pagination, FormsModule, RouterModule],
+  imports: [CommonModule, RouterModule, Pagination, FormsModule],
   templateUrl: './reports-table.html',
   styleUrl: './reports-table.css',
 })
@@ -17,6 +17,8 @@ export class ReportsTableComponent implements OnChanges {
   @Input() reports: ReportModel[] = [];
   @Input() strategyMap: Record<number, string> = {};
   @Input() componentMap: Record<number, string> = {};
+  @Input() currentUserId: number | null = null;   // ← NUEVO
+  @Input() isAdmin = false;                        // ← NUEVO
 
   @Output() delete = new EventEmitter<number>();
 
@@ -39,21 +41,21 @@ export class ReportsTableComponent implements OnChanges {
     this.applyAll();
   }
 
-  // ===============================
-  // CORE PIPELINE
-  // ===============================
+  // ← NUEVO
+  canModify(report: ReportModel): boolean {
+    if (this.isAdmin) return true;
+    if (report.user_id === null || report.user_id === undefined) return false;
+    return report.user_id === this.currentUserId;
+  }
+
   applyAll(): void {
     this.applyFilter();
     this.applySort();
     this.applyPagination();
   }
 
-  // ===============================
-  // FILTER
-  // ===============================
   applyFilter(): void {
     const term = this.searchTerm.toLowerCase().trim();
-
     this.filteredReports = this.reports.filter(r => {
       return (
         r.id.toString().includes(term) ||
@@ -65,30 +67,23 @@ export class ReportsTableComponent implements OnChanges {
         this.componentName(r.component_id).toLowerCase().includes(term)
       );
     });
-
     this.totalPages = Math.ceil(this.filteredReports.length / this.pageSize) || 1;
     this.currentPage = 1;
   }
 
-  // ===============================
-  // SORT
-  // ===============================
   sort(column: keyof ReportModel | 'strategy_name'): void {
-
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
       this.sortColumn = column;
       this.sortDirection = 'asc';
     }
-
     this.applySort();
     this.applyPagination();
   }
 
   applySort(): void {
     this.filteredReports.sort((a, b) => {
-
       let valA: any;
       let valB: any;
 
@@ -114,13 +109,9 @@ export class ReportsTableComponent implements OnChanges {
     });
   }
 
-  // ===============================
-  // PAGINATION
-  // ===============================
   applyPagination(): void {
     const start = (this.currentPage - 1) * this.pageSize;
-    const end = start + this.pageSize;
-    this.paginatedReports = this.filteredReports.slice(start, end);
+    this.paginatedReports = this.filteredReports.slice(start, start + this.pageSize);
   }
 
   onPageChange(page: number): void {
@@ -128,32 +119,17 @@ export class ReportsTableComponent implements OnChanges {
     this.applyPagination();
   }
 
-  // ===============================
-  // DELETE
-  // ===============================
   onDelete(id: number): void {
     this.delete.emit(id);
   }
 
-  // ===============================
-  // UTILS
-  // ===============================
-  strategyName(id: number): string {
-    return this.strategyMap[id] || '—';
-  }
-
-  componentName(id: number): string {
-    return this.componentMap[id] || '—';
-  }
+  strategyName(id: number): string { return this.strategyMap[id] || '—'; }
+  componentName(id: number): string { return this.componentMap[id] || '—'; }
 
   formatZoneType(zoneType: string): string {
     if (!zoneType) return '—';
-
-    // Si viene como "ZoneTypeEnum.URBANA", extraer solo "URBANA"
     const parts = zoneType.split('.');
     const value = parts.length > 1 ? parts[1] : zoneType;
-
-    // Capitalizar solo la primera letra: "URBANA" -> "Urbana"
     return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
   }
 }

@@ -1,0 +1,86 @@
+<div class="space-y-4">
+
+  <!-- Filtros -->
+  <div class="flex items-center gap-3 flex-wrap">
+
+    <div class="relative flex-1 min-w-40">
+      <input type="text" placeholder="Buscar por ID, usuario..." [(ngModel)]="searchTerm"
+        (input)="applyFilters()"
+        class="w-full pl-9 pr-4 py-2 text-sm border border-zinc-200 rounded-lg bg-white
+               focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors" />
+      <svg class="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+    </div>
+
+    <select [(ngModel)]="filterAction" (ngModelChange)="applyFilters()"
+      class="text-sm border border-zinc-200 rounded-lg px-3 py-2 bg-white
+             focus:outline-none focus:ring-1 focus:ring-zinc-900 transition-colors">
+      <option value="">Todas las acciones</option>
+      <option value="created">Creados</option>
+      <option value="updated">Editados</option>
+      <option value="deleted">Eliminados</option>
+    </select>
+
+    <span class="text-xs text-zinc-400 ml-auto">
+      {{ filtered.length }} {{ filtered.length === 1 ? 'registro' : 'registros' }}
+    </span>
+
+  </div>
+
+  <!-- Empty -->
+  <div *ngIf="filtered.length === 0" class="py-10 text-center">
+    <p class="text-sm font-medium text-zinc-900">Sin registros</p>
+    <p class="text-xs text-zinc-400 mt-1">No hay acciones que coincidan</p>
+  </div>
+
+  <!-- Lista -->
+  <div *ngIf="paginated.length > 0" class="divide-y divide-zinc-100">
+
+    <div *ngFor="let log of paginated"
+      class="flex items-start gap-3 py-3 hover:bg-zinc-50 rounded-lg px-2 transition-colors duration-150">
+
+      <!-- Icono -->
+      <div class="flex-shrink-0 mt-0.5 w-7 h-7 rounded-full flex items-center justify-center border"
+        [ngClass]="actionClass(log.action)">
+        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            [attr.d]="actionIcon(log.action)" />
+        </svg>
+      </div>
+
+      <!-- Contenido -->
+      <div class="flex-1 min-w-0">
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-sm font-semibold text-zinc-900">
+            {{ userName(log.user_id) }}
+          </span>
+          <span class="text-xs font-medium px-2 py-0.5 rounded-full border"
+            [ngClass]="actionClass(log.action)">
+            {{ actionLabel(log.action) }}
+          </span>
+          <span class="text-sm text-zinc-600">
+            Reporte <span class="font-medium text-zinc-900">#{{ log.entity_id }}</span>
+          </span>
+        </div>
+
+        <p *ngIf="log.detail" class="text-xs text-zinc-400 mt-0.5 italic">{{ log.detail }}</p>
+
+        <p class="text-xs text-zinc-400 mt-0.5">
+          {{ log.created_at | date:'dd MMM yyyy, h:mm a' }}
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Paginación -->
+  <app-pagination *ngIf="filtered.length > pageSize" [currentPage]="currentPage" [totalPages]="totalPages"
+    (pageChange)="onPageChange($event)">
+  </app-pagination>
+
+</div>

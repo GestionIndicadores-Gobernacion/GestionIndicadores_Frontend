@@ -2,47 +2,53 @@
 
     <!-- PAGE HEADER -->
     <div class="border-b border-zinc-200 bg-white">
-        <div class="max-w-7xl mx-auto px-6 py-8">
-            <div class="flex items-start justify-between">
-                <div>
-                    <h1 class="text-2xl font-semibold text-zinc-900 tracking-tight">Plan de Acción</h1>
-                    <p class="text-sm text-zinc-500 mt-1">Gestión y seguimiento de actividades por componente</p>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
+                    <h1 class="text-lg sm:text-2xl font-semibold text-zinc-900 tracking-tight truncate">
+                        Plan de Acción
+                    </h1>
+                    <p class="text-xs sm:text-sm text-zinc-500 mt-0.5 sm:mt-1 truncate">
+                        Gestión y seguimiento de actividades por componente
+                    </p>
                 </div>
-                <button (click)="openCreateModal()" class="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white text-sm font-medium
-                           rounded-xl hover:bg-zinc-700 transition-colors duration-150">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <button (click)="openCreateModal()"
+                    class="flex-shrink-0 flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-zinc-900 text-white
+                           text-xs sm:text-sm font-medium rounded-xl hover:bg-zinc-700 transition-colors duration-150">
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
-                    Crear Plan
+                    <span class="whitespace-nowrap">Crear Plan</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-6 py-8 space-y-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5 sm:py-8 space-y-4 sm:space-y-6">
 
         <!-- FILTROS -->
-        <div class="bg-white border border-zinc-200 rounded-2xl p-5">
-            <div class="flex flex-wrap items-center gap-4">
-                <div class="flex flex-col gap-1 min-w-[200px]">
+        <div class="bg-white border border-zinc-200 rounded-2xl p-4 sm:p-5">
+            <div class="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-3 sm:gap-4">
+                <div class="flex flex-col gap-1 w-full sm:min-w-[200px] sm:w-auto">
                     <label class="text-xs font-medium text-zinc-500 uppercase tracking-wide">Estrategia</label>
-                    <select (change)="onStrategyChange($event)" class="text-sm border border-zinc-200 rounded-xl px-3 py-2 bg-white text-zinc-900
-                               focus:outline-none focus:ring-2 focus:ring-zinc-900/10">
+                    <select (change)="onStrategyChange($event)"
+                        class="text-sm border border-zinc-200 rounded-xl px-3 py-2 bg-white text-zinc-900
+                               focus:outline-none focus:ring-2 focus:ring-zinc-900/10 w-full">
                         <option value="">Todas las estrategias</option>
                         <option *ngFor="let s of strategies" [value]="s.id">{{ s.name }}</option>
                     </select>
                 </div>
-                <div class="flex flex-col gap-1 min-w-[200px]">
+                <div class="flex flex-col gap-1 w-full sm:min-w-[200px] sm:w-auto">
                     <label class="text-xs font-medium text-zinc-500 uppercase tracking-wide">Componente</label>
                     <select (change)="onComponentChange($event)" [disabled]="!selectedStrategyId"
                         class="text-sm border border-zinc-200 rounded-xl px-3 py-2 bg-white text-zinc-900
                                focus:outline-none focus:ring-2 focus:ring-zinc-900/10
-                               disabled:opacity-40 disabled:cursor-not-allowed">
+                               disabled:opacity-40 disabled:cursor-not-allowed w-full">
                         <option value="">Todos los componentes</option>
                         <option *ngFor="let c of filteredComponents" [value]="c.id">{{ c.name }}</option>
                     </select>
                 </div>
-                <div class="flex items-center gap-4 ml-auto">
+                <div class="flex items-center gap-3 sm:gap-4 sm:ml-auto flex-wrap">
                     <div class="flex items-center gap-1.5">
                         <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
                         <span class="text-xs text-zinc-500">Realizado</span>
@@ -63,47 +69,48 @@
         <div class="relative bg-white border border-zinc-200 rounded-2xl overflow-hidden">
 
             <!-- Navegación -->
-            <div class="flex items-center justify-between px-6 py-4 border-b border-zinc-100">
-                <div class="flex items-center gap-2">
-                    <select (change)="onMonthSelect($event)" class="text-sm font-semibold text-zinc-900 border border-zinc-200 rounded-xl
-                               px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900/10">
+            <div class="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-zinc-100 gap-2">
+                <div class="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                    <select (change)="onMonthSelect($event)"
+                        class="text-xs sm:text-sm font-semibold text-zinc-900 border border-zinc-200 rounded-xl
+                               px-2 sm:px-3 py-1 sm:py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900/10">
                         <option *ngFor="let m of MONTHS; let i = index" [value]="i"
                             [selected]="i === currentDate.getMonth()">{{ m }}</option>
                     </select>
-                    <select (change)="onYearSelect($event)" class="text-sm font-semibold text-zinc-900 border border-zinc-200 rounded-xl
-                               px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900/10">
+                    <select (change)="onYearSelect($event)"
+                        class="text-xs sm:text-sm font-semibold text-zinc-900 border border-zinc-200 rounded-xl
+                               px-2 sm:px-3 py-1 sm:py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900/10">
                         <option *ngFor="let y of availableYears" [value]="y"
                             [selected]="y === currentDate.getFullYear()">{{ y }}</option>
                     </select>
-                    <button (click)="goToToday()" class="text-xs text-zinc-500 hover:text-zinc-900 border border-zinc-200 rounded-lg
-                               px-2.5 py-1 hover:border-zinc-300 transition-colors duration-150">
+                    <button (click)="goToToday()"
+                        class="hidden sm:block text-xs text-zinc-500 hover:text-zinc-900 border border-zinc-200
+                               rounded-lg px-2.5 py-1 hover:border-zinc-300 transition-colors duration-150">
                         Hoy
                     </button>
                 </div>
-                <div class="flex items-center gap-1">
-                    <button (click)="prevMonth()" class="p-2 rounded-xl hover:bg-zinc-100 transition-colors duration-150">
-                        <svg class="w-4 h-4 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="flex items-center gap-1 flex-shrink-0">
+                    <button (click)="prevMonth()" class="p-1.5 sm:p-2 rounded-xl hover:bg-zinc-100 transition-colors duration-150">
+                        <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                         </svg>
                     </button>
-                    <button (click)="nextMonth()" class="p-2 rounded-xl hover:bg-zinc-100 transition-colors duration-150">
-                        <svg class="w-4 h-4 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button (click)="nextMonth()" class="p-1.5 sm:p-2 rounded-xl hover:bg-zinc-100 transition-colors duration-150">
+                        <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                         </svg>
                     </button>
-                    <div class="flex items-center gap-1 ml-2 border-l border-zinc-200 pl-2">
-                        <button (click)="viewMode = 'calendar'" class="p-2 rounded-xl transition-colors duration-150"
-                            [class.bg-zinc-900]="viewMode === 'calendar'" [class.text-white]="viewMode === 'calendar'"
-                            title="Vista calendario">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div class="flex items-center gap-1 ml-1 sm:ml-2 border-l border-zinc-200 pl-1 sm:pl-2">
+                        <button (click)="viewMode = 'calendar'" class="p-1.5 sm:p-2 rounded-xl transition-colors duration-150"
+                            [class.bg-zinc-900]="viewMode === 'calendar'" [class.text-white]="viewMode === 'calendar'">
+                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                         </button>
-                        <button (click)="viewMode = 'agenda'" class="p-2 rounded-xl transition-colors duration-150"
-                            [class.bg-zinc-900]="viewMode === 'agenda'" [class.text-white]="viewMode === 'agenda'"
-                            title="Vista agenda">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <button (click)="viewMode = 'agenda'" class="p-1.5 sm:p-2 rounded-xl transition-colors duration-150"
+                            [class.bg-zinc-900]="viewMode === 'agenda'" [class.text-white]="viewMode === 'agenda'">
+                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                             </svg>
@@ -115,36 +122,49 @@
             <!-- Cabecera días -->
             <div *ngIf="viewMode === 'calendar'" class="grid grid-cols-7 border-b border-zinc-100">
                 <div *ngFor="let day of WEEKDAYS"
-                    class="py-3 text-center text-xs font-medium text-zinc-400 uppercase tracking-wide">
-                    {{ day }}
+                    class="py-2 sm:py-3 text-center text-xs font-medium text-zinc-400 uppercase tracking-wide">
+                    <!-- En móvil solo primera letra, en desktop nombre completo -->
+                    <span class="sm:hidden">{{ day[0] }}</span>
+                    <span class="hidden sm:inline">{{ day }}</span>
                 </div>
             </div>
 
             <!-- ── VISTA CALENDARIO ── -->
             <div *ngIf="viewMode === 'calendar'" class="grid grid-cols-7 divide-x divide-y divide-zinc-100">
                 <div *ngFor="let day of calendarDays; trackBy: trackByDay"
-                    class="min-h-[120px] p-2 flex flex-col gap-1" [class.bg-zinc-50]="!day.isCurrentMonth">
+                    class="min-h-[60px] sm:min-h-[120px] p-1 sm:p-2 flex flex-col gap-0.5 sm:gap-1"
+                    [class.bg-zinc-50]="!day.isCurrentMonth">
 
                     <!-- Número + badge -->
-                    <div class="mb-1 flex items-center justify-between">
-                        <span class="text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full"
+                    <div class="mb-0.5 sm:mb-1 flex items-center justify-between">
+                        <span class="text-xs font-medium w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center rounded-full"
                             [class.text-zinc-300]="!day.isCurrentMonth"
                             [class.text-zinc-900]="day.isCurrentMonth && !day.isToday"
-                            [class.bg-zinc-900]="day.isToday" [class.text-white]="day.isToday">
+                            [class.bg-zinc-900]="day.isToday"
+                            [class.text-white]="day.isToday">
                             {{ day.date.getDate() }}
                         </span>
                         <span *ngIf="day.plans.length > 0 && day.isCurrentMonth"
-                            class="text-xs font-semibold px-1.5 py-0.5 rounded-full bg-zinc-100 text-zinc-500">
+                            class="text-xs font-semibold px-1 sm:px-1.5 py-0.5 rounded-full bg-zinc-100 text-zinc-500">
                             {{ countActivitiesInDay(day) }}
                         </span>
                     </div>
 
-                    <!-- Actividades del día: iterar plan → objetivo → actividad -->
+                    <!-- Actividades — en móvil solo el dot, en desktop la tarjeta completa -->
                     <ng-container *ngFor="let plan of day.plans; trackBy: trackByPlan">
                         <ng-container *ngFor="let obj of plan.plan_objectives; trackBy: trackByObjective">
                             <ng-container *ngFor="let activity of obj.activities; trackBy: trackByActivity">
                                 <ng-container *ngIf="activityFallsOnDay(activity, day.date)">
-                                    <div class="group flex items-start gap-1.5 px-2 py-1.5 rounded-lg border
+
+                                    <!-- Móvil: solo dot clickeable -->
+                                    <div class="sm:hidden flex justify-center"
+                                        (click)="openReportModal(plan, obj, activity, $event)">
+                                        <span class="w-2 h-2 rounded-full cursor-pointer"
+                                            [ngClass]="statusDot(activity.status!)"></span>
+                                    </div>
+
+                                    <!-- Desktop: tarjeta completa -->
+                                    <div class="hidden sm:flex group items-start gap-1.5 px-2 py-1.5 rounded-lg border
                                                cursor-pointer hover:shadow-sm transition-all duration-150 mb-0.5"
                                         [ngClass]="statusClass(activity.status!)"
                                         (click)="openReportModal(plan, obj, activity, $event)"
@@ -174,6 +194,7 @@
                                             </svg>
                                         </button>
                                     </div>
+
                                 </ng-container>
                             </ng-container>
                         </ng-container>
@@ -197,34 +218,50 @@
 
         </div>
 
-        <!-- RESUMEN DEL MES -->
-        <div *ngIf="!loading && plans.length > 0" class="grid grid-cols-3 gap-4">
-            <div class="bg-white border border-zinc-200 rounded-2xl p-5">
-                <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide">Total del mes</p>
-                <p class="text-3xl font-semibold text-zinc-900 mt-2">{{ plans.length }}</p>
-                <p class="text-xs text-zinc-400 mt-1">planes registrados</p>
+        <!-- RESUMEN DEL MES + HISTORIAL -->
+        <div *ngIf="!loading && plans.length > 0" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+            <!-- Resumen -->
+            <div class="grid grid-cols-3 lg:grid-cols-1 lg:grid-rows-3 gap-3 sm:gap-4">
+                <div class="bg-white border border-zinc-200 rounded-2xl p-4 sm:p-5">
+                    <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide">Total del mes</p>
+                    <p class="text-2xl sm:text-3xl font-semibold text-zinc-900 mt-1 sm:mt-2">{{ plans.length }}</p>
+                    <p class="text-xs text-zinc-400 mt-1 hidden sm:block">planes registrados</p>
+                </div>
+                <div class="bg-white border border-zinc-200 rounded-2xl p-4 sm:p-5">
+                    <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide">Realizados</p>
+                    <p class="text-2xl sm:text-3xl font-semibold text-emerald-600 mt-1 sm:mt-2">
+                        {{ plans | plansCountByStatus:'Realizado' }}
+                    </p>
+                    <p class="text-xs text-zinc-400 mt-1 hidden sm:block">con evidencia cargada</p>
+                </div>
+                <div class="bg-white border border-zinc-200 rounded-2xl p-4 sm:p-5">
+                    <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide">Pendientes</p>
+                    <p class="text-2xl sm:text-3xl font-semibold text-red-500 mt-1 sm:mt-2">
+                        {{ plans | plansCountByStatus:'Pendiente' }}
+                    </p>
+                    <p class="text-xs text-zinc-400 mt-1 hidden sm:block">vencidos sin reporte</p>
+                </div>
             </div>
-            <div class="bg-white border border-zinc-200 rounded-2xl p-5">
-                <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide">Realizados</p>
-                <p class="text-3xl font-semibold text-emerald-600 mt-2">
-                    {{ plans | plansCountByStatus:'Realizado' }}
-                </p>
-                <p class="text-xs text-zinc-400 mt-1">con evidencia cargada</p>
+
+            <!-- Historial -->
+            <div class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
+                <div class="px-4 sm:px-6 py-4 border-b border-zinc-100">
+                    <h3 class="text-sm font-semibold text-zinc-900">Historial de acciones</h3>
+                    <p class="text-xs text-zinc-500 mt-0.5">Registro de creación, edición y eliminación</p>
+                </div>
+                <div class="p-3 sm:p-4">
+                    <app-action-plan-audit-log></app-action-plan-audit-log>
+                </div>
             </div>
-            <div class="bg-white border border-zinc-200 rounded-2xl p-5">
-                <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide">Pendientes</p>
-                <p class="text-3xl font-semibold text-red-500 mt-2">
-                    {{ plans | plansCountByStatus:'Pendiente' }}
-                </p>
-                <p class="text-xs text-zinc-400 mt-1">vencidos sin reporte</p>
-            </div>
+
         </div>
 
     </div>
 </div>
 
-<!-- TOOLTIP -->
-<div *ngIf="hoveredFlat" class="fixed z-50 pointer-events-none"
+<!-- TOOLTIP — oculto en móvil -->
+<div *ngIf="hoveredFlat" class="hidden sm:block fixed z-50 pointer-events-none"
     [style.left.px]="hoveredFlat.x" [style.top.px]="hoveredFlat.y - 8"
     style="transform: translateY(-100%)">
     <div class="bg-zinc-900 text-white rounded-xl p-3 shadow-xl w-60">
@@ -235,17 +272,14 @@
         </p>
         <p class="text-sm font-medium leading-tight mb-1">{{ hoveredFlat.activity.deliverable }}</p>
         <p class="text-xs text-zinc-400 mb-1">{{ hoveredFlat.activity.name }}</p>
-
         <div *ngIf="hoveredFlat.plan.responsible"
             class="text-xs text-zinc-400 mt-1.5 pt-1.5 border-t border-zinc-700">
             👤 {{ hoveredFlat.plan.responsible }}
         </div>
-
         <div *ngIf="hoveredFlat.activity.support_staff?.length"
             class="text-xs text-zinc-400 mt-1 pt-1 border-t border-zinc-700">
             {{ getStaffNames(hoveredFlat.activity) }}
         </div>
-
         <div class="flex items-center justify-between mt-2 pt-2 border-t border-zinc-700">
             <span class="text-xs" [ngClass]="{
                 'text-emerald-400': hoveredFlat.activity.status === 'Realizado',

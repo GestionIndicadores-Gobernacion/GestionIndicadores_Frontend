@@ -8,10 +8,10 @@ import {
 } from '../../../core/models/action-plan.model';
 
 interface AgendaItem {
-  date:      Date;
-  plan:      ActionPlanModel;
+  date: Date;
+  plan: ActionPlanModel;
   objective: ActionPlanObjectiveModel;
-  activity:  ActionPlanActivityModel;
+  activity: ActionPlanActivityModel;
 }
 
 @Component({
@@ -22,6 +22,9 @@ interface AgendaItem {
   styleUrl: './action-plan-list.css',
 })
 export class ActionPlanListComponent {
+
+  @Input() currentUserId?: number | null;
+  @Input() isAdmin = false;
 
   @Input() plans: ActionPlanModel[] = [];
 
@@ -53,18 +56,18 @@ export class ActionPlanListComponent {
 
   statusClass(status: ActionPlanStatus): string {
     const map: Record<ActionPlanStatus, string> = {
-      'Realizado':    'bg-emerald-50 text-emerald-700 border-emerald-200',
+      'Realizado': 'bg-emerald-50 text-emerald-700 border-emerald-200',
       'En Ejecución': 'bg-blue-50 text-blue-700 border-blue-200',
-      'Pendiente':    'bg-red-50 text-red-700 border-red-200',
+      'Pendiente': 'bg-red-50 text-red-700 border-red-200',
     };
     return map[status];
   }
 
   statusDot(status: ActionPlanStatus): string {
     const map: Record<ActionPlanStatus, string> = {
-      'Realizado':    'bg-emerald-500',
+      'Realizado': 'bg-emerald-500',
       'En Ejecución': 'bg-blue-500',
-      'Pendiente':    'bg-red-500',
+      'Pendiente': 'bg-red-500',
     };
     return map[status];
   }
@@ -77,5 +80,11 @@ export class ActionPlanListComponent {
   onDelete(activityId: number, event: Event): void {
     event.stopPropagation();
     this.delete.emit({ activityId, event });
+  }
+
+  canModify(plan: ActionPlanModel): boolean {
+    if (this.isAdmin) return true;
+    if (plan.user_id === null || plan.user_id === undefined) return false;
+    return plan.user_id === this.currentUserId;
   }
 }

@@ -42,14 +42,15 @@ export interface ActionPlanObjectiveModel {
 ========================= */
 export interface ActionPlanModel {
   id: number;
+  user_id?: number | null;        // ← NUEVO
   strategy_id: number;
   component_id: number;
   responsible?: string | null;
+  total_score: number;            // ← NUEVO
   plan_objectives: ActionPlanObjectiveModel[];
   created_at: string;
   updated_at: string;
 }
-
 /* =========================
    Requests
 ========================= */
