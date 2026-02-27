@@ -12,7 +12,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
 
   const isRefresh = req.url.includes('/auth/refresh');
-  const isLogin   = req.url.includes('/auth/login');
+  const isLogin = req.url.includes('/auth/login');
 
   // ─── Helper: clonar request con el nuevo token ───────────────────────
   const withToken = (token: string) =>
@@ -25,8 +25,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         share(),   // todos los suscriptores comparten la misma llamada HTTP
       );
       // Limpiar cuando termine (éxito o error)
-      refreshInProgress$.subscribe({ complete: () => refreshInProgress$ = null,
-                                      error:    () => refreshInProgress$ = null });
+      refreshInProgress$.subscribe({
+        complete: () => refreshInProgress$ = null,
+        error: () => refreshInProgress$ = null
+      });
     }
     return refreshInProgress$;
   };
@@ -47,7 +49,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   // ─── Request normal con token vigente ────────────────────────────────
+  // ─── DEBUG ───────────────────────────────────────────────────────────
   const token = auth.getAccessToken();
+
+
+  // ─── Request normal con token vigente ────────────────────────────────
   const authReq = token ? withToken(token) : req;
 
   return next(authReq).pipe(

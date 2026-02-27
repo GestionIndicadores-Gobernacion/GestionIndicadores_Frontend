@@ -1,15 +1,15 @@
 <div class="min-h-screen bg-zinc-50">
 
-    <!-- Header -->
+    <!-- PAGE HEADER -->
     <div class="border-b border-zinc-200 bg-white">
-        <div class="max-w-4xl mx-auto px-6 py-8">
+        <div class="max-w-5xl mx-auto px-6 py-8">
             <div class="flex items-start justify-between">
                 <div class="space-y-1">
                     <h1 class="text-2xl font-semibold text-zinc-900 tracking-tight">
                         {{ isEdit ? 'Editar reporte' : 'Nuevo reporte' }}
                     </h1>
                     <p class="text-sm text-zinc-500">
-                        Registro operativo de la intervención
+                        {{ isEdit ? 'Actualiza la información del reporte' : 'Registro operativo de la intervención' }}
                     </p>
                 </div>
                 <button type="button" (click)="cancel()"
@@ -20,10 +20,10 @@
         </div>
     </div>
 
-    <!-- Form Container -->
-    <div class="max-w-4xl mx-auto px-6 py-10">
+    <!-- FORM CONTAINER -->
+    <div class="max-w-5xl mx-auto px-6 py-10">
 
-        <form *ngIf="!loading" (ngSubmit)="save()" class="space-y-6">
+        <form (ngSubmit)="save(f)" #f="ngForm" novalidate class="space-y-6">
 
             <!-- ====== UBICACIÓN Y CONTEXTO ====== -->
             <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
@@ -65,9 +65,10 @@
                             </label>
                             <input type="date" [max]="todayDate" [(ngModel)]="form.report_date" name="report_date"
                                 required class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
-                                 bg-white text-zinc-900
-                                 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
-                                 transition-colors duration-150" />
+                                bg-white text-zinc-900
+                                focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                                transition-colors duration-150" />
+                            <p class="text-xs text-zinc-500">No puede ser una fecha futura</p>
                         </div>
 
                         <!-- Municipio -->
@@ -77,12 +78,13 @@
                             </label>
                             <select [(ngModel)]="form.intervention_location" name="intervention_location" required
                                 class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
-                                 bg-white text-zinc-900 cursor-pointer
-                                 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
-                                 transition-colors duration-150">
-                                <option [ngValue]="null" disabled>Seleccionar municipio</option>
+                                bg-white text-zinc-900 cursor-pointer
+                                focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                                transition-colors duration-150">
+                                <option [ngValue]="null" disabled>Seleccione un municipio...</option>
                                 <option *ngFor="let m of municipios" [ngValue]="m">{{ m }}</option>
                             </select>
+                            <p class="text-xs text-zinc-500">Lugar donde se realizó la intervención</p>
                         </div>
 
                         <!-- Zona -->
@@ -91,13 +93,14 @@
                                 Zona <span class="text-red-500">*</span>
                             </label>
                             <select [(ngModel)]="form.zone_type" name="zone_type" required class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
-                                 bg-white text-zinc-900 cursor-pointer
-                                 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
-                                 transition-colors duration-150">
-                                <option [ngValue]="null" disabled>Seleccionar zona</option>
+                                bg-white text-zinc-900 cursor-pointer
+                                focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                                transition-colors duration-150">
+                                <option [ngValue]="null" disabled>Seleccione una zona...</option>
                                 <option value="Urbana">Urbana</option>
                                 <option value="Rural">Rural</option>
                             </select>
+                            <p class="text-xs text-zinc-500">Clasificación del área de intervención</p>
                         </div>
 
                         <!-- Estrategia -->
@@ -107,12 +110,13 @@
                             </label>
                             <select [(ngModel)]="form.strategy_id" name="strategy_id" (change)="onStrategyChange()"
                                 required class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
-                                 bg-white text-zinc-900 cursor-pointer
-                                 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
-                                 transition-colors duration-150">
-                                <option [ngValue]="null" disabled>Seleccionar estrategia</option>
+                                bg-white text-zinc-900 cursor-pointer
+                                focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                                transition-colors duration-150">
+                                <option [ngValue]="null" disabled>Seleccione una estrategia...</option>
                                 <option *ngFor="let s of strategies" [ngValue]="s.id">{{ s.name }}</option>
                             </select>
+                            <p class="text-xs text-zinc-500">La estrategia determina el contexto general del reporte</p>
                         </div>
 
                         <!-- Componente -->
@@ -122,13 +126,14 @@
                             </label>
                             <select [(ngModel)]="form.component_id" name="component_id" [disabled]="!form.strategy_id"
                                 (change)="onComponentChange()" required class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
-                                 bg-white text-zinc-900 cursor-pointer
-                                 disabled:bg-zinc-50 disabled:text-zinc-400 disabled:cursor-not-allowed
-                                 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
-                                 transition-colors duration-150">
-                                <option [ngValue]="null" disabled>Seleccionar componente</option>
+                                bg-white text-zinc-900 cursor-pointer
+                                disabled:bg-zinc-50 disabled:text-zinc-400 disabled:cursor-not-allowed
+                                focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                                transition-colors duration-150">
+                                <option [ngValue]="null" disabled>Seleccione un componente...</option>
                                 <option *ngFor="let c of components" [ngValue]="c.id">{{ c.name }}</option>
                             </select>
+                            <p class="text-xs text-zinc-500">Primero selecciona una estrategia</p>
                         </div>
 
                     </div>
@@ -158,9 +163,7 @@
                                     d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                             </svg>
                             <div class="space-y-1.5">
-                                <p class="text-xs font-medium text-blue-900">
-                                    Guía para completar esta sección:
-                                </p>
+                                <p class="text-xs font-medium text-blue-900">Guía para completar esta sección:</p>
                                 <div class="grid md:grid-cols-2 gap-3">
                                     <div>
                                         <p class="text-xs font-medium text-blue-800 mb-0.5">Resultado obtenido:</p>
@@ -194,9 +197,10 @@
                             <textarea rows="6" [(ngModel)]="form.executive_summary" name="executive_summary"
                                 placeholder="Ej: Se realizó jornada de esterilización con 45 animales atendidos..."
                                 required class="w-full px-3 py-2.5 text-sm border border-zinc-200 rounded-lg
-                                 bg-white text-zinc-900 resize-none
-                                 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
-                                 transition-colors duration-150"></textarea>
+                                bg-white text-zinc-900 resize-none
+                                focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                                transition-colors duration-150"></textarea>
+                            <p class="text-xs text-zinc-500">Describe el impacto y los logros de la intervención</p>
                         </div>
 
                         <!-- Actividades realizadas -->
@@ -207,9 +211,10 @@
                             <textarea rows="6" [(ngModel)]="form.activities_performed" name="activities_performed"
                                 placeholder="Ej: Jornada de sensibilización en 3 instituciones educativas..." required
                                 class="w-full px-3 py-2.5 text-sm border border-zinc-200 rounded-lg
-                                 bg-white text-zinc-900 resize-none
-                                 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
-                                 transition-colors duration-150"></textarea>
+                                bg-white text-zinc-900 resize-none
+                                focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                                transition-colors duration-150"></textarea>
+                            <p class="text-xs text-zinc-500">Lista las acciones ejecutadas durante la intervención</p>
                         </div>
 
                     </div>
@@ -259,36 +264,30 @@
                         </label>
                         <input type="url" [(ngModel)]="form.evidence_link" name="evidence_link"
                             placeholder="https://drive.google.com/..." class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
-                               bg-white text-zinc-900
-                               focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
-                               transition-colors duration-150" />
+                            bg-white text-zinc-900
+                            focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                            transition-colors duration-150" />
+                        <p class="text-xs text-zinc-500">Asegúrate de que el enlace sea público antes de pegarlo</p>
                     </div>
+
                 </div>
             </section>
 
             <!-- ====== ACCIONES ====== -->
             <div class="pt-6 flex items-center justify-end gap-3">
-                <button type="button" (click)="cancel()" class="px-4 py-2 text-sm font-medium text-zinc-600 
-                         hover:text-zinc-900 transition-colors duration-150 cursor-pointer">
+                <button type="button" (click)="cancel()" class="px-4 py-2 text-sm font-medium text-zinc-600
+                    hover:text-zinc-900 transition-colors duration-150 cursor-pointer">
                     Cancelar
                 </button>
 
-                <button type="submit" [disabled]="saving || !isFormValid()" class="px-6 py-2 text-sm font-medium text-white bg-zinc-900 rounded-lg
-                         hover:bg-black transition-colors duration-150 cursor-pointer
-                         disabled:opacity-40 disabled:cursor-not-allowed">
-                    {{ saving ? 'Guardando...' : 'Guardar reporte' }}
+                <button type="submit" [disabled]="saving" class="px-6 py-2 text-sm font-medium text-white bg-zinc-900 rounded-lg
+                    hover:bg-black transition-colors duration-150 cursor-pointer
+                    disabled:opacity-40 disabled:cursor-not-allowed">
+                    {{ saving ? 'Guardando...' : (isEdit ? 'Actualizar reporte' : 'Guardar reporte') }}
                 </button>
             </div>
 
         </form>
-
-        <!-- Loading State -->
-        <div *ngIf="loading" class="flex items-center justify-center py-20">
-            <div class="flex items-center gap-3 text-sm text-zinc-500">
-                <div class="w-4 h-4 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin"></div>
-                Cargando formulario...
-            </div>
-        </div>
 
     </div>
 </div>

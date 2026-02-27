@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Loader } from './loader';
+import { ActionPlanList } from './action-plan-list';
 
-describe('Loader', () => {
-  let component: Loader;
-  let fixture: ComponentFixture<Loader>;
+describe('ActionPlanList', () => {
+  let component: ActionPlanList;
+  let fixture: ComponentFixture<ActionPlanList>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Loader]
+      imports: [ActionPlanList]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(Loader);
+    fixture = TestBed.createComponent(ActionPlanList);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });
