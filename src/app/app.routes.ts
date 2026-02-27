@@ -62,7 +62,12 @@ export const routes: Routes = [
           import('./features/datasets/datasets.routes')
             .then(m => m.DATASETS_ROUTES),
       },
-
+      {
+        path: 'action-plans',
+        loadChildren: () =>
+          import('./features/action-plans/action-plans.routes')
+            .then(m => m.ACTION_PLANS_ROUTES),
+      },
       // USUARIOS (SOLO ADMIN)
       {
         path: 'users',

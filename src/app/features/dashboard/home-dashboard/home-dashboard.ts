@@ -21,7 +21,6 @@ export class HomeDashboardComponent {
   ) {
     const user = this.authService.getUser();
     this.roleId = user?.role?.id ?? null;
-
     this.sections = this.buildDashboardSections();
   }
 
@@ -39,13 +38,10 @@ export class HomeDashboardComponent {
   // BUILD VIEW MODEL
   // =========================================================
   private buildDashboardSections(): DashboardSectionVM[] {
-
     return this.menuService.getMenu()
       .filter(section => section.label !== 'Dashboard')
       .map(section => {
-
         if (!section.children) return null;
-
         const visibleChildren = section.children.filter(c => this.canShow(c));
         if (!visibleChildren.length) return null;
 
@@ -58,7 +54,6 @@ export class HomeDashboardComponent {
             description: this.getItemDescription(child.route!)
           }))
         };
-
       })
       .filter(Boolean) as DashboardSectionVM[];
   }
@@ -68,34 +63,26 @@ export class HomeDashboardComponent {
   // =========================================================
   private getSectionDescription(label: string): string {
     switch (label) {
-      case 'Reportes PYBA':
-        return 'Gestión del cumplimiento de metas e indicadores del plan.';
-      case 'Bases de datos':
-        return 'Administración de la estructura y fuentes de información.';
-      default:
-        return '';
+      case 'Reportes PYBA':    return 'Gestión del cumplimiento de metas e indicadores del plan.';
+      case 'Bases de datos':   return 'Administración de la estructura y fuentes de información.';
+      case 'Planes de acción': return 'Seguimiento y gestión de actividades por componente.';
+      default: return '';
     }
   }
 
   private getItemDescription(route: string): string {
     switch (route) {
-      case 'reports':
-        return 'Consultar y registrar avances.';
-      case 'reports/strategies':
-        return 'Organizar la estructura estratégica.';
-      case 'reports/components':
-        return 'Relacionar componentes e indicadores.';
-      case 'datasets':
-        return 'Gestionar fuentes de datos.';
-      case 'datasets/tables':
-        return 'Configurar tablas del sistema.';
-      default:
-        return '';
+      case 'reports':                return 'Consultar y registrar avances.';
+      case 'reports/strategies':     return 'Organizar la estructura estratégica.';
+      case 'reports/components':     return 'Relacionar componentes e indicadores.';
+      case 'datasets':               return 'Gestionar fuentes de datos.';
+      case 'datasets/tables':        return 'Configurar tablas del sistema.';
+      case 'action-plans/calendar':  return 'Ver y gestionar planes en el calendario.';
+      default: return '';
     }
   }
 
 }
-
 
 /* ===================================================== */
 
