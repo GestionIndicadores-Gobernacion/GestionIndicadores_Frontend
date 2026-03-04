@@ -4,8 +4,9 @@ import { RouterModule } from '@angular/router';
 
 import { ReportModel } from '../../../../core/models/report.model';
 import {
-  StrategyAggregate, AggregateByMonth,
-  ComponentAggregate, AggregateByComponent
+  StrategyAggregate,
+  AggregateByMonth,
+  AggregateByComponent,
 } from '../../../../core/models/report-aggregate.model';
 
 import { ReportsService } from '../../../../core/services/reports.service';
@@ -14,10 +15,10 @@ import { ToastService } from '../../../../core/services/toast.service';
 
 import { ReportsKpiCardsComponent } from './components/reports-kpi-cards/reports-kpi-cards';
 import { ReportsTableComponent } from './components/reports-table/reports-table';
-import { ReportsTimelineComponent } from './components/reports-timeline/reports-timeline';
 import { ReportsMapComponent } from './components/reports-map/reports-map';
-import { UsersService } from '../../../../core/services/users.service';
 import { ReportsAuditLogComponent } from './components/reports-audit-log/reports-audit-log';
+import { ReportsExplorerComponent } from './components/reports-explorer/reports-explorer';
+import { UsersService } from '../../../../core/services/users.service';
 
 import { catchError, forkJoin, of } from 'rxjs';
 
@@ -28,10 +29,10 @@ import { catchError, forkJoin, of } from 'rxjs';
     CommonModule,
     RouterModule,
     ReportsKpiCardsComponent,
-    ReportsTimelineComponent,
     ReportsTableComponent,
     ReportsMapComponent,
-    ReportsAuditLogComponent
+    ReportsAuditLogComponent,
+    ReportsExplorerComponent,
   ],
   templateUrl: './reports-list.html',
   styleUrl: './reports-list.css',
@@ -44,12 +45,9 @@ export class ReportsListComponent implements OnInit {
   strategyIds: number[] = [];
 
   strategyAggregate: StrategyAggregate | null = null;
-  byMonth: AggregateByMonth[] = [];
   components: AggregateByComponent[] = [];
-  componentAggregate: ComponentAggregate | null = null;
 
   selectedStrategyId: number | null = null;
-  initialYear: number = new Date().getFullYear();
 
   loading = true;
   showDashboard = true;
@@ -89,28 +87,9 @@ export class ReportsListComponent implements OnInit {
     this.showDashboard = !this.showDashboard;
   }
 
-  onStrategyChange(id: number): void {
-    this.selectedStrategyId = id;
-    this.componentAggregate = null;
-    this.loadAggregate(id);
-  }
-
-  onComponentChange(componentId: number | null): void {
-    if (componentId === null) {
-      this.componentAggregate = null;
-      return;
-    }
-
-    this.reportsService.aggregateByComponent(componentId).subscribe({
-      next: agg => {
-        this.componentAggregate = agg;
-        this.cd.detectChanges();
-      },
-      error: () => {
-        this.componentAggregate = null;
-        this.cd.detectChanges();
-      }
-    });
+  onStrategyChange(strategyId: number): void {
+    this.selectedStrategyId = strategyId;
+    this.loadAggregate(strategyId);
   }
 
   deleteReport(id: number): void {
@@ -148,12 +127,10 @@ export class ReportsListComponent implements OnInit {
   private loadReports(): void {
     this.reportsService.getAll().subscribe({
       next: reports => {
-
         this.reports = reports ?? [];
 
         if (this.reports.length === 0) {
           this.strategyAggregate = null;
-          this.byMonth = [];
           this.components = [];
           this.componentMap = {};
           this.loading = false;
@@ -163,7 +140,6 @@ export class ReportsListComponent implements OnInit {
 
         const mostRecent = this.reports[0];
         this.selectedStrategyId = mostRecent.strategy_id;
-        this.initialYear = new Date(mostRecent.report_date).getFullYear();
 
         const uniqueStrategyIds = [...new Set(this.reports.map(r => r.strategy_id))];
 
@@ -186,14 +162,11 @@ export class ReportsListComponent implements OnInit {
 
             if (strategyId === this.selectedStrategyId) {
               this.strategyAggregate = agg;
-              this.byMonth = agg.by_month;
               this.components = agg.by_component;
             }
           });
 
           this.componentMap = fullComponentMap;
-
-          // 🔥 CLAVE: refresca la vista UNA SOLA VEZ cuando todo terminó
           this.loading = false;
           this.cd.detectChanges();
         });
@@ -202,7 +175,6 @@ export class ReportsListComponent implements OnInit {
       error: () => {
         this.reports = [];
         this.strategyAggregate = null;
-        this.byMonth = [];
         this.components = [];
         this.loading = false;
         this.cd.detectChanges();
@@ -215,25 +187,13 @@ export class ReportsListComponent implements OnInit {
       catchError(() => of(this.emptyAggregate(strategyId)))
     ).subscribe(agg => {
       this.strategyAggregate = agg;
-      this.byMonth = agg.by_month;
       this.components = agg.by_component;
 
       const newEntries = Object.fromEntries(
         agg.by_component.map(c => [c.component_id, c.component_name])
       );
-
       this.componentMap = { ...this.componentMap, ...newEntries };
       this.cd.detectChanges();
     });
-  }
-
-  get totalReports(): number { return this.reports.length; }
-
-  get reportsThisMonth(): number {
-    const now = new Date();
-    return this.reports.filter(r => {
-      const d = new Date(r.report_date);
-      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-    }).length;
   }
 }

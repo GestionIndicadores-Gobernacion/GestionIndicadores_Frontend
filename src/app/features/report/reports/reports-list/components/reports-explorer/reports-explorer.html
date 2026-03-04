@@ -1,0 +1,65 @@
+<div class="space-y-4">
+
+    <!-- Fila de filtros -->
+    <div class="flex flex-wrap gap-3">
+
+        <div class="flex flex-col gap-1 min-w-48 flex-1">
+            <label class="text-xs font-medium text-zinc-500">Estrategia</label>
+            <select (change)="onStrategySelect($event)"
+                class="text-sm border border-zinc-200 rounded-lg px-3 py-2 bg-white text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300">
+                <option *ngFor="let id of strategyIds" [value]="id" [selected]="id === selectedStrategyId">
+                    {{ strategyMap[id] }}
+                </option>
+            </select>
+        </div>
+
+        <div class="flex flex-col gap-1 min-w-48 flex-1">
+            <label class="text-xs font-medium text-zinc-500">Componente</label>
+            <select (change)="onComponentSelect($event)" [disabled]="components.length === 0" 
+                class="text-sm border border-zinc-200 rounded-lg px-3 py-2 bg-white text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-40 disabled:cursor-not-allowed">
+                <option value="" [disabled]="true" [selected]="selectedComponentId === null">Selecciona un componente</option>
+                <option *ngFor="let c of components" [value]="c.component_id">
+                    {{ c.component_name }}
+                </option>
+            </select>
+        </div>
+
+    </div>
+
+    <!-- Variables como pills -->
+    <div *ngIf="selectedComponentId">
+
+        <!-- Cargando -->
+        <div *ngIf="loadingComponent" class="flex items-center gap-2">
+            <div class="w-3.5 h-3.5 border-2 border-zinc-200 border-t-zinc-500 rounded-full animate-spin"></div>
+            <span class="text-xs text-zinc-400">Cargando variables...</span>
+        </div>
+
+        <!-- Sin indicadores -->
+        <p *ngIf="!loadingComponent && indicators.length === 0" class="text-xs text-zinc-400">
+            Este componente no tiene variables registradas
+        </p>
+
+        <!-- Pills -->
+        <div *ngIf="!loadingComponent && indicators.length > 0" class="flex flex-wrap gap-2">
+            <span class="text-xs font-medium text-zinc-500 self-center mr-1">Variable:</span>
+            <button *ngFor="let ind of indicators" (click)="onIndicatorSelect(ind)"
+                [class.bg-zinc-900]="selectedIndicator?.indicator_id === ind.indicator_id"
+                [class.text-white]="selectedIndicator?.indicator_id === ind.indicator_id"
+                [class.border-zinc-900]="selectedIndicator?.indicator_id === ind.indicator_id"
+                [class.bg-white]="selectedIndicator?.indicator_id !== ind.indicator_id"
+                [class.text-zinc-600]="selectedIndicator?.indicator_id !== ind.indicator_id"
+                [class.border-zinc-200]="selectedIndicator?.indicator_id !== ind.indicator_id"
+                class="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors duration-150 hover:border-zinc-400">
+                {{ ind.indicator_name }}
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Gráfico -->
+    <app-reports-explorer-chart [componentAggregate]="componentAggregate" [selectedIndicator]="selectedIndicator"
+        [indicatorDetail]="selectedIndicatorDetail">
+    </app-reports-explorer-chart>
+
+</div>

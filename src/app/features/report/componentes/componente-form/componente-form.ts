@@ -18,7 +18,12 @@ import { ComponenteIndicatorsFormComponent } from './componente-indicators-form/
 @Component({
   selector: 'app-component-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, ComponenteIndicatorsFormComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    ComponenteIndicatorsFormComponent
+  ],
   templateUrl: './componente-form.html',
   styleUrl: './componente-form.css'
 })
@@ -28,34 +33,27 @@ export class ComponenteFormComponent implements OnInit {
   private pendingIndicators: any[] = [];
   private indicatorsLoaded = false;
 
-  @ViewChild(ComponenteIndicatorsFormComponent) 
+  @ViewChild(ComponenteIndicatorsFormComponent)
   set indicatorsComponent(component: ComponenteIndicatorsFormComponent) {
-    console.log('🔧 ViewChild setter called');
-    console.log('   Component exists:', !!component);
-    console.log('   Indicators loaded:', this.indicatorsLoaded);
-    console.log('   Pending indicators:', this.pendingIndicators.length);
-    console.log('   Loading state:', this.loading);
-    
+
     this._indicatorsComponent = component;
-    
+
     if (component && !this.indicatorsLoaded && this.pendingIndicators.length > 0) {
-      console.log('✅ Loading', this.pendingIndicators.length, 'indicators...');
+
       this.indicatorsLoaded = true;
       const toLoad = [...this.pendingIndicators];
       this.pendingIndicators = [];
-      
+
       setTimeout(() => {
-        console.log('📥 Actually adding indicators to component');
-        toLoad.forEach((ind, idx) => {
-          console.log(`   ${idx + 1}. ${ind.name} (${ind.field_type})`);
+        toLoad.forEach(ind => {
           component.addIndicator(ind);
         });
-        console.log('✓ Done loading indicators');
-        this.cdr.detectChanges(); // 🔥 Forzar detección
-      }, 0);
+
+        this.cdr.detectChanges(); // 🔥 forzar render tras cargar indicadores
+      });
     }
   }
-  
+
   get indicatorsComponent(): ComponenteIndicatorsFormComponent | undefined {
     return this._indicatorsComponent;
   }
@@ -79,6 +77,7 @@ export class ComponenteFormComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+
     this.id = Number(this.route.snapshot.paramMap.get('id'));
     this.isEdit = !!this.id;
 
@@ -135,27 +134,38 @@ export class ComponenteFormComponent implements OnInit {
   }
 
   addIndicator() {
-    console.log('🔘 addIndicator() called');
-    console.log('   Component exists:', !!this._indicatorsComponent);
-    
     if (this._indicatorsComponent) {
       this._indicatorsComponent.addIndicator();
+      this.cdr.detectChanges();
     }
   }
 
+  // =========================
+  // LOAD STRATEGIES
+  // =========================
   loadStrategies() {
-    this.strategiesService.getAll().subscribe(s => this.strategies = s);
+    this.strategiesService.getAll().subscribe({
+      next: s => {
+        this.strategies = s ?? [];
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.toast.error('Error cargando estrategias');
+      }
+    });
   }
 
+  // =========================
+  // LOAD COMPONENT (EDIT)
+  // =========================
   loadComponent() {
+
     this.loading = true;
-    console.log('📡 Loading component from server...');
+    this.cdr.detectChanges(); // mostrar spinner
 
     this.service.getById(this.id!).subscribe({
       next: data => {
-        console.log('📦 Received data from server:', data);
-        console.log('   Indicators count:', data.indicators?.length || 0);
-        
+
         this.form.patchValue({
           strategy_id: data.strategy_id,
           name: data.name
@@ -163,30 +173,37 @@ export class ComponenteFormComponent implements OnInit {
 
         data.objectives?.forEach(o => this.addObjective(o));
         data.mga_activities?.forEach(a => this.addActivity(a));
-        
-        if (data.indicators && data.indicators.length > 0) {
-          console.log('💾 Storing indicators in pendingIndicators:', data.indicators.length);
+
+        if (data.indicators?.length) {
           this.pendingIndicators = data.indicators;
         }
 
         this.form.get('strategy_id')?.disable();
+
         this.loading = false;
-        console.log('✓ loading = false');
+        this.cdr.detectChanges(); // 🔥 forzar actualización vista
       },
       error: () => {
         this.toast.error('Error cargando componente');
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
 
+  // =========================
+  // SUBMIT
+  // =========================
   submit() {
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
     this.saving = true;
+    this.cdr.detectChanges();
+
     this.form.get('strategy_id')?.enable();
 
     const raw = this.form.value;
@@ -194,15 +211,12 @@ export class ComponenteFormComponent implements OnInit {
     const payload = {
       strategy_id: raw.strategy_id,
       name: raw.name,
-
       objectives: raw.objectives.map((o: any) => ({
         description: o.description
       })),
-
       mga_activities: raw.mga_activities.map((a: any) => ({
         name: a.name
       })),
-
       indicators: this._indicatorsComponent?.serializeIndicators() || []
     };
 
@@ -218,6 +232,7 @@ export class ComponenteFormComponent implements OnInit {
       error: err => {
         this.toast.error(err.error?.message || 'Error al guardar');
         this.saving = false;
+        this.cdr.detectChanges();
       }
     });
   }
