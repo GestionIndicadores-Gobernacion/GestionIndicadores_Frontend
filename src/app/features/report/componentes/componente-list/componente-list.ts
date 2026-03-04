@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -39,8 +39,9 @@ export class ComponentesListComponent implements OnInit {
     private componentsService: ComponentsService,
     private strategiesService: StrategiesService,
     private router: Router,
-    private toast: ToastService
-  ) { }
+    private toast: ToastService,
+    private cd: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.load();
@@ -51,6 +52,7 @@ export class ComponentesListComponent implements OnInit {
   // =========================
   load(): void {
     this.loading = true;
+    this.cd.detectChanges();
 
     this.strategiesService.getAll().subscribe({
       next: (strategies: StrategyModel[]) => {
@@ -62,19 +64,22 @@ export class ComponentesListComponent implements OnInit {
 
         this.componentsService.getAll().subscribe({
           next: (components) => {
-            this.components = components;
-            this.filteredComponents = components;
+            this.components = components ?? [];
+            this.filteredComponents = components ?? [];
             this.loading = false;
+            this.cd.detectChanges();
           },
           error: () => {
             this.toast.error('Error al cargar componentes');
             this.loading = false;
+            this.cd.detectChanges();
           }
         });
       },
       error: () => {
         this.toast.error('Error al cargar estrategias');
         this.loading = false;
+        this.cd.detectChanges();
       }
     });
   }
@@ -91,12 +96,13 @@ export class ComponentesListComponent implements OnInit {
         this.strategyMap[c.strategy_id]?.toLowerCase() || '';
 
       return (
-        c.name.toLowerCase().includes(term) ||
+        c.name?.toLowerCase().includes(term) ||
         strategyName.includes(term)
       );
     });
 
     this.currentPage = 1;
+    this.cd.detectChanges();
   }
 
   // =========================
@@ -111,6 +117,8 @@ export class ComponentesListComponent implements OnInit {
       this.sortColumn = column;
       this.sortDirection = 'asc';
     }
+
+    this.cd.detectChanges();
   }
 
   get sortedComponents(): ComponentModel[] {
@@ -164,6 +172,7 @@ export class ComponentesListComponent implements OnInit {
 
   onPageChange(page: number): void {
     this.currentPage = page;
+    this.cd.detectChanges();
   }
 
   // =========================
@@ -198,6 +207,7 @@ export class ComponentesListComponent implements OnInit {
           this.toast.error(
             err.error?.message || 'Error al eliminar componente'
           );
+          this.cd.detectChanges();
         }
       });
     });

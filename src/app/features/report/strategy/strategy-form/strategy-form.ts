@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -35,10 +35,12 @@ export class StrategyFormComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private strategiesService: StrategiesService,
-    private toast: ToastService
-  ) { }
+    private toast: ToastService,
+    private cd: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
+
     this.id = Number(this.route.snapshot.paramMap.get('id'));
     this.isEdit = !!this.id;
 
@@ -51,7 +53,9 @@ export class StrategyFormComponent implements OnInit {
 
     this.addYear(); // mínimo un año
 
-    if (this.isEdit) this.loadStrategy();
+    if (this.isEdit) {
+      this.loadStrategy();
+    }
   }
 
   // =========================
@@ -62,6 +66,7 @@ export class StrategyFormComponent implements OnInit {
   }
 
   addYear(): void {
+
     const group = this.fb.group({
       value: new FormControl<number | null>(0, {
         nonNullable: true,
@@ -70,11 +75,12 @@ export class StrategyFormComponent implements OnInit {
     });
 
     this.years.push(group);
+    this.cd.detectChanges();
   }
-
 
   removeYear(index: number) {
     this.years.removeAt(index);
+    this.cd.detectChanges();
   }
 
   // =========================
@@ -91,7 +97,9 @@ export class StrategyFormComponent implements OnInit {
   // LOAD EDIT
   // =========================
   loadStrategy() {
+
     this.loading = true;
+    this.cd.detectChanges(); // mostrar spinner
 
     this.strategiesService.getById(this.id!).subscribe({
       next: (data: StrategyModel) => {
@@ -104,7 +112,7 @@ export class StrategyFormComponent implements OnInit {
 
         this.years.clear();
 
-        data.annual_goals.forEach(goal => {
+        data.annual_goals?.forEach(goal => {
           this.years.push(
             this.fb.group({
               value: goal.value
@@ -113,10 +121,12 @@ export class StrategyFormComponent implements OnInit {
         });
 
         this.loading = false;
+        this.cd.detectChanges(); // refrescar vista
       },
       error: () => {
         this.toast.error('Error al cargar la estrategia');
         this.loading = false;
+        this.cd.detectChanges();
       }
     });
   }
@@ -125,10 +135,14 @@ export class StrategyFormComponent implements OnInit {
   // SAVE
   // =========================
   submit() {
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
+
+    this.saving = true;
+    this.cd.detectChanges();
 
     const payload = {
       ...this.form.value,
@@ -146,6 +160,11 @@ export class StrategyFormComponent implements OnInit {
       next: () => {
         this.toast.success('Estrategia guardada correctamente');
         this.router.navigate(['/reports/strategies']);
+      },
+      error: err => {
+        this.toast.error(err.error?.message || 'Error al guardar');
+        this.saving = false;
+        this.cd.detectChanges();
       }
     });
   }
