@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
@@ -32,16 +32,16 @@ export class StrategyListComponent implements OnInit {
   pageSize = 10;
   totalPages = 1;
 
-  // SORTING
+  // sorting
   sortColumn: keyof StrategyModel | '' = '';
   sortDirection: 'asc' | 'desc' = 'asc';
-
 
   constructor(
     private strategiesService: StrategiesService,
     private router: Router,
-    private toast: ToastService
-  ) { }
+    private toast: ToastService,
+    private cd: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.loadStrategies();
@@ -53,16 +53,19 @@ export class StrategyListComponent implements OnInit {
   loadStrategies(): void {
     this.loading = true;
     this.error = null;
+    this.cd.detectChanges(); // forzar render de loading
 
     this.strategiesService.getAll().subscribe({
       next: (data) => {
-        this.strategies = data;
+        this.strategies = data ?? [];
         this.applyFilters();
         this.loading = false;
+        this.cd.detectChanges(); // forzar actualización de vista
       },
       error: () => {
         this.error = 'No se pudieron cargar las estrategias';
         this.loading = false;
+        this.cd.detectChanges();
       }
     });
   }
@@ -73,6 +76,7 @@ export class StrategyListComponent implements OnInit {
   onSearch(): void {
     this.currentPage = 1;
     this.applyFilters();
+    this.cd.detectChanges();
   }
 
   // =========================
@@ -82,9 +86,9 @@ export class StrategyListComponent implements OnInit {
     const term = this.searchTerm.toLowerCase().trim();
 
     this.filteredStrategies = this.strategies.filter(s =>
-      s.name.toLowerCase().includes(term) ||
-      s.objective.toLowerCase().includes(term) ||
-      s.product_goal_description.toLowerCase().includes(term)
+      s.name?.toLowerCase().includes(term) ||
+      s.objective?.toLowerCase().includes(term) ||
+      s.product_goal_description?.toLowerCase().includes(term)
     );
 
     this.totalPages = Math.max(
@@ -92,13 +96,10 @@ export class StrategyListComponent implements OnInit {
       1
     );
 
-
-
     this.applyPagination();
   }
 
   sortBy(column: keyof StrategyModel): void {
-
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
@@ -106,11 +107,11 @@ export class StrategyListComponent implements OnInit {
       this.sortDirection = 'asc';
     }
 
-    this.applyPagination(); // reordenar vista actual
+    this.applyPagination();
+    this.cd.detectChanges();
   }
 
   get sortedStrategies(): StrategyModel[] {
-
     if (!this.sortColumn) return this.filteredStrategies;
 
     return [...this.filteredStrategies].sort((a: any, b: any) => {
@@ -121,7 +122,7 @@ export class StrategyListComponent implements OnInit {
       if (valA == null) return -1;
       if (valB == null) return 1;
 
-      // números (total_goal)
+      // números
       if (typeof valA === 'number' && typeof valB === 'number') {
         return this.sortDirection === 'asc' ? valA - valB : valB - valA;
       }
@@ -150,10 +151,10 @@ export class StrategyListComponent implements OnInit {
     this.paginatedStrategies = this.sortedStrategies.slice(start, end);
   }
 
-
   onPageChange(page: number): void {
     this.currentPage = page;
     this.applyPagination();
+    this.cd.detectChanges();
   }
 
   // =========================

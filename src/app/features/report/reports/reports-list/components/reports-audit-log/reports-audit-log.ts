@@ -20,11 +20,13 @@ export class ReportsAuditLogComponent implements OnInit {
   paginated: AuditLogModel[] = [];
   userMap: Record<number, string> = {};
 
+  timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
   searchTerm = '';
   filterAction = '';
 
   currentPage = 1;
-  pageSize =3;
+  pageSize = 6;
   totalPages = 1;
 
   constructor(

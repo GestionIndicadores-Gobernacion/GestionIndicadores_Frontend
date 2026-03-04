@@ -10,7 +10,8 @@ import {
 
 import {
   StrategyAggregate,
-  ComponentAggregate
+  ComponentAggregate,
+  ComponentIndicatorsAggregate
 } from '../models/report-aggregate.model';
 
 @Injectable({
@@ -51,6 +52,12 @@ export class ReportsService {
   aggregateByComponent(componentId: number) {
     return this.http.get<ComponentAggregate>(
       `${this.api}/aggregate/component/${componentId}`
+    );
+  }
+
+  aggregateIndicatorsByComponent(componentId: number) {
+    return this.http.get<ComponentIndicatorsAggregate>(
+      `${this.api}/aggregate/component/${componentId}/indicators`
     );
   }
 }
