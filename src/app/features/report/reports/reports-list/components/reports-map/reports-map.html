@@ -309,7 +309,7 @@
                                 {{ r.report_date | date:'dd MMM yyyy' }}
                             </p>
                             <p class="text-xs text-zinc-800 mt-0.5 line-clamp-2 leading-snug">
-                                {{ r.executive_summary || r.activities_performed }}
+                                {{ r.executive_summary  }}
                             </p>
                         </div>
                         <span [ngClass]="normalizeZone(r.zone_type) === 'Urbana'
