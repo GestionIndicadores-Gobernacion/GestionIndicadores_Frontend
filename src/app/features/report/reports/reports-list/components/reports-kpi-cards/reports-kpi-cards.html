@@ -1,82 +1,136 @@
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
 
-  <!-- Asistencias Técnicas -->
-  <div class="bg-white border border-zinc-200 rounded-2xl p-5">
-    <div class="text-2xl font-semibold text-zinc-900 tracking-tight">
-      {{ asistenciasTecnicas }}
+  <div
+    class="group bg-white border border-zinc-100 rounded-2xl p-5 flex flex-col justify-between hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-default">
+    <div class="flex items-start justify-between mb-4">
+      <span class="text-xs font-medium text-zinc-400 uppercase tracking-widest">Asistencias</span>
+      <div
+        class="w-7 h-7 rounded-lg bg-zinc-50 flex items-center justify-center group-hover:bg-zinc-100 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-zinc-500" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+      </div>
     </div>
-    <div class="text-xs text-zinc-500 mt-1.5">
-      Asistencias técnicas
+    <div>
+      <div class="text-4xl font-black text-zinc-900 tracking-tighter leading-none">{{ asistenciasTecnicas }}</div>
+      <div class="text-xs text-zinc-400 mt-2">Asistencias técnicas</div>
     </div>
   </div>
 
-  <!-- Denuncias Reportadas -->
-  <div class="bg-white border border-zinc-200 rounded-2xl p-5">
-    <div class="text-2xl font-semibold text-zinc-900 tracking-tight">
-      {{ denunciasReportadas }}
+  <div
+    class="group bg-white border border-zinc-100 rounded-2xl p-5 flex flex-col justify-between hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-default">
+    <div class="flex items-start justify-between mb-4">
+      <span class="text-xs font-medium text-zinc-400 uppercase tracking-widest">Denuncias</span>
+      <div
+        class="w-7 h-7 rounded-lg bg-zinc-50 flex items-center justify-center group-hover:bg-zinc-100 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-zinc-500" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+        </svg>
+      </div>
     </div>
-    <div class="text-xs text-zinc-500 mt-1.5">
-      Denuncias reportadas
-    </div>
-  </div>
-
-  <!-- Personas Capacitadas -->
-  <div class="bg-white border border-zinc-200 rounded-2xl p-5">
-    <div class="text-2xl font-semibold text-zinc-900 tracking-tight">
-      {{ personasCapacitadas }}
-    </div>
-    <div class="text-xs text-zinc-500 mt-1.5">
-      Personas capacitadas
-    </div>
-  </div>
-
-  <!-- Niños Sensibilizados -->
-  <div class="bg-white border border-zinc-200 rounded-2xl p-5">
-    <div class="text-2xl font-semibold text-zinc-900 tracking-tight">
-      {{ ninosSensibilizados }}
-    </div>
-    <div class="text-xs text-zinc-500 mt-1.5">
-      Niños sensibilizados
+    <div>
+      <div class="text-4xl font-black text-zinc-900 tracking-tighter leading-none">{{ denunciasReportadas }}</div>
+      <div class="text-xs text-zinc-400 mt-2">Denuncias reportadas</div>
     </div>
   </div>
 
-  <!-- Animales Esterilizados -->
-  <div class="bg-white border border-zinc-200 rounded-2xl p-5">
-    <div class="text-2xl font-semibold text-zinc-900 tracking-tight">
-      {{ animalesEsterilizados }}
+  <div
+    class="group bg-white border border-zinc-100 rounded-2xl p-5 flex flex-col justify-between hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-default">
+    <div class="flex items-start justify-between mb-4">
+      <span class="text-xs font-medium text-zinc-400 uppercase tracking-widest">Personas</span>
+      <div
+        class="w-7 h-7 rounded-lg bg-zinc-50 flex items-center justify-center group-hover:bg-zinc-100 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-zinc-500" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      </div>
     </div>
-    <div class="text-xs text-zinc-500 mt-1.5">
-      Animales esterilizados
-    </div>
-  </div>
-
-  <!-- Refugios Impactados -->
-  <div class="bg-white border border-zinc-200 rounded-2xl p-5">
-    <div class="text-2xl font-semibold text-zinc-900 tracking-tight">
-      {{ refugiosImpactados }}
-    </div>
-    <div class="text-xs text-zinc-500 mt-1.5">
-      Refugios impactados
-    </div>
-  </div>
-
-  <!-- Emprendedores Cofinanciados -->
-  <div class="bg-white border border-zinc-200 rounded-2xl p-5">
-    <div class="text-2xl font-semibold text-zinc-900 tracking-tight">
-      {{ emprendedoresCofinanciados }}
-    </div>
-    <div class="text-xs text-zinc-500 mt-1.5">
-      Emprendedores cofinanciados
+    <div>
+      <div class="text-4xl font-black text-zinc-900 tracking-tighter leading-none">{{ personasCapacitadas }}</div>
+      <div class="text-xs text-zinc-400 mt-2">Personas capacitadas</div>
     </div>
   </div>
 
-  <!-- Último Reporte -->
-  <div class="bg-white border border-zinc-200 rounded-2xl p-5">
-    <div class="text-sm font-medium text-zinc-900 tracking-tight leading-tight">
-      {{ lastReportDate ? (lastReportDate | date:'dd/MM/yy') : '—' }}
+  <div
+    class="group bg-white border border-zinc-100 rounded-2xl p-5 flex flex-col justify-between hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-default">
+    <div class="flex items-start justify-between mb-4">
+      <span class="text-xs font-medium text-zinc-400 uppercase tracking-widest">Niños</span>
+      <div
+        class="w-7 h-7 rounded-lg bg-zinc-50 flex items-center justify-center group-hover:bg-zinc-100 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-zinc-500" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
     </div>
-    <div class="text-xs text-zinc-500 mt-1.5">
-      Último reporte
+    <div>
+      <div class="text-4xl font-black text-zinc-900 tracking-tighter leading-none">{{ ninosSensibilizados }}</div>
+      <div class="text-xs text-zinc-400 mt-2">Niños sensibilizados</div>
+    </div>
+  </div>
+
+  <div
+    class="group bg-white border border-zinc-100 rounded-2xl p-5 flex flex-col justify-between hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-default">
+    <div class="flex items-start justify-between mb-4">
+      <span class="text-xs font-medium text-zinc-400 uppercase tracking-widest">Animales</span>
+      <div
+        class="w-7 h-7 rounded-lg bg-zinc-50 flex items-center justify-center group-hover:bg-zinc-100 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-zinc-500" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        </svg>
+      </div>
+    </div>
+    <div>
+      <div class="text-4xl font-black text-zinc-900 tracking-tighter leading-none">{{ animalesEsterilizados }}</div>
+      <div class="text-xs text-zinc-400 mt-2">Animales esterilizados</div>
+    </div>
+  </div>
+
+  <div
+    class="group bg-white border border-zinc-100 rounded-2xl p-5 flex flex-col justify-between hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-default">
+    <div class="flex items-start justify-between mb-4">
+      <span class="text-xs font-medium text-zinc-400 uppercase tracking-widest">Refugios</span>
+      <div
+        class="w-7 h-7 rounded-lg bg-zinc-50 flex items-center justify-center group-hover:bg-zinc-100 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-zinc-500" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+      </div>
+    </div>
+    <div>
+      <div class="text-4xl font-black text-zinc-900 tracking-tighter leading-none">{{ refugiosImpactados }}</div>
+      <div class="text-xs text-zinc-400 mt-2">Refugios impactados</div>
+    </div>
+  </div>
+
+  <div
+    class="group bg-white border border-zinc-100 rounded-2xl p-5 flex flex-col justify-between hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-default">
+    <div class="flex items-start justify-between mb-4">
+      <span class="text-xs font-medium text-zinc-400 uppercase tracking-widest">Emprendedores</span>
+      <div
+        class="w-7 h-7 rounded-lg bg-zinc-50 flex items-center justify-center group-hover:bg-zinc-100 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-zinc-500" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+    </div>
+    <div>
+      <div class="text-4xl font-black text-zinc-900 tracking-tighter leading-none">{{ emprendedoresCofinanciados }}
+      </div>
+      <div class="text-xs text-zinc-400 mt-2">Emprendedores cofinanciados</div>
     </div>
   </div>
 

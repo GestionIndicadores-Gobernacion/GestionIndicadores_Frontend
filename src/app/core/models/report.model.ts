@@ -42,8 +42,7 @@ export interface ReportModel {
   report_date: string;
 
   executive_summary: string;
-  activities_performed: string;
-
+  
   intervention_location: string;
   zone_type: ZoneType;
 
@@ -65,8 +64,7 @@ export interface ReportCreateRequest {
   report_date: string;
 
   executive_summary: string;
-  activities_performed: string;
-
+  
   intervention_location: string;
   zone_type: ZoneType;
 

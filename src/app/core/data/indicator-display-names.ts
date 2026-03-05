@@ -23,8 +23,8 @@ export const INDICATOR_DISPLAY_NAMES: Record<number, string> = {
     35: 'Tipo de avistamiento',
 
     // UNIDAD MOVIL
-    97: 'Insumos',
-    99: 'Animales atendidos',
+    97: 'Cantidad de jornadas con insumos vs sin insumos',
+    99: 'Cantidad de animales atendidos vs meses',
 
     // ATENCION VETERINARIA EN CAMPO 
     100: 'Insumos',
