@@ -3,7 +3,9 @@ export interface ExplorerVirtualConfig {
     showReportesPorMunicipio: boolean;
     showIndicadoresPorMunicipio: boolean;
     hiddenIndicators?: number[];
-    locationLabel?: string;  // ← nuevo
+    locationLabel?: string;
+    jornadasPorMesLabel?: string;
+    subViews?: Record<number, Record<string, string>>;
 }
 
 export const COMPONENT_EXPLORER_CONFIG: Record<number, ExplorerVirtualConfig> = {
@@ -39,12 +41,35 @@ export const COMPONENT_EXPLORER_CONFIG: Record<number, ExplorerVirtualConfig> = 
         showReportesPorMunicipio: true,
         showIndicadoresPorMunicipio: false,
         hiddenIndicators: [],
+        locationLabel: 'Cantidad de animales vs municipios',
+        subViews: {
+            99: {
+                'CANINO': 'Cantidad de perros atendidos',
+                'FELINO': 'Cantidad de gatos atendidos',
+                'CANINO – Hembra': 'Cantidad de hembras (perro)',
+                'CANINO – Macho': 'Cantidad de machos (perro)',
+                'FELINO – Hembra': 'Cantidad de hembras (gato)',
+                'FELINO – Macho': 'Cantidad de machos (gato)',
+                'sub:red_animalia': 'Animales atendidos Red Animalia',
+            }
+        },
+        jornadasPorMesLabel: 'Jornadas por mes',
     },
     9: {
         showReportesPorMes: true,
         showReportesPorMunicipio: true,
         showIndicadoresPorMunicipio: false,
-        hiddenIndicators: [103],  // ocultar NOMBRE (text field)
+        hiddenIndicators: [103],
+        subViews: {
+            125: {
+                'CANINO': 'Perros atendidos',
+                'FELINO': 'Gatos atendidos',
+                'CANINO – Hembra': 'Perras (hembra)',
+                'CANINO – Macho': 'Perros (macho)',
+                'FELINO – Hembra': 'Gatas (hembra)',
+                'FELINO – Macho': 'Gatos (macho)',
+            }
+        }
     },
     17: {
         showReportesPorMes: true,  // ← número de actores vs meses

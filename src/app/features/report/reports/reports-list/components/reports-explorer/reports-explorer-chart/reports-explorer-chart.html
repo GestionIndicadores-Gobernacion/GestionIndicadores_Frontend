@@ -1,51 +1,72 @@
 <div class="space-y-4">
 
-    <!-- Empty state: sin componente -->
+    <!-- Sin componente -->
     <div *ngIf="!componentAggregate"
         class="flex items-center justify-center h-64 rounded-xl border border-dashed border-zinc-200">
-        <p class="text-sm text-zinc-400">Selecciona un componente para ver el gráfico</p>
+        <p class="text-sm text-zinc-400">
+            Selecciona un componente para ver el gráfico
+        </p>
     </div>
 
-    <!-- Empty state: componente sin reportes -->
+    <!-- Componente sin registros -->
     <div *ngIf="componentAggregate && componentAggregate.total_reports === 0"
         class="flex items-center justify-center h-64 rounded-xl border border-dashed border-zinc-200">
-        <p class="text-sm text-zinc-400">Este componente aún no tiene reportes registrados</p>
+        <p class="text-sm text-zinc-400">
+            Este componente aún no tiene registros
+        </p>
     </div>
 
     <ng-container *ngIf="componentAggregate && componentAggregate.total_reports > 0">
 
-        <!-- Selector de año (solo para gráficos temporales) -->
-        <div *ngIf="isTemporalChart" class="flex gap-1">
+        <!-- Selector año -->
+        <div class="flex gap-1">
             <button *ngFor="let year of availableYears" (click)="selectYear(year)"
                 [class.bg-zinc-900]="year === currentYear" [class.text-white]="year === currentYear"
                 [class.bg-zinc-100]="year !== currentYear" [class.text-zinc-600]="year !== currentYear"
-                class="px-3 py-1 rounded-lg text-xs font-medium transition-colors duration-150 hover:bg-zinc-200">
+                class="px-3 py-1 rounded-lg text-xs font-medium transition hover:bg-zinc-200">
+
                 {{ year }}
+
             </button>
         </div>
 
-        <!-- Indicador activo -->
+        <!-- Indicador -->
         <div *ngIf="selectedIndicator"
             class="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg w-fit">
-            <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
-            <span class="text-xs font-medium text-amber-800">{{ selectedIndicator.indicator_name }}</span>
+
+            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+
+            <span class="text-xs font-medium text-amber-800">
+                {{ selectedIndicator.indicator_name }}
+            </span>
+
             <span *ngIf="indicatorTotal !== null" class="text-xs text-amber-600">
                 · Total: {{ indicatorTotal | number }}
             </span>
+
         </div>
 
         <!-- Gráfico -->
-        <div class="relative overflow-y-auto max-h-96">
-            <div [style.height.px]="chartData.labels && chartData.labels.length > 0
-                ? (selectedIndicator?.field_type === 'by_location'
-                    ? chartData.labels.length * 34 + 40
-                    : 256)
-                : 256">
-                <canvas baseChart [data]="chartData" [type]="chartType" [options]="chartOptions">
-                </canvas>
-            </div>
-        </div>
+        <div class="relative">
 
+            <div class="overflow-y-auto"
+                [style.maxHeight.px]="chartType === 'bar' && chartOptions?.indexAxis === 'y' ? 320 : null">
+
+                <div [style.height.px]="chartHeight">
+
+                    <ng-container *ngIf="chartData.datasets.length">
+
+                        <canvas *ngIf="chartKey" baseChart [data]="chartData" [type]="chartType"
+                            [options]="chartOptions">
+                        </canvas>
+
+                    </ng-container>
+
+                </div>
+
+            </div>
+
+        </div>
         <!-- Sin datos -->
         <p *ngIf="isChartEmpty" class="text-xs text-zinc-400 text-center">
             Sin registros para {{ currentYear }}

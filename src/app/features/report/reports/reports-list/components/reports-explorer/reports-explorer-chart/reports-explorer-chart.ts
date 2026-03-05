@@ -1,19 +1,25 @@
 import {
-  Component, Input, OnChanges, SimpleChanges, ChangeDetectorRef, ViewChild
+  Component,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  ViewChild,
+  EventEmitter,
+  Output
 } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { NgChartsModule, BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartType } from 'chart.js';
 
 import {
-  AggregateByMonth,
   ComponentAggregate,
-  IndicatorDetail,
+  IndicatorDetail
 } from '../../../../../../../core/models/report-aggregate.model';
+
 import { getMetricDisplayName } from '../../../../../../../core/data/indicator-display-names';
 
-const MONTHS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
-  'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+const MONTHS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
 @Component({
   selector: 'app-reports-explorer-chart',
@@ -27,244 +33,393 @@ export class ReportsExplorerChartComponent implements OnChanges {
 
   @Input() componentAggregate: ComponentAggregate | null = null;
   @Input() selectedIndicator: IndicatorDetail | null = null;
-  @Input() selectedYear: number = new Date().getFullYear();
   @Input() indicatorDetail: IndicatorDetail | null = null;
+  @Input() selectedYear: number = new Date().getFullYear();
+
+  @Output() yearChange = new EventEmitter<number>();
 
   availableYears: number[] = [];
   currentYear: number = this.selectedYear;
 
   chartType: ChartType = 'bar';
   chartData: ChartConfiguration['data'] = { labels: [], datasets: [] };
-  chartOptions: ChartConfiguration['options'] = this.buildOptions('index');
+  chartOptions: ChartConfiguration['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+      mode: 'nearest',
+      intersect: false
+    },
+    plugins: {
+      tooltip: {
+        enabled: true
+      }
+    }
+  };
 
-  constructor(private cd: ChangeDetectorRef) { }
+  chartKey = 0;
 
   ngOnChanges(changes: SimpleChanges): void {
+
+    if (changes['selectedYear']) {
+      this.currentYear = changes['selectedYear'].currentValue;
+    }
+
     if (changes['componentAggregate']) {
       this.computeYears();
-      this.buildChart();
     }
-    if (changes['selectedIndicator'] || changes['indicatorDetail']) {
-      this.buildChart();
-    }
+
+    this.buildChart();
   }
 
-  selectYear(year: number): void {
+  selectYear(year: number) {
     this.currentYear = year;
+    this.yearChange.emit(year);
     this.buildChart();
   }
 
   get isChartEmpty(): boolean {
-    const data = this.chartData.datasets[0]?.data;
-    if (!data) return true;
-    return (data as number[]).every(v => v === 0);
-  }
-
-  get isTemporalChart(): boolean {
-    const ft = this.selectedIndicator?.field_type;
-    return !ft || ft === 'number' || ft === 'by_month_reports' || ft === 'by_month_sum';
+    const d = this.chartData.datasets?.[0]?.data;
+    return !d || (d as number[]).every(v => v === 0);
   }
 
   get indicatorTotal(): number | null {
-    const detail = this.indicatorDetail;
-    if (!detail) return null;
 
-    switch (detail.field_type) {
-      case 'number':
-      case 'by_month_sum':
-        return detail.by_month?.reduce((s, e) => s + e.total, 0) ?? null;
-      case 'by_location':
-        return detail.by_location?.reduce((s, e) => s + e.total, 0) ?? null;
-      case 'sum_group':
-      case 'grouped_data':
-      case 'select':
-      case 'multi_select':
-        return detail.by_category?.reduce((s, e) => s + e.total, 0) ?? null;
-      case 'categorized_group':
-        if (!detail.by_nested) return null;
-        return Object.values(detail.by_nested).flat().reduce((s, e) => s + e.total, 0);
-      case 'by_month_reports':
-        return this.componentAggregate?.by_month?.reduce((s, e) => s + e.total, 0) ?? null;
-      default:
-        return null;
+    const d = this.indicatorDetail;
+
+    if (d?.by_month?.length) {
+      return d.by_month
+        .filter(e => this.getYear(e.month) === this.currentYear)
+        .reduce((s, e) => s + e.total, 0);
     }
+
+    if (d?.by_location?.length) {
+      return d.by_location.reduce((s, e) => s + e.total, 0);
+    }
+
+    if (d?.by_category?.length) {
+      return d.by_category.reduce((s, e) => s + e.total, 0);
+    }
+
+    if (d?.by_nested) {
+      return Object.values(d.by_nested).flat().reduce((s, e) => s + e.total, 0);
+    }
+
+    if (this.componentAggregate?.by_month) {
+      return this.componentAggregate.by_month
+        .filter(e => this.getYear(e.month) === this.currentYear)
+        .reduce((s, e) => s + ((e as any).total ?? ((e.urbana ?? 0) + (e.rural ?? 0))), 0);
+    }
+
+    return null;
   }
 
-  private refresh(): void {
-    setTimeout(() => { this.chart?.update(); }, 50);
+  private buildChart() {
+
+    if (!this.componentAggregate) {
+      this.chartData = { labels: [], datasets: [] };
+      return;
+    }
+
+    const d = this.indicatorDetail;
+
+    if (!d || d.field_type === 'by_month_reports') {
+      this.buildJornadasChart();
+      return;
+    }
+
+    if (d.by_nested) {
+      this.buildDonut(d);
+      return;
+    }
+
+    if (d.by_location) {
+      this.buildLocation(d);
+      return;
+    }
+
+    if (d.by_category) {
+      this.buildCategory(d);
+      return;
+    }
+
+    if (d.by_month) {
+      this.buildMonth(d);
+      return;
+    }
+
+    this.buildJornadasChart();
   }
 
-  private computeYears(): void {
-    const source = this.componentAggregate?.by_month ?? [];
-    const years = new Set(source.map(e => Number(e.month.split('-')[0])));
-    years.add(new Date().getFullYear());
-    this.availableYears = Array.from(years).sort((a, b) => b - a);
+  private buildJornadasChart() {
+
+    const src = this.componentAggregate!.by_month
+      .filter(e => this.getYear(e.month) === this.currentYear);
+
+    const map: Record<string, number> = {};
+
+    src.forEach(e => {
+      const total =
+        (e as any).total ??
+        ((e as any).urbana ?? 0) +
+        ((e as any).rural ?? 0);
+
+      if (total > 0) {
+        map[e.month] = total;
+      }
+    });
+
+    const labels: string[] = [];
+    const data: number[] = [];
+
+    MONTHS.forEach((m, i) => {
+      const key = this.monthKey(i);
+      const value = map[key];
+      if (value) {
+        labels.push(m);
+        data.push(value);
+      }
+    });
+
+    this.chartType = 'bar';
+
+    this.chartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'x',
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          type: 'category'
+        },
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1,
+            precision: 0
+          }
+        }
+      }
+    };
+
+    this.chartData = {
+      labels,
+      datasets: [
+        {
+          label: 'Jornadas',
+          data,
+          backgroundColor: 'rgba(16,185,129,0.85)',
+          borderRadius: 4,
+          barThickness: 32
+        }
+      ]
+    };
+
+    this.update();
+  }
+
+  private buildMonth(d: IndicatorDetail) {
+
+    const map: Record<string, number> = {};
+
+    d.by_month!
+      .filter(e => this.getYear(e.month) === this.currentYear)
+      .forEach(e => map[e.month] = e.total);
+
+    const labels = MONTHS;
+    const data = MONTHS.map((_, i) => map[this.monthKey(i)] ?? 0);
+
+    this.chartType = 'bar';
+
+    this.chartOptions = this.baseBarOptions(false, false);
+
+    this.chartData = {
+      labels,
+      datasets: [{
+        label: d.indicator_name,
+        data,
+        backgroundColor: 'rgba(245,158,11,.85)',
+        borderRadius: 4,
+        barThickness: 28
+      }]
+    };
+
+    this.update();
+  }
+
+  private buildCategory(d: IndicatorDetail) {
+
+    const c = d.by_category!;
+
+    this.chartType = c.length > 6 ? 'bar' : 'doughnut';
+
+    if (this.chartType === 'doughnut') {
+      this.buildDonutFromArray(
+        c.map(x => x.category),
+        c.map(x => x.total)
+      );
+      return;
+    }
+
+    this.chartOptions = this.baseBarOptions(true, true);
+
+    this.chartData = {
+      labels: c.map(x => x.category),
+      datasets: [{
+        label: d.indicator_name,
+        data: c.map(x => x.total),
+        backgroundColor: 'rgba(99,102,241,.8)',
+        borderRadius: 4
+      }]
+    };
+
+    this.update();
+  }
+
+  private buildLocation(d: IndicatorDetail) {
+
+    const l = d.by_location!.filter(x => x.total > 0);
+
+    this.chartType = 'bar';
+
+    this.chartOptions = this.baseBarOptions(true, true);
+
+    this.chartData = {
+      labels: l.map(x => x.location),
+      datasets: [{
+        label: d.indicator_name,
+        data: l.map(x => x.total),
+        backgroundColor: 'rgba(99,102,241,.85)',
+        borderRadius: 6,
+        barThickness: 18
+      }]
+    };
+
+    this.update();
+  }
+
+  private buildDonut(d: IndicatorDetail) {
+
+    const k = Object.keys(d.by_nested!)[0];
+    const arr = d.by_nested![k];
+
+    this.buildDonutFromArray(
+      arr.map(x => getMetricDisplayName(x.metric)),
+      arr.map(x => x.total)
+    );
+  }
+
+  private buildDonutFromArray(labels: string[], values: number[]) {
+
+    const colors = [
+      '#10b981', '#6366f1', '#f59e0b', '#ef4444', '#3b82f6', '#22c55e'
+    ];
+
+    const total = values.reduce((a, b) => a + b, 0);
+
+    this.chartType = 'doughnut';
+
+    this.chartData = {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: labels.map((_, i) => colors[i % colors.length])
+      }]
+    };
+
+    this.chartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            generateLabels: (chart) => {
+              const ds = chart.data.datasets[0];
+              return chart.data.labels!.map((l, i) => {
+                const v = (ds.data[i] as number) || 0;
+                const p = total ? ((v / total) * 100).toFixed(1) : 0;
+                return {
+                  text: `${l}: ${v.toLocaleString()} (${p}%)`,
+                  fillStyle: (ds.backgroundColor as any[])[i],
+                  index: i
+                };
+              });
+            }
+          }
+        }
+      }
+    };
+
+    this.update();
+  }
+
+  private baseBarOptions(showLegend: boolean, horizontal = false): ChartConfiguration['options'] {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: horizontal ? 'y' : 'x',
+      interaction: { mode: 'nearest', intersect: true },
+      plugins: {
+        legend: { display: showLegend },
+        tooltip: {
+          mode: 'nearest',
+          intersect: true,
+          callbacks: {
+            label: (ctx) => {
+              const label = ctx.dataset.label ?? '';
+              const value = horizontal ? (ctx.parsed.x ?? 0) : (ctx.parsed.y ?? 0);
+              return `${label}: ${value.toLocaleString()}`;
+            }
+          }
+        }
+      },
+      scales: horizontal
+        ? {
+          x: { beginAtZero: true, ticks: { precision: 0 } },
+          y: { type: 'category' }
+        }
+        : {
+          x: { type: 'category' },
+          y: { beginAtZero: true, ticks: { precision: 0 } }
+        }
+    };
+  }
+  private computeYears() {
+
+    const src = this.componentAggregate?.by_month ?? [];
+
+    const years = [...new Set(src.map(e => this.getYear(e.month)))];
+
+    years.push(new Date().getFullYear());
+
+    this.availableYears = [...new Set(years)].sort((a, b) => b - a);
+
     if (!this.availableYears.includes(this.currentYear)) {
       this.currentYear = this.availableYears[0];
     }
   }
 
-  private buildChart(): void {
-    if (!this.componentAggregate) {
-      this.chartData = { labels: [], datasets: [] };
-      return;
-    }
-    if (this.selectedIndicator && this.indicatorDetail) {
-      this.buildDetailChart();
-    } else {
-      this.buildZoneChart();
-    }
-    this.refresh();
+  private getYear(m: string) {
+    return Number(m.split('-')[0]);
   }
 
-  private buildDetailChart(): void {
-    const detail = this.indicatorDetail!;
-    switch (detail.field_type) {
-      case 'number': this.buildNumberChart(detail); break;
-      case 'by_month_sum': this.buildMonthSumChart(detail); break;
-      case 'by_month_reports': this.buildZoneChart(); break;
-      case 'sum_group':
-      case 'grouped_data':
-      case 'select':
-      case 'multi_select': this.buildCategoryChart(detail); break;
-      case 'categorized_group': this.buildNestedChart(detail); break;
-      case 'by_location': this.buildLocationChart(detail); break;
-      case 'categorized_subview':
-        this.buildNestedChart(detail);
-        break;
-      default: this.buildZoneChart();
-    }
-  }
-
-  private buildZoneChart(): void {
-    const source = this.componentAggregate!.by_month;
-    const filtered = source.filter(e => Number(e.month.split('-')[0]) === this.currentYear);
-    const grouped: Record<string, AggregateByMonth> = {};
-    filtered.forEach(e => { grouped[e.month] = e; });
-
-    const urbana = this.monthArray(i => grouped[this.monthKey(i)]?.urbana ?? 0);
-    const rural = this.monthArray(i => grouped[this.monthKey(i)]?.rural ?? 0);
-
-    this.chartType = 'bar';
-    this.chartOptions = this.buildOptions('index');
-    this.chartData = {
-      labels: MONTHS,
-      datasets: [
-        { data: urbana, label: 'Urbana', backgroundColor: 'rgba(16, 185, 129, 0.7)', borderColor: 'rgba(16, 185, 129, 1)', borderWidth: 1, borderRadius: 4 },
-        { data: rural, label: 'Rural', backgroundColor: 'rgba(99, 102, 241, 0.7)', borderColor: 'rgba(99, 102, 241, 1)', borderWidth: 1, borderRadius: 4 }
-      ]
-    };
-  }
-
-  private buildNumberChart(detail: IndicatorDetail): void {
-    const byMonth = detail.by_month ?? [];
-    const filtered = byMonth.filter(e => Number(e.month.split('-')[0]) === this.currentYear);
-    const grouped: Record<string, number> = {};
-    filtered.forEach(e => { grouped[e.month] = e.total; });
-    const data = this.monthArray(i => grouped[this.monthKey(i)] ?? 0);
-
-    this.chartType = 'bar';
-    this.chartOptions = this.buildOptions('index');
-    this.chartData = {
-      labels: MONTHS,
-      datasets: [{ data, label: detail.indicator_name, backgroundColor: 'rgba(245, 158, 11, 0.7)', borderColor: 'rgba(245, 158, 11, 1)', borderWidth: 1, borderRadius: 4 }]
-    };
-  }
-
-  private buildMonthSumChart(detail: IndicatorDetail): void {
-    const byMonth = detail.by_month ?? [];
-    const filtered = byMonth.filter(e => Number(e.month.split('-')[0]) === this.currentYear);
-    const grouped: Record<string, number> = {};
-    filtered.forEach(e => { grouped[e.month] = e.total; });
-    const data = this.monthArray(i => grouped[this.monthKey(i)] ?? 0);
-
-    this.chartType = 'bar';
-    this.chartOptions = this.buildOptions('index');
-    this.chartData = {
-      labels: MONTHS,
-      datasets: [{ data, label: detail.indicator_name, backgroundColor: 'rgba(16, 185, 129, 0.7)', borderColor: 'rgba(16, 185, 129, 1)', borderWidth: 1, borderRadius: 4 }]
-    };
-  }
-
-  private buildCategoryChart(detail: IndicatorDetail): void {
-    const byCategory = detail.by_category ?? [];
-    this.chartType = 'bar';
-    this.chartOptions = this.buildOptions('y', true);
-    this.chartData = {
-      labels: byCategory.map(c => c.category),
-      datasets: [{ data: byCategory.map(c => c.total), label: detail.indicator_name, backgroundColor: 'rgba(99, 102, 241, 0.7)', borderColor: 'rgba(99, 102, 241, 1)', borderWidth: 1, borderRadius: 4 }]
-    };
-  }
-
-  private buildLocationChart(detail: IndicatorDetail): void {
-    const byLocation = (detail.by_location ?? []).filter(l => l.total > 0);
-    const isReportCount = detail.indicator_id === -1;
-    const color = isReportCount ? 'rgba(99, 102, 241, 0.8)' : 'rgba(245, 158, 11, 0.8)';
-    const borderColor = isReportCount ? 'rgba(99, 102, 241, 1)' : 'rgba(245, 158, 11, 1)';
-
-    this.chartType = 'bar';
-    this.chartOptions = {
-      responsive: true,
-      maintainAspectRatio: false,
-      indexAxis: 'y',
-      animation: { duration: 400 },
-      interaction: { mode: 'y', intersect: false },
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: (ctx) => ` ${(ctx.parsed.x ?? 0).toLocaleString()}` } }
-      },
-      scales: {
-        x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
-        y: { ticks: { font: { size: 11 } } }
-      }
-    };
-    this.chartData = {
-      labels: byLocation.map(l => l.location),
-      datasets: [{ data: byLocation.map(l => l.total), label: detail.indicator_name, backgroundColor: color, borderColor, borderWidth: 0, borderRadius: 6, barThickness: 22 }]
-    };
-  }
-
-  private buildNestedChart(detail: IndicatorDetail): void {
-    const byNested = detail.by_nested ?? {};
-    const categories = Object.keys(byNested);
-    if (categories.length === 0) return;
-
-    const allMetrics = [...new Set(categories.flatMap(cat => byNested[cat].map(e => e.metric)))];
-    const colors = ['rgba(16, 185, 129, 0.7)', 'rgba(99, 102, 241, 0.7)', 'rgba(245, 158, 11, 0.7)', 'rgba(239, 68, 68, 0.7)', 'rgba(59, 130, 246, 0.7)'];
-
-    const datasets = allMetrics.map((metric, i) => ({
-      label: getMetricDisplayName(metric),  // ← nombre legible
-      data: categories.map(cat => byNested[cat].find(e => e.metric === metric)?.total ?? 0),
-      backgroundColor: colors[i % colors.length],
-      borderWidth: 1,
-      borderRadius: 4,
-    }));
-
-    this.chartType = 'bar';
-    this.chartOptions = this.buildOptions('index');
-    this.chartData = { labels: categories, datasets };
-  }
-
-  private buildOptions(interactionMode: 'index' | 'y', horizontal = false): ChartConfiguration['options'] {
-    return {
-      responsive: true,
-      maintainAspectRatio: false,
-      indexAxis: horizontal ? 'y' : 'x',
-      animation: { duration: 400 },
-      interaction: { mode: interactionMode, intersect: false },
-      plugins: { legend: { position: 'top' } },
-      scales: {
-        x: { beginAtZero: true, ticks: { autoSkip: false, maxRotation: horizontal ? 0 : 45 } },
-        y: { beginAtZero: true }
-      }
-    };
-  }
-
-  private monthKey(i: number): string {
+  private monthKey(i: number) {
     return `${this.currentYear}-${String(i + 1).padStart(2, '0')}`;
   }
 
-  private monthArray(fn: (i: number) => number): number[] {
-    return Array.from({ length: 12 }, (_, i) => fn(i));
+  private update() {
+    this.chartKey++; // force canvas recreation instead of chart.update()
+  }
+
+  get chartHeight(): number {
+    if (this.chartType === 'doughnut') return 260;
+    if (this.chartType === 'bar' && this.chartOptions?.indexAxis === 'y') {
+      const count = this.chartData?.labels?.length ?? 0;
+      return Math.max(260, count * 36);
+    }
+    return 260;
   }
 }

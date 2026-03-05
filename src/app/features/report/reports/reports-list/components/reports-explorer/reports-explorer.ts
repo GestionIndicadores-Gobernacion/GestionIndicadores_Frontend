@@ -22,6 +22,8 @@ import { getIndicatorDisplayName } from '../../../../../../core/data/indicator-d
 import { ReportsService } from '../../../../../../core/services/reports.service';
 import { ReportsExplorerChartComponent } from './reports-explorer-chart/reports-explorer-chart';
 
+const PILLS_VISIBLE = 6;
+
 @Component({
   selector: 'app-reports-explorer',
   standalone: true,
@@ -42,9 +44,10 @@ export class ReportsExplorerComponent implements OnChanges {
   selectedIndicator: IndicatorDetail | null = null;
   loadingComponent = false;
   indicatorsAggregate: ComponentIndicatorsAggregate | null = null;
+  showAllIndicators = false;
+  selectedYear: number = new Date().getFullYear();
 
   get indicators(): IndicatorDetail[] {
-
     const config = this.selectedComponentId
       ? (COMPONENT_EXPLORER_CONFIG[this.selectedComponentId] ?? DEFAULT_EXPLORER_CONFIG)
       : DEFAULT_EXPLORER_CONFIG;
@@ -66,7 +69,7 @@ export class ReportsExplorerComponent implements OnChanges {
     if (config.showReportesPorMes) {
       virtual.push({
         indicator_id: -2,
-        indicator_name: 'Reportes por mes',
+        indicator_name: config.jornadasPorMesLabel ?? 'Jornadas por mes',
         field_type: 'by_month_reports',
       });
     }
@@ -75,7 +78,7 @@ export class ReportsExplorerComponent implements OnChanges {
     if (config.showReportesPorMunicipio && byLocation.length > 0) {
       virtual.push({
         indicator_id: -1,
-        indicator_name: config.locationLabel ?? 'Reportes por municipio',  // ← dinámico
+        indicator_name: config.locationLabel ?? 'Reportes por municipio',
         field_type: 'by_location',
         by_location: byLocation,
       });
@@ -122,36 +125,40 @@ export class ReportsExplorerComponent implements OnChanges {
       }
     });
 
-    // Virtuales para categorized_group — subvistas por categoría
-    list.forEach(ind => {
-      if (ind.field_type === 'categorized_group' && ind.by_nested) {
-        const config8SubViews: Record<string, string> = {
-          'CANINO': 'Perros atendidos',
-          'FELINO': 'Gatos atendidos',
-          'CANINO – Hembra': 'Perras (hembra)',
-          'CANINO – Macho': 'Perros (macho)',
-          'FELINO – Hembra': 'Gatas (hembra)',
-          'FELINO – Macho': 'Gatos (macho)',
-          'sub:red_animalia': 'Red Animalia',
-        };
+    // Virtuales para categorized_group — subvistas por config
+    if (config.subViews) {
+      Object.entries(config.subViews).forEach(([indIdStr, keyMap]) => {
+        const indId = Number(indIdStr);
+        const ind = list.find(i => i.indicator_id === indId);
+        if (!ind?.by_nested) return;
 
-        Object.entries(config8SubViews).forEach(([key, label], i) => {
+        Object.entries(keyMap).forEach(([key, label], i) => {
           if (!ind.by_nested![key]) return;
           virtual.push({
-            indicator_id: -(ind.indicator_id + 3000 + i),
+            indicator_id: -(indId + 3000 + i),
             indicator_name: label,
             field_type: 'categorized_subview',
             by_nested: { [key]: ind.by_nested![key] },
+            by_month: ind.by_month,
           });
         });
-      }
-    });
+      });
+    }
 
     return [...virtual, ...list];
   }
 
+  get visibleIndicators(): IndicatorDetail[] {
+    if (this.showAllIndicators) return this.indicators;
+    return this.indicators.slice(0, PILLS_VISIBLE);
+  }
+
+  get hiddenCount(): number {
+    return Math.max(0, this.indicators.length - PILLS_VISIBLE);
+  }
+
   get selectedIndicatorDetail(): IndicatorDetail | null {
-    return this.selectedIndicator;  // ya es IndicatorDetail, no necesita buscar
+    return this.selectedIndicator;
   }
 
   constructor(
@@ -167,7 +174,6 @@ export class ReportsExplorerComponent implements OnChanges {
         this.selectedIndicator = null;
       }
 
-      // Auto-seleccionar primer componente disponible
       if (this.components.length > 0) {
         const firstComponent = this.components[0];
         this.selectedComponentId = firstComponent.component_id;
@@ -178,16 +184,23 @@ export class ReportsExplorerComponent implements OnChanges {
 
   private loadComponentData(id: number): void {
     this.loadingComponent = true;
+    this.showAllIndicators = false;
     this.indicatorsAggregate = null;
 
     forkJoin({
       aggregate: this.reportsService.aggregateByComponent(id),
-      indicators: this.reportsService.aggregateIndicatorsByComponent(id)
+      indicators: this.reportsService.aggregateIndicatorsByComponent(id, this.selectedYear)
     }).subscribe({
       next: ({ aggregate, indicators }) => {
         this.componentAggregate = aggregate;
         this.indicatorsAggregate = indicators;
         this.loadingComponent = false;
+
+        const first = this.indicators[0];
+        if (first) {
+          this.selectedIndicator = first;
+        }
+
         this.cd.detectChanges();
       },
       error: () => {
@@ -197,6 +210,32 @@ export class ReportsExplorerComponent implements OnChanges {
         this.cd.detectChanges();
       }
     });
+  }
+
+  onYearChange(year: number): void {
+    this.selectedYear = year;
+
+    if (this.selectedComponentId) {
+      this.reportsService
+        .aggregateIndicatorsByComponent(this.selectedComponentId, year)
+        .subscribe({
+          next: (result: ComponentIndicatorsAggregate) => {
+
+            const currentId = this.selectedIndicator?.indicator_id ?? null;
+
+            this.indicatorsAggregate = result;
+
+            if (currentId !== null) {
+              const same = this.indicators.find(i => i.indicator_id === currentId);
+              if (same) {
+                this.selectedIndicator = same;
+              }
+            }
+
+            this.cd.detectChanges();
+          }
+        });
+    }
   }
 
   onStrategySelect(event: Event): void {
@@ -221,26 +260,6 @@ export class ReportsExplorerComponent implements OnChanges {
     }
 
     this.loadComponentData(id);
-
-    this.loadingComponent = true;
-
-    forkJoin({
-      aggregate: this.reportsService.aggregateByComponent(id),
-      indicators: this.reportsService.aggregateIndicatorsByComponent(id)
-    }).subscribe({
-      next: ({ aggregate, indicators }) => {
-        this.componentAggregate = aggregate;
-        this.indicatorsAggregate = indicators;
-        this.loadingComponent = false;
-        this.cd.detectChanges();
-      },
-      error: () => {
-        this.componentAggregate = null;
-        this.indicatorsAggregate = null;
-        this.loadingComponent = false;
-        this.cd.detectChanges();
-      }
-    });
   }
 
   onIndicatorSelect(indicator: IndicatorDetail): void {
@@ -251,5 +270,8 @@ export class ReportsExplorerComponent implements OnChanges {
     this.cd.detectChanges();
   }
 
-
+  toggleShowAll(): void {
+    this.showAllIndicators = !this.showAllIndicators;
+    this.cd.detectChanges();
+  }
 }

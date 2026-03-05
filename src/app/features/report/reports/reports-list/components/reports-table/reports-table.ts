@@ -34,7 +34,7 @@ export class ReportsTableComponent implements OnChanges {
 
   // PAGINATION
   currentPage = 1;
-  pageSize = 5;
+  pageSize = 10;
   totalPages = 1;
 
   filteredReports: ReportModel[] = [];
@@ -78,7 +78,6 @@ export class ReportsTableComponent implements OnChanges {
       return (
         r.id.toString().includes(term) ||
         (r.executive_summary ?? '').toLowerCase().includes(term) ||
-        (r.activities_performed ?? '').toLowerCase().includes(term) ||
         (r.intervention_location ?? '').toLowerCase().includes(term) ||
         (r.zone_type ?? '').toLowerCase().includes(term) ||
         this.strategyName(r.strategy_id).toLowerCase().includes(term) ||

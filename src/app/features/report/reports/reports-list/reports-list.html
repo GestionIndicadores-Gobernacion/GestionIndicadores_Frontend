@@ -3,138 +3,79 @@
     <!-- PAGE HEADER -->
     <div class="border-b border-zinc-200 bg-white">
         <div class="max-w-7xl mx-auto px-6 py-8">
-            <h1 class="text-2xl font-semibold text-zinc-900 tracking-tight">
-                Reportes operativos
-            </h1>
-            <p class="text-sm text-zinc-500 mt-1">
-                Registro y análisis de ejecución por estrategia
-            </p>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-semibold text-zinc-900 tracking-tight">
+                        Reportes operativos
+                    </h1>
+                    <p class="text-sm text-zinc-500 mt-1">
+                        Registro y administración de reportes por estrategia
+                    </p>
+                </div>
+                <a [routerLink]="['create']" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium
+                    text-white bg-zinc-900 rounded-lg hover:bg-black
+                    transition-colors duration-150 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Nuevo reporte
+                </a>
+            </div>
         </div>
     </div>
 
     <div class="max-w-7xl mx-auto px-6 py-8 space-y-6">
 
-        <!-- PRIMARY ACTIONS -->
-        <div class="grid md:grid-cols-2 gap-4">
-
-            <a [routerLink]="['create']"
-                class="group block bg-white border border-zinc-200 rounded-2xl p-6 hover:border-zinc-300 transition-colors duration-150 cursor-pointer">
-                <div class="flex items-start justify-between mb-4">
-                    <div class="flex-1">
-                        <h2 class="text-base font-semibold text-zinc-900">Registrar reporte</h2>
-                        <p class="text-sm text-zinc-500 mt-1">Crear un nuevo registro operativo del periodo</p>
-                    </div>
-                    <svg class="w-5 h-5 text-zinc-400 group-hover:text-zinc-900 transition-colors duration-150"
-                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                    </svg>
-                </div>
-                <p class="text-xs text-zinc-500 leading-relaxed">
-                    Incluye actividades realizadas, indicadores medidos y ubicación de intervención
-                </p>
-            </a>
-
-            <button (click)="toggleDashboard()" [disabled]="loading"
-                class="group text-left bg-white border border-zinc-200 rounded-2xl p-6 hover:border-zinc-300 transition-colors duration-150 cursor-pointer w-full disabled:cursor-default">
-                <div class="flex items-start justify-between mb-4">
-                    <div class="flex-1">
-                        <h2 class="text-base font-semibold text-zinc-900">Panel analítico</h2>
-                        <p class="text-sm text-zinc-500 mt-1">Tendencias, cobertura y distribución estratégica</p>
-                    </div>
-                    <div *ngIf="loading"
-                        class="w-5 h-5 border-2 border-zinc-200 border-t-zinc-500 rounded-full animate-spin shrink-0">
-                    </div>
-                    <div *ngIf="!loading"
-                        class="flex items-center justify-center w-5 h-5 text-zinc-400 group-hover:text-zinc-900 transition-colors duration-150 font-medium text-lg">
-                        {{ showDashboard ? '−' : '+' }}
-                    </div>
-                </div>
-                <p class="text-xs text-zinc-500">
-                    <span *ngIf="loading">Cargando datos...</span>
-                    <span *ngIf="!loading">{{ showDashboard ? 'Ocultar métricas y visualizaciones' : 'Abrir métricas
-                        consolidadas' }}</span>
-                </p>
-            </button>
-
+        <!-- LOADING STATE -->
+        <div *ngIf="loading" class="flex items-center gap-3 py-6 text-sm text-zinc-500">
+            <div class="w-4 h-4 border-2 border-zinc-200 border-t-zinc-500 rounded-full animate-spin"></div>
+            Cargando registros...
         </div>
 
-        <!-- DASHBOARD -->
-        <div *ngIf="showDashboard && !loading" class="space-y-6">
+        <ng-container *ngIf="!loading">
 
             <!-- EMPTY STATE -->
             <div *ngIf="reports.length === 0" class="bg-white border border-zinc-200 rounded-2xl p-12 text-center">
-                <h3 class="text-base font-semibold text-zinc-900">Aún no existen reportes</h3>
+                <h3 class="text-base font-semibold text-zinc-900">No hay reportes registrados</h3>
                 <p class="text-sm text-zinc-500 mt-2">
-                    Cuando se registren actividades aparecerán métricas consolidadas aquí
+                    Usa el botón de arriba para crear el primer registro operativo
                 </p>
             </div>
 
-            <div *ngIf="reports.length > 0">
+            <ng-container *ngIf="reports.length > 0">
 
-                <div class="mt-6">
-                    <app-reports-kpi-cards [reports]="reports"></app-reports-kpi-cards>
-                </div>
-
-                <!-- EXPLORER: ancho completo -->
-                <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden mt-6">
-                    <div class="px-6 py-4 border-b border-zinc-100">
-                        <h3 class="text-sm font-semibold text-zinc-900">Explorador de indicadores</h3>
-                        <p class="text-xs text-zinc-500 mt-0.5">
-                            Filtra por estrategia, componente y variable para visualizar evolución mensual
-                        </p>
-                    </div>
-                    <div class="p-6">
-                        <app-reports-explorer [strategyIds]="strategyIds" [strategyMap]="strategyMap"
-                            [selectedStrategyId]="selectedStrategyId" [components]="components"
-                            (strategyChange)="onStrategyChange($event)">
-                        </app-reports-explorer>
-                    </div>
-                </section>
-
-                <!-- TABLA + AUDIT en grid -->
-                <div class="grid lg:grid-cols-2 gap-6 mt-6">
-
-                    <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
-                        <div class="px-6 py-4 border-b border-zinc-100">
+                <!-- TABLA -->
+                <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
+                        <div>
                             <h3 class="text-sm font-semibold text-zinc-900">Registros</h3>
                             <p class="text-xs text-zinc-500 mt-0.5">Administración y edición de reportes</p>
                         </div>
-                        <div class="p-6">
-                            <app-reports-table [reports]="reports" [strategyMap]="strategyMap"
-                                [componentMap]="componentMap" [currentUserId]="currentUserId" [isAdmin]="isAdmin"
-                                (delete)="deleteReport($event)">
-                            </app-reports-table>
-                        </div>
-                    </section>
-
-                    <section *ngIf="isAdmin" class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
-                        <div class="px-6 py-4 border-b border-zinc-100">
-                            <h3 class="text-sm font-semibold text-zinc-900">Historial de acciones</h3>
-                            <p class="text-xs text-zinc-500 mt-0.5">Registro de creación, edición y eliminación</p>
-                        </div>
-                        <div class="p-6">
-                            <app-reports-audit-log></app-reports-audit-log>
-                        </div>
-                    </section>
-
-                </div>
-
-                <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden mt-6">
-                    <div class="px-6 py-4 border-b border-zinc-100">
-                        <h3 class="text-sm font-semibold text-zinc-900">Mapa de cobertura</h3>
-                        <p class="text-xs text-zinc-500 mt-0.5">
-                            Distribución geográfica por municipio del Valle del Cauca
-                        </p>
+                        <span class="text-xs text-zinc-400 font-medium">
+                            {{ reports.length }} {{ reports.length === 1 ? 'reporte' : 'reportes' }}
+                        </span>
                     </div>
-                    <div style="height: 560px;">
-                        <app-reports-map [reports]="reports" [strategyMap]="strategyMap" [componentMap]="componentMap">
-                        </app-reports-map>
+                    <div class="p-6">
+                        <app-reports-table [reports]="reports" [strategyMap]="strategyMap" [componentMap]="componentMap"
+                            [currentUserId]="currentUserId" [isAdmin]="isAdmin" (delete)="deleteReport($event)">
+                        </app-reports-table>
                     </div>
                 </section>
 
-            </div>
+                <!-- AUDIT LOG (admin only) -->
+                <section *ngIf="isAdmin" class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-zinc-100">
+                        <h3 class="text-sm font-semibold text-zinc-900">Historial de acciones</h3>
+                        <p class="text-xs text-zinc-500 mt-0.5">Creación, edición y eliminación</p>
+                    </div>
+                    <div class="p-6">
+                        <app-reports-audit-log></app-reports-audit-log>
+                    </div>
+                </section>
 
-        </div>
+            </ng-container>
+
+        </ng-container>
 
     </div>
 
