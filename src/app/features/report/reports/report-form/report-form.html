@@ -148,7 +148,7 @@
                         Descripción de actividades
                     </h2>
                     <p class="text-xs text-zinc-500 mt-0.5">
-                        Documenta los resultados y actividades realizadas durante la intervención
+                        Documenta los resultados obtenidos durante la intervención
                     </p>
                 </div>
 
@@ -164,60 +164,30 @@
                             </svg>
                             <div class="space-y-1.5">
                                 <p class="text-xs font-medium text-blue-900">Guía para completar esta sección:</p>
-                                <div class="grid md:grid-cols-2 gap-3">
-                                    <div>
-                                        <p class="text-xs font-medium text-blue-800 mb-0.5">Resultado obtenido:</p>
-                                        <ul class="text-xs text-blue-700 space-y-0.5 list-disc list-inside">
-                                            <li>Logros principales alcanzados</li>
-                                            <li>Número de beneficiarios atendidos</li>
-                                            <li>Impacto directo en la comunidad</li>
-                                        </ul>
-                                    </div>
-                                    <div>
-                                        <p class="text-xs font-medium text-blue-800 mb-0.5">Actividades realizadas:</p>
-                                        <ul class="text-xs text-blue-700 space-y-0.5 list-disc list-inside">
-                                            <li>Acciones específicas ejecutadas</li>
-                                            <li>Lugares y recursos utilizados</li>
-                                            <li>Aliados o instituciones involucradas</li>
-                                        </ul>
-                                    </div>
-                                </div>
+                                <p class="text-xs font-medium text-blue-800 mb-0.5">Resultado obtenido:</p>
+                                <ul class="text-xs text-blue-700 space-y-0.5 list-disc list-inside">
+                                    <li>Logros principales alcanzados</li>
+                                    <li>Número de beneficiarios atendidos</li>
+                                    <li>Impacto directo en la comunidad</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Fields Grid -->
-                    <div class="grid md:grid-cols-2 gap-6">
-
-                        <!-- Resultado obtenido -->
-                        <div class="space-y-1.5">
-                            <label class="block text-xs font-medium text-zinc-700">
-                                Resultado obtenido <span class="text-red-500">*</span>
-                            </label>
-                            <textarea rows="6" [(ngModel)]="form.executive_summary" name="executive_summary"
-                                placeholder="Ej: Se realizó jornada de esterilización con 45 animales atendidos..."
-                                required class="w-full px-3 py-2.5 text-sm border border-zinc-200 rounded-lg
-                                bg-white text-zinc-900 resize-none
-                                focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
-                                transition-colors duration-150"></textarea>
-                            <p class="text-xs text-zinc-500">Describe el impacto y los logros de la intervención</p>
-                        </div>
-
-                        <!-- Actividades realizadas -->
-                        <div class="space-y-1.5">
-                            <label class="block text-xs font-medium text-zinc-700">
-                                Actividades realizadas <span class="text-red-500">*</span>
-                            </label>
-                            <textarea rows="6" [(ngModel)]="form.activities_performed" name="activities_performed"
-                                placeholder="Ej: Jornada de sensibilización en 3 instituciones educativas..." required
-                                class="w-full px-3 py-2.5 text-sm border border-zinc-200 rounded-lg
-                                bg-white text-zinc-900 resize-none
-                                focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
-                                transition-colors duration-150"></textarea>
-                            <p class="text-xs text-zinc-500">Lista las acciones ejecutadas durante la intervención</p>
-                        </div>
-
+                    <!-- Resultado obtenido -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-medium text-zinc-700">
+                            Resultado obtenido <span class="text-red-500">*</span>
+                        </label>
+                        <textarea rows="6" [(ngModel)]="form.executive_summary" name="executive_summary"
+                            placeholder="Ej: Se realizó jornada de esterilización con 45 animales atendidos..."
+                            required class="w-full px-3 py-2.5 text-sm border border-zinc-200 rounded-lg
+                            bg-white text-zinc-900 resize-none
+                            focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
+                            transition-colors duration-150"></textarea>
+                        <p class="text-xs text-zinc-500">Describe el impacto y los logros de la intervención</p>
                     </div>
+
                 </div>
             </section>
 

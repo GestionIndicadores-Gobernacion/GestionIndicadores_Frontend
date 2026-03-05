@@ -21,12 +21,13 @@ const ID_EMPRENDEDORES = 61;
 export class ReportsKpiCardsComponent {
   @Input() reports: ReportModel[] = [];
 
+  @Input() selectedYear: number = new Date().getFullYear();
   // ─── Helpers ───────────────────────────────────────────────────────────────
 
   /** Suma simple de un indicador numérico directo en todos los reportes */
   private sumNumeric(indicatorId: number): number {
     let total = 0;
-    for (const report of this.reports) {
+    for (const report of this.filteredReports) {  // ← cambio
       const iv = report.indicator_values?.find(i => i.indicator_id === indicatorId);
       if (iv?.value != null) {
         const n = Number(iv.value);
@@ -61,10 +62,17 @@ export class ReportsKpiCardsComponent {
     return total;
   }
 
+
+  private get filteredReports(): ReportModel[] {
+    return this.reports.filter(r => {
+      const year = new Date(r.report_date).getFullYear();
+      return year === this.selectedYear;
+    });
+  }
   // ─── KPIs ──────────────────────────────────────────────────────────────────
 
   get asistenciasTecnicas(): number {
-    return this.reports.filter(r => r.component_id === 2).length;
+    return this.filteredReports.filter(r => r.component_id === 2).length;
   }
 
   get denunciasReportadas(): number {
@@ -80,7 +88,7 @@ export class ReportsKpiCardsComponent {
   }
 
   get animalesEsterilizados(): number {
-    const relevant = this.reports.filter(
+    const relevant = this.filteredReports.filter(
       r => r.strategy_id === 3 && (r.component_id === 8 || r.component_id === 9)
     );
 
@@ -108,7 +116,15 @@ export class ReportsKpiCardsComponent {
   }
 
   get refugiosImpactados(): number {
-    return this.sumNumeric(ID_REFUGIOS_IMPACTADOS);
+    const ID_ESPACIO_ATENDIDO = 102;
+    const categorias = ['albergue/refugio', 'hogar de paso', 'espacio publico', 'fundacion'];
+
+    return this.filteredReports.filter(r => {
+      const iv = r.indicator_values?.find(i => i.indicator_id === ID_ESPACIO_ATENDIDO);
+      if (!iv?.value) return false;
+      const val = typeof iv.value === 'string' ? iv.value.toLowerCase() : '';
+      return categorias.some(c => val.includes(c));
+    }).length;
   }
 
   get emprendedoresCofinanciados(): number {
@@ -123,5 +139,5 @@ export class ReportsKpiCardsComponent {
     return new Date(maxDate);
   }
 
- 
+
 }

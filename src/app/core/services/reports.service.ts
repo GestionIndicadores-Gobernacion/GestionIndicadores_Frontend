@@ -13,6 +13,7 @@ import {
   ComponentAggregate,
   ComponentIndicatorsAggregate
 } from '../models/report-aggregate.model';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -55,9 +56,10 @@ export class ReportsService {
     );
   }
 
-  aggregateIndicatorsByComponent(componentId: number) {
+  aggregateIndicatorsByComponent(componentId: number, year?: number): Observable<ComponentIndicatorsAggregate> {
+    const params = year ? `?year=${year}` : '';
     return this.http.get<ComponentIndicatorsAggregate>(
-      `${this.api}/aggregate/component/${componentId}/indicators`
+      `${this.api}/aggregate/component/${componentId}/indicators${params}`
     );
   }
 }

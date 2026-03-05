@@ -51,7 +51,6 @@ export class ReportFormComponent implements OnInit {
     component_id: null as number | null,
     report_date: null as string | null,
     executive_summary: '',
-    activities_performed: '',
     intervention_location: null as string | null,
     zone_type: null as ZoneType | null,
     evidence_link: ''
@@ -123,7 +122,6 @@ export class ReportFormComponent implements OnInit {
           component_id: report.component_id,
           report_date: report.report_date?.substring(0, 10) ?? null,
           executive_summary: report.executive_summary,
-          activities_performed: report.activities_performed,
           intervention_location: report.intervention_location ?? null,
           zone_type: this.normalizeZoneType(report.zone_type),
           evidence_link: report.evidence_link || ''
@@ -194,7 +192,6 @@ export class ReportFormComponent implements OnInit {
       component_id: this.form.component_id!,
       report_date: this.form.report_date!,
       executive_summary: this.form.executive_summary,
-      activities_performed: this.form.activities_performed,
       intervention_location: this.form.intervention_location!,
       zone_type: this.form.zone_type!,
       evidence_link: this.form.evidence_link || null,
