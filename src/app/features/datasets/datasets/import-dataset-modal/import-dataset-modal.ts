@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
@@ -38,7 +38,10 @@ export class ImportDatasetModalComponent {
   progress = 0;
   importing = false;
 
-  constructor(private datasetService: DatasetService) { }
+  constructor(
+    private datasetService: DatasetService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   // =========================
   // STEP 1
@@ -59,26 +62,37 @@ export class ImportDatasetModalComponent {
           }))
         }));
         this.step = 2;
+        this.cdr.detectChanges();
       },
       error: err => {
-        Swal.fire(
-          'Error',
-          err?.error?.message || 'No se pudo leer el archivo',
-          'error'
-        );
+        Swal.fire('Error', err?.error?.message || 'No se pudo leer el archivo', 'error');
       }
     });
+  }
+
+  // =========================
+  // REMOVE SHEET
+  // =========================
+  removeSheet(index: number): void {
+    this.preview.splice(index, 1);
+    this.cdr.detectChanges(); // ← hoja eliminada desaparece del listado
   }
 
   // =========================
   // NAVIGATION
   // =========================
   next(): void {
+    if (this.preview.length === 0) {
+      Swal.fire('Sin hojas', 'Debes mantener al menos una hoja para continuar', 'warning');
+      return;
+    }
     if (this.step < 4) this.step++;
+    this.cdr.detectChanges();
   }
 
   prev(): void {
     if (this.step > 1) this.step--;
+    this.cdr.detectChanges();
   }
 
   // =========================
@@ -88,35 +102,31 @@ export class ImportDatasetModalComponent {
     this.importing = true;
     this.step = 4;
     this.progress = 0;
+    this.cdr.detectChanges();
 
-    // Progreso simulado (UX)
     const interval = setInterval(() => {
       this.progress += 8;
       if (this.progress >= 90) clearInterval(interval);
+      this.cdr.detectChanges();
     }, 300);
 
     this.datasetService.importFromExcel(this.file).subscribe({
       next: () => {
         clearInterval(interval);
         this.progress = 100;
+        this.cdr.detectChanges();
 
-        Swal.fire(
-          'Importado',
-          'El dataset fue importado correctamente',
-          'success'
-        );
+        Swal.fire('Importado', 'El dataset fue importado correctamente', 'success');
 
         this.imported.emit();
         this.close.emit();
       },
       error: err => {
         clearInterval(interval);
-        Swal.fire(
-          'Error',
-          err?.error?.message || 'Error importando el archivo',
-          'error'
-        );
         this.importing = false;
+        this.cdr.detectChanges();
+
+        Swal.fire('Error', err?.error?.message || 'Error importando el archivo', 'error');
       }
     });
   }

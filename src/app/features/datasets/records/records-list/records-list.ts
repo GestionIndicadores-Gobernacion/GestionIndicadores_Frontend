@@ -1,29 +1,35 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 
 import { RecordService } from '../../../../core/services/record.service';
 import { FieldService } from '../../../../core/services/field.service';
+import { TableService } from '../../../../core/services/table.service';
 
 import { TableRecord } from '../../../../core/models/record.model';
 import { Field } from '../../../../core/models/field.model';
 
 import { Pagination } from '../../../../shared/components/pagination/pagination';
+import { TableEditorDrawerComponent } from './table-editor-drawer/table-editor-drawer';
 
 type SortDirection = 'asc' | 'desc';
 
 @Component({
   selector: 'app-records-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, Pagination],
+  imports: [CommonModule, FormsModule, Pagination, TableEditorDrawerComponent],
   templateUrl: './records-list.html',
   styleUrls: ['./records-list.css']
 })
 export class RecordsListComponent implements OnInit {
 
+  @ViewChild('editorDrawer') editorDrawer!: TableEditorDrawerComponent;
+
   tableId!: number;
+  tableName = signal<string>('');
+  tableDescription = signal<string>('');
 
   fields = signal<Field[]>([]);
   records = signal<TableRecord[]>([]);
@@ -46,8 +52,9 @@ export class RecordsListComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private recordService: RecordService,
-    private fieldService: FieldService
-  ) {}
+    private fieldService: FieldService,
+    private tableService: TableService,
+  ) { }
 
   ngOnInit(): void {
     const tableId = this.route.snapshot.paramMap.get('tableId');
@@ -67,10 +74,13 @@ export class RecordsListComponent implements OnInit {
     this.error.set(null);
 
     forkJoin({
+      table: this.tableService.getById(this.tableId),
       fields: this.fieldService.getByTable(this.tableId),
       records: this.recordService.getAll(this.tableId)
     }).subscribe({
-      next: ({ fields, records }) => {
+      next: ({ table, fields, records }) => {
+        this.tableName.set(table.name ?? '');
+        this.tableDescription.set(table.description ?? '');
         this.fields.set(fields);
         this.allRecords.set(records);
 
@@ -88,6 +98,32 @@ export class RecordsListComponent implements OnInit {
       }
     });
   }
+
+  // ── Editor drawer ────────────────────────────────────────────────────────────
+
+  openEditor(tab: 'table' | 'fields' | 'add-row' = 'table'): void {
+    this.editorDrawer.open(tab);
+  }
+
+  onTableSaved(meta: { name: string; description: string }): void {
+    this.tableName.set(meta.name);
+    this.tableDescription.set(meta.description);
+  }
+
+  onFieldsSaved(fields: Field[]): void {
+    this.fields.set(fields);
+    const filters: Record<string, string> = {};
+    fields.forEach(f => filters[f.name] = '');
+    this.columnFilters.set(filters);
+    this.recompute();
+  }
+
+  onRowAdded(record: TableRecord): void {
+    this.allRecords.update(list => [...list, record]);
+    this.recompute();
+  }
+
+  // ── Data ─────────────────────────────────────────────────────────────────────
 
   recompute(): void {
     let data = [...this.allRecords()];
@@ -111,7 +147,6 @@ export class RecordsListComponent implements OnInit {
     if (this.sortField()) {
       const f = this.sortField()!;
       const d = this.sortDirection();
-
       data.sort((a, b) => {
         const va = a.data?.[f];
         const vb = b.data?.[f];
@@ -163,7 +198,6 @@ export class RecordsListComponent implements OnInit {
 
   deleteRecord(record: TableRecord): void {
     if (!confirm('¿Eliminar este registro?')) return;
-
     this.recordService.delete(record.id).subscribe(() => {
       this.allRecords.update(list => list.filter(r => r.id !== record.id));
       this.recompute();
@@ -171,7 +205,7 @@ export class RecordsListComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/datasets/tables'], { relativeTo: this.route });
+    this.router.navigate(['/datasets'], { relativeTo: this.route });
   }
 
   trackByField = (_: number, f: Field) => f.id;

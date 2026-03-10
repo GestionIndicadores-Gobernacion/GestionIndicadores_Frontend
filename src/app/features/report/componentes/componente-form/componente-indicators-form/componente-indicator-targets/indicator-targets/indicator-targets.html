@@ -1,0 +1,37 @@
+<div [formGroup]="indicatorGroup" class="bg-zinc-50 border border-zinc-200 rounded-lg p-4 space-y-3">
+    <div class="flex items-center justify-between">
+        <div>
+            <label class="block text-xs font-medium text-zinc-700">Metas anuales</label>
+            <p *ngIf="showGroupedNote" class="text-xs text-zinc-500 mt-0.5">
+                La meta aplica al total consolidado de todos los grupos
+            </p>
+        </div>
+        <button type="button" (click)="addTarget()"
+            class="px-2.5 py-1 text-xs font-medium text-zinc-700 bg-white border border-zinc-200 rounded-md hover:border-zinc-300 hover:text-zinc-900 transition-colors duration-150 cursor-pointer">
+            Agregar meta
+        </button>
+    </div>
+
+    <div formArrayName="targets" class="space-y-2">
+        <div *ngFor="let t of targets.controls; let j = index" [formGroupName]="j" class="flex items-center gap-2">
+            <input type="number" formControlName="year"
+                class="w-24 px-3 py-1.5 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150"
+                placeholder="Año" />
+            <input type="number" formControlName="target_value" step="0.01"
+                class="flex-1 px-3 py-1.5 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150"
+                placeholder="Meta (número positivo)" />
+            <button type="button" (click)="removeTarget(j)"
+                class="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors duration-150 cursor-pointer"
+                title="Eliminar meta">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            </button>
+        </div>
+
+        <div *ngIf="targets.length === 0" class="text-xs text-zinc-400 text-center py-2">
+            No hay metas definidas. Opcionales para datos agrupados.
+        </div>
+    </div>
+</div>

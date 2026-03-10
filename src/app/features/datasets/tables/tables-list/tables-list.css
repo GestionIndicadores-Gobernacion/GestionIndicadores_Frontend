@@ -1,0 +1,307 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+/* ─── Root ────────────────────────────────────────────────── */
+.tl-root {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem 3rem;
+    font-family: 'DM Sans', sans-serif;
+}
+
+/* ─── Filters ─────────────────────────────────────────────── */
+.tl-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.tl-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.tl-filter-grow {
+    flex: 1;
+    min-width: 15rem;
+}
+
+.tl-filter-end {
+    align-self: flex-end;
+}
+
+.tl-label {
+    font-size: 0.625rem;
+    font-weight: 500;
+    font-family: 'DM Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #52525b;
+}
+
+.tl-search-box {
+    position: relative;
+}
+
+.tl-search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1rem;
+    height: 1rem;
+    color: #52525b;
+    pointer-events: none;
+}
+
+.tl-search-input {
+    width: 100%;
+    padding: 0.5rem 1rem 0.5rem 2.25rem;
+    font-size: 0.8125rem;
+    font-family: 'DM Sans', sans-serif;
+    background: #18181b;
+    border: 1px solid #27272a;
+    border-radius: 0.5rem;
+    color: #e4e4e7;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.tl-search-input::placeholder {
+    color: #52525b;
+}
+
+.tl-search-input:focus {
+    border-color: #71717a;
+}
+
+.tl-select {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+    font-family: 'DM Sans', sans-serif;
+    background: #18181b;
+    border: 1px solid #27272a;
+    border-radius: 0.5rem;
+    color: #e4e4e7;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.15s;
+}
+
+.tl-select:focus {
+    border-color: #71717a;
+}
+
+.tl-clear-btn {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    color: #71717a;
+    background: #18181b;
+    border: 1px solid #27272a;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.tl-clear-btn:hover:not(:disabled) {
+    color: #e4e4e7;
+    border-color: #52525b;
+}
+
+.tl-clear-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+/* ─── States ──────────────────────────────────────────────── */
+.tl-state-box {
+    background: #18181b;
+    border: 1px solid #27272a;
+    border-radius: 1rem;
+    padding: 3.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tl-spinner {
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid #27272a;
+    border-top-color: #a1a1aa;
+    border-radius: 50%;
+    animation: tl-spin 0.75s linear infinite;
+    margin-bottom: 0.25rem;
+}
+
+@keyframes tl-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.tl-state-text {
+    font-size: 0.8125rem;
+    color: #71717a;
+}
+
+.tl-empty-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: #27272a;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.25rem;
+}
+
+.tl-empty-icon svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: #52525b;
+}
+
+.tl-state-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #a1a1aa;
+}
+
+.tl-state-hint {
+    font-size: 0.75rem;
+    color: #52525b;
+}
+
+/* ─── Grid ────────────────────────────────────────────────── */
+.tl-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+}
+
+/* ─── Card ────────────────────────────────────────────────── */
+.tl-card {
+    background: #18181b;
+    border: 1px solid #27272a;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.tl-card:hover {
+    border-color: #52525b;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.tl-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.tl-card-title-wrap {
+    min-width: 0;
+}
+
+.tl-card-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #e4e4e7;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+}
+
+.tl-dataset-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 0.25rem;
+    font-size: 0.6875rem;
+    color: #52525b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.tl-dataset-badge svg {
+    width: 0.75rem;
+    height: 0.75rem;
+    flex-shrink: 0;
+}
+
+.tl-card-arrow {
+    width: 1rem;
+    height: 1rem;
+    color: #3f3f46;
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+    transition: color 0.15s;
+}
+
+.tl-card:hover .tl-card-arrow {
+    color: #71717a;
+}
+
+/* Stats */
+.tl-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.625rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #27272a;
+}
+
+.tl-stat {
+    background: #111113;
+    border-radius: 0.625rem;
+    padding: 0.625rem 0.75rem;
+}
+
+.tl-stat-num {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-size: 1.375rem;
+    font-weight: 500;
+    color: #e4e4e7;
+    line-height: 1.1;
+}
+
+.tl-stat-label {
+    display: block;
+    font-size: 0.6875rem;
+    color: #52525b;
+    margin-top: 0.25rem;
+}
+
+/* Type badges */
+.tl-types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+}
+
+.tl-type-badge {
+    padding: 0.1875rem 0.5rem;
+    background: #27272a;
+    color: #71717a;
+    font-size: 0.625rem;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-radius: 0.375rem;
+}
