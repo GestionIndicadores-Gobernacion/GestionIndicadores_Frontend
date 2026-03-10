@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ComponentIndicatorModel } from '../../../../../core/models/component.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../../../environments/environment.prod';
+import { DatasetService } from '../../../../../core/services/datasets.service';
 
 @Component({
   selector: 'app-report-indicators-form',
@@ -22,12 +23,22 @@ export class ReportIndicatorsFormComponent implements OnChanges {
   uploadingFor: number | null = null;
   uploadErrors: Record<number, string> = {};
 
-  constructor(private http: HttpClient) { }
+  datasetOptions: Record<number, { id: number, label: string }[]> = {};
+  datasetLoading: Record<number, boolean> = {};
+  datasetError: Record<number, string> = {};
+
+  constructor(
+    private http: HttpClient,
+    private datasetService: DatasetService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['indicators'] || changes['values']) {
       this.initializeGroupedDataIndicators();
       this.initializeCategorizedGroupIndicators();
+      // ← falta esta línea:
+      this.loadDatasetOptions();
     }
   }
 
@@ -333,6 +344,67 @@ export class ReportIndicatorsFormComponent implements OnChanges {
   getIndicatorId(ind: ComponentIndicatorModel): number { return ind.id!; }
 
   // =========================
+  // DATASET SELECT
+  // =========================
+
+  private loadDatasetOptions(): void {
+    this.indicators.forEach(ind => {
+      if (!['dataset_select', 'dataset_multi_select'].includes(ind.field_type)) return;
+
+      // Evitar recargar si ya tiene datos
+      if (this.datasetOptions[ind.id!]?.length) return;
+
+      this.datasetLoading[ind.id!] = true;
+      this.datasetError[ind.id!] = '';
+
+      this.datasetService.getAll().subscribe({
+        next: (datasets) => {
+          this.datasetOptions[ind.id!] = datasets.map(d => ({ id: d.id, label: d.name }));
+          this.datasetLoading[ind.id!] = false;
+          this.cdr.markForCheck();  // ← esto
+        },
+        error: () => {
+          this.datasetError[ind.id!] = 'Error al cargar datasets';
+          this.datasetLoading[ind.id!] = false;
+          this.cdr.markForCheck();  // ← y esto
+        }
+      });
+    });
+  }
+
+  getDatasetOptions(indicatorId: number): { id: number, label: string }[] {
+    return this.datasetOptions[indicatorId] || [];
+  }
+
+  getDatasetLabelById(indicatorId: number, datasetId: number): string {
+    return this.datasetOptions[indicatorId]?.find(d => d.id === datasetId)?.label || String(datasetId);
+  }
+
+  setDatasetSelectValue(indicatorId: number, datasetId: number | null): void {
+    this.values[indicatorId] = datasetId;
+    this.emit();
+  }
+
+  toggleDatasetMultiOption(indicatorId: number, datasetId: number): void {
+    if (!this.values[indicatorId]) this.values[indicatorId] = [];
+    const list: number[] = this.values[indicatorId];
+    const idx = list.indexOf(datasetId);
+    if (idx > -1) list.splice(idx, 1);
+    else list.push(datasetId);
+    this.values = { ...this.values };
+    this.emit();
+  }
+
+  isDatasetMultiSelected(indicatorId: number, datasetId: number): boolean {
+    return (this.values[indicatorId] || []).includes(datasetId);
+  }
+
+  getDatasetSelectLabel(indicatorId: number): string {
+    const id = this.values[indicatorId];
+    return this.datasetOptions[indicatorId]?.find(d => d.id === id)?.label || '';
+  }
+
+  // =========================
   // VALIDATION
   // =========================
 
@@ -348,6 +420,8 @@ export class ReportIndicatorsFormComponent implements OnChanges {
       case 'grouped_data': return !!value && typeof value === 'object' && Object.keys(value).length > 0;
       case 'file_attachment': return !!value?.file_url;
       case 'categorized_group': return Array.isArray(value?.selected_categories) && value.selected_categories.length > 0;
+      case 'dataset_select': return value !== null && value !== undefined;
+      case 'dataset_multi_select': return Array.isArray(value) && value.length > 0;
       default: return true;
     }
   }
