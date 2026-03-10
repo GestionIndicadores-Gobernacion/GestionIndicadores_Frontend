@@ -1,7 +1,7 @@
 <div class="p-6 space-y-4" [formGroup]="parentForm">
     <div formArrayName="indicators" class="space-y-4">
 
-        <div *ngFor="let ind of indicators.controls; let i=index" [formGroupName]="i" draggable="true"
+        <div *ngFor="let ind of indicators.controls; let i = index" [formGroupName]="i" draggable="true"
             (dragstart)="onDragStart($event, i)" (dragover)="onDragOver($event, i)" (dragleave)="onDragLeave($event)"
             (drop)="onDrop($event, i)" (dragend)="onDragEnd()" [class.opacity-40]="draggedIndex === i"
             [class.border-zinc-900]="dragOverIndex === i && draggedIndex !== i"
@@ -9,15 +9,15 @@
             [class.scale-[1.01]]="dragOverIndex === i && draggedIndex !== i"
             class="border rounded-xl p-5 space-y-4 transition-all duration-150 bg-white">
 
-            <!-- Base Grid -->
+            <!-- ── Base Grid: Nombre / Tipo / Acciones ── -->
             <div class="grid md:grid-cols-12 gap-4 items-start">
 
-                <!-- Drag Handle + Nombre -->
+                <!-- Nombre -->
                 <div class="md:col-span-5 space-y-1.5">
                     <label class="block text-xs font-medium text-zinc-700">Nombre *</label>
                     <div class="flex items-center gap-2">
-                        <div class="flex-shrink-0 cursor-grab active:cursor-grabbing text-zinc-300 hover:text-zinc-500 transition-colors pt-0.5"
-                            title="Arrastrar para reordenar">
+                        <div
+                            class="flex-shrink-0 cursor-grab active:cursor-grabbing text-zinc-300 hover:text-zinc-500 transition-colors pt-0.5">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                 <circle cx="9" cy="6" r="1.5" />
                                 <circle cx="15" cy="6" r="1.5" />
@@ -48,12 +48,13 @@
                         <option value="sum_group">Grupo poblacional</option>
                         <option value="grouped_data">Datos agrupados</option>
                         <option value="categorized_group">Grupo categorizado</option>
+                        <option value="file_attachment">Archivo adjunto</option>
                         <option value="dataset_select">Base de datos (selección simple)</option>
                         <option value="dataset_multi_select">Base de datos (selección múltiple)</option>
                     </select>
                 </div>
 
-                <!-- Required + Delete -->
+                <!-- Requerido + Eliminar -->
                 <div class="md:col-span-3 space-y-1.5">
                     <label class="block text-xs font-medium text-zinc-700 invisible">Acciones</label>
                     <div class="flex items-center gap-2">
@@ -64,8 +65,7 @@
                             <span>{{ ind.get('is_required')?.value ? 'Obligatorio' : 'Opcional' }}</span>
                         </label>
                         <button type="button" (click)="removeIndicator(i)"
-                            class="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors duration-150 cursor-pointer"
-                            title="Eliminar indicador">
+                            class="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors duration-150 cursor-pointer">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -76,365 +76,43 @@
 
             </div>
 
-            <!-- Config: SELECT -->
-            <div *ngIf="ind.get('field_type')?.value === 'select'"
-                class="bg-zinc-50 border border-zinc-200 rounded-lg p-4 space-y-2">
-                <label class="block text-xs font-medium text-zinc-700">Opciones *</label>
-                <textarea formControlName="configOptions" (blur)="sanitizeOptionsOnBlur(i)" rows="3"
-                    class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 resize-none uppercase focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150"
-                    placeholder="OPCIÓN 1&#10;OPCIÓN 2&#10;OPCIÓN 3"></textarea>
-                <p class="text-xs text-zinc-500">Cada línea = una opción. Auto-formato al salir del campo: MAYÚSCULAS,
-                    sin espacios extras</p>
-            </div>
+            <!-- ── Paneles de configuración por tipo ── -->
 
-            <!-- Config: MULTI_SELECT -->
-            <div *ngIf="ind.get('field_type')?.value === 'multi_select'"
-                class="bg-zinc-50 border border-zinc-200 rounded-lg p-4 space-y-2">
-                <label class="block text-xs font-medium text-zinc-700">Opciones (selección múltiple) *</label>
-                <textarea formControlName="configOptions" (blur)="sanitizeOptionsOnBlur(i)" rows="3"
-                    class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 resize-none uppercase focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150"
-                    placeholder="GATO&#10;PERRO&#10;CONEJO&#10;AVE"></textarea>
-                <p class="text-xs text-zinc-500">Selección múltiple. Auto-formato al salir del campo: MAYÚSCULAS, sin
-                    duplicados</p>
-            </div>
+            <app-config-select *ngIf="ind.get('field_type')?.value === 'select'" [indicatorGroup]="$any(ind)"
+                [indicatorIndex]="i" [isMulti]="false">
+            </app-config-select>
 
-            <!-- Config: SUM_GROUP -->
-            <div *ngIf="ind.get('field_type')?.value === 'sum_group'"
-                class="bg-zinc-50 border border-zinc-200 rounded-lg p-4 space-y-2">
-                <label class="block text-xs font-medium text-zinc-700">Campos del grupo *</label>
-                <textarea formControlName="configFields" (blur)="sanitizeFieldsOnBlur(i)" rows="3"
-                    class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 resize-none focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150"
-                    placeholder="Hombres&#10;Mujeres&#10;Niños&#10;Adulto Mayor"></textarea>
-                <p class="text-xs text-zinc-500">Auto-formato al salir del campo: Primera Letra Mayúscula. El sistema
-                    sumará automáticamente</p>
-            </div>
+            <app-config-select *ngIf="ind.get('field_type')?.value === 'multi_select'" [indicatorGroup]="$any(ind)"
+                [indicatorIndex]="i" [isMulti]="true">
+            </app-config-select>
 
-            <!-- Config: FILE_ATTACHMENT -->
-            <div *ngIf="ind.get('field_type')?.value === 'file_attachment'"
-                class="bg-zinc-50 border border-zinc-200 rounded-lg p-4 space-y-4">
-                <div class="flex items-start gap-2">
-                    <svg class="w-4 h-4 text-zinc-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                    </svg>
-                    <div>
-                        <p class="text-xs font-medium text-zinc-700">Archivo adjunto</p>
-                        <p class="text-xs text-zinc-500 mt-0.5">El usuario podrá subir un archivo al diligenciar el
-                            reporte. Puedes restringir los tipos de archivo permitidos.</p>
-                    </div>
-                </div>
-                <div class="space-y-1.5">
-                    <label class="block text-xs font-medium text-zinc-700">Tipos de archivo permitidos</label>
-                    <input type="text" formControlName="configAllowedTypes"
-                        placeholder="pdf, docx, xlsx, jpg  (vacío = todos)"
-                        class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 lowercase focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150" />
-                    <p class="text-xs text-zinc-500">Separa con comas. Extensiones válidas: pdf, doc, docx, xls, xlsx,
-                        png, jpg, jpeg, gif, txt, csv, zip</p>
-                </div>
-                <div class="space-y-1.5">
-                    <label class="block text-xs font-medium text-zinc-700">Tamaño máximo (MB)</label>
-                    <input type="number" formControlName="configMaxSizeMb" min="1" max="50" placeholder="10"
-                        class="w-32 px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150" />
-                    <p class="text-xs text-zinc-500">Vacío = sin límite (el servidor limita a 10 MB por defecto)</p>
-                </div>
-            </div>
+            <app-config-sum-group *ngIf="ind.get('field_type')?.value === 'sum_group'" [indicatorGroup]="$any(ind)">
+            </app-config-sum-group>
 
-            <!-- Config: GROUPED_DATA -->
-            <div *ngIf="ind.get('field_type')?.value === 'grouped_data'"
-                class="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-4">
-                <div class="flex items-start gap-2">
-                    <svg class="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div class="flex-1">
-                        <p class="text-xs font-medium text-amber-900 mb-1">Datos agrupados dinámicamente</p>
-                        <p class="text-xs text-amber-700">Este tipo de campo creará subcampos para cada opción
-                            seleccionada en otro campo de tipo "Selección múltiple". <strong>Primero debes crear un
-                                campo de selección múltiple antes de este.</strong></p>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-zinc-700 mb-1.5">Campo padre (selección múltiple)
-                        *</label>
-                    <select formControlName="configParentField"
-                        class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900">
-                        <option [ngValue]="null">-- Selecciona el campo padre --</option>
-                        <option *ngFor="let parentInd of getMultiSelectIndicators(i)"
-                            [ngValue]="parentInd.get('name')?.value">
-                            {{ parentInd.get('name')?.value }}
-                        </option>
-                    </select>
-                    <p class="text-xs text-zinc-500 mt-1">Por cada opción seleccionada en este campo, se crearán los
-                        subcampos definidos abajo</p>
-                </div>
-                <div class="p-3 bg-white border border-zinc-200 rounded-lg">
-                    <label class="flex items-start gap-3 cursor-pointer">
-                        <input type="checkbox" formControlName="configAutoTotal"
-                            class="mt-0.5 w-4 h-4 text-zinc-900 border-zinc-300 rounded focus:ring-zinc-900" />
-                        <div>
-                            <p class="text-xs font-medium text-zinc-700">Calcular total automáticamente</p>
-                            <p class="text-xs text-zinc-500 mt-0.5">Agrega campo "Total" que suma todos los subcampos
-                                numéricos</p>
-                        </div>
-                    </label>
-                </div>
-                <div>
-                    <div class="flex items-center justify-between mb-2">
-                        <label class="block text-xs font-medium text-zinc-700">Subcampos *</label>
-                        <button type="button" (click)="addSubField(i)"
-                            class="px-2.5 py-1 text-xs font-medium text-zinc-700 bg-white border border-zinc-200 rounded-md hover:border-zinc-300 hover:text-zinc-900 transition-colors">
-                            + Agregar subcampo
-                        </button>
-                    </div>
-                    <div class="space-y-2">
-                        <div *ngFor="let subField of getSubFields(i); let j = index"
-                            class="bg-white border border-zinc-200 rounded-lg p-3 space-y-2">
-                            <div class="grid grid-cols-12 gap-2">
-                                <div class="col-span-4">
-                                    <label class="block text-xs font-medium text-zinc-600 mb-1">Nombre técnico *</label>
-                                    <input type="text" [value]="subField.name"
-                                        (input)="updateSubField(i, j, 'name', $event)" placeholder="vacunados"
-                                        class="w-full px-2 py-1.5 text-xs border border-zinc-200 rounded bg-white lowercase focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900" />
-                                    <p class="text-xs text-zinc-400 mt-0.5">Auto: minúsculas, espacios→_</p>
-                                </div>
-                                <div class="col-span-3">
-                                    <label class="block text-xs font-medium text-zinc-600 mb-1">Tipo *</label>
-                                    <select [value]="subField.type" (change)="updateSubField(i, j, 'type', $event)"
-                                        class="w-full px-2 py-1.5 text-xs border border-zinc-200 rounded bg-white focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900">
-                                        <option value="number">Número</option>
-                                        <option value="text">Texto</option>
-                                    </select>
-                                </div>
-                                <div class="col-span-4">
-                                    <label class="block text-xs font-medium text-zinc-600 mb-1">Etiqueta visible
-                                        *</label>
-                                    <input type="text" [value]="subField.label"
-                                        (input)="updateSubField(i, j, 'label', $event)" placeholder="Vacunados"
-                                        class="w-full px-2 py-1.5 text-xs border border-zinc-200 rounded bg-white focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900" />
-                                    <p class="text-xs text-zinc-400 mt-0.5">Auto: Primera Mayúscula</p>
-                                </div>
-                                <div class="col-span-1 flex items-end">
-                                    <button type="button" (click)="removeSubField(i, j)"
-                                        class="w-full p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-                                        title="Eliminar">
-                                        <svg class="w-4 h-4 mx-auto" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div *ngIf="getSubFields(i).length === 0"
-                            class="text-xs text-zinc-400 text-center py-4 border border-dashed border-zinc-300 rounded-lg">
-                            No hay subcampos. Usa el botón "Agregar subcampo" para crear uno.
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <app-config-file-attachment *ngIf="ind.get('field_type')?.value === 'file_attachment'"
+                [indicatorGroup]="$any(ind)">
+            </app-config-file-attachment>
 
-            <!-- ============================================================ -->
-            <!-- Config: CATEGORIZED_GROUP                                     -->
-            <!-- ============================================================ -->
-            <div *ngIf="ind.get('field_type')?.value === 'categorized_group'"
-                class="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-5">
+            <app-config-grouped-data *ngIf="ind.get('field_type')?.value === 'grouped_data'"
+                [indicatorGroup]="$any(ind)" [indicatorIndex]="i" [allIndicatorControls]="getIndicatorControls()">
+            </app-config-grouped-data>
 
-                <div class="flex items-start gap-2">
-                    <svg class="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                    </svg>
-                    <div>
-                        <p class="text-xs font-medium text-blue-900">Grupo categorizado</p>
-                        <p class="text-xs text-blue-700 mt-0.5">
-                            El usuario seleccionará una o más categorías, y para cada una ingresará valores por grupo
-                            (ej: Hembra/Macho) y por métrica (ej: Vacunados, Esterilizados). Opcionalmente puedes
-                            agregar sub-secciones (ej: Red Animalia).
-                        </p>
-                    </div>
-                </div>
+            <app-config-categorized-group *ngIf="ind.get('field_type')?.value === 'categorized_group'"
+                [indicatorGroup]="$any(ind)" [indicatorIndex]="i">
+            </app-config-categorized-group>
 
-                <!-- Etiqueta del selector de categorías -->
-                <div class="space-y-1.5">
-                    <label class="block text-xs font-medium text-zinc-700">Etiqueta del selector *</label>
-                    <input type="text" formControlName="cgCategoryLabel"
-                        placeholder="Ej: Tipo de animal, Tipo de beneficiario..."
-                        class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150" />
-                    <p class="text-xs text-zinc-500">Texto que aparece encima del selector de categorías en el reporte
-                    </p>
-                </div>
+            <app-config-dataset *ngIf="ind.get('field_type')?.value === 'dataset_select'" [indicatorGroup]="$any(ind)"
+                [isMulti]="false">
+            </app-config-dataset>
 
-                <!-- Categorías disponibles -->
-                <div class="space-y-1.5">
-                    <label class="block text-xs font-medium text-zinc-700">Categorías disponibles *</label>
-                    <textarea formControlName="cgCategories" (blur)="sanitizeCgOptionsOnBlur(i, 'cgCategories')"
-                        rows="3"
-                        class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 resize-none uppercase focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150"
-                        placeholder="CANINO&#10;FELINO&#10;AVE&#10;REPTIL"></textarea>
-                    <p class="text-xs text-zinc-500">Una por línea. El usuario podrá seleccionar una o varias al
-                        reportar.</p>
-                </div>
+            <app-config-dataset *ngIf="ind.get('field_type')?.value === 'dataset_multi_select'"
+                [indicatorGroup]="$any(ind)" [isMulti]="true">
+            </app-config-dataset>
 
-                <!-- Grupos (Hembra / Macho / etc.) -->
-                <div class="space-y-1.5">
-                    <label class="block text-xs font-medium text-zinc-700">Grupos *</label>
-                    <textarea formControlName="cgGroups" (blur)="sanitizeCgFieldsOnBlur(i, 'cgGroups')" rows="2"
-                        class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 resize-none focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150"
-                        placeholder="Hembra&#10;Macho"></textarea>
-                    <p class="text-xs text-zinc-500">Una por línea. Ej: Hembra, Macho. Primera letra mayúscula.</p>
-                </div>
-
-                <!-- Métricas -->
-                <div class="space-y-2">
-                    <div class="flex items-center justify-between">
-                        <label class="block text-xs font-medium text-zinc-700">Métricas *</label>
-                        <button type="button" (click)="addCgMetric(i)"
-                            class="px-2.5 py-1 text-xs font-medium text-zinc-700 bg-white border border-zinc-200 rounded-md hover:border-zinc-300 hover:text-zinc-900 transition-colors">
-                            + Agregar métrica
-                        </button>
-                    </div>
-                    <div class="space-y-2">
-                        <div *ngFor="let metric of getCgMetrics(i); let j = index"
-                            class="bg-white border border-zinc-200 rounded-lg p-3">
-                            <div class="grid grid-cols-12 gap-2">
-                                <div class="col-span-5">
-                                    <label class="block text-xs font-medium text-zinc-600 mb-1">Clave técnica *</label>
-                                    <input type="text" [value]="metric.key"
-                                        (input)="updateCgMetric(i, j, 'key', $event)" placeholder="vacunados"
-                                        class="w-full px-2 py-1.5 text-xs border border-zinc-200 rounded bg-white lowercase focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900" />
-                                    <p class="text-xs text-zinc-400 mt-0.5">Auto: minúsculas, espacios→_</p>
-                                </div>
-                                <div class="col-span-6">
-                                    <label class="block text-xs font-medium text-zinc-600 mb-1">Etiqueta visible
-                                        *</label>
-                                    <input type="text" [value]="metric.label"
-                                        (input)="updateCgMetric(i, j, 'label', $event)"
-                                        placeholder="Nº de Animales Vacunados"
-                                        class="w-full px-2 py-1.5 text-xs border border-zinc-200 rounded bg-white focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900" />
-                                </div>
-                                <div class="col-span-1 flex items-end">
-                                    <button type="button" (click)="removeCgMetric(i, j)"
-                                        class="w-full p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-                                        title="Eliminar">
-                                        <svg class="w-4 h-4 mx-auto" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div *ngIf="getCgMetrics(i).length === 0"
-                            class="text-xs text-zinc-400 text-center py-3 border border-dashed border-zinc-300 rounded-lg">
-                            Agrega al menos una métrica
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sub-secciones (opcional) -->
-                <div class="space-y-2">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <label class="block text-xs font-medium text-zinc-700">Sub-secciones <span
-                                    class="text-zinc-400 font-normal">(opcional)</span></label>
-                            <p class="text-xs text-zinc-500 mt-0.5">Ej: "¿Cuántos pertenecen a la Red Animalia?" — valor
-                                ≤ total de cada métrica</p>
-                        </div>
-                        <button type="button" (click)="addCgSubSection(i)"
-                            class="px-2.5 py-1 text-xs font-medium text-zinc-700 bg-white border border-zinc-200 rounded-md hover:border-zinc-300 hover:text-zinc-900 transition-colors flex-shrink-0">
-                            + Agregar
-                        </button>
-                    </div>
-                    <div class="space-y-2">
-                        <div *ngFor="let section of getCgSubSections(i); let j = index"
-                            class="bg-white border border-zinc-200 rounded-lg p-3">
-                            <div class="grid grid-cols-12 gap-2">
-                                <div class="col-span-4">
-                                    <label class="block text-xs font-medium text-zinc-600 mb-1">Clave *</label>
-                                    <input type="text" [value]="section.key"
-                                        (input)="updateCgSubSection(i, j, 'key', $event)" placeholder="red_animalia"
-                                        class="w-full px-2 py-1.5 text-xs border border-zinc-200 rounded bg-white lowercase focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900" />
-                                </div>
-                                <div class="col-span-7">
-                                    <label class="block text-xs font-medium text-zinc-600 mb-1">Pregunta / etiqueta
-                                        *</label>
-                                    <input type="text" [value]="section.label"
-                                        (input)="updateCgSubSection(i, j, 'label', $event)"
-                                        placeholder="¿Cuántos pertenecen a la Red Animalia?"
-                                        class="w-full px-2 py-1.5 text-xs border border-zinc-200 rounded bg-white focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900" />
-                                </div>
-                                <div class="col-span-1 flex items-end">
-                                    <button type="button" (click)="removeCgSubSection(i, j)"
-                                        class="w-full p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-                                        title="Eliminar">
-                                        <svg class="w-4 h-4 mx-auto" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            <!-- max_source siempre metrics_total, solo info -->
-                            <p class="text-xs text-zinc-400 mt-2">
-                                El valor ingresado no podrá superar el total de cada métrica reportada
-                            </p>
-                        </div>
-                        <div *ngIf="getCgSubSections(i).length === 0"
-                            class="text-xs text-zinc-400 text-center py-3 border border-dashed border-zinc-300 rounded-lg">
-                            Sin sub-secciones
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-            <!-- FIN CATEGORIZED_GROUP -->
-
-            <!-- METAS ANUALES -->
-            <div *ngIf="['number','sum_group','grouped_data','categorized_group'].includes(ind.get('field_type')?.value)"
-                class="bg-zinc-50 border border-zinc-200 rounded-lg p-4 space-y-3">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <label class="block text-xs font-medium text-zinc-700">Metas anuales</label>
-                        <p class="text-xs text-zinc-500 mt-0.5"
-                            *ngIf="['grouped_data','categorized_group'].includes(ind.get('field_type')?.value)">
-                            La meta aplica al total consolidado de todos los grupos
-                        </p>
-                    </div>
-                    <button type="button" (click)="addTarget(i)"
-                        class="px-2.5 py-1 text-xs font-medium text-zinc-700 bg-white border border-zinc-200 rounded-md hover:border-zinc-300 hover:text-zinc-900 transition-colors duration-150 cursor-pointer">
-                        Agregar meta
-                    </button>
-                </div>
-                <div formArrayName="targets" class="space-y-2">
-                    <div *ngFor="let t of getTargets(i).controls; let j=index" [formGroupName]="j"
-                        class="flex items-center gap-2">
-                        <input type="number" formControlName="year"
-                            class="w-24 px-3 py-1.5 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150"
-                            placeholder="Año" />
-                        <input type="number" formControlName="target_value" step="0.01"
-                            class="flex-1 px-3 py-1.5 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150"
-                            placeholder="Meta (número positivo)" />
-                        <button type="button" (click)="removeTarget(i, j)"
-                            class="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors duration-150 cursor-pointer"
-                            title="Eliminar meta">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                        </button>
-                    </div>
-                    <div *ngIf="getTargets(i).length === 0" class="text-xs text-zinc-400 text-center py-2">
-                        No hay metas definidas. Opcionales para datos agrupados.
-                    </div>
-                </div>
-            </div>
+            <!-- ── Metas anuales ── -->
+            <app-indicator-targets *ngIf="TYPES_WITH_TARGETS.includes(ind.get('field_type')?.value)"
+                [indicatorGroup]="$any(ind)" [fieldType]="ind.get('field_type')?.value">
+            </app-indicator-targets>
 
         </div>
 

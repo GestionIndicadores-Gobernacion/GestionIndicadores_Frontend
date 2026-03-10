@@ -1,55 +1,57 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit, ViewChildren, QueryList } from '@angular/core';
 import {
-  FormBuilder,
-  FormGroup,
-  FormArray,
-  Validators,
-  ReactiveFormsModule,
-  AbstractControl
+  FormBuilder, FormGroup, FormArray,
+  Validators, ReactiveFormsModule, AbstractControl
 } from '@angular/forms';
-import { DatasetService } from '../../../../../core/services/datasets.service';
+import { ConfigCategorizedGroupComponent } from './componente-indicator-config/config-categorized-group/config-categorized-group';
+import { ConfigDatasetComponent } from './componente-indicator-config/config-dataset/config-dataset';
+import { ConfigFileAttachmentComponent } from './componente-indicator-config/config-file-attachment/config-file-attachment';
+import { ConfigGroupedDataComponent } from './componente-indicator-config/config-grouped-data/config-grouped-data';
+import { ConfigSelectComponent } from './componente-indicator-config/config-select/config-select';
+import { ConfigSumGroupComponent } from './componente-indicator-config/config-sum-group/config-sum-group';
+import { IndicatorTargetsComponent } from './componente-indicator-targets/indicator-targets/indicator-targets';
+
 
 @Component({
   selector: 'app-componente-indicators-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule, ReactiveFormsModule,
+    ConfigSelectComponent, ConfigSumGroupComponent,
+    ConfigGroupedDataComponent, ConfigCategorizedGroupComponent,
+    ConfigFileAttachmentComponent, ConfigDatasetComponent,
+    IndicatorTargetsComponent
+  ],
   templateUrl: './componente-indicators-form.html'
 })
-export class ComponenteIndicatorsFormComponent {
+export class ComponenteIndicatorsFormComponent implements OnInit {
 
   @Input() parentForm!: FormGroup;
 
-  private subFieldsArrays: Map<number, any[]> = new Map();
+  // Referencias a sub-componentes que tienen estado propio
+  @ViewChildren(ConfigCategorizedGroupComponent)
+  cgComponents!: QueryList<ConfigCategorizedGroupComponent>;
 
-  // Estado para categorized_group (métricas y sub-secciones son arrays en memoria)
-  private cgMetricsArrays: Map<number, any[]> = new Map();
-  private cgSubSectionsArrays: Map<number, any[]> = new Map();
+  @ViewChildren(ConfigGroupedDataComponent)
+  gdComponents!: QueryList<ConfigGroupedDataComponent>;
 
-  // =====================
-  // DRAG & DROP STATE
-  // =====================
   draggedIndex: number | null = null;
   dragOverIndex: number | null = null;
 
-  // Dataset state para el panel de configuración
-  allDatasets: any[] = [];
-  datasetTablesMap: Map<number, any[]> = new Map(); // dataset_id → tables[]
-  datasetsLoading = false;
+  readonly TYPES_WITH_TARGETS = ['number', 'sum_group', 'grouped_data', 'categorized_group'];
 
-  constructor(private fb: FormBuilder, private datasetService: DatasetService) { }
+  constructor(private fb: FormBuilder) { }
 
-  // =====================
-  // GETTERS
-  // =====================
+  ngOnInit(): void { }
+
+  // ── Getter ───────────────────────────────────────────────────────
 
   get indicators(): FormArray {
     return this.parentForm.get('indicators') as FormArray;
   }
 
-  // =====================
-  // DRAG & DROP
-  // =====================
+  // ── Drag & Drop ──────────────────────────────────────────────────
 
   onDragStart(event: DragEvent, index: number) {
     this.draggedIndex = index;
@@ -62,430 +64,135 @@ export class ComponenteIndicatorsFormComponent {
   onDragOver(event: DragEvent, index: number) {
     event.preventDefault();
     if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
-    if (this.draggedIndex !== null && this.draggedIndex !== index) {
-      this.dragOverIndex = index;
-    }
+    if (this.draggedIndex !== null && this.draggedIndex !== index) this.dragOverIndex = index;
   }
 
   onDragLeave(event: DragEvent) {
-    const relatedTarget = event.relatedTarget as HTMLElement;
-    const currentTarget = event.currentTarget as HTMLElement;
-    if (!currentTarget.contains(relatedTarget)) {
-      this.dragOverIndex = null;
-    }
+    const rel = event.relatedTarget as HTMLElement;
+    const cur = event.currentTarget as HTMLElement;
+    if (!cur.contains(rel)) this.dragOverIndex = null;
   }
 
   onDrop(event: DragEvent, dropIndex: number) {
     event.preventDefault();
-    if (this.draggedIndex === null || this.draggedIndex === dropIndex) {
-      this.resetDragState();
-      return;
-    }
-    this.moveIndicator(this.draggedIndex, dropIndex);
-    this.resetDragState();
+    if (this.draggedIndex === null || this.draggedIndex === dropIndex) { this.resetDrag(); return; }
+    const ctrl = this.indicators.at(this.draggedIndex);
+    this.indicators.removeAt(this.draggedIndex);
+    this.indicators.insert(dropIndex, ctrl);
+    this.resetDrag();
   }
 
-  onDragEnd() { this.resetDragState(); }
+  onDragEnd() { this.resetDrag(); }
+  private resetDrag() { this.draggedIndex = null; this.dragOverIndex = null; }
 
-  private resetDragState() {
-    this.draggedIndex = null;
-    this.dragOverIndex = null;
-  }
-
-  private moveIndicator(fromIndex: number, toIndex: number) {
-    const indicators = this.indicators;
-    const control = indicators.at(fromIndex);
-
-    // Remap all index-keyed maps
-    [this.subFieldsArrays, this.cgMetricsArrays, this.cgSubSectionsArrays].forEach(map => {
-      const newMap = new Map<number, any[]>();
-      map.forEach((value, key) => {
-        if (key === fromIndex) {
-          newMap.set(toIndex, value);
-        } else {
-          let newKey = key;
-          if (fromIndex < toIndex) {
-            if (key > fromIndex && key <= toIndex) newKey = key - 1;
-          } else {
-            if (key >= toIndex && key < fromIndex) newKey = key + 1;
-          }
-          newMap.set(newKey, value);
-        }
-      });
-      map.clear();
-      newMap.forEach((v, k) => map.set(k, v));
-    });
-
-    indicators.removeAt(fromIndex);
-    indicators.insert(toIndex, control);
-  }
-
-  // =====================
-  // SANITIZACIÓN
-  // =====================
-
-  sanitizeTechnicalName(value: string): string {
-    return value
-      .toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]/g, '_')
-      .replace(/_+/g, '_')
-      .replace(/^_|_$/g, '');
-  }
-
-  capitalizeWords(value: string): string {
-    return value.split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
-  }
-
-  sanitizeOption(value: string): string {
-    return value.trim().toUpperCase();
-  }
-
-  sanitizeOptionsOnBlur(indicatorIndex: number) {
-    const control = this.indicators.at(indicatorIndex).get('configOptions');
-    if (!control?.value) return;
-    const sanitized = control.value
-      .split('\n')
-      .map((line: string) => this.sanitizeOption(line))
-      .filter((line: string) => line.length > 0)
-      .join('\n');
-    control.setValue(sanitized, { emitEvent: false });
-  }
-
-  sanitizeFieldsOnBlur(indicatorIndex: number) {
-    const control = this.indicators.at(indicatorIndex).get('configFields');
-    if (!control?.value) return;
-    const sanitized = control.value
-      .split('\n')
-      .map((line: string) => this.capitalizeWords(line.trim()))
-      .filter((line: string) => line.length > 0)
-      .join('\n');
-    control.setValue(sanitized, { emitEvent: false });
-  }
-
-  /** Sanitiza opciones de categorized_group (MAYÚSCULAS) */
-  sanitizeCgOptionsOnBlur(indicatorIndex: number, controlName: string) {
-    const control = this.indicators.at(indicatorIndex).get(controlName);
-    if (!control?.value) return;
-    const sanitized = control.value
-      .split('\n')
-      .map((line: string) => line.trim().toUpperCase())
-      .filter((line: string) => line.length > 0)
-      .join('\n');
-    control.setValue(sanitized, { emitEvent: false });
-  }
-
-  /** Sanitiza grupos de categorized_group (Primera Mayúscula) */
-  sanitizeCgFieldsOnBlur(indicatorIndex: number, controlName: string) {
-    const control = this.indicators.at(indicatorIndex).get(controlName);
-    if (!control?.value) return;
-    const sanitized = control.value
-      .split('\n')
-      .map((line: string) => this.capitalizeWords(line.trim()))
-      .filter((line: string) => line.length > 0)
-      .join('\n');
-    control.setValue(sanitized, { emitEvent: false });
-  }
-
-  // =====================
-  // INDICATORS CRUD
-  // =====================
+  // ── Indicator CRUD ───────────────────────────────────────────────
 
   addIndicator(data?: any) {
     const fieldType = data?.field_type || 'text';
 
-    const group: FormGroup = this.fb.group({
+    const group = this.fb.group({
       id: [data?.id || null],
       name: [data?.name || '', [Validators.required, Validators.minLength(3)]],
       field_type: [fieldType, Validators.required],
       is_required: [data?.is_required ?? true],
-
-      // existing config controls
+      // Config controls (todos opcionales, usados según field_type)
       configOptions: [data?.config?.options?.join('\n') || ''],
       configFields: [data?.config?.fields?.join('\n') || ''],
       configParentField: [data?.config?.parent_field || null],
       configAutoTotal: [data?.config?.auto_total || false],
-      configSubFields: [this.formatSubFieldsForTextarea(data?.config?.sub_fields) || ''],
+      configSubFields: [this.formatSubFields(data?.config?.sub_fields)],
       configAllowedTypes: [data?.config?.allowed_types?.join(', ') || ''],
       configMaxSizeMb: [data?.config?.max_size_mb || null],
-
       configDatasetId: [data?.config?.dataset_id || null],
       configTableId: [data?.config?.table_id || null],
       configLabelField: [data?.config?.label_field || ''],
-
-      // categorized_group controls
       cgCategoryLabel: [data?.config?.category_label || ''],
       cgCategories: [data?.config?.categories?.join('\n') || ''],
       cgGroups: [data?.config?.groups?.join('\n') || ''],
     }) as FormGroup;
 
-    // Auto-uppercase name
-    group.get('name')?.valueChanges.subscribe(value => {
-      if (value && typeof value === 'string') {
-        const sanitized = value.toUpperCase();
-        if (sanitized !== value) group.get('name')?.setValue(sanitized, { emitEvent: false });
-      }
+    // Guardar config raw para restaurar en sub-componentes
+    (group as any)._rawConfig = data?.config || null;
+
+    // Auto-uppercase nombre
+    group.get('name')?.valueChanges.subscribe(v => {
+      if (typeof v === 'string' && v !== v.toUpperCase())
+        group.get('name')?.setValue(v.toUpperCase(), { emitEvent: false });
     });
 
-    const indicatorIndex = this.indicators.length;
-
-    // Inicializar métricas y sub-secciones de categorized_group
-    if (fieldType === 'categorized_group') {
-      this.cgMetricsArrays.set(indicatorIndex, data?.config?.metrics || []);
-      this.cgSubSectionsArrays.set(indicatorIndex, data?.config?.sub_sections || []);
-    }
-
     // Targets
-    const typesWithTargets = ['number', 'sum_group', 'grouped_data', 'categorized_group'];
-    if (typesWithTargets.includes(fieldType)) {
-      const targetsArray = this.fb.array<FormGroup>([]);
-
-      if (data?.targets?.length) {
-        data.targets.forEach((t: any) => {
-          targetsArray.push(this.fb.group({
-            id: [t.id || null],
-            year: [t.year, [Validators.required, Validators.min(2020), Validators.max(2100)]],
-            target_value: [t.target_value, [Validators.required, Validators.min(0.0001)]]
-          }));
-        });
-      } else if (fieldType === 'number' || fieldType === 'sum_group' || fieldType === 'categorized_group') {
-        targetsArray.push(this.fb.group({
-          id: [null],
-          year: [new Date().getFullYear(), [Validators.required, Validators.min(2020), Validators.max(2100)]],
-          target_value: [null, [Validators.required, Validators.min(0.0001)]]
-        }));
-      }
-
-      group.addControl('targets', targetsArray);
+    if (this.TYPES_WITH_TARGETS.includes(fieldType)) {
+      group.addControl('targets', this.buildTargetsArray(data?.targets, fieldType));
     }
 
     this.indicators.push(group);
 
-    // Escuchar cambios de tipo para agregar/quitar targets
-    group.get('field_type')?.valueChanges.subscribe((newType: string) => {
-      this.onFieldTypeChange(group, newType, this.indicators.length - 1);
+    // Escuchar cambio de tipo para gestionar targets
+    group.get('field_type')?.valueChanges.subscribe(newType => {
+      const needsTargets = this.TYPES_WITH_TARGETS.includes(newType);
+      if (needsTargets && !group.contains('targets')) {
+        group.addControl('targets', this.buildTargetsArray([], newType));
+      } else if (!needsTargets && group.contains('targets')) {
+        group.removeControl('targets');
+      }
     });
   }
 
   removeIndicator(i: number) {
     this.indicators.removeAt(i);
-    this.shiftMapsAfterRemoval(i);
   }
 
-  /**
-   * Cuando se elimina el indicador en el índice `removedIndex`,
-   * todos los índices superiores deben bajar 1 en los Maps.
-   */
-  private shiftMapsAfterRemoval(removedIndex: number) {
-    [this.subFieldsArrays, this.cgMetricsArrays, this.cgSubSectionsArrays].forEach(map => {
-      const newMap = new Map<number, any[]>();
-      map.forEach((value, key) => {
-        if (key === removedIndex) return; // eliminar esta entrada
-        const newKey = key > removedIndex ? key - 1 : key;
-        newMap.set(newKey, value);
-      });
-      map.clear();
-      newMap.forEach((v, k) => map.set(k, v));
-    });
-  }
-
-  private onFieldTypeChange(indicatorGroup: FormGroup, newType: string, idx: number) {
-    const typesWithTargets = ['number', 'sum_group', 'grouped_data', 'categorized_group'];
-    const needsTargets = typesWithTargets.includes(newType);
-    const hasTargets = indicatorGroup.contains('targets');
-
-    if (needsTargets && !hasTargets) {
-      const targetsArray = this.fb.array<FormGroup>([]);
-      if (newType === 'number' || newType === 'sum_group' || newType === 'categorized_group') {
-        targetsArray.push(this.fb.group({
-          id: [null],
-          year: [new Date().getFullYear(), [Validators.required, Validators.min(2020), Validators.max(2100)]],
-          target_value: [null, [Validators.required, Validators.min(0.0001)]]
-        }));
-      }
-      indicatorGroup.addControl('targets', targetsArray);
-    } else if (!needsTargets && hasTargets) {
-      indicatorGroup.removeControl('targets');
+  private buildTargetsArray(targets: any[], fieldType: string): FormArray {
+    const arr = this.fb.array<FormGroup>([]);
+    if (targets?.length) {
+      targets.forEach(t => arr.push(this.fb.group({
+        id: [t.id || null],
+        year: [t.year, [Validators.required, Validators.min(2020), Validators.max(2100)]],
+        target_value: [t.target_value, [Validators.required, Validators.min(0.0001)]]
+      })));
+    } else if (['number', 'sum_group', 'categorized_group'].includes(fieldType)) {
+      arr.push(this.fb.group({
+        id: [null],
+        year: [new Date().getFullYear(), [Validators.required, Validators.min(2020), Validators.max(2100)]],
+        target_value: [null, [Validators.required, Validators.min(0.0001)]]
+      }));
     }
-
-    // Inicializar arrays de categorized_group si se cambia al tipo
-    if (newType === 'categorized_group' && !this.cgMetricsArrays.has(idx)) {
-      this.cgMetricsArrays.set(idx, []);
-      this.cgSubSectionsArrays.set(idx, []);
-    }
+    return arr;
   }
 
-  // =====================
-  // TARGETS
-  // =====================
+  // ── Helpers ──────────────────────────────────────────────────────
 
-  getTargets(indicatorIndex: number): FormArray<FormGroup> {
-    const targetsControl = this.indicators.at(indicatorIndex).get('targets');
-    return (targetsControl as FormArray<FormGroup>) || this.fb.array<FormGroup>([]);
+  getIndicatorControls(): AbstractControl[] {
+    return this.indicators.controls;
   }
 
-  addTarget(indicatorIndex: number) {
-    this.getTargets(indicatorIndex).push(this.fb.group({
-      id: [null],
-      year: [new Date().getFullYear(), [Validators.required, Validators.min(2020), Validators.max(2100)]],
-      target_value: [null, [Validators.required, Validators.min(0.0001)]]
-    }));
+  hasError(i: number, field: string): boolean {
+    const c = this.indicators.at(i).get(field);
+    return !!(c?.invalid && c?.touched);
   }
 
-  removeTarget(indicatorIndex: number, targetIndex: number) {
-    this.getTargets(indicatorIndex).removeAt(targetIndex);
+  getErrorMessage(i: number, field: string): string {
+    const c = this.indicators.at(i).get(field);
+    if (c?.hasError('required')) return 'Este campo es obligatorio';
+    if (c?.hasError('minlength')) return 'Mínimo 3 caracteres';
+    if (c?.hasError('min')) return 'Valor debe ser mayor a 0';
+    if (c?.hasError('max')) return 'Año inválido';
+    return '';
   }
 
-  // =====================
-  // GROUPED_DATA SUB-FIELDS
-  // =====================
-
-  getSubFields(indicatorIndex: number): any[] {
-    if (this.subFieldsArrays.has(indicatorIndex)) {
-      return this.subFieldsArrays.get(indicatorIndex)!;
-    }
-    const configSubFields = this.indicators.at(indicatorIndex).get('configSubFields')?.value;
-    const subFields = configSubFields?.trim()
-      ? this.parseSubFieldsFromTextarea(configSubFields)
-      : [];
-    this.subFieldsArrays.set(indicatorIndex, subFields);
-    return subFields;
-  }
-
-  addSubField(indicatorIndex: number) {
-    this.getSubFields(indicatorIndex).push({ name: '', type: 'number', label: '' });
-    this.syncSubFieldsToForm(indicatorIndex);
-  }
-
-  removeSubField(indicatorIndex: number, subFieldIndex: number) {
-    this.getSubFields(indicatorIndex).splice(subFieldIndex, 1);
-    this.syncSubFieldsToForm(indicatorIndex);
-  }
-
-  updateSubField(indicatorIndex: number, subFieldIndex: number, field: string, event: any) {
-    let value = event.target ? event.target.value : event;
-    const subFields = this.getSubFields(indicatorIndex);
-    if (!subFields[subFieldIndex]) return;
-    if (field === 'name') value = this.sanitizeTechnicalName(value);
-    else if (field === 'label') value = this.capitalizeWords(value);
-    subFields[subFieldIndex][field] = value;
-    this.syncSubFieldsToForm(indicatorIndex);
-  }
-
-  private syncSubFieldsToForm(indicatorIndex: number) {
-    const formatted = this.formatSubFieldsForTextarea(this.getSubFields(indicatorIndex));
-    this.indicators.at(indicatorIndex).get('configSubFields')?.setValue(formatted, { emitEvent: false });
-  }
-
-  // =====================
-  // CATEGORIZED_GROUP: MÉTRICAS
-  // =====================
-
-  getCgMetrics(indicatorIndex: number): any[] {
-    if (!this.cgMetricsArrays.has(indicatorIndex)) {
-      this.cgMetricsArrays.set(indicatorIndex, []);
-    }
-    return this.cgMetricsArrays.get(indicatorIndex)!;
-  }
-
-  addCgMetric(indicatorIndex: number) {
-    this.getCgMetrics(indicatorIndex).push({ key: '', label: '' });
-  }
-
-  removeCgMetric(indicatorIndex: number, metricIndex: number) {
-    this.getCgMetrics(indicatorIndex).splice(metricIndex, 1);
-  }
-
-  updateCgMetric(indicatorIndex: number, metricIndex: number, field: string, event: any) {
-    let value = event.target ? event.target.value : event;
-    const metrics = this.getCgMetrics(indicatorIndex);
-    if (!metrics[metricIndex]) return;
-    if (field === 'key') value = this.sanitizeTechnicalName(value);
-    metrics[metricIndex][field] = value;
-  }
-
-  // =====================
-  // CATEGORIZED_GROUP: SUB-SECCIONES
-  // =====================
-
-  getCgSubSections(indicatorIndex: number): any[] {
-    if (!this.cgSubSectionsArrays.has(indicatorIndex)) {
-      this.cgSubSectionsArrays.set(indicatorIndex, []);
-    }
-    return this.cgSubSectionsArrays.get(indicatorIndex)!;
-  }
-
-  addCgSubSection(indicatorIndex: number) {
-    this.getCgSubSections(indicatorIndex).push({
-      key: '',
-      label: '',
-      max_source: 'metrics_total'
-    });
-  }
-
-  removeCgSubSection(indicatorIndex: number, sectionIndex: number) {
-    this.getCgSubSections(indicatorIndex).splice(sectionIndex, 1);
-  }
-
-  updateCgSubSection(indicatorIndex: number, sectionIndex: number, field: string, event: any) {
-    let value = event.target ? event.target.value : event;
-    const sections = this.getCgSubSections(indicatorIndex);
-    if (!sections[sectionIndex]) return;
-    if (field === 'key') value = this.sanitizeTechnicalName(value);
-    sections[sectionIndex][field] = value;
-  }
-
-  // =====================
-  // HELPERS
-  // =====================
-
-  getMultiSelectIndicators(currentIndex: number): AbstractControl[] {
-    return this.indicators.controls
-      .slice(0, currentIndex)
-      .filter(ind => ind.get('field_type')?.value === 'multi_select');
-  }
-
-  formatSubFieldsForTextarea(subFields?: any[]): string {
+  private formatSubFields(subFields?: any[]): string {
     if (!subFields?.length) return '';
     return subFields.map(sf => `${sf.name}|${sf.type}|${sf.label || sf.name}`).join('\n');
   }
 
-  parseSubFieldsFromTextarea(text: string): any[] {
-    if (!text?.trim()) return [];
-    return text.split('\n').map(line => line.trim()).filter(Boolean).map(line => {
-      const parts = line.split('|').map(p => p.trim());
-      return { name: parts[0] || '', type: parts[1] || 'number', label: parts[2] || parts[0] || '' };
-    });
-  }
-
-  // =====================
-  // VALIDACIÓN
-  // =====================
-
-  hasError(indicatorIndex: number, fieldName: string): boolean {
-    const control = this.indicators.at(indicatorIndex).get(fieldName);
-    return !!(control?.invalid && control?.touched);
-  }
-
-  getErrorMessage(indicatorIndex: number, fieldName: string): string {
-    const control = this.indicators.at(indicatorIndex).get(fieldName);
-    if (control?.hasError('required')) return 'Este campo es obligatorio';
-    if (control?.hasError('minlength')) return 'Mínimo 3 caracteres';
-    if (control?.hasError('min')) return 'Valor debe ser mayor a 0';
-    if (control?.hasError('max')) return 'Año inválido';
-    return '';
-  }
-
-  // =====================
-  // SERIALIZATION
-  // =====================
+  // ── Serialization ────────────────────────────────────────────────
 
   serializeIndicators(): any[] {
-    return this.indicators.controls.map((control, i) => {
-      const ind = control.value;
+    const cgList = this.cgComponents?.toArray() || [];
+    const gdList = this.gdComponents?.toArray() || [];
 
+    return this.indicators.controls.map((ctrl, i) => {
+      const ind = ctrl.value;
       const indicator: any = {
         name: ind.name.trim(),
         field_type: ind.field_type,
@@ -494,72 +201,55 @@ export class ComponenteIndicatorsFormComponent {
         targets: []
       };
 
-      if (ind.field_type === 'select' || ind.field_type === 'multi_select') {
-        indicator.config = {
-          options: ind.configOptions
-            .split('\n')
-            .map((o: string) => o.trim())
-            .filter((o: string) => o.length > 0)
-        };
+      switch (ind.field_type) {
 
-      } else if (ind.field_type === 'sum_group') {
-        indicator.config = {
-          fields: ind.configFields
-            .split('\n')
-            .map((o: string) => o.trim())
-            .filter((o: string) => o.length > 0)
-        };
+        case 'select':
+        case 'multi_select':
+          indicator.config = {
+            options: ind.configOptions.split('\n')
+              .map((o: string) => o.trim()).filter((o: string) => o.length > 0)
+          };
+          break;
 
-      } else if (ind.field_type === 'grouped_data') {
-        indicator.config = {
-          parent_field: ind.configParentField,
-          auto_total: ind.configAutoTotal || false,
-          sub_fields: this.parseSubFieldsFromTextarea(ind.configSubFields)
-        };
+        case 'sum_group':
+          indicator.config = {
+            fields: ind.configFields.split('\n')
+              .map((o: string) => o.trim()).filter((o: string) => o.length > 0)
+          };
+          break;
 
-      } else if (ind.field_type === 'file_attachment') {
-        const allowedTypes = ind.configAllowedTypes
-          ? ind.configAllowedTypes.split(',').map((t: string) => t.trim().toLowerCase()).filter((t: string) => t.length > 0)
-          : [];
-        indicator.config = {
-          ...(allowedTypes.length > 0 && { allowed_types: allowedTypes }),
-          ...(ind.configMaxSizeMb && { max_size_mb: Number(ind.configMaxSizeMb) })
-        };
-        if (Object.keys(indicator.config).length === 0) indicator.config = null;
+        case 'grouped_data':
+          indicator.config = {
+            parent_field: ind.configParentField,
+            auto_total: ind.configAutoTotal || false,
+            sub_fields: gdList[i]?.subFields || []
+          };
+          break;
 
-      } else if (ind.field_type === 'categorized_group') {
-        const categories = ind.cgCategories
-          ? ind.cgCategories.split('\n').map((c: string) => c.trim()).filter((c: string) => c.length > 0)
-          : [];
-        const groups = ind.cgGroups
-          ? ind.cgGroups.split('\n').map((g: string) => g.trim()).filter((g: string) => g.length > 0)
-          : [];
+        case 'file_attachment': {
+          const types = ind.configAllowedTypes
+            ? ind.configAllowedTypes.split(',').map((t: string) => t.trim().toLowerCase()).filter(Boolean)
+            : [];
+          const cfg: any = {};
+          if (types.length) cfg.allowed_types = types;
+          if (ind.configMaxSizeMb) cfg.max_size_mb = Number(ind.configMaxSizeMb);
+          indicator.config = Object.keys(cfg).length ? cfg : null;
+          break;
+        }
 
-        const metrics = (this.cgMetricsArrays.get(i) || [])
-          .filter((m: any) => m.key && m.label);
+        case 'categorized_group':
+          indicator.config = cgList[i]?.getConfig() ?? null;
+          break;
 
-        const subSections = (this.cgSubSectionsArrays.get(i) || [])
-          .filter((s: any) => s.key && s.label)
-          .map((s: any) => ({ ...s, max_source: 'metrics_total' }));
-
-        indicator.config = {
-          category_label: ind.cgCategoryLabel?.trim() || '',
-          categories,
-          groups,
-          metrics,
-          ...(subSections.length > 0 && { sub_sections: subSections })
-        };
-      } else if (ind.field_type === 'dataset_select' || ind.field_type === 'dataset_multi_select') {
-        indicator.config = {
-          dataset_id: ind.configDatasetId,
-          table_id: ind.configTableId,
-          label_field: ind.configLabelField || 'id'
-        };
+        case 'dataset_select':
+        case 'dataset_multi_select':
+          indicator.config = {
+            dataset_id: ind.configDatasetId
+          };
+          break;
       }
 
-      // Targets
-      const typesWithTargets = ['number', 'sum_group', 'grouped_data', 'categorized_group'];
-      if (typesWithTargets.includes(ind.field_type) && ind.targets && Array.isArray(ind.targets)) {
+      if (this.TYPES_WITH_TARGETS.includes(ind.field_type) && Array.isArray(ind.targets)) {
         indicator.targets = ind.targets.map((t: any) => ({
           year: Number(t.year),
           target_value: Number(t.target_value)

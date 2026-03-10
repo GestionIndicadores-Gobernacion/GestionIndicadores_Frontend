@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ComponentIndicatorModel } from '../../../../../core/models/component.model';
 import { HttpClient } from '@angular/common/http';
@@ -23,17 +23,22 @@ export class ReportIndicatorsFormComponent implements OnChanges {
   uploadingFor: number | null = null;
   uploadErrors: Record<number, string> = {};
 
-  datasetRecords: Record<number, { id: number, label: string }[]> = {};
+  datasetOptions: Record<number, { id: number, label: string }[]> = {};
   datasetLoading: Record<number, boolean> = {};
   datasetError: Record<number, string> = {};
 
-  constructor(private http: HttpClient, private datasetService: DatasetService) { }
+  constructor(
+    private http: HttpClient,
+    private datasetService: DatasetService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['indicators'] || changes['values']) {
       this.initializeGroupedDataIndicators();
       this.initializeCategorizedGroupIndicators();
-      this.loadDatasetRecords();
+      // ← falta esta línea:
+      this.loadDatasetOptions();
     }
   }
 
@@ -339,75 +344,66 @@ export class ReportIndicatorsFormComponent implements OnChanges {
   getIndicatorId(ind: ComponentIndicatorModel): number { return ind.id!; }
 
   // =========================
-  // DATASET RECORDS
-  // =========================
-  // =========================
   // DATASET SELECT
   // =========================
 
-  private loadDatasetRecords(): void {
+  private loadDatasetOptions(): void {
     this.indicators.forEach(ind => {
       if (!['dataset_select', 'dataset_multi_select'].includes(ind.field_type)) return;
-      const datasetId = ind.config?.dataset_id;
-      const tableId = ind.config?.table_id;
-      const labelField = ind.config?.label_field || 'id';
-      if (!datasetId || !tableId) return;
+
+      // Evitar recargar si ya tiene datos
+      if (this.datasetOptions[ind.id!]?.length) return;
 
       this.datasetLoading[ind.id!] = true;
       this.datasetError[ind.id!] = '';
 
-      this.datasetService.getTableRecords(datasetId, tableId).subscribe({
-        next: (records) => {
-          this.datasetRecords[ind.id!] = records.map(r => ({
-            id: r.id,
-            label: r.data?.[labelField] ? String(r.data[labelField]) : `#${r.id}`
-          }));
+      this.datasetService.getAll().subscribe({
+        next: (datasets) => {
+          this.datasetOptions[ind.id!] = datasets.map(d => ({ id: d.id, label: d.name }));
           this.datasetLoading[ind.id!] = false;
+          this.cdr.markForCheck();  // ← esto
         },
         error: () => {
-          this.datasetError[ind.id!] = 'Error al cargar registros';
+          this.datasetError[ind.id!] = 'Error al cargar datasets';
           this.datasetLoading[ind.id!] = false;
+          this.cdr.markForCheck();  // ← y esto
         }
       });
     });
   }
 
   getDatasetOptions(indicatorId: number): { id: number, label: string }[] {
-    return this.datasetRecords[indicatorId] || [];
+    return this.datasetOptions[indicatorId] || [];
   }
 
-  // dataset_select: value = {id, label}
-  setDatasetSelectValue(indicatorId: number, record: { id: number, label: string } | null): void {
-    this.values[indicatorId] = record;
+  getDatasetLabelById(indicatorId: number, datasetId: number): string {
+    return this.datasetOptions[indicatorId]?.find(d => d.id === datasetId)?.label || String(datasetId);
+  }
+
+  setDatasetSelectValue(indicatorId: number, datasetId: number | null): void {
+    this.values[indicatorId] = datasetId;
     this.emit();
   }
 
-  getDatasetSelectValue(indicatorId: number): { id: number, label: string } | null {
-    return this.values[indicatorId] || null;
-  }
-
-  // dataset_multi_select: value = [{id, label}, ...]
-  toggleDatasetMultiOption(indicatorId: number, record: { id: number, label: string }): void {
+  toggleDatasetMultiOption(indicatorId: number, datasetId: number): void {
     if (!this.values[indicatorId]) this.values[indicatorId] = [];
-    const list: { id: number, label: string }[] = this.values[indicatorId];
-    const idx = list.findIndex(r => r.id === record.id);
-    if (idx > -1) {
-      list.splice(idx, 1);
-    } else {
-      list.push(record);
-    }
+    const list: number[] = this.values[indicatorId];
+    const idx = list.indexOf(datasetId);
+    if (idx > -1) list.splice(idx, 1);
+    else list.push(datasetId);
     this.values = { ...this.values };
     this.emit();
   }
 
-  onDatasetSelectChange(indicatorId: number, recordId: number): void {
-    const found = this.getDatasetOptions(indicatorId).find(r => r.id === recordId) || null;
-    this.setDatasetSelectValue(indicatorId, found);
+  isDatasetMultiSelected(indicatorId: number, datasetId: number): boolean {
+    return (this.values[indicatorId] || []).includes(datasetId);
   }
 
-  isDatasetMultiSelected(indicatorId: number, recordId: number): boolean {
-    return (this.values[indicatorId] || []).some((r: any) => r.id === recordId);
+  getDatasetSelectLabel(indicatorId: number): string {
+    const id = this.values[indicatorId];
+    return this.datasetOptions[indicatorId]?.find(d => d.id === id)?.label || '';
   }
+
   // =========================
   // VALIDATION
   // =========================
@@ -424,7 +420,7 @@ export class ReportIndicatorsFormComponent implements OnChanges {
       case 'grouped_data': return !!value && typeof value === 'object' && Object.keys(value).length > 0;
       case 'file_attachment': return !!value?.file_url;
       case 'categorized_group': return Array.isArray(value?.selected_categories) && value.selected_categories.length > 0;
-      case 'dataset_select': return !!value?.id;
+      case 'dataset_select': return value !== null && value !== undefined;
       case 'dataset_multi_select': return Array.isArray(value) && value.length > 0;
       default: return true;
     }
