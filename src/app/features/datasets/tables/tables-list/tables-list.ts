@@ -6,12 +6,15 @@ import { forkJoin } from 'rxjs';
 import { TableService } from '../../../../core/services/table.service';
 import { FieldService } from '../../../../core/services/field.service';
 import { RecordService } from '../../../../core/services/record.service';
+import { DatasetService } from '../../../../core/services/datasets.service';
 
 import { Table } from '../../../../core/models/table.model';
+import { Dataset } from '../../../../core/models/dataset.model';
 import { Field } from '../../../../core/models/field.model';
 
 interface TableStats {
   table: Table;
+  datasetName: string;   // ← nuevo
   fieldsCount: number;
   recordsCount: number;
   fieldTypes: string[];
@@ -27,16 +30,10 @@ type SortOption = 'name' | 'records' | 'fields';
 })
 export class TablesListComponent implements OnInit {
 
-  // =========================
-  // DATA
-  // =========================
   tablesStats = signal<TableStats[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
 
-  // =========================
-  // FILTER STATE
-  // =========================
   search = signal('');
   sortBy = signal<SortOption>('name');
   fieldTypeFilter = signal<string | null>(null);
@@ -45,6 +42,7 @@ export class TablesListComponent implements OnInit {
     private tableService: TableService,
     private fieldService: FieldService,
     private recordService: RecordService,
+    private datasetService: DatasetService,
     private router: Router
   ) { }
 
@@ -58,8 +56,12 @@ export class TablesListComponent implements OnInit {
   private loadTables(): void {
     this.loading.set(true);
 
-    this.tableService.getAll().subscribe({
-      next: tables => this.buildStats(tables),
+    // Cargamos tablas y datasets en paralelo
+    forkJoin({
+      tables: this.tableService.getAll(),
+      datasets: this.datasetService.getAll()
+    }).subscribe({
+      next: ({ tables, datasets }) => this.buildStats(tables, datasets),
       error: () => {
         this.error.set('Error cargando tablas');
         this.loading.set(false);
@@ -67,7 +69,12 @@ export class TablesListComponent implements OnInit {
     });
   }
 
-  private buildStats(tables: Table[]): void {
+  private buildStats(tables: Table[], datasets: Dataset[]): void {
+    // Mapa id → nombre para lookup O(1)
+    const datasetMap = new Map<number, string>(
+      datasets.map(d => [d.id, d.name])
+    );
+
     const requests = tables.map(table =>
       forkJoin({
         fields: this.fieldService.getByTable(table.id),
@@ -77,10 +84,11 @@ export class TablesListComponent implements OnInit {
 
     forkJoin(requests).subscribe({
       next: results => {
-        const stats = results.map((res, i) => {
+        const stats: TableStats[] = results.map((res, i) => {
           const fields = res.fields as Field[];
           return {
             table: tables[i],
+            datasetName: datasetMap.get(tables[i].dataset_id) ?? '—',
             fieldsCount: fields.length,
             recordsCount: res.records.length,
             fieldTypes: Array.from(new Set(fields.map(f => f.type)))
@@ -99,22 +107,20 @@ export class TablesListComponent implements OnInit {
   filteredTables = computed(() => {
     let data = [...this.tablesStats()];
 
-    // 🔍 SEARCH
     if (this.search()) {
       const q = this.search().toLowerCase();
       data = data.filter(d =>
-        d.table.name.toLowerCase().includes(q)
+        d.table.name.toLowerCase().includes(q) ||
+        d.datasetName.toLowerCase().includes(q)  // ← busca también por dataset
       );
     }
 
-    // 🧩 FIELD TYPE
     if (this.fieldTypeFilter()) {
       data = data.filter(d =>
         d.fieldTypes.includes(this.fieldTypeFilter()!)
       );
     }
 
-    // 📊 SORT
     switch (this.sortBy()) {
       case 'records':
         data.sort((a, b) => b.recordsCount - a.recordsCount);
@@ -123,9 +129,7 @@ export class TablesListComponent implements OnInit {
         data.sort((a, b) => b.fieldsCount - a.fieldsCount);
         break;
       default:
-        data.sort((a, b) =>
-          a.table.name.localeCompare(b.table.name)
-        );
+        data.sort((a, b) => a.table.name.localeCompare(b.table.name));
     }
 
     return data;
@@ -141,11 +145,6 @@ export class TablesListComponent implements OnInit {
   }
 
   goToRecords(table: Table): void {
-    this.router.navigate([
-      'datasets',
-      'tables',
-      table.id,
-      'records'
-    ]);
+    this.router.navigate(['datasets', 'tables', table.id, 'records']);
   }
 }

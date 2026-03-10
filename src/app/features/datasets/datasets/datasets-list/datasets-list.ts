@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
@@ -8,6 +8,7 @@ import { Dataset } from '../../../../core/models/dataset.model';
 import { DatasetService } from '../../../../core/services/datasets.service';
 import { ImportDatasetModalComponent } from '../import-dataset-modal/import-dataset-modal';
 import { Pagination } from '../../../../shared/components/pagination/pagination';
+import { TablesListComponent } from '../../tables/tables-list/tables-list';
 
 @Component({
   selector: 'app-datasets-list',
@@ -17,7 +18,8 @@ import { Pagination } from '../../../../shared/components/pagination/pagination'
     RouterModule,
     FormsModule,
     ImportDatasetModalComponent,
-    Pagination
+    Pagination,
+    TablesListComponent
   ],
   templateUrl: './datasets-list.html',
   styleUrls: ['./datasets-list.css']
@@ -33,15 +35,16 @@ export class DatasetsListComponent implements OnInit {
 
   showImportModal = false;
 
-  // 🔍 búsqueda
   searchTerm = '';
 
-  // 📄 paginación
   currentPage = 1;
   pageSize = 10;
   totalPages = 1;
 
-  constructor(private datasetService: DatasetService) { }
+  constructor(
+    private datasetService: DatasetService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
     this.loadDatasets();
@@ -59,10 +62,12 @@ export class DatasetsListComponent implements OnInit {
         this.datasets = data;
         this.applyFilters();
         this.loading = false;
+        this.cdr.detectChanges(); // ← tabla y loading se actualizan
       },
       error: () => {
         this.error = 'No se pudieron cargar los datasets';
         this.loading = false;
+        this.cdr.detectChanges(); // ← mensaje de error se renderiza
       }
     });
   }
@@ -92,6 +97,7 @@ export class DatasetsListComponent implements OnInit {
     );
 
     this.applyPagination();
+    this.cdr.detectChanges(); // ← filtros y paginación reflejan cambios
   }
 
   applyPagination(): void {
@@ -104,6 +110,7 @@ export class DatasetsListComponent implements OnInit {
   onPageChange(page: number): void {
     this.currentPage = page;
     this.applyPagination();
+    this.cdr.detectChanges(); // ← página activa y filas se actualizan
   }
 
   // =========================
@@ -111,6 +118,7 @@ export class DatasetsListComponent implements OnInit {
   // =========================
   openImportModal(): void {
     this.showImportModal = true;
+    this.cdr.detectChanges(); // ← modal aparece inmediatamente
   }
 
   onImportFinished(): void {
@@ -120,6 +128,7 @@ export class DatasetsListComponent implements OnInit {
 
   onImportClosed(): void {
     this.showImportModal = false;
+    this.cdr.detectChanges(); // ← modal se cierra sin delay
   }
 
   // =========================
@@ -139,19 +148,11 @@ export class DatasetsListComponent implements OnInit {
 
       this.datasetService.deactivate(dataset.id).subscribe({
         next: () => {
-          Swal.fire(
-            'Eliminado',
-            'El dataset fue eliminado correctamente',
-            'success'
-          );
+          Swal.fire('Eliminado', 'El dataset fue eliminado correctamente', 'success');
           this.loadDatasets();
         },
         error: () => {
-          Swal.fire(
-            'Error',
-            'No se pudo eliminar el dataset',
-            'error'
-          );
+          Swal.fire('Error', 'No se pudo eliminar el dataset', 'error');
         }
       });
     });

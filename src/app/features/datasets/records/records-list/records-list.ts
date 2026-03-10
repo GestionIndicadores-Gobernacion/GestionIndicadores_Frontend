@@ -171,7 +171,7 @@ export class RecordsListComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/datasets/tables'], { relativeTo: this.route });
+    this.router.navigate(['/datasets'], { relativeTo: this.route });
   }
 
   trackByField = (_: number, f: Field) => f.id;

@@ -7,12 +7,14 @@
 
     <div class="mx-6 mt-4 mb-2 bg-emerald-50 border border-emerald-200 rounded-lg p-3">
         <div class="flex items-start gap-2">
-            <svg class="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
             <p class="text-xs text-emerald-800">
-                <strong class="font-medium">Registra los datos medibles:</strong> Completa cada indicador con los valores obtenidos. Si hay metas definidas, aparecerán como referencia.
+                <strong class="font-medium">Registra los datos medibles:</strong> Completa cada indicador con los
+                valores obtenidos. Si hay metas definidas, aparecerán como referencia.
             </p>
         </div>
     </div>
@@ -27,7 +29,9 @@
                     <p class="text-xs text-zinc-500" *ngIf="getTarget(ind) as meta; else noMeta">
                         Meta: <span class="font-medium text-zinc-700">{{ meta }}</span>
                     </p>
-                    <ng-template #noMeta><p class="text-xs text-zinc-400">Sin meta</p></ng-template>
+                    <ng-template #noMeta>
+                        <p class="text-xs text-zinc-400">Sin meta</p>
+                    </ng-template>
                 </div>
 
                 <div class="flex-1">
@@ -48,7 +52,8 @@
 
                     <!-- SELECT -->
                     <ng-container *ngIf="ind.field_type === 'select'">
-                        <select [ngModel]="values[getIndicatorId(ind)]" (ngModelChange)="setValue(getIndicatorId(ind), $event)"
+                        <select [ngModel]="values[getIndicatorId(ind)]"
+                            (ngModelChange)="setValue(getIndicatorId(ind), $event)"
                             class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 cursor-pointer focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150">
                             <option [ngValue]="null" disabled>Seleccionar opción</option>
                             <option *ngFor="let op of ind.config?.options" [ngValue]="op">{{ op }}</option>
@@ -63,8 +68,92 @@
                                 (click)="toggleMultiSelectOption(getIndicatorId(ind), option)">
                                 <input type="checkbox" [checked]="isMultiSelectSelected(getIndicatorId(ind), option)"
                                     class="w-4 h-4 text-zinc-900 border-zinc-300 rounded focus:ring-zinc-900 cursor-pointer pointer-events-none" />
-                                <label class="flex-1 text-sm text-zinc-700 cursor-pointer select-none">{{ option }}</label>
+                                <label class="flex-1 text-sm text-zinc-700 cursor-pointer select-none">{{ option
+                                    }}</label>
                             </div>
+                        </div>
+                    </ng-container>
+
+                    <!-- DATASET_SELECT -->
+                    <ng-container *ngIf="ind.field_type === 'dataset_select'">
+                        <div class="space-y-2">
+
+                            <div *ngIf="datasetLoading[getIndicatorId(ind)]"
+                                class="flex items-center gap-2 p-3 bg-zinc-50 rounded-lg border border-zinc-200">
+                                <div
+                                    class="w-4 h-4 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin">
+                                </div>
+                                <span class="text-xs text-zinc-500">Cargando registros...</span>
+                            </div>
+
+                            <div *ngIf="datasetError[getIndicatorId(ind)]"
+                                class="p-3 bg-red-50 border border-red-200 rounded-lg">
+                                <p class="text-xs text-red-600">{{ datasetError[getIndicatorId(ind)] }}</p>
+                            </div>
+
+                            <select *ngIf="!datasetLoading[getIndicatorId(ind)] && !datasetError[getIndicatorId(ind)]"
+                                [ngModel]="getDatasetSelectValue(getIndicatorId(ind))?.id"
+                                (ngModelChange)="onDatasetSelectChange(getIndicatorId(ind), $event)"
+                                class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 cursor-pointer focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150">
+                                <option [ngValue]="null" disabled>Seleccionar registro</option>
+                                <option *ngFor="let rec of getDatasetOptions(getIndicatorId(ind))" [ngValue]="rec.id">
+                                    {{ rec.label }}
+                                </option>
+                            </select>
+
+                            <div *ngIf="getDatasetSelectValue(getIndicatorId(ind)) as selected"
+                                class="flex items-center gap-2 px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg">
+                                <span class="text-xs text-zinc-500">Seleccionado:</span>
+                                <span class="text-xs font-medium text-zinc-900">{{ selected.label }}</span>
+                            </div>
+
+                        </div>
+                    </ng-container>
+
+                    <!-- DATASET_MULTI_SELECT -->
+                    <ng-container *ngIf="ind.field_type === 'dataset_multi_select'">
+                        <div class="space-y-2">
+
+                            <div *ngIf="datasetLoading[getIndicatorId(ind)]"
+                                class="flex items-center gap-2 p-3 bg-zinc-50 rounded-lg border border-zinc-200">
+                                <div
+                                    class="w-4 h-4 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin">
+                                </div>
+                                <span class="text-xs text-zinc-500">Cargando registros...</span>
+                            </div>
+
+                            <div *ngIf="datasetError[getIndicatorId(ind)]"
+                                class="p-3 bg-red-50 border border-red-200 rounded-lg">
+                                <p class="text-xs text-red-600">{{ datasetError[getIndicatorId(ind)] }}</p>
+                            </div>
+
+                            <div *ngIf="!datasetLoading[getIndicatorId(ind)] && !datasetError[getIndicatorId(ind)]"
+                                class="space-y-1.5 max-h-60 overflow-y-auto pr-1">
+                                <div *ngFor="let rec of getDatasetOptions(getIndicatorId(ind))"
+                                    class="flex items-center gap-3 p-2.5 border border-zinc-200 rounded-lg hover:bg-zinc-50 transition-colors cursor-pointer"
+                                    (click)="toggleDatasetMultiOption(getIndicatorId(ind), rec)">
+                                    <input type="checkbox"
+                                        [checked]="isDatasetMultiSelected(getIndicatorId(ind), rec.id)"
+                                        class="w-4 h-4 text-zinc-900 border-zinc-300 rounded focus:ring-zinc-900 cursor-pointer pointer-events-none" />
+                                    <label class="flex-1 text-sm text-zinc-700 cursor-pointer select-none">{{ rec.label
+                                        }}</label>
+                                </div>
+                                <div *ngIf="getDatasetOptions(getIndicatorId(ind)).length === 0"
+                                    class="p-4 text-center text-xs text-zinc-400 border border-dashed border-zinc-300 rounded-lg">
+                                    No hay registros en esta tabla
+                                </div>
+                            </div>
+
+                            <div *ngIf="(values[getIndicatorId(ind)] || []).length > 0"
+                                class="flex flex-wrap gap-1.5 pt-1">
+                                <span *ngFor="let sel of values[getIndicatorId(ind)]"
+                                    class="inline-flex items-center gap-1 px-2.5 py-1 bg-zinc-900 text-white text-xs rounded-full">
+                                    {{ sel.label }}
+                                    <button type="button" (click)="toggleDatasetMultiOption(getIndicatorId(ind), sel)"
+                                        class="hover:text-zinc-300 transition-colors ml-0.5 cursor-pointer">×</button>
+                                </span>
+                            </div>
+
                         </div>
                     </ng-container>
 
@@ -75,12 +164,14 @@
                                 class="flex items-center gap-3 p-2 bg-zinc-50 rounded-lg border border-zinc-100">
                                 <label class="flex-1 text-xs text-zinc-700 leading-tight">{{ field }}</label>
                                 <input type="number" [ngModel]="values[getIndicatorId(ind)]?.[field]"
-                                    (ngModelChange)="setSumValue(getIndicatorId(ind), field, $event)" placeholder="0" min="0"
+                                    (ngModelChange)="setSumValue(getIndicatorId(ind), field, $event)" placeholder="0"
+                                    min="0"
                                     class="w-24 px-3 py-1.5 text-sm text-right border border-zinc-200 rounded-lg bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150" />
                             </div>
                             <div class="flex items-center justify-between p-2 bg-zinc-900 rounded-lg">
                                 <span class="text-xs font-semibold text-white uppercase tracking-wide">Total</span>
-                                <span class="text-base font-bold text-white tabular-nums">{{ getSumTotal(getIndicatorId(ind)) }}</span>
+                                <span class="text-base font-bold text-white tabular-nums">{{
+                                    getSumTotal(getIndicatorId(ind)) }}</span>
                             </div>
                         </div>
                     </ng-container>
@@ -90,7 +181,8 @@
                         <div class="space-y-3">
                             <div *ngIf="getFileValue(getIndicatorId(ind)) as fileVal"
                                 class="flex items-center gap-3 p-3 bg-zinc-50 border border-zinc-200 rounded-lg">
-                                <svg class="w-5 h-5 text-zinc-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg class="w-5 h-5 text-zinc-500 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                                 </svg>
@@ -99,35 +191,42 @@
                                     <p class="text-xs text-zinc-500">{{ fileVal.file_size_mb }} MB</p>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <a [href]="fileVal.file_url" target="_blank" class="text-xs text-zinc-600 hover:text-zinc-900 underline">Ver</a>
+                                    <a [href]="fileVal.file_url" target="_blank"
+                                        class="text-xs text-zinc-600 hover:text-zinc-900 underline">Ver</a>
                                     <button type="button" (click)="removeFile(getIndicatorId(ind))"
                                         class="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     </button>
                                 </div>
                             </div>
                             <div *ngIf="!getFileValue(getIndicatorId(ind))">
-                                <label class="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-zinc-300 rounded-lg cursor-pointer hover:border-zinc-400 hover:bg-zinc-50 transition-colors"
+                                <label
+                                    class="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-zinc-300 rounded-lg cursor-pointer hover:border-zinc-400 hover:bg-zinc-50 transition-colors"
                                     [class.opacity-60]="uploadingFor === getIndicatorId(ind)"
                                     [class.pointer-events-none]="uploadingFor === getIndicatorId(ind)">
                                     <ng-container *ngIf="uploadingFor !== getIndicatorId(ind)">
-                                        <svg class="w-8 h-8 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg class="w-8 h-8 text-zinc-400" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                                                 d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                                         </svg>
                                         <span class="text-sm text-zinc-500">Haz clic para seleccionar archivo</span>
                                     </ng-container>
                                     <ng-container *ngIf="uploadingFor === getIndicatorId(ind)">
-                                        <div class="w-5 h-5 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin"></div>
+                                        <div
+                                            class="w-5 h-5 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin">
+                                        </div>
                                         <span class="text-sm text-zinc-500">Subiendo archivo...</span>
                                     </ng-container>
                                     <input type="file" class="hidden" [accept]="getAcceptString(ind)"
                                         (change)="onFileSelected($event, getIndicatorId(ind))" />
                                 </label>
                             </div>
-                            <p *ngIf="uploadErrors[getIndicatorId(ind)]" class="text-xs text-red-600">{{ uploadErrors[getIndicatorId(ind)] }}</p>
+                            <p *ngIf="uploadErrors[getIndicatorId(ind)]" class="text-xs text-red-600">{{
+                                uploadErrors[getIndicatorId(ind)] }}</p>
                         </div>
                     </ng-container>
 
@@ -136,7 +235,8 @@
                         <div class="space-y-4">
                             <div *ngIf="getSelectedOptionsForGroupedData(ind).length === 0"
                                 class="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                                <p class="text-xs text-amber-800"><strong>Primero selecciona opciones en:</strong> {{ ind.config?.parent_field }}</p>
+                                <p class="text-xs text-amber-800"><strong>Primero selecciona opciones en:</strong> {{
+                                    ind.config?.parent_field }}</p>
                             </div>
                             <div *ngFor="let groupKey of getSelectedOptionsForGroupedData(ind)"
                                 class="border border-zinc-200 rounded-lg overflow-hidden">
@@ -145,7 +245,8 @@
                                 </div>
                                 <div class="p-4 space-y-3">
                                     <div *ngFor="let subField of ind.config?.sub_fields" class="flex flex-col gap-1.5">
-                                        <label class="text-xs font-medium text-zinc-700">{{ subField.label || subField.name }}</label>
+                                        <label class="text-xs font-medium text-zinc-700">{{ subField.label ||
+                                            subField.name }}</label>
                                         <input *ngIf="subField.type === 'number'" type="number"
                                             [ngModel]="getGroupedValue(getIndicatorId(ind), groupKey, subField.name)"
                                             (ngModelChange)="setGroupedValue(getIndicatorId(ind), groupKey, subField.name, $event)"
@@ -159,15 +260,19 @@
                                     </div>
                                     <div *ngIf="ind.config?.auto_total"
                                         class="flex items-center justify-between p-3 bg-zinc-900 rounded-lg mt-3">
-                                        <span class="text-xs font-semibold text-white uppercase tracking-wide">Total</span>
-                                        <span class="text-base font-bold text-white tabular-nums">{{ getGroupedTotal(getIndicatorId(ind), groupKey, ind.config?.sub_fields) }}</span>
+                                        <span
+                                            class="text-xs font-semibold text-white uppercase tracking-wide">Total</span>
+                                        <span class="text-base font-bold text-white tabular-nums">{{
+                                            getGroupedTotal(getIndicatorId(ind), groupKey, ind.config?.sub_fields)
+                                            }}</span>
                                     </div>
                                 </div>
                             </div>
                             <div *ngIf="ind.config?.auto_total && getSelectedOptionsForGroupedData(ind).length > 1"
                                 class="flex items-center justify-between p-4 bg-gradient-to-r from-zinc-900 to-zinc-800 rounded-lg shadow-lg">
                                 <span class="text-sm font-bold text-white uppercase tracking-wide">Total General</span>
-                                <span class="text-xl font-black text-white tabular-nums">{{ getGroupedGrandTotal(getIndicatorId(ind), ind.config?.sub_fields) }}</span>
+                                <span class="text-xl font-black text-white tabular-nums">{{
+                                    getGroupedGrandTotal(getIndicatorId(ind), ind.config?.sub_fields) }}</span>
                             </div>
                         </div>
                     </ng-container>
@@ -206,7 +311,8 @@
                                 <div class="px-4 py-3 bg-zinc-900 flex items-center justify-between">
                                     <span class="text-sm font-semibold text-white">{{ cat }}</span>
                                     <span class="text-xs text-zinc-400">
-                                        Total: <span class="text-white font-bold tabular-nums">{{ getCategoryAllMetricsTotal(getIndicatorId(ind), cat) }}</span>
+                                        Total: <span class="text-white font-bold tabular-nums">{{
+                                            getCategoryAllMetricsTotal(getIndicatorId(ind), cat) }}</span>
                                     </span>
                                 </div>
 
@@ -215,17 +321,24 @@
                                     <table class="w-full text-xs">
                                         <thead>
                                             <tr class="bg-zinc-50 border-b border-zinc-200">
-                                                <th class="px-4 py-2.5 text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider w-48">Indicador</th>
+                                                <th
+                                                    class="px-4 py-2.5 text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider w-48">
+                                                    Indicador</th>
                                                 <th *ngFor="let group of ind.config?.groups"
-                                                    class="px-4 py-2.5 text-center text-xs font-semibold text-zinc-700 uppercase tracking-wider">{{ group }}</th>
-                                                <th class="px-4 py-2.5 text-center text-xs font-semibold text-zinc-500 uppercase tracking-wider">Total</th>
+                                                    class="px-4 py-2.5 text-center text-xs font-semibold text-zinc-700 uppercase tracking-wider">
+                                                    {{ group }}</th>
+                                                <th
+                                                    class="px-4 py-2.5 text-center text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                                                    Total</th>
                                             </tr>
                                         </thead>
                                         <tbody class="divide-y divide-zinc-100">
                                             <tr *ngFor="let metric of ind.config?.metrics; let mi = index"
                                                 [class.bg-white]="mi % 2 === 0" [class.bg-zinc-50]="mi % 2 !== 0">
-                                                <td class="px-4 py-2.5 text-xs font-medium text-zinc-700 leading-tight">{{ metric.label }}</td>
-                                                <td *ngFor="let group of ind.config?.groups" class="px-3 py-2 text-center">
+                                                <td class="px-4 py-2.5 text-xs font-medium text-zinc-700 leading-tight">
+                                                    {{ metric.label }}</td>
+                                                <td *ngFor="let group of ind.config?.groups"
+                                                    class="px-3 py-2 text-center">
                                                     <input type="number" min="0"
                                                         [ngModel]="getCategorizedMetricValue(getIndicatorId(ind), cat, group, metric.key)"
                                                         (ngModelChange)="setCategorizedMetricValue(getIndicatorId(ind), cat, group, metric.key, $event)"
@@ -234,7 +347,8 @@
                                                 </td>
                                                 <td class="px-4 py-2.5 text-center">
                                                     <span class="text-sm font-bold text-zinc-900 tabular-nums">
-                                                        {{ getCategoryMetricTotal(getIndicatorId(ind), cat, metric.key) }}
+                                                        {{ getCategoryMetricTotal(getIndicatorId(ind), cat, metric.key)
+                                                        }}
                                                     </span>
                                                 </td>
                                             </tr>
@@ -248,28 +362,38 @@
                                         class="border-t border-zinc-200">
                                         <!-- Header sub-sección -->
                                         <div class="px-4 py-2.5 bg-zinc-100 flex items-center gap-2">
-                                            <svg class="w-3.5 h-3.5 text-zinc-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <svg class="w-3.5 h-3.5 text-zinc-500 flex-shrink-0" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
                                             <p class="text-xs font-semibold text-zinc-700">{{ section.label }}</p>
                                             <span *ngIf="section.max_source === 'metrics_total'"
-                                                class="text-xs text-zinc-400 ml-auto">valor ≤ total de cada métrica</span>
+                                                class="text-xs text-zinc-400 ml-auto">valor ≤ total de cada
+                                                métrica</span>
                                         </div>
                                         <!-- Tabla sub-sección: filas = métricas, columna única = valor -->
                                         <div class="overflow-x-auto">
                                             <table class="w-full text-xs">
                                                 <thead>
                                                     <tr class="bg-zinc-50 border-b border-zinc-100">
-                                                        <th class="px-4 py-2 text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider w-48">Indicador</th>
-                                                        <th class="px-4 py-2 text-center text-xs font-semibold text-zinc-700 uppercase tracking-wider">Valor</th>
-                                                        <th class="px-4 py-2 text-center text-xs font-semibold text-zinc-400 uppercase tracking-wider">Máx</th>
+                                                        <th
+                                                            class="px-4 py-2 text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider w-48">
+                                                            Indicador</th>
+                                                        <th
+                                                            class="px-4 py-2 text-center text-xs font-semibold text-zinc-700 uppercase tracking-wider">
+                                                            Valor</th>
+                                                        <th
+                                                            class="px-4 py-2 text-center text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                                                            Máx</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody class="divide-y divide-zinc-100">
                                                     <tr *ngFor="let metric of ind.config?.metrics; let mi = index"
-                                                        [class.bg-white]="mi % 2 === 0" [class.bg-zinc-50]="mi % 2 !== 0">
-                                                        <td class="px-4 py-2 text-xs font-medium text-zinc-700">{{ metric.label }}</td>
+                                                        [class.bg-white]="mi % 2 === 0"
+                                                        [class.bg-zinc-50]="mi % 2 !== 0">
+                                                        <td class="px-4 py-2 text-xs font-medium text-zinc-700">{{
+                                                            metric.label }}</td>
                                                         <td class="px-3 py-2 text-center">
                                                             <input type="number" min="0"
                                                                 [ngModel]="getSubSectionValue(getIndicatorId(ind), section.key, cat, metric.key)"
@@ -280,8 +404,10 @@
                                                             <p *ngIf="isSubSectionOverLimit(getIndicatorId(ind), section.key, cat, metric.key)"
                                                                 class="text-xs text-red-500 mt-0.5">Supera el total</p>
                                                         </td>
-                                                        <td class="px-4 py-2 text-center text-xs text-zinc-400 tabular-nums">
-                                                            {{ getCategoryMetricTotal(getIndicatorId(ind), cat, metric.key) }}
+                                                        <td
+                                                            class="px-4 py-2 text-center text-xs text-zinc-400 tabular-nums">
+                                                            {{ getCategoryMetricTotal(getIndicatorId(ind), cat,
+                                                            metric.key) }}
                                                         </td>
                                                     </tr>
                                                 </tbody>
@@ -294,15 +420,18 @@
 
                             <div *ngIf="getSelectedCategories(getIndicatorId(ind)).length === 0"
                                 class="p-4 bg-zinc-50 border border-zinc-200 rounded-xl text-center">
-                                <p class="text-xs text-zinc-400">Selecciona una o más categorías para ingresar los datos</p>
+                                <p class="text-xs text-zinc-400">Selecciona una o más categorías para ingresar los datos
+                                </p>
                             </div>
 
                             <!-- TOTAL GENERAL: suma de todas las métricas en todas las categorías -->
                             <div *ngIf="getSelectedCategories(getIndicatorId(ind)).length > 0"
                                 class="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-zinc-900 to-zinc-800 rounded-xl shadow">
                                 <div>
-                                    <p class="text-xs font-semibold text-zinc-400 uppercase tracking-wide">Total animales atendidos</p>
-                                    <p class="text-xs text-zinc-500 mt-0.5">Suma de todas las métricas en todas las categorías</p>
+                                    <p class="text-xs font-semibold text-zinc-400 uppercase tracking-wide">Total
+                                        animales atendidos</p>
+                                    <p class="text-xs text-zinc-500 mt-0.5">Suma de todas las métricas en todas las
+                                        categorías</p>
                                 </div>
                                 <span class="text-2xl font-black text-white tabular-nums">
                                     {{ getCategorizedGrandTotal(getIndicatorId(ind)) }}

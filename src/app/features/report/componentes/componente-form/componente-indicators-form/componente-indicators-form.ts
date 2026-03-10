@@ -8,6 +8,7 @@ import {
   ReactiveFormsModule,
   AbstractControl
 } from '@angular/forms';
+import { DatasetService } from '../../../../../core/services/datasets.service';
 
 @Component({
   selector: 'app-componente-indicators-form',
@@ -31,7 +32,12 @@ export class ComponenteIndicatorsFormComponent {
   draggedIndex: number | null = null;
   dragOverIndex: number | null = null;
 
-  constructor(private fb: FormBuilder) { }
+  // Dataset state para el panel de configuración
+  allDatasets: any[] = [];
+  datasetTablesMap: Map<number, any[]> = new Map(); // dataset_id → tables[]
+  datasetsLoading = false;
+
+  constructor(private fb: FormBuilder, private datasetService: DatasetService) { }
 
   // =====================
   // GETTERS
@@ -204,6 +210,10 @@ export class ComponenteIndicatorsFormComponent {
       configSubFields: [this.formatSubFieldsForTextarea(data?.config?.sub_fields) || ''],
       configAllowedTypes: [data?.config?.allowed_types?.join(', ') || ''],
       configMaxSizeMb: [data?.config?.max_size_mb || null],
+
+      configDatasetId: [data?.config?.dataset_id || null],
+      configTableId: [data?.config?.table_id || null],
+      configLabelField: [data?.config?.label_field || ''],
 
       // categorized_group controls
       cgCategoryLabel: [data?.config?.category_label || ''],
@@ -538,6 +548,12 @@ export class ComponenteIndicatorsFormComponent {
           groups,
           metrics,
           ...(subSections.length > 0 && { sub_sections: subSections })
+        };
+      } else if (ind.field_type === 'dataset_select' || ind.field_type === 'dataset_multi_select') {
+        indicator.config = {
+          dataset_id: ind.configDatasetId,
+          table_id: ind.configTableId,
+          label_field: ind.configLabelField || 'id'
         };
       }
 

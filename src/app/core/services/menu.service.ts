@@ -27,11 +27,9 @@ export class MenuService {
 
       {
         label: 'Bases de datos',
-        disabled: true,
         roles: [3],
         children: [
           { label: 'Dataset', route: 'datasets' },
-          { label: 'Tablas', route: 'datasets/tables' }
         ],
       },
       {

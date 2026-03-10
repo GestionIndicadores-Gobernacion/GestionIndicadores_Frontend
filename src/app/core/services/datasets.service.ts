@@ -99,4 +99,9 @@ export class DatasetService {
     }>(`${this.baseUrl}/import-excel/preview`, formData);
   }
 
+  getTableRecords(datasetId: number, tableId: number): Observable<{ id: number, data: Record<string, any> }[]> {
+    return this.http.get<{ id: number, data: Record<string, any> }[]>(
+      `${this.baseUrl}/${datasetId}/tables/${tableId}/records`
+    );
+  }
 }
