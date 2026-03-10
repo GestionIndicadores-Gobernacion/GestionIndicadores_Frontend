@@ -29,7 +29,7 @@ export class MenuService {
         label: 'Bases de datos',
         roles: [3],
         children: [
-          { label: 'Dataset', route: 'datasets' },
+          { label: 'Gestión de Base de Datos y Tablas', route: 'datasets' },
         ],
       },
       {

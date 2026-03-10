@@ -41,6 +41,9 @@ export class DatasetsListComponent implements OnInit {
   pageSize = 10;
   totalPages = 1;
 
+  /** Incrementar este valor hace que TablesListComponent recargue sus datos. */
+  refreshTrigger = 0;
+
   constructor(
     private datasetService: DatasetService,
     private cdr: ChangeDetectorRef
@@ -62,12 +65,12 @@ export class DatasetsListComponent implements OnInit {
         this.datasets = data;
         this.applyFilters();
         this.loading = false;
-        this.cdr.detectChanges(); // ← tabla y loading se actualizan
+        this.cdr.detectChanges();
       },
       error: () => {
         this.error = 'No se pudieron cargar los datasets';
         this.loading = false;
-        this.cdr.detectChanges(); // ← mensaje de error se renderiza
+        this.cdr.detectChanges();
       }
     });
   }
@@ -85,32 +88,24 @@ export class DatasetsListComponent implements OnInit {
   // =========================
   applyFilters(): void {
     const term = this.searchTerm.toLowerCase().trim();
-
     this.filteredDatasets = this.datasets.filter(d =>
       d.name.toLowerCase().includes(term) ||
       (d.description || '').toLowerCase().includes(term)
     );
-
-    this.totalPages = Math.max(
-      Math.ceil(this.filteredDatasets.length / this.pageSize),
-      1
-    );
-
+    this.totalPages = Math.max(Math.ceil(this.filteredDatasets.length / this.pageSize), 1);
     this.applyPagination();
-    this.cdr.detectChanges(); // ← filtros y paginación reflejan cambios
+    this.cdr.detectChanges();
   }
 
   applyPagination(): void {
     const start = (this.currentPage - 1) * this.pageSize;
-    const end = start + this.pageSize;
-
-    this.paginatedDatasets = this.filteredDatasets.slice(start, end);
+    this.paginatedDatasets = this.filteredDatasets.slice(start, start + this.pageSize);
   }
 
   onPageChange(page: number): void {
     this.currentPage = page;
     this.applyPagination();
-    this.cdr.detectChanges(); // ← página activa y filas se actualizan
+    this.cdr.detectChanges();
   }
 
   // =========================
@@ -118,17 +113,20 @@ export class DatasetsListComponent implements OnInit {
   // =========================
   openImportModal(): void {
     this.showImportModal = true;
-    this.cdr.detectChanges(); // ← modal aparece inmediatamente
+    this.cdr.detectChanges();
   }
 
   onImportFinished(): void {
     this.showImportModal = false;
+    // Recargar datasets Y notificar a TablesListComponent
     this.loadDatasets();
+    this.refreshTrigger++;       // ← TablesListComponent reacciona a este cambio
+    this.cdr.detectChanges();
   }
 
   onImportClosed(): void {
     this.showImportModal = false;
-    this.cdr.detectChanges(); // ← modal se cierra sin delay
+    this.cdr.detectChanges();
   }
 
   // =========================
@@ -150,10 +148,9 @@ export class DatasetsListComponent implements OnInit {
         next: () => {
           Swal.fire('Eliminado', 'El dataset fue eliminado correctamente', 'success');
           this.loadDatasets();
+          this.refreshTrigger++;  // ← también refrescar tablas al eliminar
         },
-        error: () => {
-          Swal.fire('Error', 'No se pudo eliminar el dataset', 'error');
-        }
+        error: () => Swal.fire('Error', 'No se pudo eliminar el dataset', 'error')
       });
     });
   }
