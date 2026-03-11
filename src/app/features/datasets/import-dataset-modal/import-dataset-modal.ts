@@ -2,8 +2,8 @@ import { ChangeDetectorRef, Component, EventEmitter, Output } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
+import { DatasetService } from '../../../core/services/datasets.service';
 
-import { DatasetService } from '../../../../core/services/datasets.service';
 
 interface PreviewField {
   column: string;

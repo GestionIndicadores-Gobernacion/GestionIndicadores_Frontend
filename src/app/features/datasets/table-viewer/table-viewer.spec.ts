@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { RecordsList } from './records-list';
+import { TableViewerComponent } from './table-viewer';
 
-describe('RecordsList', () => {
-  let component: RecordsList;
-  let fixture: ComponentFixture<RecordsList>;
+describe('TableViewer', () => {
+  let component: TableViewerComponent;
+  let fixture: ComponentFixture<TableViewerComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RecordsList]
+      imports: [TableViewerComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(RecordsList);
+    fixture = TestBed.createComponent(TableViewerComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

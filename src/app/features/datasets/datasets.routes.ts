@@ -7,44 +7,15 @@ export const DATASETS_ROUTES: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./datasets/datasets-list/datasets-list')
+      import('./datasets-list/datasets-list')
         .then(m => m.DatasetsListComponent),
   },
 
-  // ➕ CREAR
+  // 👁️ VISOR
   {
-    path: 'create',
+    path: 'tables/:tableId/records',
     loadComponent: () =>
-      import('./datasets/dataset-form/dataset-form')
-        .then(m => m.DatasetFormComponent),
+      import('./table-viewer/table-viewer')
+        .then(m => m.TableViewerComponent),
   },
-
-  // 🔽 SUBMÓDULOS (OPCIONAL – PREPARADO)
-  {
-    path: '',
-    canActivateChild: [adminGuard],
-    children: [
-      {
-        path: '',
-        canActivateChild: [adminGuard],
-        children: [
-          {
-            path: 'tables',
-            loadChildren: () =>
-              import('../datasets/tables/tables.routes')
-                .then(m => m.TABLES_ROUTES),
-          }
-        ],
-      },
-
-    ],
-  },
-
-  {
-    path: ':id/edit',
-    loadComponent: () =>
-      import('./datasets/dataset-form/dataset-form')
-        .then(m => m.DatasetFormComponent),
-  },
-
 ];

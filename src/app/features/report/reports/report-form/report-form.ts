@@ -171,10 +171,76 @@ export class ReportFormComponent implements OnInit {
 
   // ================= SAVE =================
 
+  /** Convierte null / undefined / '' a 0 para valores numéricos */
+  private toNum(value: any): number {
+    if (value === null || value === undefined || value === '') return 0;
+    const n = Number(value);
+    return isNaN(n) ? 0 : n;
+  }
+
+  private sanitizeIndicatorValue(ind: ComponentIndicatorModel, value: any): any {
+    switch (ind.field_type) {
+
+      case 'number':
+        return this.toNum(value);
+
+      case 'sum_group': {
+        if (!value || typeof value !== 'object') return {};
+        const result: Record<string, number> = {};
+        Object.keys(value).forEach(k => { result[k] = this.toNum(value[k]); });
+        return result;
+      }
+
+      case 'grouped_data': {
+        if (!value || typeof value !== 'object') return {};
+        const result: Record<string, any> = {};
+        Object.keys(value).forEach(groupKey => {
+          result[groupKey] = {};
+          const subFields: any[] = ind.config?.sub_fields || [];
+          subFields.forEach((sf: any) => {
+            const raw = value[groupKey]?.[sf.name];
+            result[groupKey][sf.name] = sf.type === 'number' ? this.toNum(raw) : (raw ?? '');
+          });
+        });
+        return result;
+      }
+
+      case 'categorized_group': {
+        if (!value) return { selected_categories: [], data: {}, sub_sections: {} };
+        const sanitized = JSON.parse(JSON.stringify(value)); // deep clone
+
+        if (sanitized.data) {
+          Object.keys(sanitized.data).forEach(cat => {
+            Object.keys(sanitized.data[cat]).forEach(group => {
+              Object.keys(sanitized.data[cat][group]).forEach(metricKey => {
+                sanitized.data[cat][group][metricKey] = this.toNum(sanitized.data[cat][group][metricKey]);
+              });
+            });
+          });
+        }
+
+        if (sanitized.sub_sections) {
+          Object.keys(sanitized.sub_sections).forEach(sectionKey => {
+            Object.keys(sanitized.sub_sections[sectionKey]).forEach(cat => {
+              Object.keys(sanitized.sub_sections[sectionKey][cat]).forEach(metricKey => {
+                sanitized.sub_sections[sectionKey][cat][metricKey] = this.toNum(sanitized.sub_sections[sectionKey][cat][metricKey]);
+              });
+            });
+          });
+        }
+
+        return sanitized;
+      }
+
+      default:
+        return value ?? null;
+    }
+  }
+
   buildIndicatorValues(): ReportIndicatorValue[] {
     return this.indicators.map(ind => ({
       indicator_id: ind.id!,
-      value: this.indicatorValues[ind.id!] ?? null
+      value: this.sanitizeIndicatorValue(ind, this.indicatorValues[ind.id!])
     }));
   }
 

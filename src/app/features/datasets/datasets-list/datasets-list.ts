@@ -3,12 +3,11 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
-
-import { Dataset } from '../../../../core/models/dataset.model';
-import { DatasetService } from '../../../../core/services/datasets.service';
+import { Dataset } from '../../../core/models/dataset.model';
+import { DatasetService } from '../../../core/services/datasets.service';
+import { Pagination } from '../../../shared/components/pagination/pagination';
 import { ImportDatasetModalComponent } from '../import-dataset-modal/import-dataset-modal';
-import { Pagination } from '../../../../shared/components/pagination/pagination';
-import { TablesListComponent } from '../../tables/tables-list/tables-list';
+import { TablesListComponent } from './tables/tables-list/tables-list';
 
 @Component({
   selector: 'app-datasets-list',
