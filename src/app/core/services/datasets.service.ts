@@ -4,7 +4,20 @@ import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { Dataset, DatasetImportPreview, DatasetImportResult } from '../models/dataset.model';
+import { Field } from '../models/field.model';
+import { DashboardData } from '../../features/datasets/table-viewer/table-viewer';
 
+export interface ViewerData {
+  table: {
+    id: number;
+    name: string;
+    description: string;
+    dataset_id: number;
+  };
+  fields: Field[];  // ← el Field completo del modelo
+  records: { id: number; data: Record<string, any> }[];
+  total: number;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -102,6 +115,18 @@ export class DatasetService {
   getTableRecords(datasetId: number, tableId: number): Observable<{ id: number, data: Record<string, any> }[]> {
     return this.http.get<{ id: number, data: Record<string, any> }[]>(
       `${this.baseUrl}/${datasetId}/tables/${tableId}/records`
+    );
+  }
+
+  getTableViewer(tableId: number): Observable<ViewerData> {
+    return this.http.get<ViewerData>(
+      `${this.baseUrl}/tables/${tableId}/viewer`
+    );
+  }
+
+  getTableDashboard(tableId: number): Observable<DashboardData> {
+    return this.http.get<DashboardData>(
+      `${this.baseUrl}/tables/${tableId}/dashboard`
     );
   }
 }

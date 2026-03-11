@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -11,11 +11,12 @@ import { ToastService } from '../../../core/services/toast.service';
   selector: 'app-users-list',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
-  templateUrl: './users-list.html'
+  templateUrl: './users-list.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UsersListComponent implements OnInit {
 
-  Math = Math; // Para usar Math.min en el template
+  Math = Math;
 
   currentPage = 1;
   pageSize = 10;
@@ -31,7 +32,8 @@ export class UsersListComponent implements OnInit {
   constructor(
     private usersService: UsersService,
     private router: Router,
-    private toast: ToastService
+    private toast: ToastService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -45,10 +47,12 @@ export class UsersListComponent implements OnInit {
         this.users = res;
         this.filteredUsers = res;
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.toast.error('Error cargando usuarios');
         this.loading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -63,7 +67,8 @@ export class UsersListComponent implements OnInit {
       (u.role?.name?.toLowerCase().includes(term))
     );
 
-    this.currentPage = 1; // Reset a página 1 al buscar
+    this.currentPage = 1;
+    this.cdr.markForCheck();
   }
 
   get sortedUsers(): UserModel[] {
@@ -95,12 +100,12 @@ export class UsersListComponent implements OnInit {
       this.sortColumn = column;
       this.sortDirection = 'asc';
     }
+    this.cdr.markForCheck();
   }
 
   deleteUser(id: number) {
     const user = this.users.find(u => u.id === id);
 
-    // Bloquear eliminación del admin principal
     if (this.isMainAdmin(user!)) {
       this.toast.error("No puedes desactivar el usuario principal de administración.");
       return;

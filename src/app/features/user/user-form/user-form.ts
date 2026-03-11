@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +12,8 @@ import { ToastService } from '../../../core/services/toast.service';
   selector: 'app-user-form',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
-  templateUrl: './user-form.html'
+  templateUrl: './user-form.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserFormComponent implements OnInit {
 
@@ -40,7 +41,8 @@ export class UserFormComponent implements OnInit {
     private route: ActivatedRoute,
     private usersService: UsersService,
     private rolesService: RolesService,
-    private toast: ToastService
+    private toast: ToastService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
@@ -53,6 +55,7 @@ export class UserFormComponent implements OnInit {
       this.loadUser();
     } else {
       this.loading = false;
+      this.cdr.markForCheck();
     }
   }
 
@@ -70,12 +73,8 @@ export class UserFormComponent implements OnInit {
   }
 
   passwordInvalid(): boolean {
-    // En creación → obligatorio
     if (!this.isEdit && !this.form.password) return true;
-
-    // En edición → si escribe algo, validar longitud mínima
     if (this.isEdit && this.form.password && this.form.password.length < 6) return true;
-
     return false;
   }
 
@@ -85,7 +84,10 @@ export class UserFormComponent implements OnInit {
 
   loadRoles() {
     this.rolesService.getAll().subscribe({
-      next: (res) => this.roles = res,
+      next: (res) => {
+        this.roles = res;
+        this.cdr.markForCheck();
+      },
       error: () => this.toast.error('Error cargando roles')
     });
   }
@@ -102,6 +104,7 @@ export class UserFormComponent implements OnInit {
           profile_image_url: user.profile_image_url || ''
         };
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.toast.error('Usuario no encontrado');
@@ -116,8 +119,8 @@ export class UserFormComponent implements OnInit {
 
   save() {
     this.attemptedSubmit = true;
+    this.cdr.markForCheck();
 
-    // Validación completa
     if (
       !this.form.first_name.trim() ||
       !this.form.last_name.trim() ||
@@ -131,6 +134,7 @@ export class UserFormComponent implements OnInit {
     }
 
     this.saving = true;
+    this.cdr.markForCheck();
 
     if (this.isEdit) {
       const payload: UserUpdateRequest = {
@@ -140,12 +144,10 @@ export class UserFormComponent implements OnInit {
         role_id: this.form.role_id!
       };
 
-      // Solo incluir password si se modificó
       if (this.form.password.trim() !== '') {
         payload.password = this.form.password;
       }
 
-      // Solo incluir profile_image_url si existe
       if (this.form.profile_image_url.trim() !== '') {
         payload.profile_image_url = this.form.profile_image_url.trim();
       }
@@ -159,6 +161,7 @@ export class UserFormComponent implements OnInit {
         },
         error: () => {
           this.saving = false;
+          this.cdr.markForCheck();
         }
       });
 
@@ -171,7 +174,6 @@ export class UserFormComponent implements OnInit {
         role_id: this.form.role_id!
       };
 
-      // Solo incluir profile_image_url si existe
       if (this.form.profile_image_url.trim() !== '') {
         payload.profile_image_url = this.form.profile_image_url.trim();
       }
@@ -185,6 +187,7 @@ export class UserFormComponent implements OnInit {
         },
         error: () => {
           this.saving = false;
+          this.cdr.markForCheck();
         }
       });
     }

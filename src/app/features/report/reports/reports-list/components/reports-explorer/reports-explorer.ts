@@ -267,6 +267,7 @@ export class ReportsExplorerComponent implements OnChanges {
       this.selectedIndicator?.indicator_id === indicator.indicator_id
         ? null
         : indicator;
+
     this.cd.detectChanges();
   }
 

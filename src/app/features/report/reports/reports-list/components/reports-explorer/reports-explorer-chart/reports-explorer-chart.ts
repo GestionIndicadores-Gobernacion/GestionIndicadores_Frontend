@@ -84,37 +84,48 @@ export class ReportsExplorerChartComponent implements OnChanges {
   }
 
   get indicatorTotal(): number | null {
-
     const d = this.indicatorDetail;
+    if (!d) return null;
 
-    if (d?.by_month?.length) {
+    if (d.field_type === 'by_month_reports') {
+      return this.componentAggregate?.by_month
+        .filter(e => this.getYear(e.month) === this.currentYear)
+        .reduce((s, e) => s + ((e as any).total ?? (e.urbana ?? 0) + (e.rural ?? 0)), 0) ?? null;
+    }
+
+    // ✅ Para categorized_subview, el total real viene de by_month
+    if (d.field_type === 'categorized_subview' && d.by_month?.length) {
       return d.by_month
         .filter(e => this.getYear(e.month) === this.currentYear)
         .reduce((s, e) => s + e.total, 0);
     }
 
-    if (d?.by_location?.length) {
+    if (d.by_month?.length) {
+      return d.by_month
+        .filter(e => this.getYear(e.month) === this.currentYear)
+        .reduce((s, e) => s + e.total, 0);
+    }
+
+    if (d.by_location?.length) {
       return d.by_location.reduce((s, e) => s + e.total, 0);
     }
 
-    if (d?.by_category?.length) {
+    if (d.by_category?.length) {
       return d.by_category.reduce((s, e) => s + e.total, 0);
     }
 
-    if (d?.by_nested) {
+    if (d.by_nested) {
       return Object.values(d.by_nested).flat().reduce((s, e) => s + e.total, 0);
-    }
-
-    if (this.componentAggregate?.by_month) {
-      return this.componentAggregate.by_month
-        .filter(e => this.getYear(e.month) === this.currentYear)
-        .reduce((s, e) => s + ((e as any).total ?? ((e.urbana ?? 0) + (e.rural ?? 0))), 0);
     }
 
     return null;
   }
 
   private buildChart() {
+
+    console.log('🔍 buildChart | field_type:', this.indicatorDetail?.field_type);
+    console.log('🔍 indicatorDetail completo:', JSON.stringify(this.indicatorDetail, null, 2));
+
 
     if (!this.componentAggregate) {
       this.chartData = { labels: [], datasets: [] };
