@@ -37,9 +37,19 @@ export class ReportIndicatorsFormComponent implements OnChanges {
     if (changes['indicators'] || changes['values']) {
       this.initializeGroupedDataIndicators();
       this.initializeCategorizedGroupIndicators();
-      // ← falta esta línea:
       this.loadDatasetOptions();
     }
+  }
+
+  // =========================
+  // HELPERS
+  // =========================
+
+  /** Convierte null / undefined / '' a 0 para campos numéricos */
+  private toNumber(value: any): number {
+    if (value === null || value === undefined || value === '') return 0;
+    const n = Number(value);
+    return isNaN(n) ? 0 : n;
   }
 
   // =========================
@@ -71,8 +81,6 @@ export class ReportIndicatorsFormComponent implements OnChanges {
 
   // =========================
   // INITIALIZE CATEGORIZED_GROUP
-  // sub_sections[sectionKey][category][metricKey] = number
-  // El máximo de cada valor es la suma de esa métrica en esa categoría
   // =========================
 
   private initializeCategorizedGroupIndicators(): void {
@@ -92,7 +100,6 @@ export class ReportIndicatorsFormComponent implements OnChanges {
       const metrics: any[] = ind.config?.metrics || [];
       const groups: string[] = ind.config?.groups || [];
 
-      // Inicializar data
       val.selected_categories.forEach((cat: string) => {
         if (!val.data[cat]) val.data[cat] = {};
         groups.forEach((group: string) => {
@@ -103,12 +110,10 @@ export class ReportIndicatorsFormComponent implements OnChanges {
         });
       });
 
-      // Limpiar categorías no seleccionadas de data
       Object.keys(val.data).forEach(cat => {
         if (!val.selected_categories.includes(cat)) delete val.data[cat];
       });
 
-      // Inicializar sub_sections: [sectionKey][category][metricKey]
       subSections.forEach((section: any) => {
         if (!val.sub_sections[section.key]) val.sub_sections[section.key] = {};
 
@@ -121,7 +126,6 @@ export class ReportIndicatorsFormComponent implements OnChanges {
           });
         });
 
-        // Limpiar categorías no seleccionadas de sub_sections
         Object.keys(val.sub_sections[section.key]).forEach(cat => {
           if (!val.selected_categories.includes(cat)) delete val.sub_sections[section.key][cat];
         });
@@ -150,14 +154,12 @@ export class ReportIndicatorsFormComponent implements OnChanges {
     } else {
       val.selected_categories.push(category);
 
-      // Inicializar data para la categoría
       val.data[category] = {};
       groups.forEach((group: string) => {
         val.data[category][group] = {};
         metrics.forEach((metric: any) => { val.data[category][group][metric.key] = 0; });
       });
 
-      // Inicializar sub_sections para la categoría
       subSections.forEach((section: any) => {
         if (!val.sub_sections[section.key]) val.sub_sections[section.key] = {};
         val.sub_sections[section.key][category] = {};
@@ -186,15 +188,13 @@ export class ReportIndicatorsFormComponent implements OnChanges {
   }
 
   setCategorizedMetricValue(indicatorId: number, category: string, group: string, metricKey: string, value: any): void {
-    const num = value !== '' && value !== null && value !== undefined ? Number(value) : 0;
-    this.values[indicatorId].data[category][group][metricKey] = isNaN(num) ? 0 : num;
+    this.values[indicatorId].data[category][group][metricKey] = this.toNumber(value);
     this.values = { ...this.values };
     this.emit();
   }
 
   // =========================
   // CATEGORIZED_GROUP: SUB_SECTIONS
-  // sub_sections[sectionKey][category][metricKey]
   // =========================
 
   getSubSectionValue(indicatorId: number, sectionKey: string, category: string, metricKey: string): number {
@@ -202,10 +202,9 @@ export class ReportIndicatorsFormComponent implements OnChanges {
   }
 
   setSubSectionValue(indicatorId: number, sectionKey: string, category: string, metricKey: string, value: any): void {
-    const num = value !== '' && value !== null && value !== undefined ? Number(value) : 0;
     if (!this.values[indicatorId].sub_sections[sectionKey]) this.values[indicatorId].sub_sections[sectionKey] = {};
     if (!this.values[indicatorId].sub_sections[sectionKey][category]) this.values[indicatorId].sub_sections[sectionKey][category] = {};
-    this.values[indicatorId].sub_sections[sectionKey][category][metricKey] = isNaN(num) ? 0 : num;
+    this.values[indicatorId].sub_sections[sectionKey][category][metricKey] = this.toNumber(value);
     this.values = { ...this.values };
     this.emit();
   }
@@ -214,14 +213,12 @@ export class ReportIndicatorsFormComponent implements OnChanges {
   // CATEGORIZED_GROUP: TOTALS
   // =========================
 
-  /** Suma de una métrica en todos los grupos de UNA categoría */
   getCategoryMetricTotal(indicatorId: number, category: string, metricKey: string): number {
     const data = this.values[indicatorId]?.data?.[category];
     if (!data) return 0;
     return Object.values(data).reduce((sum: number, groupData: any) => sum + (Number(groupData?.[metricKey]) || 0), 0);
   }
 
-  /** Suma de TODAS las métricas en UNA categoría (para el header del bloque) */
   getCategoryAllMetricsTotal(indicatorId: number, category: string): number {
     const ind = this.indicators.find(i => i.id === indicatorId);
     if (!ind) return 0;
@@ -230,7 +227,6 @@ export class ReportIndicatorsFormComponent implements OnChanges {
     }, 0);
   }
 
-  /** Suma de una métrica en TODAS las categorías */
   getMetricGrandTotal(indicatorId: number, metricKey: string): number {
     const data = this.values[indicatorId]?.data || {};
     let total = 0;
@@ -246,7 +242,6 @@ export class ReportIndicatorsFormComponent implements OnChanges {
     return (ind.config?.metrics || []).reduce((sum: number, m: any) => sum + this.getMetricGrandTotal(indicatorId, m.key), 0);
   }
 
-  /** Valida que sub_section[category][metric] no supere el total de esa métrica en esa categoría */
   isSubSectionOverLimit(indicatorId: number, sectionKey: string, category: string, metricKey: string): boolean {
     const ind = this.indicators.find(i => i.id === indicatorId);
     const section = ind?.config?.sub_sections?.find((s: any) => s.key === sectionKey);
@@ -259,15 +254,20 @@ export class ReportIndicatorsFormComponent implements OnChanges {
   // =========================
 
   setValue(indicatorId: number, value: any) {
-    this.values[indicatorId] = value;
+    const ind = this.indicators.find(i => i.id === indicatorId);
+    // Si el campo es numérico y el valor es vacío/null, guardar 0
+    if (ind?.field_type === 'number') {
+      this.values[indicatorId] = this.toNumber(value);
+    } else {
+      this.values[indicatorId] = value;
+    }
     this.initializeGroupedDataIndicators();
     this.emit();
   }
 
   setSumValue(indicatorId: number, field: string, value: any) {
     if (!this.values[indicatorId]) this.values[indicatorId] = {};
-    const numValue = Number(value);
-    this.values[indicatorId][field] = (!isNaN(numValue) && value !== '' && value !== null) ? numValue : 0;
+    this.values[indicatorId][field] = this.toNumber(value);
     this.emit();
   }
 
@@ -293,16 +293,16 @@ export class ReportIndicatorsFormComponent implements OnChanges {
 
   setGroupedValue(indicatorId: number, groupKey: string, fieldName: string, value: any) {
     const subField = this.getSubFieldConfig(indicatorId, fieldName);
-    let parsedValue: any;
-    if (subField?.type === 'number') {
-      const numValue = Number(value);
-      parsedValue = (value !== null && value !== undefined && value !== '' && !isNaN(numValue)) ? numValue : 0;
-    } else {
-      parsedValue = value ? String(value) : '';
-    }
+    const parsedValue = subField?.type === 'number'
+      ? this.toNumber(value)
+      : (value ? String(value) : '');
+
     this.values = {
       ...this.values,
-      [indicatorId]: { ...this.values[indicatorId], [groupKey]: { ...(this.values[indicatorId]?.[groupKey] || {}), [fieldName]: parsedValue } }
+      [indicatorId]: {
+        ...this.values[indicatorId],
+        [groupKey]: { ...(this.values[indicatorId]?.[groupKey] || {}), [fieldName]: parsedValue }
+      }
     };
     this.emit();
   }
@@ -340,7 +340,66 @@ export class ReportIndicatorsFormComponent implements OnChanges {
     return t ? t.target_value : null;
   }
 
-  emit() { this.valuesChange.emit({ ...this.values }); }
+  emit() {
+    const sanitized = { ...this.values };
+
+    this.indicators.forEach(ind => {
+      const id = ind.id!;
+      if (!(id in sanitized)) return;
+
+      switch (ind.field_type) {
+        case 'number':
+          sanitized[id] = this.toNumber(sanitized[id]);
+          break;
+
+        case 'sum_group':
+          if (sanitized[id] && typeof sanitized[id] === 'object') {
+            const copy: Record<string, number> = {};
+            Object.keys(sanitized[id]).forEach(k => { copy[k] = this.toNumber(sanitized[id][k]); });
+            sanitized[id] = copy;
+          }
+          break;
+
+        case 'grouped_data':
+          if (sanitized[id] && typeof sanitized[id] === 'object') {
+            const groupCopy: Record<string, any> = {};
+            Object.keys(sanitized[id]).forEach(groupKey => {
+              groupCopy[groupKey] = {};
+              const subFields: any[] = ind.config?.sub_fields || [];
+              subFields.forEach((sf: any) => {
+                const raw = sanitized[id][groupKey]?.[sf.name];
+                groupCopy[groupKey][sf.name] = sf.type === 'number' ? this.toNumber(raw) : (raw ?? '');
+              });
+            });
+            sanitized[id] = groupCopy;
+          }
+          break;
+
+        case 'categorized_group':
+          if (sanitized[id]?.data) {
+            Object.keys(sanitized[id].data).forEach(cat => {
+              Object.keys(sanitized[id].data[cat]).forEach(group => {
+                Object.keys(sanitized[id].data[cat][group]).forEach(metricKey => {
+                  sanitized[id].data[cat][group][metricKey] = this.toNumber(sanitized[id].data[cat][group][metricKey]);
+                });
+              });
+            });
+          }
+          if (sanitized[id]?.sub_sections) {
+            Object.keys(sanitized[id].sub_sections).forEach(sectionKey => {
+              Object.keys(sanitized[id].sub_sections[sectionKey]).forEach(cat => {
+                Object.keys(sanitized[id].sub_sections[sectionKey][cat]).forEach(metricKey => {
+                  sanitized[id].sub_sections[sectionKey][cat][metricKey] = this.toNumber(sanitized[id].sub_sections[sectionKey][cat][metricKey]);
+                });
+              });
+            });
+          }
+          break;
+      }
+    });
+
+    this.valuesChange.emit(sanitized);
+  }
   getIndicatorId(ind: ComponentIndicatorModel): number { return ind.id!; }
 
   // =========================
@@ -350,8 +409,6 @@ export class ReportIndicatorsFormComponent implements OnChanges {
   private loadDatasetOptions(): void {
     this.indicators.forEach(ind => {
       if (!['dataset_select', 'dataset_multi_select'].includes(ind.field_type)) return;
-
-      // Evitar recargar si ya tiene datos
       if (this.datasetOptions[ind.id!]?.length) return;
 
       this.datasetLoading[ind.id!] = true;
@@ -361,12 +418,12 @@ export class ReportIndicatorsFormComponent implements OnChanges {
         next: (datasets) => {
           this.datasetOptions[ind.id!] = datasets.map(d => ({ id: d.id, label: d.name }));
           this.datasetLoading[ind.id!] = false;
-          this.cdr.markForCheck();  // ← esto
+          this.cdr.markForCheck();
         },
         error: () => {
           this.datasetError[ind.id!] = 'Error al cargar datasets';
           this.datasetLoading[ind.id!] = false;
-          this.cdr.markForCheck();  // ← y esto
+          this.cdr.markForCheck();
         }
       });
     });
