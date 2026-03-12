@@ -180,8 +180,8 @@
                             Resultado obtenido <span class="text-red-500">*</span>
                         </label>
                         <textarea rows="6" [(ngModel)]="form.executive_summary" name="executive_summary"
-                            placeholder="Ej: Se realizó jornada de esterilización con 45 animales atendidos..."
-                            required class="w-full px-3 py-2.5 text-sm border border-zinc-200 rounded-lg
+                            placeholder="Ej: Se realizó jornada de esterilización con 45 animales atendidos..." required
+                            class="w-full px-3 py-2.5 text-sm border border-zinc-200 rounded-lg
                             bg-white text-zinc-900 resize-none
                             focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
                             transition-colors duration-150"></textarea>
@@ -193,7 +193,8 @@
 
             <!-- ====== INDICADORES ====== -->
             <app-report-indicators-form *ngIf="indicators.length" [indicators]="indicators"
-                [reportDate]="form.report_date" [(values)]="indicatorValues">
+                [reportDate]="form.report_date" [values]="indicatorValues"
+                (valuesChange)="onIndicatorValuesChange($event)">
             </app-report-indicators-form>
 
             <!-- ====== EVIDENCIA ====== -->
@@ -201,7 +202,7 @@
 
                 <div class="px-6 py-4 border-b border-zinc-100">
                     <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-900">
-                        Evidencia fotográfica
+                        Evidencia fotográfica / Actas / Listados de Asistencias / Historias Clinicas / Entre otros.
                     </h2>
                     <p class="text-xs text-zinc-500 mt-0.5">
                         Opcional - Comparte fotos de la intervención
