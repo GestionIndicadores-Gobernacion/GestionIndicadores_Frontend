@@ -57,7 +57,8 @@
                     </div>
                     <div class="p-6">
                         <app-reports-table [reports]="reports" [strategyMap]="strategyMap" [componentMap]="componentMap"
-                            [currentUserId]="currentUserId" [isAdmin]="isAdmin" (delete)="deleteReport($event)">
+                            [currentUserId]="currentUserId" [isAdmin]="isAdmin" [chartFilter]="chartFilter"
+                            (delete)="deleteReport($event)" (clearFilter)="clearChartFilter()">
                         </app-reports-table>
                     </div>
                 </section>

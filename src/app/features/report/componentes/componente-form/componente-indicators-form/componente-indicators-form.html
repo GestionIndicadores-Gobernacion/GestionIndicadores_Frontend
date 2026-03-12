@@ -58,12 +58,21 @@
                 <div class="md:col-span-3 space-y-1.5">
                     <label class="block text-xs font-medium text-zinc-700 invisible">Acciones</label>
                     <div class="flex items-center gap-2">
-                        <label
+
+                        <!-- Ocultar si tiene grupo -->
+                        <label *ngIf="!ind.get('group_name')?.value"
                             class="flex items-center gap-2 px-3 py-2 text-xs font-medium text-zinc-700 bg-zinc-50 border border-zinc-200 rounded-lg cursor-pointer hover:bg-zinc-100 transition-colors duration-150">
                             <input type="checkbox" formControlName="is_required"
                                 class="w-4 h-4 text-zinc-900 border-zinc-300 rounded focus:ring-1 focus:ring-zinc-900 cursor-pointer" />
                             <span>{{ ind.get('is_required')?.value ? 'Obligatorio' : 'Opcional' }}</span>
                         </label>
+
+                        <!-- Badge informativo cuando tiene grupo -->
+                        <span *ngIf="ind.get('group_name')?.value"
+                            class="px-3 py-2 text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg">
+                            En grupo
+                        </span>
+
                         <button type="button" (click)="removeIndicator(i)"
                             class="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors duration-150 cursor-pointer">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -74,6 +83,30 @@
                     </div>
                 </div>
 
+            </div>
+
+            <!-- ── Grupo mutuamente excluyente ── -->
+            <div class="grid md:grid-cols-2 gap-4 pt-1 border-t border-zinc-100">
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-medium text-zinc-700">Grupo (opcional)</label>
+                    <input type="text" formControlName="group_name" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900
+             focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors"
+                        placeholder="Ej: modo_reporte" />
+                    <p class="text-xs text-zinc-400">Indicadores con el mismo grupo son mutuamente excluyentes al
+                        reportar</p>
+                </div>
+                <div class="space-y-1.5" *ngIf="ind.get('group_name')?.value">
+                    <label class="block text-xs font-medium text-zinc-700">¿Grupo obligatorio?</label>
+                    <label class="flex items-center gap-2 px-3 py-2 text-xs font-medium text-zinc-700 bg-zinc-50
+                  border border-zinc-200 rounded-lg cursor-pointer hover:bg-zinc-100 transition-colors w-fit">
+                        <input type="checkbox" formControlName="group_required"
+                            class="w-4 h-4 text-zinc-900 border-zinc-300 rounded focus:ring-1 focus:ring-zinc-900 cursor-pointer" />
+                        <span>{{ ind.get('group_required')?.value ? 'Al menos uno obligatorio' : 'Todos opcionales'
+                            }}</span>
+                    </label>
+                    <p class="text-xs text-zinc-400">Si está activo, al reportar se debe llenar al menos uno del grupo
+                    </p>
+                </div>
             </div>
 
             <!-- ── Paneles de configuración por tipo ── -->
