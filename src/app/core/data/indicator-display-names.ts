@@ -34,7 +34,7 @@ export const INDICATOR_DISPLAY_NAMES: Record<number, string> = {
 
     // CBA
     49: 'Nombre CBA',
-    50: 'Tipo de dotación',
+    132: 'Tipo de dotación',
 
     // RED ANIMALIA
     64: 'Tipo de actor asistido',
@@ -83,6 +83,11 @@ export const INDICATOR_DISPLAY_NAMES: Record<number, string> = {
 
     // Experiencias culturales
     81: 'Acciones artísticas/culturales',
+
+    // MESA PYBA
+    129: 'Tipo de actor / Mesas',
+    130: 'Temas tratados',
+    131: 'Total asistentes por mes',
 
 };
 
