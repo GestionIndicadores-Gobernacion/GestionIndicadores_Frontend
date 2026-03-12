@@ -7,8 +7,8 @@ import { NgChartsModule, BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartType } from 'chart.js';
 import { Router } from '@angular/router';
 
-import { ComponentAggregate, IndicatorDetail } from '../../../../../../../core/models/report-aggregate.model';
 import { BarClickEvent, ChartBuildersService } from './chart-builder.service';
+import { ComponentAggregate, IndicatorDetail } from '../../../../../../core/models/report-aggregate.model';
 
 const MONTHS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 

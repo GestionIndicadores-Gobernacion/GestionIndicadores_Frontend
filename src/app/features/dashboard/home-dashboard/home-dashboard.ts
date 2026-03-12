@@ -15,9 +15,9 @@ import {
 
 
 import { catchError, forkJoin, of } from 'rxjs';
-import { ReportsExplorerComponent } from '../../report/reports/reports-list/components/reports-explorer/reports-explorer';
-import { ReportsKpiCardsComponent } from '../../report/reports/reports-list/components/reports-kpi-cards/reports-kpi-cards';
-import { ReportsMapComponent } from '../../report/reports/reports-list/components/reports-map/reports-map';
+import { ReportsExplorerComponent } from './components/reports-explorer/reports-explorer';
+import { ReportsKpiCardsComponent } from './components/reports-kpi-cards/reports-kpi-cards';
+import { ReportsMapComponent } from './components/reports-map/reports-map';
 
 @Component({
   selector: 'app-home-dashboard',
