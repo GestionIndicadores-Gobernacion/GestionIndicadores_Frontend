@@ -33,12 +33,13 @@ export const COMPONENT_EXPLORER_CONFIG: Record<number, ExplorerVirtualConfig> = 
     },
     4: { showReportesPorMes: true, showReportesPorMunicipio: false, showIndicadoresPorMunicipio: false },
     5: { showReportesPorMes: false, showReportesPorMunicipio: false, showIndicadoresPorMunicipio: false },
+    // CBA
     7: {
         showReportesPorMes: false,
         showReportesPorMunicipio: true,
         showIndicadoresPorMunicipio: false,
-        hiddenIndicators: [49, 50],
-        locationLabel: 'CBA dotados por municipio',  // ← nuevo
+        hiddenIndicators: [49, 50, 132],  // ocultar todos los reales
+        locationLabel: 'CBA dotados por municipio',
     },
     8: {
         showReportesPorMes: true,
@@ -149,6 +150,14 @@ export const COMPONENT_EXPLORER_CONFIG: Record<number, ExplorerVirtualConfig> = 
         showReportesPorMunicipio: true,
         showIndicadoresPorMunicipio: true,
         hiddenIndicators: [],
+    },
+    // Mesa PYBA
+    28: {
+        showReportesPorMes: true,
+        showReportesPorMunicipio: false,
+        showIndicadoresPorMunicipio: false,   // ← false
+        hiddenIndicators: [130, 131, 129],    // ← ocultar todos los reales
+        jornadasPorMesLabel: 'Cantidad de mesas por tiempo',
     },
 };
 

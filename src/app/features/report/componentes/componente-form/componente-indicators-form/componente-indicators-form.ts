@@ -111,6 +111,7 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
       cgGroups: [data?.config?.groups?.join('\n') || ''],
       group_name: [data?.group_name || null],
       group_required: [data?.group_required ?? false],
+      configMinValue: [data?.config?.min_value ?? null],
     }) as FormGroup;
 
     // Guardar config raw para restaurar en sub-componentes
@@ -213,6 +214,12 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
 
       switch (ind.field_type) {
 
+        case 'number':
+          if (ind.configMinValue !== null && ind.configMinValue !== '') {
+            indicator.config = { min_value: Number(ind.configMinValue) };
+          }
+          break;
+          
         case 'select':
         case 'multi_select':
           indicator.config = {

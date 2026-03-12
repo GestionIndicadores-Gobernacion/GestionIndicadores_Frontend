@@ -58,12 +58,8 @@ export class ChartBuildersService {
                 if (total > 0) map[e.month] = total;
             });
 
-        const labels: string[] = [];
-        const data: number[] = [];
-        MONTHS.forEach((m, i) => {
-            const key = this.monthKey(year, i);
-            if (map[key]) { labels.push(m); data.push(map[key]); }
-        });
+        const labels = MONTHS;
+        const data = MONTHS.map((_, i) => map[this.monthKey(year, i)] ?? 0);
 
         return {
             type: 'bar',

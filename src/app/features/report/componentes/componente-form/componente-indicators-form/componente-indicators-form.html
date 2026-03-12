@@ -108,9 +108,18 @@
                     </p>
                 </div>
             </div>
+            
+            <!-- ── Valor mínimo (solo para tipo número) ── -->
+            <div *ngIf="ind.get('field_type')?.value === 'number'" class="space-y-1.5 border-t border-zinc-100 pt-3">
+                <label class="block text-xs font-medium text-zinc-700">Valor mínimo permitido (opcional)</label>
+                <input type="number" formControlName="configMinValue" class="w-40 px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900
+               focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors"
+                    placeholder="Ej: 1" />
+                <p class="text-xs text-zinc-400">Si se define, el valor reportado debe ser mayor o igual a este número
+                </p>
+            </div>
 
             <!-- ── Paneles de configuración por tipo ── -->
-
             <app-config-select *ngIf="ind.get('field_type')?.value === 'select'" [indicatorGroup]="$any(ind)"
                 [indicatorIndex]="i" [isMulti]="false">
             </app-config-select>
