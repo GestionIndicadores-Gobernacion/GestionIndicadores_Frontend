@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { ReportModel } from '../../../../../../core/models/report.model';
+import { ReportModel } from '../../../../../core/models/report.model';
 
 // ─── IDs de indicadores relevantes ───────────────────────────────────────────
 const ID_ASISTENCIAS_TECNICAS = 74;

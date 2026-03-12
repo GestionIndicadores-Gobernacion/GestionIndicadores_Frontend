@@ -1,16 +1,16 @@
-import {
-  Component, Input, Output, EventEmitter, OnChanges, SimpleChanges
-} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { NgChartsModule } from 'ng2-charts';
-import { ChartConfiguration } from 'chart.js';
 import {
-  AggregateByMonth,
-  AggregateByComponent,
-  ComponentAggregate,
-  IndicatorSummary
-} from '../../../../../../core/models/report-aggregate.model';
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges
+} from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ChartConfiguration } from 'chart.js';
+import { NgChartsModule } from 'ng2-charts';
+import { AggregateByComponent, AggregateByMonth, ComponentAggregate, IndicatorSummary } from '../../../../../core/models/report-aggregate.model';
 
 // Nombre del componente especial que habilita el filtro de tema tratado
 // Ajusta este string para que coincida exactamente con el nombre en tu BD

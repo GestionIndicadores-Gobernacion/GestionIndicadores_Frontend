@@ -194,7 +194,7 @@
             <!-- ====== INDICADORES ====== -->
             <app-report-indicators-form *ngIf="indicators.length" [indicators]="indicators"
                 [reportDate]="form.report_date" [values]="indicatorValues"
-                (valuesChange)="onIndicatorValuesChange($event)">
+                [interventionLocation]="form.intervention_location" (valuesChange)="onIndicatorValuesChange($event)">
             </app-report-indicators-form>
 
             <!-- ====== EVIDENCIA ====== -->

@@ -6,10 +6,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import * as L from 'leaflet';
+import { MunicipioCentroid, normalizeMunicipio, findCentroid } from '../../../../../core/data/valle-geo.data';
+import { ReportModel } from '../../../../../core/models/report.model';
 
-import { ReportModel } from '../../../../../../core/models/report.model';
-import { AggregateByComponent } from '../../../../../../core/models/report-aggregate.model';
-import { VALLE_CENTROIDS, findCentroid, normalizeMunicipio, MunicipioCentroid } from '../../../../../../core/data/valle-geo.data';
 
 // ─── Tipos locales ────────────────────────────────────────────────────────────
 
@@ -95,7 +94,7 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   private tileLayer!: L.TileLayer;
   showStylePicker = false;
 
-  constructor(private cdr: ChangeDetectorRef, private zone: NgZone) {}
+  constructor(private cdr: ChangeDetectorRef, private zone: NgZone) { }
 
   // ─── Lifecycle ───────────────────────────────────────────────────────────────
 
@@ -156,17 +155,17 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   getMunicipioColor(total: number): string {
     const max = this.maxReportsInMunicipio;
     const ratio = total / max;
-    if (ratio === 0)   return '#f4f4f5';
-    if (ratio < 0.25)  return '#d4f1e9';
-    if (ratio < 0.5)   return '#6ee7b7';
-    if (ratio < 0.75)  return '#10b981';
+    if (ratio === 0) return '#f4f4f5';
+    if (ratio < 0.25) return '#d4f1e9';
+    if (ratio < 0.5) return '#6ee7b7';
+    if (ratio < 0.75) return '#10b981';
     return '#065f46';
   }
 
   getProgressColor(ratio: number): string {
-    if (ratio >= 1)    return 'bg-emerald-500';
+    if (ratio >= 1) return 'bg-emerald-500';
     if (ratio >= 0.75) return 'bg-emerald-400';
-    if (ratio >= 0.5)  return 'bg-amber-400';
+    if (ratio >= 0.5) return 'bg-amber-400';
     if (ratio >= 0.25) return 'bg-orange-400';
     return 'bg-red-400';
   }
@@ -267,7 +266,7 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     if (!centroid) return null;
 
     const urbana = reps.filter(r => this.normalizeZone(r.zone_type) === 'Urbana').length;
-    const rural  = reps.filter(r => this.normalizeZone(r.zone_type) === 'Rural').length;
+    const rural = reps.filter(r => this.normalizeZone(r.zone_type) === 'Rural').length;
 
     // Agrupar por componente
     const compCount = new Map<number, number>();
