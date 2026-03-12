@@ -43,11 +43,14 @@ export interface ComponentIndicatorModel {
   config?: any;
   is_required: boolean;
 
-  targets?: ComponentIndicatorTargetModel[];
+  // ── GRUPO MUTUAMENTE EXCLUYENTE ──────────────────────────────
+  group_name?: string | null;
+  group_required?: boolean;
+  // ─────────────────────────────────────────────────────────────
 
+  targets?: ComponentIndicatorTargetModel[];
   created_at?: string;
 }
-
 
 /* =========================
    Response Expandida

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
@@ -31,6 +31,9 @@ import { ReportIndicatorsFormComponent } from './report-indicators-form/report-i
   styleUrl: './report-form.css',
 })
 export class ReportFormComponent implements OnInit {
+
+  @ViewChild(ReportIndicatorsFormComponent)
+  reportIndicatorsForm?: ReportIndicatorsFormComponent;
 
   saving = false;
   isEdit = false;
@@ -169,6 +172,11 @@ export class ReportFormComponent implements OnInit {
     this.indicatorValues = {};
   }
 
+  onIndicatorValuesChange(values: Record<number, any>): void {
+    this.indicatorValues = { ...values }; // reemplazar completo, no mergear
+    this.cdr.detectChanges();
+  }
+
   // ================= SAVE =================
 
   /** Convierte null / undefined / '' a 0 para valores numéricos */
@@ -187,7 +195,11 @@ export class ReportFormComponent implements OnInit {
       case 'sum_group': {
         if (!value || typeof value !== 'object') return {};
         const result: Record<string, number> = {};
-        Object.keys(value).forEach(k => { result[k] = this.toNum(value[k]); });
+        // Usar los fields del config como fuente de verdad
+        const fields: string[] = ind.config?.fields || [];
+        fields.forEach((field: string) => {
+          result[field] = this.toNum(value[field]);  // toNum ya convierte null/undefined a 0
+        });
         return result;
       }
 
@@ -238,10 +250,15 @@ export class ReportFormComponent implements OnInit {
   }
 
   buildIndicatorValues(): ReportIndicatorValue[] {
-    return this.indicators.map(ind => ({
-      indicator_id: ind.id!,
-      value: this.sanitizeIndicatorValue(ind, this.indicatorValues[ind.id!])
-    }));
+    const activeIds = this.reportIndicatorsForm?.getActiveIndicatorIds()
+      ?? new Set(this.indicators.map(i => i.id!));
+
+    return this.indicators
+      .filter(ind => activeIds.has(ind.id!))
+      .map(ind => ({
+        indicator_id: ind.id!,
+        value: this.sanitizeIndicatorValue(ind, this.indicatorValues[ind.id!])
+      }));
   }
 
   save(formDirective: NgForm): void {

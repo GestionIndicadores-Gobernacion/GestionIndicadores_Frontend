@@ -27,6 +27,11 @@ export class ReportIndicatorsFormComponent implements OnChanges {
   datasetLoading: Record<number, boolean> = {};
   datasetError: Record<number, string> = {};
 
+  // ── GRUPOS MUTUAMENTE EXCLUYENTES ─────────────────────────────
+  // Mapa: group_name → indicador seleccionado (su id)
+  selectedGroupMode: Record<string, number | null> = {};
+  // ──────────────────────────────────────────────────────────────
+
   constructor(
     private http: HttpClient,
     private datasetService: DatasetService,
@@ -35,29 +40,83 @@ export class ReportIndicatorsFormComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['indicators'] || changes['values']) {
+      this.initGroupModes();
       this.initializeGroupedDataIndicators();
       this.initializeCategorizedGroupIndicators();
       this.loadDatasetOptions();
     }
   }
 
-  // =========================
-  // HELPERS
-  // =========================
+  // ── GRUPOS: inicializar modos ────────────────────────────────
 
-  /** Convierte null / undefined / '' a 0 para campos numéricos */
+  private initGroupModes(): void {
+    const groups = this.getGroups();
+    Object.keys(groups).forEach(groupName => {
+      if (!(groupName in this.selectedGroupMode)) {
+        // Si ya hay un valor cargado (modo edición), detectar qué indicador tiene valor
+        const members = groups[groupName];
+        const withValue = members.find(m => this.values[m.id!] !== undefined && this.values[m.id!] !== null);
+        this.selectedGroupMode[groupName] = withValue?.id ?? members[0].id ?? null;
+      }
+    });
+  }
+
+  /** Devuelve un mapa group_name → indicadores que pertenecen al grupo */
+  getGroups(): Record<string, ComponentIndicatorModel[]> {
+    const map: Record<string, ComponentIndicatorModel[]> = {};
+    this.indicators.forEach(ind => {
+      if (ind.group_name) {
+        if (!map[ind.group_name]) map[ind.group_name] = [];
+        map[ind.group_name].push(ind);
+      }
+    });
+    return map;
+  }
+
+  /** Indicadores que se deben renderizar y enviar:
+   *  - Los que NO tienen grupo → siempre visibles
+   *  - Los que tienen grupo → solo el seleccionado en selectedGroupMode
+   */
+  get activeIndicators(): ComponentIndicatorModel[] {
+    const groups = this.getGroups();
+    return this.indicators.filter(ind => {
+      if (!ind.group_name) return true;
+      return this.selectedGroupMode[ind.group_name] === ind.id;
+    });
+  }
+
+  /** Cambia el modo seleccionado de un grupo y limpia los valores del indicador anterior */
+  selectGroupMode(groupName: string, indicatorId: number): void {
+    const previous = this.selectedGroupMode[groupName];
+    if (previous !== null && previous !== undefined && previous !== indicatorId) {
+      delete this.values[previous];
+    }
+    this.selectedGroupMode[groupName] = indicatorId;
+    this.values = { ...this.values };
+    this.initializeGroupedDataIndicators();
+    this.initializeCategorizedGroupIndicators();
+    this.cdr.detectChanges(); // ← forzar render
+    this.emit();
+  }
+
+  /** Nombre del indicador actualmente seleccionado para un grupo */
+  getSelectedIndicatorName(groupName: string): string {
+    const id = this.selectedGroupMode[groupName];
+    return this.indicators.find(i => i.id === id)?.name ?? '';
+  }
+
+  // ── HELPERS ──────────────────────────────────────────────────
+
   private toNumber(value: any): number {
     if (value === null || value === undefined || value === '') return 0;
     const n = Number(value);
     return isNaN(n) ? 0 : n;
   }
 
-  // =========================
-  // INITIALIZE GROUPED DATA
-  // =========================
+  // ── INITIALIZE GROUPED DATA ──────────────────────────────────
 
   private initializeGroupedDataIndicators(): void {
-    this.indicators.forEach(ind => {
+    this.activeIndicators.forEach(ind => {
       if (ind.field_type !== 'grouped_data') return;
       const selectedGroups = this.getSelectedOptionsForGroupedData(ind);
       if (!this.values[ind.id!]) this.values[ind.id!] = {};
@@ -79,12 +138,10 @@ export class ReportIndicatorsFormComponent implements OnChanges {
     });
   }
 
-  // =========================
-  // INITIALIZE CATEGORIZED_GROUP
-  // =========================
+  // ── INITIALIZE CATEGORIZED_GROUP ─────────────────────────────
 
   private initializeCategorizedGroupIndicators(): void {
-    this.indicators.forEach(ind => {
+    this.activeIndicators.forEach(ind => {
       if (ind.field_type !== 'categorized_group') return;
 
       if (!this.values[ind.id!]) {
@@ -116,7 +173,6 @@ export class ReportIndicatorsFormComponent implements OnChanges {
 
       subSections.forEach((section: any) => {
         if (!val.sub_sections[section.key]) val.sub_sections[section.key] = {};
-
         val.selected_categories.forEach((cat: string) => {
           if (!val.sub_sections[section.key][cat]) val.sub_sections[section.key][cat] = {};
           metrics.forEach((metric: any) => {
@@ -125,7 +181,6 @@ export class ReportIndicatorsFormComponent implements OnChanges {
             }
           });
         });
-
         Object.keys(val.sub_sections[section.key]).forEach(cat => {
           if (!val.selected_categories.includes(cat)) delete val.sub_sections[section.key][cat];
         });
@@ -133,9 +188,7 @@ export class ReportIndicatorsFormComponent implements OnChanges {
     });
   }
 
-  // =========================
-  // CATEGORIZED_GROUP: TOGGLE CATEGORY
-  // =========================
+  // ── CATEGORIZED_GROUP: TOGGLE CATEGORY ───────────────────────
 
   toggleCategory(indicatorId: number, category: string): void {
     const val = this.values[indicatorId];
@@ -153,13 +206,11 @@ export class ReportIndicatorsFormComponent implements OnChanges {
       });
     } else {
       val.selected_categories.push(category);
-
       val.data[category] = {};
       groups.forEach((group: string) => {
         val.data[category][group] = {};
         metrics.forEach((metric: any) => { val.data[category][group][metric.key] = 0; });
       });
-
       subSections.forEach((section: any) => {
         if (!val.sub_sections[section.key]) val.sub_sections[section.key] = {};
         val.sub_sections[section.key][category] = {};
@@ -179,9 +230,7 @@ export class ReportIndicatorsFormComponent implements OnChanges {
     return this.values[indicatorId]?.selected_categories || [];
   }
 
-  // =========================
-  // CATEGORIZED_GROUP: METRIC VALUE
-  // =========================
+  // ── CATEGORIZED_GROUP: METRIC VALUE ──────────────────────────
 
   getCategorizedMetricValue(indicatorId: number, category: string, group: string, metricKey: string): number {
     return this.values[indicatorId]?.data?.[category]?.[group]?.[metricKey] ?? 0;
@@ -193,9 +242,7 @@ export class ReportIndicatorsFormComponent implements OnChanges {
     this.emit();
   }
 
-  // =========================
-  // CATEGORIZED_GROUP: SUB_SECTIONS
-  // =========================
+  // ── CATEGORIZED_GROUP: SUB_SECTIONS ──────────────────────────
 
   getSubSectionValue(indicatorId: number, sectionKey: string, category: string, metricKey: string): number {
     return this.values[indicatorId]?.sub_sections?.[sectionKey]?.[category]?.[metricKey] ?? 0;
@@ -209,9 +256,7 @@ export class ReportIndicatorsFormComponent implements OnChanges {
     this.emit();
   }
 
-  // =========================
-  // CATEGORIZED_GROUP: TOTALS
-  // =========================
+  // ── CATEGORIZED_GROUP: TOTALS ─────────────────────────────────
 
   getCategoryMetricTotal(indicatorId: number, category: string, metricKey: string): number {
     const data = this.values[indicatorId]?.data?.[category];
@@ -249,13 +294,10 @@ export class ReportIndicatorsFormComponent implements OnChanges {
     return this.getSubSectionValue(indicatorId, sectionKey, category, metricKey) > this.getCategoryMetricTotal(indicatorId, category, metricKey);
   }
 
-  // =========================
-  // VALUE SETTERS
-  // =========================
+  // ── VALUE SETTERS ─────────────────────────────────────────────
 
   setValue(indicatorId: number, value: any) {
     const ind = this.indicators.find(i => i.id === indicatorId);
-    // Si el campo es numérico y el valor es vacío/null, guardar 0
     if (ind?.field_type === 'number') {
       this.values[indicatorId] = this.toNumber(value);
     } else {
@@ -271,9 +313,7 @@ export class ReportIndicatorsFormComponent implements OnChanges {
     this.emit();
   }
 
-  // =========================
-  // MULTI-SELECT
-  // =========================
+  // ── MULTI-SELECT ──────────────────────────────────────────────
 
   toggleMultiSelectOption(indicatorId: number, option: string) {
     if (!this.values[indicatorId]) this.values[indicatorId] = [];
@@ -287,16 +327,11 @@ export class ReportIndicatorsFormComponent implements OnChanges {
     return this.values[indicatorId]?.includes(option) || false;
   }
 
-  // =========================
-  // GROUPED DATA
-  // =========================
+  // ── GROUPED DATA ──────────────────────────────────────────────
 
   setGroupedValue(indicatorId: number, groupKey: string, fieldName: string, value: any) {
     const subField = this.getSubFieldConfig(indicatorId, fieldName);
-    const parsedValue = subField?.type === 'number'
-      ? this.toNumber(value)
-      : (value ? String(value) : '');
-
+    const parsedValue = subField?.type === 'number' ? this.toNumber(value) : (value ? String(value) : '');
     this.values = {
       ...this.values,
       [indicatorId]: {
@@ -341,70 +376,69 @@ export class ReportIndicatorsFormComponent implements OnChanges {
   }
 
   emit() {
-    const sanitized = { ...this.values };
+    // Construir objeto SOLO con IDs activos
+    const activeIds = new Set(this.activeIndicators.map(i => i.id!));
+    const sanitized: Record<number, any> = {};
 
-    this.indicators.forEach(ind => {
+    this.activeIndicators.forEach(ind => {
       const id = ind.id!;
-      if (!(id in sanitized)) return;
+      const raw = this.values[id];
 
       switch (ind.field_type) {
         case 'number':
-          sanitized[id] = this.toNumber(sanitized[id]);
+          sanitized[id] = this.toNumber(raw);
           break;
-
         case 'sum_group':
-          if (sanitized[id] && typeof sanitized[id] === 'object') {
+          if (raw && typeof raw === 'object') {
             const copy: Record<string, number> = {};
-            Object.keys(sanitized[id]).forEach(k => { copy[k] = this.toNumber(sanitized[id][k]); });
+            Object.keys(raw).forEach(k => { copy[k] = this.toNumber(raw[k]); });
             sanitized[id] = copy;
+          } else {
+            sanitized[id] = {};
           }
           break;
-
         case 'grouped_data':
-          if (sanitized[id] && typeof sanitized[id] === 'object') {
+          if (raw && typeof raw === 'object') {
             const groupCopy: Record<string, any> = {};
-            Object.keys(sanitized[id]).forEach(groupKey => {
+            Object.keys(raw).forEach(groupKey => {
               groupCopy[groupKey] = {};
               const subFields: any[] = ind.config?.sub_fields || [];
               subFields.forEach((sf: any) => {
-                const raw = sanitized[id][groupKey]?.[sf.name];
-                groupCopy[groupKey][sf.name] = sf.type === 'number' ? this.toNumber(raw) : (raw ?? '');
+                const v = raw[groupKey]?.[sf.name];
+                groupCopy[groupKey][sf.name] = sf.type === 'number' ? this.toNumber(v) : (v ?? '');
               });
             });
             sanitized[id] = groupCopy;
+          } else {
+            sanitized[id] = {};
           }
           break;
-
         case 'categorized_group':
-          if (sanitized[id]?.data) {
-            Object.keys(sanitized[id].data).forEach(cat => {
-              Object.keys(sanitized[id].data[cat]).forEach(group => {
-                Object.keys(sanitized[id].data[cat][group]).forEach(metricKey => {
-                  sanitized[id].data[cat][group][metricKey] = this.toNumber(sanitized[id].data[cat][group][metricKey]);
+          if (raw) {
+            const clone = JSON.parse(JSON.stringify(raw));
+            if (clone.data) {
+              Object.keys(clone.data).forEach(cat => {
+                Object.keys(clone.data[cat]).forEach(group => {
+                  Object.keys(clone.data[cat][group]).forEach(mk => {
+                    clone.data[cat][group][mk] = this.toNumber(clone.data[cat][group][mk]);
+                  });
                 });
               });
-            });
-          }
-          if (sanitized[id]?.sub_sections) {
-            Object.keys(sanitized[id].sub_sections).forEach(sectionKey => {
-              Object.keys(sanitized[id].sub_sections[sectionKey]).forEach(cat => {
-                Object.keys(sanitized[id].sub_sections[sectionKey][cat]).forEach(metricKey => {
-                  sanitized[id].sub_sections[sectionKey][cat][metricKey] = this.toNumber(sanitized[id].sub_sections[sectionKey][cat][metricKey]);
-                });
-              });
-            });
+            }
+            sanitized[id] = clone;
           }
           break;
+        default:
+          sanitized[id] = raw ?? null;
       }
     });
 
     this.valuesChange.emit(sanitized);
   }
+
   getIndicatorId(ind: ComponentIndicatorModel): number { return ind.id!; }
 
-  // =========================
-  // DATASET SELECT
-  // =========================
+  // ── DATASET SELECT ────────────────────────────────────────────
 
   private loadDatasetOptions(): void {
     this.indicators.forEach(ind => {
@@ -461,9 +495,7 @@ export class ReportIndicatorsFormComponent implements OnChanges {
     return this.datasetOptions[indicatorId]?.find(d => d.id === id)?.label || '';
   }
 
-  // =========================
-  // VALIDATION
-  // =========================
+  // ── VALIDATION ────────────────────────────────────────────────
 
   isIndicatorValid(ind: ComponentIndicatorModel): boolean {
     if (!ind.is_required) return true;
@@ -498,9 +530,7 @@ export class ReportIndicatorsFormComponent implements OnChanges {
     return Object.keys(allGroups).reduce((total, groupKey) => total + this.getGroupedTotal(indicatorId, groupKey, subFields), 0);
   }
 
-  // =========================
-  // FILE ATTACHMENT
-  // =========================
+  // ── FILE ATTACHMENT ───────────────────────────────────────────
 
   getFileValue(indicatorId: number): { file_name: string; file_url: string; file_size_mb: number } | null {
     const val = this.values[indicatorId];
@@ -511,6 +541,10 @@ export class ReportIndicatorsFormComponent implements OnChanges {
     const types = ind.config?.allowed_types;
     if (!types || types.length === 0) return '*/*';
     return types.map((t: string) => `.${t}`).join(',');
+  }
+
+  getActiveIndicatorIds(): Set<number> {
+    return new Set(this.activeIndicators.map(i => i.id!));
   }
 
   onFileSelected(event: Event, indicatorId: number) {
