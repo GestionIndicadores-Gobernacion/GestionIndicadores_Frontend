@@ -47,11 +47,11 @@ export const REPORTS_ROUTES: Routes = [
         .then(m => m.ReportFormComponent),
   },
 
-  // 🔍 DETALLE (AL FINAL DE TODO)
-  // {
-  //   path: ':id',
-  //   loadComponent: () =>
-  //     import('./report-detail/report-detail')
-  //       .then(m => m.ReportDetailComponent),
-  // },
+  // 🔍 DETALLE(AL FINAL DE TODO)
+  {
+    path: ':id',
+    loadComponent: () =>
+      import('./report-detail/report-detail')
+        .then(m => m.ReportDetailComponent),
+  },
 ];

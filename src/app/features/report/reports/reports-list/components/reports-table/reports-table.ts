@@ -5,6 +5,12 @@ import { RouterModule } from '@angular/router';
 import { ReportModel } from '../../../../../../core/models/report.model';
 import { Pagination } from '../../../../../../shared/components/pagination/pagination';
 
+
+const MONTH_ABBR_TO_NUM: Record<string, number> = {
+  'ene': 1, 'feb': 2, 'mar': 3, 'abr': 4, 'may': 5, 'jun': 6,
+  'jul': 7, 'ago': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dic': 12,
+};
+
 @Component({
   selector: 'app-reports-table',
   standalone: true,
@@ -19,7 +25,9 @@ export class ReportsTableComponent implements OnChanges {
   @Input() componentMap: Record<number, string> = {};
   @Input() currentUserId: number | null = null;
   @Input() isAdmin = false;
+  @Input() chartFilter: { componentId: number | null; label: string | null } = { componentId: null, label: null };
 
+  @Output() clearFilter = new EventEmitter<void>();
   @Output() delete = new EventEmitter<number>();
 
   // VIEW MODE
@@ -44,6 +52,10 @@ export class ReportsTableComponent implements OnChanges {
     if (changes['reports'] || changes['strategyMap'] || changes['componentMap']) {
       this.applyAll();
     }
+
+    if (changes['reports'] || changes['strategyMap'] || changes['componentMap'] || changes['chartFilter']) {
+      this.applyAll();
+    }
   }
 
   setViewMode(mode: 'all' | 'mine') {
@@ -63,16 +75,35 @@ export class ReportsTableComponent implements OnChanges {
     this.applyPagination();
   }
 
-  applyFilter(): void {
+  clearChartFilter(): void {
+    this.clearFilter.emit();
+  }
 
+  applyFilter(): void {
     const term = this.searchTerm.toLowerCase().trim();
 
     this.filteredReports = this.reports.filter(r => {
-
-      // FILTRO MIS REPORTES
+      // Filtro mis reportes
       if (this.viewMode === 'mine' && !this.isOwner(r)) return false;
 
-      // FILTRO BUSQUEDA
+      // Filtro desde gráfico — componente
+      if (this.chartFilter.componentId !== null && r.component_id !== this.chartFilter.componentId) return false;
+
+      // Filtro desde gráfico — label (mes o municipio/categoría)
+      if (this.chartFilter.label) {
+        const label = this.chartFilter.label.toLowerCase().trim();
+        const monthNum = MONTH_ABBR_TO_NUM[label];
+
+        if (monthNum) {
+          const reportMonth = new Date(r.report_date).getMonth() + 1;
+          if (reportMonth !== monthNum) return false;
+        } else {
+          const matchLocation = (r.intervention_location ?? '').toLowerCase().includes(label);
+          if (!matchLocation) return false;
+        }
+      }
+
+      // Filtro búsqueda libre
       if (!term) return true;
 
       return (

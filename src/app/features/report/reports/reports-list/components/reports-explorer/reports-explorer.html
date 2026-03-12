@@ -69,7 +69,8 @@
 
     <!-- Gráfico -->
     <app-reports-explorer-chart [componentAggregate]="componentAggregate" [selectedIndicator]="selectedIndicator"
-        [indicatorDetail]="selectedIndicatorDetail" [selectedYear]="selectedYear" (yearChange)="onYearChange($event)">
+        [indicatorDetail]="selectedIndicatorDetail" [selectedYear]="selectedYear" [componentId]="selectedComponentId"
+        (yearChange)="onYearChange($event)" (barClick)="onChartBarClick($event)">
     </app-reports-explorer-chart>
 
 </div>

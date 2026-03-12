@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 import { ReportModel } from '../../../../core/models/report.model';
 
@@ -43,7 +43,11 @@ export class ReportsListComponent implements OnInit {
     private componentsService: ComponentsService,
     private toast: ToastService,
     private cd: ChangeDetectorRef,
+    private route: ActivatedRoute,
+    private router: Router,
   ) { }
+
+  chartFilter: { componentId: number | null; label: string | null } = { componentId: null, label: null };
 
   ngOnInit(): void {
     this.usersService.getMe().subscribe(user => {
@@ -53,6 +57,14 @@ export class ReportsListComponent implements OnInit {
     });
 
     this.loadData();
+
+    this.route.queryParams.subscribe(params => {
+      this.chartFilter = {
+        componentId: params['component'] ? Number(params['component']) : null,
+        label: params['label'] ?? null,
+      };
+      this.cd.detectChanges();
+    });
   }
 
   deleteReport(id: number): void {
@@ -98,6 +110,17 @@ export class ReportsListComponent implements OnInit {
         this.cd.detectChanges();
       }
     });
+  }
+
+  clearChartFilter(): void {
+    this.chartFilter = { componentId: null, label: null };
+    // Limpiar queryParams también
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true,
+    });
+    this.cd.detectChanges();
   }
 
   private loadReports(): void {

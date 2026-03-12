@@ -21,6 +21,8 @@ import { COMPONENT_EXPLORER_CONFIG, DEFAULT_EXPLORER_CONFIG } from '../../../../
 import { getIndicatorDisplayName } from '../../../../../../core/data/indicator-display-names';
 import { ReportsService } from '../../../../../../core/services/reports.service';
 import { ReportsExplorerChartComponent } from './reports-explorer-chart/reports-explorer-chart';
+import { Router } from '@angular/router';
+import { BarClickEvent } from './reports-explorer-chart/chart-builder.service';
 
 const PILLS_VISIBLE = 6;
 
@@ -72,6 +74,46 @@ export class ReportsExplorerComponent implements OnChanges {
         indicator_name: config.jornadasPorMesLabel ?? 'Jornadas por mes',
         field_type: 'by_month_reports',
       });
+    }
+
+    // "Temas tratados por municipio" — para Asistencias Técnicas
+    if (config.showTemasPorMunicipio && byLocationIndicator.length > 0) {
+      const temasTratadosId = 95; // indicador "Temas tratados"
+      const temasMeta = list.find(i => i.indicator_id === temasTratadosId);
+
+      if (temasMeta) {
+        // Construir datos: por cada municipio, sumar el total del indicador 95
+        const locationData = byLocationIndicator
+          .map(l => {
+            const match = l.indicators.find((i: any) => i.indicator_id === temasTratadosId);
+            return match ? { location: l.location, total: match.total } : null;
+          })
+          .filter(Boolean) as { location: string; total: number }[];
+
+        if (locationData.length > 0) {
+          virtual.push({
+            indicator_id: -3001,
+            indicator_name: 'Temas tratados por municipio',
+            field_type: 'by_location',
+            by_location: locationData,
+          });
+        }
+      }
+    }
+
+    // "Personas asistidas por tiempo" — para Asistencias Técnicas
+    if (config.jornadasPorMesLabel) {
+      const personasId = 96; // indicador "Personas asistidas"
+      const personasMeta = list.find(i => i.indicator_id === personasId);
+
+      if (personasMeta?.by_month?.length) {
+        virtual.push({
+          indicator_id: -3002,
+          indicator_name: config.jornadasPorMesLabel,
+          field_type: 'by_month_sum',
+          by_month: personasMeta.by_month,
+        });
+      }
     }
 
     // "Reportes por municipio"
@@ -163,7 +205,8 @@ export class ReportsExplorerComponent implements OnChanges {
 
   constructor(
     private reportsService: ReportsService,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private router: Router,
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -180,6 +223,15 @@ export class ReportsExplorerComponent implements OnChanges {
         this.loadComponentData(firstComponent.component_id);
       }
     }
+  }
+
+  onChartBarClick(event: BarClickEvent): void {
+    this.router.navigate(['/reports'], {
+      queryParams: {
+        component: event.componentId,
+        label: event.label,
+      }
+    });
   }
 
   private loadComponentData(id: number): void {
