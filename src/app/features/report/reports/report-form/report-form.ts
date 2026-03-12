@@ -219,25 +219,42 @@ export class ReportFormComponent implements OnInit {
 
       case 'categorized_group': {
         if (!value) return { selected_categories: [], data: {}, sub_sections: {} };
-        const sanitized = JSON.parse(JSON.stringify(value)); // deep clone
 
+        const sanitized = JSON.parse(JSON.stringify(value));
+
+        // Sanitizar métricas numéricas
         if (sanitized.data) {
           Object.keys(sanitized.data).forEach(cat => {
             Object.keys(sanitized.data[cat]).forEach(group => {
               Object.keys(sanitized.data[cat][group]).forEach(metricKey => {
-                sanitized.data[cat][group][metricKey] = this.toNum(sanitized.data[cat][group][metricKey]);
+                sanitized.data[cat][group][metricKey] =
+                  this.toNum(sanitized.data[cat][group][metricKey]);
               });
             });
           });
         }
 
+        // Sanitizar sub_sections numéricas (protegiendo red_animalia)
         if (sanitized.sub_sections) {
           Object.keys(sanitized.sub_sections).forEach(sectionKey => {
-            Object.keys(sanitized.sub_sections[sectionKey]).forEach(cat => {
-              Object.keys(sanitized.sub_sections[sectionKey][cat]).forEach(metricKey => {
-                sanitized.sub_sections[sectionKey][cat][metricKey] = this.toNum(sanitized.sub_sections[sectionKey][cat][metricKey]);
+
+            // 🔴 NO tocar red_animalia
+            if (sectionKey === 'red_animalia') return;
+
+            const section = sanitized.sub_sections[sectionKey];
+            if (!section || typeof section !== 'object') return;
+
+            Object.keys(section).forEach(cat => {
+
+              const categoryData = section[cat];
+              if (!categoryData || typeof categoryData !== 'object') return;
+
+              Object.keys(categoryData).forEach(metricKey => {
+                categoryData[metricKey] = this.toNum(categoryData[metricKey]);
               });
+
             });
+
           });
         }
 

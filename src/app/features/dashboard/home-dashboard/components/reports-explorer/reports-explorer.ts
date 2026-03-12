@@ -1,28 +1,15 @@
-import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Input, OnChanges,
-  Output,
-  SimpleChanges
-} from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { CommonModule } from "@angular/common";
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { Router } from "@angular/router";
+import { forkJoin } from "rxjs";
+import { COMPONENT_EXPLORER_CONFIG, DEFAULT_EXPLORER_CONFIG } from "../../../../../core/data/component-explorer-config";
+import { getIndicatorDisplayName } from "../../../../../core/data/indicator-display-names";
+import { AggregateByComponent, ComponentAggregate, ComponentIndicatorsAggregate, IndicatorDetail } from "../../../../../core/models/report-aggregate.model";
+import { ReportsService } from "../../../../../core/services/reports.service";
+import { BarClickEvent } from "./reports-explorer-chart/chart-builder.service";
+import { ReportsExplorerChartComponent } from "./reports-explorer-chart/reports-explorer-chart";
 
-import {
-  AggregateByComponent,
-  ComponentAggregate,
-  ComponentIndicatorsAggregate,
-  IndicatorDetail
-} from '../../../../../../core/models/report-aggregate.model';
-
-import { forkJoin } from 'rxjs';
-import { COMPONENT_EXPLORER_CONFIG, DEFAULT_EXPLORER_CONFIG } from '../../../../../../core/data/component-explorer-config';
-import { getIndicatorDisplayName } from '../../../../../../core/data/indicator-display-names';
-import { ReportsService } from '../../../../../../core/services/reports.service';
-import { ReportsExplorerChartComponent } from './reports-explorer-chart/reports-explorer-chart';
-import { Router } from '@angular/router';
-import { BarClickEvent } from './reports-explorer-chart/chart-builder.service';
 
 const PILLS_VISIBLE = 6;
 
