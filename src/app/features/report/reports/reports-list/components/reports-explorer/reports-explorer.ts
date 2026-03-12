@@ -75,6 +75,54 @@ export class ReportsExplorerComponent implements OnChanges {
         field_type: 'by_month_reports',
       });
     }
+    // Virtuales específicos para Mesa PYBA (component 28)
+    if (this.selectedComponentId === 28) {
+      const raw = this.indicatorsAggregate?.indicators ?? [];  // ← sin filtrar
+      const tipoActor = raw.find(i => i.indicator_id === 129);
+      const asistentes = raw.find(i => i.indicator_id === 131);
+
+      if (tipoActor?.by_category?.length) {
+        virtual.push({
+          indicator_id: -4001,
+          indicator_name: 'Tipo de actor / Mesas',
+          field_type: 'by_category',
+          by_category: tipoActor.by_category,
+        });
+      }
+
+      if (asistentes?.by_month?.length) {
+        virtual.push({
+          indicator_id: -4002,
+          indicator_name: 'Total asistentes por mes',
+          field_type: 'by_month_sum',
+          by_month: asistentes.by_month,
+        });
+      }
+    }
+
+    // Virtuales específicos para CBA (component 7)
+    if (this.selectedComponentId === 7) {
+      const raw = this.indicatorsAggregate?.indicators ?? [];
+      const tipoDotacion = raw.find(i => i.indicator_id === 132);
+
+      if (tipoDotacion?.by_category?.length) {
+        virtual.push({
+          indicator_id: -5001,
+          indicator_name: 'Tipo de dotación / Centro de bienestar',
+          field_type: 'by_category',
+          by_category: tipoDotacion.by_category,
+        });
+      }
+
+      if (tipoDotacion?.by_month?.length) {
+        virtual.push({
+          indicator_id: -5002,
+          indicator_name: 'Dotación por tiempo',
+          field_type: 'by_month_sum',
+          by_month: tipoDotacion.by_month,
+        });
+      }
+    }
 
     // "Temas tratados por municipio" — para Asistencias Técnicas
     if (config.showTemasPorMunicipio && byLocationIndicator.length > 0) {

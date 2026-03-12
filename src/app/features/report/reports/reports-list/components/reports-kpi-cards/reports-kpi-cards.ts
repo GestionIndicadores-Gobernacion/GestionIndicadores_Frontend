@@ -116,14 +116,13 @@ export class ReportsKpiCardsComponent {
   }
 
   get refugiosImpactados(): number {
-    const ID_ESPACIO_ATENDIDO = 102;
-    const categorias = ['albergue/refugio', 'hogar de paso', 'espacio publico', 'fundacion'];
+    const ESPACIOS_ACOGIDA = ['albergue/refugio', 'fundacion', 'hogar de paso'];
 
     return this.filteredReports.filter(r => {
-      const iv = r.indicator_values?.find(i => i.indicator_id === ID_ESPACIO_ATENDIDO);
+      const iv = r.indicator_values?.find(i => i.indicator_id === 102);
       if (!iv?.value) return false;
-      const val = typeof iv.value === 'string' ? iv.value.toLowerCase() : '';
-      return categorias.some(c => val.includes(c));
+      const val = typeof iv.value === 'string' ? iv.value.toLowerCase().trim() : '';
+      return ESPACIOS_ACOGIDA.includes(val);
     }).length;
   }
 
