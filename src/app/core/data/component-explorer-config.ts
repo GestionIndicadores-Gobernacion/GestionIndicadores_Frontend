@@ -6,6 +6,7 @@ export interface ExplorerVirtualConfig {
     locationLabel?: string;
     jornadasPorMesLabel?: string;
     subViews?: Record<number, Record<string, string>>;
+    showTemasPorMunicipio?: boolean;  // ← nuevo
 }
 
 export const COMPONENT_EXPLORER_CONFIG: Record<number, ExplorerVirtualConfig> = {
@@ -19,7 +20,10 @@ export const COMPONENT_EXPLORER_CONFIG: Record<number, ExplorerVirtualConfig> = 
         showReportesPorMes: false,
         showReportesPorMunicipio: true,
         showIndicadoresPorMunicipio: true,
-        hiddenIndicators: [94]  // ocultar TIPO DE ACTOR ASISTIDO
+        hiddenIndicators: [94],  // ocultar TIPO DE ACTOR ASISTIDO
+        locationLabel: 'Asistencias por municipio',  // ← cambio
+        showTemasPorMunicipio: true,  // ← nuevo flag
+        jornadasPorMesLabel: 'Asistencias por tiempo',  // ← para personas asistidas x tiempo
     },
     3: {
         showReportesPorMes: false,

@@ -109,6 +109,8 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
       cgCategoryLabel: [data?.config?.category_label || ''],
       cgCategories: [data?.config?.categories?.join('\n') || ''],
       cgGroups: [data?.config?.groups?.join('\n') || ''],
+      group_name: [data?.group_name || null],
+      group_required: [data?.group_required ?? false],
     }) as FormGroup;
 
     // Guardar config raw para restaurar en sub-componentes
@@ -118,6 +120,12 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
     group.get('name')?.valueChanges.subscribe(v => {
       if (typeof v === 'string' && v !== v.toUpperCase())
         group.get('name')?.setValue(v.toUpperCase(), { emitEvent: false });
+    });
+
+    group.get('group_name')?.valueChanges.subscribe((v: string) => {
+      if (typeof v === 'string' && v.includes(' ')) {
+        group.get('group_name')?.setValue(v.replace(/ /g, '_'), { emitEvent: false });
+      }
     });
 
     // Targets
@@ -197,6 +205,8 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
         name: ind.name.trim(),
         field_type: ind.field_type,
         is_required: ind.is_required,
+        group_name: ind.group_name || null,
+        group_required: ind.group_required ?? false,
         config: null,
         targets: []
       };
