@@ -108,7 +108,7 @@
                     </p>
                 </div>
             </div>
-            
+
             <!-- ── Valor mínimo (solo para tipo número) ── -->
             <div *ngIf="ind.get('field_type')?.value === 'number'" class="space-y-1.5 border-t border-zinc-100 pt-3">
                 <label class="block text-xs font-medium text-zinc-700">Valor mínimo permitido (opcional)</label>
@@ -144,11 +144,11 @@
             </app-config-categorized-group>
 
             <app-config-dataset *ngIf="ind.get('field_type')?.value === 'dataset_select'" [indicatorGroup]="$any(ind)"
-                [isMulti]="false">
+                [isMulti]="false" [allIndicatorControls]="getIndicatorControls()">
             </app-config-dataset>
 
             <app-config-dataset *ngIf="ind.get('field_type')?.value === 'dataset_multi_select'"
-                [indicatorGroup]="$any(ind)" [isMulti]="true">
+                [indicatorGroup]="$any(ind)" [isMulti]="true" [allIndicatorControls]="getIndicatorControls()">
             </app-config-dataset>
 
             <!-- ── Metas anuales ── -->
