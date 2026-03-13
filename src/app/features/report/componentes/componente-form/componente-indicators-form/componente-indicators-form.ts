@@ -29,7 +29,6 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
 
   @Input() parentForm!: FormGroup;
 
-  // Referencias a sub-componentes que tienen estado propio
   @ViewChildren(ConfigCategorizedGroupComponent)
   cgComponents!: QueryList<ConfigCategorizedGroupComponent>;
 
@@ -95,7 +94,7 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
       name: [data?.name || '', [Validators.required, Validators.minLength(3)]],
       field_type: [fieldType, Validators.required],
       is_required: [data?.is_required ?? true],
-      // Config controls (todos opcionales, usados según field_type)
+      // Config controls
       configOptions: [data?.config?.options?.join('\n') || ''],
       configFields: [data?.config?.fields?.join('\n') || ''],
       configParentField: [data?.config?.parent_field || null],
@@ -112,6 +111,9 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
       group_name: [data?.group_name || null],
       group_required: [data?.group_required ?? false],
       configMinValue: [data?.config?.min_value ?? null],
+      // ── show_if ────────────────────────────────────────────────
+      configShowIfIndicatorName: [data?.config?.show_if?.indicator_name || null],
+      configShowIfValue: [data?.config?.show_if?.value || null],
     }) as FormGroup;
 
     // Guardar config raw para restaurar en sub-componentes
@@ -127,6 +129,11 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
       if (typeof v === 'string' && v.includes(' ')) {
         group.get('group_name')?.setValue(v.replace(/ /g, '_'), { emitEvent: false });
       }
+    });
+
+    // Limpiar configShowIfValue si cambia el indicador padre
+    group.get('configShowIfIndicatorName')?.valueChanges.subscribe(() => {
+      group.get('configShowIfValue')?.setValue(null, { emitEvent: false });
     });
 
     // Targets
@@ -219,7 +226,7 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
             indicator.config = { min_value: Number(ind.configMinValue) };
           }
           break;
-          
+
         case 'select':
         case 'multi_select':
           indicator.config = {
@@ -259,11 +266,20 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
           break;
 
         case 'dataset_select':
-        case 'dataset_multi_select':
-          indicator.config = {
-            dataset_id: ind.configDatasetId
-          };
+        case 'dataset_multi_select': {
+
+          const cfg: any = { dataset_id: ind.configDatasetId };
+
+          if (ind.configShowIfIndicatorName) {
+            cfg.show_if = {
+              indicator_name: ind.configShowIfIndicatorName,
+              value: ind.configShowIfValue
+            };
+          }
+
+          indicator.config = cfg;
           break;
+        }
       }
 
       if (this.TYPES_WITH_TARGETS.includes(ind.field_type) && Array.isArray(ind.targets)) {
