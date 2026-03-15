@@ -1,39 +1,143 @@
-<div class="h-screen w-full bg-zinc-50 flex overflow-hidden">
+<div class="h-screen w-full flex overflow-hidden relative"
+  style="background: linear-gradient(160deg, #eef3fb 0%, #f6f9ff 40%, #edf2fa 100%);">
+
+  <!-- DECORATIVE BACKGROUND -->
+  <div class="absolute top-[-120px] right-[-120px] w-[420px] h-[420px] rounded-full pointer-events-none"
+    style="background: rgba(27,58,107,0.05);"></div>
+
+  <div class="absolute bottom-[-140px] left-[-100px] w-[360px] h-[360px] rounded-full pointer-events-none"
+    style="background: rgba(45,95,168,0.05);"></div>
+
+  <div class="absolute top-[35%] left-[8%] w-[180px] h-[180px] rounded-full pointer-events-none"
+    style="background: rgba(27,58,107,0.04);"></div>
+
+  <!-- DIAGONAL LINES -->
+  <div class="absolute inset-0 pointer-events-none overflow-hidden">
+    <div class="absolute w-full h-[1px] top-[18%]" style="background: rgba(27,58,107,0.05); transform: rotate(-5deg);">
+    </div>
+
+    <div class="absolute w-full h-[1px] top-[78%]" style="background: rgba(27,58,107,0.05); transform: rotate(4deg);">
+    </div>
+  </div>
 
   <!-- SIDEBAR -->
   <app-sidebar></app-sidebar>
 
-  <!-- MAIN CONTENT -->
-  <div class="flex-1 flex flex-col min-w-0">
+  <!-- MAIN -->
+  <div class="flex-1 flex flex-col min-w-0 relative">
 
-    <!-- MOBILE HEADER with Hamburger -->
-    <header
-      class="md:hidden sticky top-0 z-20 bg-white border-b border-zinc-200 px-4 py-3 flex items-center justify-between">
+    <!-- ===== DESKTOP HEADER ===== -->
+    <header class="hidden md:block shrink-0">
 
-      <!-- Hamburger Button -->
-      <button (click)="toggleSidebar()"
-        class="p-2 -ml-2 text-zinc-700 hover:bg-zinc-100 rounded-lg transition-colors cursor-pointer">
-        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
+      <!-- FRANJA INSTITUCIONAL -->
+      <div class="h-[4px] w-full" style="background: linear-gradient(90deg, #1B3A6B 0%, #2d5fa8 40%, #1B3A6B 100%);">
+      </div>
 
-      <!-- Logo/Title -->
-      <h1 class="text-base font-semibold text-zinc-900">
-        Sistema
-      </h1>
+      <div class="flex items-center justify-between px-6"
+        style="background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); height: 64px; border-bottom: 1px solid #D6E0F0;">
 
-      <!-- Spacer for alignment -->
-      <div class="w-10"></div>
+        <!-- LEFT -->
+        <div class="flex items-center gap-5">
+
+          <img src="assets/logos/LOGO-SADS-HORIZONTAL.png" class="h-9 w-auto object-contain select-none" />
+
+          <div class="w-[1px] h-7" style="background:#D6E0F0;"></div>
+
+          <div class="flex flex-col leading-tight">
+            <span class="text-[11px] font-bold tracking-[1px] uppercase" style="color:#1B3A6B;">
+              Sistema de Indicadores
+            </span>
+
+            <span class="text-[10px]" style="color:#4A6A9B;">
+              Seguimiento y Reportes · Valle del Cauca
+            </span>
+          </div>
+
+        </div>
+
+        <!-- RIGHT -->
+        <div class="flex items-center gap-4">
+
+          <!-- STATUS -->
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-full border"
+            style="background:#EDF3FC;border-color:#D6E0F0;">
+
+            <span class="w-2 h-2 rounded-full animate-pulse" style="background:#2d5fa8;"></span>
+
+            <span class="text-[11px] font-semibold" style="color:#1B3A6B;">
+              Plataforma activa
+            </span>
+
+          </div>
+
+          <!-- ICON -->
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center border"
+            style="background:#F0F4FA;border-color:#D6E0F0;">
+
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 3v18h18" />
+              <path d="M18 9l-5 5-2-2-4 4" />
+            </svg>
+
+          </div>
+
+        </div>
+
+      </div>
+    </header>
+
+    <!-- ===== MOBILE HEADER ===== -->
+    <header class="md:hidden sticky top-0 z-20 shrink-0">
+
+      <div class="h-[3px] w-full" style="background: linear-gradient(90deg,#1B3A6B,#2d5fa8,#1B3A6B);"></div>
+
+      <div class="flex items-center justify-between px-4 py-3"
+        style="background:rgba(255,255,255,0.96);backdrop-filter:blur(8px);border-bottom:1px solid #D6E0F0;">
+
+        <!-- MENU -->
+        <button (click)="toggleSidebar()" class="p-2 -ml-1 rounded-lg transition cursor-pointer" style="color:#1B3A6B;"
+          onmouseover="this.style.background='#F0F4FA'" onmouseout="this.style.background='transparent'">
+
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+
+          </svg>
+
+        </button>
+
+        <!-- LOGO -->
+        <img src="assets/logos/LOGO-SADS-HORIZONTAL.png" class="h-7 w-auto object-contain select-none" />
+
+        <!-- ICON -->
+        <div class="w-9 h-9 flex items-center justify-center rounded-lg" style="background:#F0F4FA;">
+
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+
+            <path d="M3 3v18h18" />
+            <path d="M18 9l-5 5-2-2-4 4" />
+
+          </svg>
+
+        </div>
+
+      </div>
 
     </header>
 
-    <!-- PAGE CONTENT -->
-    <main class="flex-1 overflow-y-auto">
-      <router-outlet></router-outlet>
+    <!-- CONTENT -->
+    <main class="flex-1 overflow-y-auto relative z-[1]">
+
+      <div class="max-w-[1600px] mx-auto">
+
+        <router-outlet></router-outlet>
+
+      </div>
+
     </main>
 
   </div>
-
 
 </div>

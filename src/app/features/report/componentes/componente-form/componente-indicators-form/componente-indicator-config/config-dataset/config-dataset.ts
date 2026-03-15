@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { Component, Input, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DatasetService } from '../../../../../../../core/services/datasets.service';
 
 @Component({
@@ -10,39 +10,68 @@ import { DatasetService } from '../../../../../../../core/services/datasets.serv
   templateUrl: './config-dataset.html'
 })
 export class ConfigDatasetComponent implements OnInit, OnChanges {
+
   @Input() indicatorGroup!: FormGroup;
   @Input() isMulti = false;
 
-  // Lista de indicadores del componente (para el selector show_if)
+  // indicadores del componente (para show_if)
   @Input() allIndicatorControls: any[] = [];
 
+  // columnas del dataset seleccionado
+  datasetFields: string[] = [];
+
+  // datasets disponibles
   allDatasets: any[] = [];
   loading = false;
   error = '';
 
-  // Opciones de indicadores tipo select disponibles para show_if
+  // indicadores tipo select disponibles para show_if
   selectIndicators: { name: string }[] = [];
 
-  constructor(private datasetService: DatasetService) { }
+  constructor(
+    private datasetService: DatasetService,
+    private cdr: ChangeDetectorRef
+  ) { }
+
+  // ─────────────────────────────────────────────
+  // INIT
+  // ─────────────────────────────────────────────
 
   ngOnInit(): void {
 
-    if (!this.indicatorGroup.get('configShowIfIndicatorName')) {
-      this.indicatorGroup.addControl('configShowIfIndicatorName', new FormControl(null));
-    }
-
-    if (!this.indicatorGroup.get('configShowIfValue')) {
-      this.indicatorGroup.addControl('configShowIfValue', new FormControl(null));
-    }
-
     this.loading = true;
+
+    // cargar datasets
     this.datasetService.getAll().subscribe({
-      next: (datasets) => { this.allDatasets = datasets; this.loading = false; },
-      error: () => { this.error = 'Error al cargar datasets'; this.loading = false; }
+      next: (datasets) => {
+        this.allDatasets = datasets;
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.error = 'Error al cargar datasets';
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
     });
+
+    // escuchar cambio de dataset
+    this.indicatorGroup.get('configDatasetId')?.valueChanges.subscribe(id => {
+      this.loadDatasetFields(id);
+    });
+
+    // cargar columnas si se está editando un indicador
+    const datasetId = this.indicatorGroup.get('configDatasetId')?.value;
+    if (datasetId) {
+      this.loadDatasetFields(datasetId);
+    }
 
     this.refreshSelectIndicators();
   }
+
+  // ─────────────────────────────────────────────
+  // CHANGES
+  // ─────────────────────────────────────────────
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['allIndicatorControls'] || changes['indicatorGroup']) {
@@ -50,7 +79,48 @@ export class ConfigDatasetComponent implements OnInit, OnChanges {
     }
   }
 
+  // ─────────────────────────────────────────────
+  // DATASET FIELDS
+  // ─────────────────────────────────────────────
+
+  private loadDatasetFields(datasetId: number): void {
+
+    if (!datasetId) {
+      this.datasetFields = [];
+      return;
+    }
+
+    this.datasetService.getRecordsByDataset(datasetId).subscribe({
+      next: records => {
+
+        if (records?.length) {
+          this.datasetFields = Object.keys(records[0].data || {});
+        } else {
+          this.datasetFields = [];
+        }
+
+        // 🔥 restaurar valor guardado al editar
+        const saved = this.indicatorGroup.get('configLabelField')?.value;
+
+        if (saved && this.datasetFields.includes(saved)) {
+          this.indicatorGroup.get('configLabelField')?.setValue(saved, { emitEvent: false });
+        }
+
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.datasetFields = [];
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // ─────────────────────────────────────────────
+  // SHOW_IF
+  // ─────────────────────────────────────────────
+
   private refreshSelectIndicators(): void {
+
     const currentName = this.indicatorGroup.get('name')?.value;
 
     this.selectIndicators = (this.allIndicatorControls || [])
@@ -62,16 +132,6 @@ export class ConfigDatasetComponent implements OnInit, OnChanges {
       .filter(ind => ind.name);
   }
 
-  get selectedDatasetId(): number | null {
-    return this.indicatorGroup.get('configDatasetId')?.value || null;
-  }
-
-  get selectedDatasetName(): string {
-    return this.allDatasets.find(d => d.id === this.selectedDatasetId)?.name || '';
-  }
-
-  // ── show_if helpers ───────────────────────────────────────────
-
   get showIfIndicatorName(): string {
     return this.indicatorGroup.get('configShowIfIndicatorName')?.value || '';
   }
@@ -80,20 +140,40 @@ export class ConfigDatasetComponent implements OnInit, OnChanges {
     return this.indicatorGroup.get('configShowIfValue')?.value || '';
   }
 
-  /** Opciones del indicador select elegido como padre */
   get parentIndicatorOptions(): string[] {
+
     const parentName = this.showIfIndicatorName;
     if (!parentName) return [];
+
     const parentCtrl = (this.allIndicatorControls || []).find(
       ctrl => ctrl.get('name')?.value === parentName
     );
+
     if (!parentCtrl) return [];
+
     const raw: string = parentCtrl.get('configOptions')?.value || '';
-    return raw.split('\n').map((o: string) => o.trim()).filter((o: string) => o.length > 0);
+
+    return raw
+      .split('\n')
+      .map((o: string) => o.trim())
+      .filter((o: string) => o.length > 0);
   }
 
   clearShowIf(): void {
     this.indicatorGroup.get('configShowIfIndicatorName')?.setValue(null);
     this.indicatorGroup.get('configShowIfValue')?.setValue(null);
   }
+
+  // ─────────────────────────────────────────────
+  // HELPERS
+  // ─────────────────────────────────────────────
+
+  get selectedDatasetId(): number | null {
+    return this.indicatorGroup.get('configDatasetId')?.value || null;
+  }
+
+  get selectedDatasetName(): string {
+    return this.allDatasets.find(d => d.id === this.selectedDatasetId)?.name || '';
+  }
+
 }

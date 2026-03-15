@@ -439,4 +439,25 @@ export class ActionPlanCalendarComponent implements OnInit {
     this.calendarDays = [...days];
     this.cdr.detectChanges();
   }
+
+  openDayAgenda(day: CalendarDay): void {
+    this.viewMode = 'agenda';
+
+    const y = day.date.getFullYear();
+    const m = day.date.getMonth();
+    const d = day.date.getDate();
+
+    const plansOfDay = this.plans.map(plan => ({
+      ...plan,
+      plan_objectives: (plan.plan_objectives ?? []).map(obj => ({
+        ...obj,
+        activities: (obj.activities ?? []).filter(act => {
+          const p = this.parseDateOnly(act.delivery_date);
+          return p.y === y && p.m === m && p.d === d;
+        })
+      })).filter(obj => obj.activities.length > 0)
+    })).filter(plan => plan.plan_objectives.length > 0);
+
+    this.plans = plansOfDay;
+  }
 }

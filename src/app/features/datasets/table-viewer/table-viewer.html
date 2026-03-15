@@ -1,250 +1,320 @@
-<div class="min-h-screen" style="background: #f4f3f0; font-family: 'DM Sans', sans-serif;">
+<div class="min-h-screen" style="background:#F4F7FB;font-family:'DM Sans',sans-serif;">
 
     <!-- Google Fonts -->
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap"
         rel="stylesheet">
 
+
     <!-- HEADER -->
-    <div class="sticky top-0 z-20 border-b" style="background: #fafaf9; border-color: #e5e3de;">
+    <div class="sticky top-0 z-20 border-b" style="background:white;border-color:#D6E0F0;">
+
         <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
 
             <div class="flex items-center gap-3">
+
                 <button (click)="goBack()"
-                    class="flex items-center justify-center w-8 h-8 rounded-lg transition-all cursor-pointer"
-                    style="background: #eeece8; color: #6b6860;" onmouseenter="this.style.background='#e0ddd7'"
-                    onmouseleave="this.style.background='#eeece8'">
+                    class="flex items-center justify-center w-8 h-8 rounded-lg transition cursor-pointer"
+                    style="background:#F0F4FA;color:#4A6A9B;border:1px solid #D6E0F0"
+                    onmouseenter="this.style.background='#E6EEF9'" onmouseleave="this.style.background='#F0F4FA'">
+
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
+
                 </button>
+
                 <div>
-                    <h1 class="font-semibold leading-tight"
-                        style="color: #1c1b18; font-size: 15px; letter-spacing: -0.3px;">
+
+                    <h1 class="font-semibold leading-tight" style="color:#1B3A6B;font-size:15px;letter-spacing:-0.3px;">
                         {{ data()?.table?.name ?? 'Dashboard' }}
                     </h1>
-                    <p class="text-xs mt-0.5" style="color: #9b9890;" *ngIf="data()">
+
+                    <p class="text-xs mt-0.5" style="color:#6B86B3;" *ngIf="data()">
+
                         {{ filteredTotal() | number }} de {{ data()!.total | number }} registros
-                        <span *ngIf="activeFilters().length > 0" style="color: #c2610c;">
-                            · {{ activeFilters().length }} filtro{{ activeFilters().length > 1 ? 's' : '' }} activo{{
-                            activeFilters().length > 1 ? 's' : '' }}
+
+                        <span *ngIf="activeFilters().length > 0" style="color:#c2610c;">
+
+                            · {{ activeFilters().length }}
+                            filtro{{ activeFilters().length > 1 ? 's' : '' }} activo{{ activeFilters().length > 1 ? 's'
+                            : '' }}
+
                         </span>
+
                     </p>
+
                 </div>
+
             </div>
 
-            <!-- Filtros activos + limpiar -->
+
+            <!-- FILTROS ACTIVOS -->
             <div class="flex items-center gap-2 flex-wrap" *ngIf="activeFilters().length > 0">
+
                 <div *ngFor="let f of activeFilters()"
-                    class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium cursor-pointer transition-all"
-                    style="background: #fef3e8; color: #c2610c; border: 1px solid #fcd9aa;" (click)="removeFilter(f)">
+                    class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium cursor-pointer transition"
+                    style="background:#FDF3E6;color:#c2610c;border:1px solid #F6D2A4" (click)="removeFilter(f)">
+
                     <span>{{ f.sectionTitle }}: {{ f.label }}</span>
+
                     <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                             d="M6 18L18 6M6 6l12 12" />
+
                     </svg>
+
                 </div>
-                <button (click)="clearFilters()"
-                    class="px-2.5 py-1 rounded-full text-xs font-medium transition-all cursor-pointer"
-                    style="background: #eeece8; color: #6b6860;" onmouseenter="this.style.background='#e0ddd7'"
-                    onmouseleave="this.style.background='#eeece8'">
+
+
+                <button (click)="clearFilters()" class="px-2.5 py-1 rounded-full text-xs font-medium cursor-pointer"
+                    style="background:#F0F4FA;color:#4A6A9B;border:1px solid #D6E0F0">
+
                     Limpiar todo
+
                 </button>
+
             </div>
 
         </div>
+
     </div>
+
+
 
     <!-- LOADING -->
     <div *ngIf="loading()" class="flex flex-col items-center justify-center py-40">
+
         <div class="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin mb-4"
-            style="border-color: #d4cfc7; border-top-color: #1c1b18;"></div>
-        <p class="text-sm" style="color: #9b9890;">Analizando dataset...</p>
+            style="border-color:#D6E0F0;border-top-color:#1B3A6B"></div>
+
+        <p class="text-sm" style="color:#6B86B3">
+            Analizando dataset...
+        </p>
+
     </div>
+
+
 
     <!-- ERROR -->
     <div *ngIf="!loading() && error()" class="max-w-7xl mx-auto px-6 py-16 text-center">
-        <p class="text-sm" style="color: #dc2626;">{{ error() }}</p>
+
+        <p class="text-sm" style="color:#dc2626;">
+            {{ error() }}
+        </p>
+
     </div>
+
+
 
     <!-- DASHBOARD -->
     <div *ngIf="!loading() && !error() && data()" class="max-w-7xl mx-auto px-6 py-6 space-y-6">
 
-        <!-- ── KPIs ── -->
+
+        <!-- KPIs -->
         <div class="grid gap-3" [style.grid-template-columns]="'repeat(' + data()!.kpis.length + ', minmax(0, 1fr))'">
-            <div *ngFor="let kpi of data()!.kpis; let i = index"
-                class="rounded-2xl px-5 py-4 transition-all duration-200"
-                [style.background]="i === 0 ? '#1c1b18' : '#fafaf9'"
-                [style.border]="i === 0 ? 'none' : '1px solid #e5e3de'">
+
+            <div *ngFor="let kpi of data()!.kpis; let i = index" class="rounded-2xl px-5 py-4 transition"
+                [style.background]="i === 0 ? 'linear-gradient(135deg,#1B3A6B,#2d5fa8)' : 'white'"
+                [style.border]="i === 0 ? 'none' : '1px solid #D6E0F0'">
+
                 <p class="text-[10px] font-semibold uppercase tracking-widest mb-2"
-                    [style.color]="i === 0 ? '#9b9890' : '#b5b2ab'">
+                    [style.color]="i === 0 ? '#BFD2EE' : '#6B86B3'">
+
                     {{ kpi.label }}
+
                 </p>
-                <p class="font-bold tabular-nums leading-none" [style.font-size]="'1.6rem'"
-                    [style.letter-spacing]="'-0.04em'" [style.color]="i === 0 ? '#fafaf9' : '#1c1b18'">
+
+                <p class="font-bold tabular-nums leading-none" style="font-size:1.6rem;letter-spacing:-0.04em"
+                    [style.color]="i === 0 ? 'white' : '#1B3A6B'">
+
                     {{ kpi.value }}
+
                 </p>
-                <p *ngIf="kpi.sub" class="text-[11px] mt-1.5" [style.color]="i === 0 ? '#6b6860' : '#b5b2ab'">
+
+                <p *ngIf="kpi.sub" class="text-[11px] mt-1.5" [style.color]="i === 0 ? '#D6E4F7' : '#8CA3C8'">
+
                     {{ kpi.sub }}
+
                 </p>
+
             </div>
+
         </div>
 
-        <!-- ── Barra de búsqueda / filtro rápido ── -->
+
+
+        <!-- SEARCH -->
         <div class="flex items-center gap-2">
+
             <div class="relative flex-1 max-w-sm">
-                <svg class="absolute left-3 top-2.5 w-4 h-4 pointer-events-none" style="color: #b5b2ab;" fill="none"
+
+                <svg class="absolute left-3 top-2.5 w-4 h-4 pointer-events-none" style="color:#A0B4D6" fill="none"
                     viewBox="0 0 24 24" stroke="currentColor">
+
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+
                 </svg>
+
                 <input type="text" placeholder="Buscar en el dashboard..." [value]="searchQuery()"
                     (input)="searchQuery.set($any($event.target).value)"
-                    class="w-full pl-9 pr-4 py-2 text-sm rounded-xl outline-none transition-all"
-                    style="background: #fafaf9; border: 1px solid #e5e3de; color: #1c1b18; font-family: 'DM Sans', sans-serif;"
-                    onfocus="this.style.borderColor='#1c1b18'" onblur="this.style.borderColor='#e5e3de'" />
+                    class="w-full pl-9 pr-4 py-2 text-sm rounded-xl outline-none transition"
+                    style="background:white;border:1px solid #D6E0F0;color:#1B3A6B"
+                    onfocus="this.style.borderColor='#1B3A6B'" onblur="this.style.borderColor='#D6E0F0'" />
+
             </div>
-            <p class="text-xs" style="color: #b5b2ab;" *ngIf="activeFilters().length > 0">
+
+            <p class="text-xs" style="color:#8CA3C8">
                 Haz clic en cualquier barra para filtrar
             </p>
-            <p class="text-xs" style="color: #b5b2ab;" *ngIf="activeFilters().length === 0">
-                Haz clic en cualquier barra para filtrar
-            </p>
+
         </div>
 
-        <!-- ── Secciones ── -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div *ngFor="let section of filteredSections()" [class.lg:col-span-2]="section.type === 'completeness'"
-                class="rounded-2xl p-5 transition-all duration-200"
-                style="background: #fafaf9; border: 1px solid #e5e3de;">
 
-                <!-- Header de sección -->
+
+        <!-- SECTIONS -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+            <div *ngFor="let section of filteredSections()" [class.lg:col-span-2]="section.type === 'completeness'"
+                class="rounded-2xl p-5" style="background:white;border:1px solid #D6E0F0;">
+
+
+                <!-- SECTION HEADER -->
                 <div class="flex items-center justify-between mb-4">
+
                     <div>
-                        <h3 class="font-semibold" style="color: #1c1b18; font-size: 13px; letter-spacing: -0.2px;">
+
+                        <h3 class="font-semibold" style="color:#1B3A6B;font-size:13px">
+
                             {{ section.title }}
+
                         </h3>
-                        <p class="text-[11px] mt-0.5" style="color: #b5b2ab;">{{ section.subtitle }}</p>
+
+                        <p class="text-[11px] mt-0.5" style="color:#8CA3C8">
+
+                            {{ section.subtitle }}
+
+                        </p>
+
                     </div>
+
+
                     <span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-lg"
-                        style="background: #eeece8; color: #6b6860;">
-                        {{ section.type === 'completeness' ? 'completitud' : section.type === 'histogram' ?
-                        'distribución' : 'frecuencia' }}
+                        style="background:#F0F4FA;color:#4A6A9B">
+
+                        {{ section.type === 'completeness' ? 'completitud'
+                        : section.type === 'histogram' ? 'distribución'
+                        : 'frecuencia' }}
+
                     </span>
+
                 </div>
+
+
 
                 <!-- BAR -->
                 <ng-container *ngIf="section.type === 'bar'">
+
                     <div class="space-y-1.5">
+
                         <div *ngFor="let bar of section.bars"
-                            class="flex items-center gap-3 group cursor-pointer rounded-lg px-1 py-0.5 transition-all duration-150"
+                            class="flex items-center gap-3 group cursor-pointer rounded-lg px-1 py-0.5 transition"
                             [style.opacity]="isBarFiltered(section.id, bar.label) ? '0.35' : '1'"
                             (click)="toggleFilter(section, bar)">
 
-                            <span class="text-xs w-28 truncate shrink-0 text-right transition-colors"
-                                style="color: #6b6860; font-family: 'DM Sans', sans-serif;"
-                                [style.color]="isBarActive(section.id, bar.label) ? '#c2610c' : '#6b6860'"
-                                [title]="bar.label">
+                            <span class="text-xs w-28 truncate shrink-0 text-right" style="color:#4A6A9B"
+                                [style.color]="isBarActive(section.id, bar.label) ? '#c2610c' : '#4A6A9B'">
+
                                 {{ bar.label }}
+
                             </span>
 
-                            <div class="flex-1 rounded-full overflow-hidden" style="background: #eeece8; height: 28px;">
+                            <div class="flex-1 rounded-full overflow-hidden" style="background:#EEF3FA;height:28px">
+
                                 <div class="h-full rounded-full flex items-center justify-between px-3 transition-all duration-500 min-w-[28px]"
                                     [style.width.%]="(bar.value / maxBarValue(section)) * 100"
                                     [style.background]="isBarActive(section.id, bar.label) ? '#c2610c' : bar.color">
-                                    <span class="text-[10px] font-semibold text-white/90 tabular-nums leading-none">
+
+                                    <span class="text-[10px] font-semibold text-white tabular-nums leading-none">
                                         {{ bar.value }}
                                     </span>
+
                                 </div>
+
                             </div>
 
-                            <span
-                                class="text-[11px] w-10 text-right tabular-nums shrink-0 font-medium transition-colors"
-                                [style.color]="isBarActive(section.id, bar.label) ? '#c2610c' : '#b5b2ab'"
-                                style="font-family: 'DM Mono', monospace;">
+                            <span class="text-[11px] w-10 text-right tabular-nums shrink-0 font-medium"
+                                [style.color]="isBarActive(section.id, bar.label) ? '#c2610c' : '#8CA3C8'"
+                                style="font-family:'DM Mono',monospace">
+
                                 {{ bar.pct }}%
+
                             </span>
 
                         </div>
+
                     </div>
+
                 </ng-container>
 
-                <!-- HISTOGRAM -->
-                <ng-container *ngIf="section.type === 'histogram'">
-                    <div class="space-y-1.5 mb-4">
-                        <div *ngFor="let bar of section.bars" class="flex items-center gap-3">
-                            <span class="text-[11px] w-24 truncate shrink-0 text-right"
-                                style="color: #6b6860; font-family: 'DM Mono', monospace;">
-                                {{ bar.label }}
-                            </span>
-                            <div class="flex-1 rounded-full overflow-hidden" style="background: #eeece8; height: 24px;">
-                                <div class="h-full rounded-full flex items-center justify-between px-3 transition-all duration-500 min-w-[24px]"
-                                    [style.width.%]="(bar.value / maxBarValue(section)) * 100"
-                                    [style.background]="bar.color">
-                                    <span class="text-[10px] font-semibold text-white/90 tabular-nums">{{ bar.value
-                                        }}</span>
-                                </div>
-                            </div>
-                            <span class="text-[11px] w-10 text-right tabular-nums shrink-0"
-                                style="color: #b5b2ab; font-family: 'DM Mono', monospace;">
-                                {{ bar.pct }}%
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Stats numéricas -->
-                    <div *ngIf="section.stats" class="grid grid-cols-5 gap-2 pt-4"
-                        style="border-top: 1px solid #eeece8;">
-                        <div *ngFor="let stat of [
-              {label:'Mínimo', val: section.stats.min | number},
-              {label:'Máximo', val: section.stats.max | number},
-              {label:'Promedio', val: (section.stats.avg | number:'1.1-1')},
-              {label:'Mediana', val: (section.stats.median | number:'1.1-1')},
-              {label:'Total', val: section.stats.total | number}
-            ]" class="rounded-xl px-3 py-2.5 text-center" style="background: #f4f3f0;">
-                            <p class="font-semibold tabular-nums"
-                                style="color: #1c1b18; font-size: 15px; font-family: 'DM Mono', monospace; letter-spacing: -0.03em;">
-                                {{ stat.val }}
-                            </p>
-                            <p class="text-[10px] mt-0.5 font-medium uppercase tracking-wide" style="color: #b5b2ab;">
-                                {{ stat.label }}
-                            </p>
-                        </div>
-                    </div>
-                </ng-container>
 
                 <!-- COMPLETENESS -->
                 <ng-container *ngIf="section.type === 'completeness'">
+
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-2.5">
+
                         <div *ngFor="let bar of section.bars" class="flex items-center gap-3">
-                            <span class="text-xs w-36 truncate shrink-0" style="color: #6b6860;" [title]="bar.label">
+
+                            <span class="text-xs w-36 truncate shrink-0" style="color:#4A6A9B">
                                 {{ bar.label }}
                             </span>
-                            <div class="flex-1 rounded-full overflow-hidden" style="background: #eeece8; height: 10px;">
+
+                            <div class="flex-1 rounded-full overflow-hidden" style="background:#EEF3FA;height:10px">
+
                                 <div class="h-full rounded-full transition-all duration-700" [style.width.%]="bar.pct"
-                                    [style.background]="bar.pct >= 80 ? '#1c1b18' : bar.pct >= 50 ? '#71717a' : '#d4cfc7'">
+                                    [style.background]="bar.pct >= 80 ? '#1B3A6B' : bar.pct >= 50 ? '#6B86B3' : '#C7D4EB'">
                                 </div>
+
                             </div>
+
                             <span class="text-[11px] w-9 text-right tabular-nums font-semibold shrink-0"
-                                style="font-family: 'DM Mono', monospace;"
-                                [style.color]="bar.pct >= 80 ? '#1c1b18' : bar.pct >= 50 ? '#71717a' : '#b5b2ab'">
+                                style="font-family:'DM Mono',monospace"
+                                [style.color]="bar.pct >= 80 ? '#1B3A6B' : bar.pct >= 50 ? '#6B86B3' : '#8CA3C8'">
+
                                 {{ bar.pct }}%
+
                             </span>
+
                         </div>
+
                     </div>
+
                 </ng-container>
 
             </div>
+
         </div>
 
-        <!-- Empty -->
+
+
+        <!-- EMPTY -->
         <div *ngIf="filteredSections().length === 0" class="rounded-2xl p-16 text-center"
-            style="background: #fafaf9; border: 1px solid #e5e3de;">
-            <p class="text-sm" style="color: #b5b2ab;">No hay secciones que mostrar con los filtros actuales</p>
-            <button (click)="clearFilters()" class="mt-3 text-xs font-medium cursor-pointer" style="color: #c2610c;">
+            style="background:white;border:1px solid #D6E0F0">
+
+            <p class="text-sm" style="color:#8CA3C8">
+                No hay secciones que mostrar con los filtros actuales
+            </p>
+
+            <button (click)="clearFilters()" class="mt-3 text-xs font-medium cursor-pointer" style="color:#c2610c">
+
                 Limpiar filtros
+
             </button>
+
         </div>
 
     </div>
+
 </div>

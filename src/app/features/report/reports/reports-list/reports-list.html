@@ -1,78 +1,154 @@
-<div class="min-h-screen bg-zinc-50">
+<div class="min-h-screen">
 
     <!-- PAGE HEADER -->
-    <div class="border-b border-zinc-200 bg-white">
-        <div class="max-w-7xl mx-auto px-6 py-8">
-            <div class="flex items-center justify-between">
+    <div class="px-6 pt-7 pb-6">
+        <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"
+                    style="background: linear-gradient(135deg, #1B3A6B, #2d5fa8);">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="1.8"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                    </svg>
+                </div>
                 <div>
-                    <h1 class="text-2xl font-semibold text-zinc-900 tracking-tight">
+                    <h1 class="text-[20px] font-bold leading-none" style="color: #1B3A6B;">
                         Reportes operativos
                     </h1>
-                    <p class="text-sm text-zinc-500 mt-1">
-                        Registro y administración de reportes por estrategia
+                    <p class="text-sm mt-1" style="color: #4A6A9B;">
+                        Registro y administración · Por estrategia
                     </p>
                 </div>
-                <a [routerLink]="['create']" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium
-                    text-white bg-zinc-900 rounded-lg hover:bg-black
-                    transition-colors duration-150 cursor-pointer">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Nuevo reporte
-                </a>
             </div>
+            <a [routerLink]="['create']"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-bold transition-all duration-150 shadow-sm cursor-pointer"
+                style="background: linear-gradient(135deg, #1B3A6B 0%, #2d5fa8 100%); color: white;"
+                onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 4v16m8-8H4" />
+                </svg>
+                Nuevo reporte
+            </a>
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-6 py-8 space-y-6">
+    <!-- CONTENT -->
+    <div class="max-w-7xl mx-auto px-6 py-8 space-y-6 relative z-[1]">
 
-        <!-- LOADING STATE -->
-        <div *ngIf="loading" class="flex items-center gap-3 py-6 text-sm text-zinc-500">
-            <div class="w-4 h-4 border-2 border-zinc-200 border-t-zinc-500 rounded-full animate-spin"></div>
-            Cargando registros...
+        <!-- LOADING -->
+        <div *ngIf="loading" class="flex items-center gap-3 py-8">
+            <div class="w-4 h-4 rounded-full animate-spin"
+                style="border: 2px solid #D6E0F0; border-top-color: #1B3A6B;"></div>
+            <span class="text-[13px]" style="color: #8A9DC0;">Cargando registros...</span>
         </div>
 
         <ng-container *ngIf="!loading">
 
             <!-- EMPTY STATE -->
-            <div *ngIf="reports.length === 0" class="bg-white border border-zinc-200 rounded-2xl p-12 text-center">
-                <h3 class="text-base font-semibold text-zinc-900">No hay reportes registrados</h3>
-                <p class="text-sm text-zinc-500 mt-2">
-                    Usa el botón de arriba para crear el primer registro operativo
+            <div *ngIf="reports.length === 0" class="rounded-2xl p-16 text-center border"
+                style="background: white; border-color: #D6E0F0;">
+                <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
+                    style="background: #F0F4FA;">
+                    <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" style="color: #4A6A9B;"
+                        stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                </div>
+                <h3 class="text-sm font-bold" style="color: #1B3A6B;">Sin reportes registrados</h3>
+                <p class="text-xs mt-1 max-w-xs mx-auto leading-relaxed" style="color: #4A6A9B;">
+                    Usa el botón <strong>Nuevo reporte</strong> para crear el primer registro operativo
                 </p>
             </div>
 
             <ng-container *ngIf="reports.length > 0">
 
                 <!-- TABLA -->
-                <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
-                    <div class="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
-                        <div>
-                            <h3 class="text-sm font-semibold text-zinc-900">Registros</h3>
-                            <p class="text-xs text-zinc-500 mt-0.5">Administración y edición de reportes</p>
+                <div class="space-y-0">
+                    <div class="h-[3px] w-full rounded-t-xl"
+                        style="background: linear-gradient(90deg, #1B3A6B 0%, #2d5fa8 50%, #1B3A6B 100%);"></div>
+
+                    <div class="rounded-b-xl overflow-hidden border" style="border-color: #D6E0F0; background: white;">
+
+                        <div class="flex items-center justify-between gap-3 px-5 py-4 border-b"
+                            style="border-color: #D6E0F0; background: #F8FAFD;">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                                    style="background: #D6E4F7;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="8" y1="6" x2="21" y2="6" />
+                                        <line x1="8" y1="12" x2="21" y2="12" />
+                                        <line x1="8" y1="18" x2="21" y2="18" />
+                                        <line x1="3" y1="6" x2="3.01" y2="6" />
+                                        <line x1="3" y1="12" x2="3.01" y2="12" />
+                                        <line x1="3" y1="18" x2="3.01" y2="18" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] font-bold uppercase tracking-[1px]"
+                                        style="color: #1B3A6B;">
+                                        Registros
+                                    </span>
+                                    <p class="text-[10.5px] mt-0.5" style="color: #8A9DC0;">
+                                        Administración y edición de reportes
+                                    </p>
+                                </div>
+                            </div>
+                            <span class="text-[11px] font-semibold px-3 py-1 rounded-full"
+                                style="background: #D6E4F7; border: 1px solid #B3CCE8; color: #1B3A6B;">
+                                {{ reports.length }} {{ reports.length === 1 ? 'reporte' : 'reportes' }}
+                            </span>
                         </div>
-                        <span class="text-xs text-zinc-400 font-medium">
-                            {{ reports.length }} {{ reports.length === 1 ? 'reporte' : 'reportes' }}
-                        </span>
+
+                        <div class="p-5">
+                            <app-reports-table [reports]="reports" [strategyMap]="strategyMap"
+                                [componentMap]="componentMap" [currentUserId]="currentUserId" [isAdmin]="isAdmin"
+                                [chartFilter]="chartFilter" (delete)="deleteReport($event)"
+                                (clearFilter)="clearChartFilter()">
+                            </app-reports-table>
+                        </div>
+
                     </div>
-                    <div class="p-6">
-                        <app-reports-table [reports]="reports" [strategyMap]="strategyMap" [componentMap]="componentMap"
-                            [currentUserId]="currentUserId" [isAdmin]="isAdmin" [chartFilter]="chartFilter"
-                            (delete)="deleteReport($event)" (clearFilter)="clearChartFilter()">
-                        </app-reports-table>
-                    </div>
-                </section>
+                </div>
 
                 <!-- AUDIT LOG (admin only) -->
-                <section *ngIf="isAdmin" class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
-                    <div class="px-6 py-4 border-b border-zinc-100">
-                        <h3 class="text-sm font-semibold text-zinc-900">Historial de acciones</h3>
-                        <p class="text-xs text-zinc-500 mt-0.5">Creación, edición y eliminación</p>
+                <div *ngIf="isAdmin" class="space-y-0 mt-6">
+                    <div class="h-[3px] w-full rounded-t-xl"
+                        style="background: linear-gradient(90deg, #1B3A6B 0%, #2d5fa8 50%, #1B3A6B 100%);"></div>
+
+                    <div class="rounded-b-xl overflow-hidden border" style="border-color: #D6E0F0; background: white;">
+
+                        <div class="flex items-center gap-3 px-5 py-4 border-b"
+                            style="border-color: #D6E0F0; background: #F8FAFD;">
+                            <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                                style="background: #D6E4F7;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B"
+                                    stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 20h9" />
+                                    <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <span class="text-[11px] font-bold uppercase tracking-[1px]" style="color: #1B3A6B;">
+                                    Historial de acciones
+                                </span>
+                                <p class="text-[10.5px] mt-0.5" style="color: #8A9DC0;">
+                                    Creación, edición y eliminación de registros
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="p-5">
+                            <app-reports-audit-log></app-reports-audit-log>
+                        </div>
+
                     </div>
-                    <div class="p-6">
-                        <app-reports-audit-log></app-reports-audit-log>
-                    </div>
-                </section>
+                </div>
 
             </ng-container>
 
