@@ -26,6 +26,7 @@ export class ReportDetailComponent implements OnInit {
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
+
     this.reportsService.getById(id).subscribe({
       next: (r) => {
         this.report = r;
@@ -44,16 +45,6 @@ export class ReportDetailComponent implements OnInit {
     return getIndicatorDisplayName(id, fallback);
   }
 
-  formatValue(value: any, fieldType?: string): string {
-    if (value === null || value === undefined) return '—';
-    if (typeof value !== 'object') return String(value);
-
-    // sum_group: { "CANINO": { "Hembra": { "no_de_animales_...": 0 } } }
-    // grouped_data, categorized_group → object plano { "categoria": número }
-    return ''; // el HTML lo maneja con helpers
-  }
-
-
   formatZone(z: string): string {
     if (!z) return '—';
     const parts = z.split('.');
@@ -62,37 +53,56 @@ export class ReportDetailComponent implements OnInit {
   }
 
   isValidUrl(url: string): boolean {
-    try { new URL(url); return true; } catch { return false; }
+    try { new URL(url); return true; }
+    catch { return false; }
   }
-
 
   isObject(value: any): boolean {
     return value !== null && typeof value === 'object';
   }
 
-  objectEntries(value: any): { key: string; val: any }[] {
-    if (!value || typeof value !== 'object') return [];
-    return Object.entries(value).map(([key, val]) => ({ key, val }));
-  }
+  formatIndicatorLabel(label: string): string {
+    if (!label) return '';
 
-  isNestedObject(val: any): boolean {
-    return val !== null && typeof val === 'object' && !Array.isArray(val);
+    return label
+      .replace(/^data\s*›\s*/i, '')
+      .replace(/_/g, ' ')
+      .split(' › ')
+      .map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase())
+      .join(' · ');
   }
 
   flattenNestedValue(value: any): { label: string; total: number }[] {
+
     const result: { label: string; total: number }[] = [];
 
     const recurse = (obj: any, prefix: string) => {
+
       for (const [k, v] of Object.entries(obj)) {
+
         if (typeof v === 'number') {
-          result.push({ label: prefix ? `${prefix} › ${k}` : k, total: v });
-        } else if (typeof v === 'object' && v !== null) {
-          recurse(v, prefix ? `${prefix} › ${k}` : k);
+
+          result.push({
+            label: prefix ? `${prefix} › ${k}` : k,
+            total: v
+          });
+
         }
+
+        else if (typeof v === 'object' && v !== null) {
+
+          recurse(v, prefix ? `${prefix} › ${k}` : k);
+
+        }
+
       }
+
     };
 
     recurse(value, '');
-    return result.filter(r => r.total > 0);
+
+    return result.filter(r => r.total !== null && r.total !== undefined);
+
   }
+
 }
