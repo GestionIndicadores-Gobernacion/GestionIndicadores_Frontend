@@ -61,17 +61,40 @@ export class ReportIndicatorsFormComponent implements OnChanges {
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
+
     const indicatorsChanged = !!changes['indicators'];
     const valuesFirstLoad = !!changes['values']?.firstChange;
+    const locationChanged = !!changes['interventionLocation'];
 
     if (indicatorsChanged || valuesFirstLoad) {
+
       this.groupSvc.initGroupModes(this.indicators, this.values, this.selectedGroupMode);
       this.initializeComplexFields();
-      this.datasetSvc.loadOptions(this.indicators, this.datasetOptions, this.datasetLoading, this.datasetError, this.cdr);
-    } else if (indicatorsChanged) {
-      this.groupSvc.initGroupModes(this.indicators, this.values, this.selectedGroupMode);
-      this.datasetSvc.loadOptions(this.indicators, this.datasetOptions, this.datasetLoading, this.datasetError, this.cdr);
+
+      this.datasetSvc.loadOptions(
+        this.indicators,
+        this.datasetOptions,
+        this.datasetLoading,
+        this.datasetError,
+        this.cdr,
+        this.interventionLocation   // 👈 NUEVO
+      );
+
     }
+
+    if (locationChanged) {
+
+      this.datasetSvc.loadOptions(
+        this.indicators,
+        this.datasetOptions,
+        this.datasetLoading,
+        this.datasetError,
+        this.cdr,
+        this.interventionLocation   // 👈 recargar si cambia municipio
+      );
+
+    }
+
   }
 
   // ── Computed ─────────────────────────────────────────────────
