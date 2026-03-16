@@ -40,11 +40,9 @@ export interface FlatActivity {
   imports: [
     CommonModule,
     RouterModule,
-    PlansCountByStatusPipe,
     ActionPlanCreateModalComponent,
     ActionPlanReportModalComponent,
     ActionPlanListComponent,
-    ActionPlanAuditLogComponent
   ],
   templateUrl: './action-plan-calendar.html',
   styleUrl: './action-plan-calendar.css',
