@@ -1,1 +1,49 @@
-<p>multi-select-field works!</p>
+<div class="rounded-2xl border border-zinc-200 bg-white overflow-hidden">
+
+    <!-- Header -->
+    <div class="px-4 py-3 text-white font-semibold text-sm tracking-wide flex items-center gap-2"
+        style="background:linear-gradient(135deg,#1B3A6B 0%,#2d5fa8 100%)">
+        <svg class="w-4 h-4 opacity-90" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M9 5H7a2 2 0 00-2 2v2m0 6v2a2 2 0 002 2h2m6 0h2a2 2 0 002-2v-2m0-6V7a2 2 0 00-2-2h-2" />
+        </svg>
+
+        <span>Opciones</span>
+    </div>
+
+    <!-- Options -->
+    <div class="p-4 space-y-2 bg-[#F8FAFF]">
+
+        <div *ngFor="let option of indicator.config?.options" (click)="toggle(option)"
+            class="group flex items-center gap-3 p-3 rounded-xl border border-transparent bg-[#F0F4FA] hover:border-[#2d5fa8] hover:bg-white transition-all duration-200 cursor-pointer"
+            [ngClass]="{
+        'border-[#1B3A6B] bg-white shadow-sm': isSelected(option)
+      }">
+
+            <!-- Checkbox -->
+            <div class="flex items-center justify-center w-5 h-5 rounded-md border transition-all" [ngClass]="{
+          'bg-[#1B3A6B] border-[#1B3A6B] text-white': isSelected(option),
+          'border-zinc-300 bg-white': !isSelected(option)
+        }">
+                <svg *ngIf="isSelected(option)" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+
+            <!-- Label -->
+            <label class="flex-1 text-sm font-medium text-zinc-700 select-none cursor-pointer">
+                {{ option }}
+            </label>
+
+            <!-- Icon -->
+            <svg class="w-4 h-4 text-zinc-400 group-hover:text-[#2d5fa8] transition-colors" fill="none"
+                stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+
+        </div>
+
+    </div>
+
+</div>

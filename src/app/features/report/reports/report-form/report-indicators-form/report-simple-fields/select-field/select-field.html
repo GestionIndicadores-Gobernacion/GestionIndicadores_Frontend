@@ -1,1 +1,51 @@
-<p>select-field works!</p>
+<div class="w-full rounded-2xl border border-zinc-200 bg-white overflow-hidden">
+
+    <!-- Header -->
+    <div class="px-4 py-2.5 text-white text-sm font-semibold flex items-center gap-2"
+        style="background:linear-gradient(135deg,#1B3A6B 0%,#2d5fa8 100%)">
+        <svg class="w-4 h-4 opacity-90" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+        </svg>
+        <span>Selección</span>
+    </div>
+
+    <!-- Field -->
+    <div class="p-3 bg-[#F8FAFF]">
+
+        <div class="relative">
+
+            <!-- Icon -->
+            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-[#2d5fa8] pointer-events-none">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+
+            <select [ngModel]="value" (ngModelChange)="valueChange.emit($event)" class="w-full pl-9 pr-8 py-2.5 text-sm rounded-xl border border-zinc-200
+               bg-[#F0F4FA] text-zinc-900 cursor-pointer
+               focus:outline-none focus:ring-2 focus:ring-[#2d5fa8] focus:border-[#1B3A6B]
+               hover:border-[#2d5fa8]
+               transition-all duration-200 appearance-none">
+
+                <option [ngValue]="null" disabled>
+                    Seleccionar opción
+                </option>
+
+                <option *ngFor="let op of indicator.config?.options" [ngValue]="op">
+                    {{ op }}
+                </option>
+
+            </select>
+
+            <!-- Arrow -->
+            <div class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

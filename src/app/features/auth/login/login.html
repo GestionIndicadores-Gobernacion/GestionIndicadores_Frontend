@@ -1,82 +1,101 @@
-<form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)" class="space-y-7">
+<form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)" class="space-y-5">
 
   <!-- TITULO -->
   <div class="text-center">
-    <h2 class="text-xl font-semibold text-zinc-900">
+    <h2 class="text-[17px] font-bold" style="color: #1B3A6B;">
       Iniciar sesión
     </h2>
   </div>
 
   <!-- ================= EMAIL ================= -->
-  <div class="space-y-2">
-    <label class="text-sm font-medium text-zinc-700">
+  <div class="space-y-1.5">
+    <label class="text-[12px] font-bold uppercase tracking-[0.4px]" style="color: #1B3A6B;">
       Correo electrónico
     </label>
 
-    <input type="email" name="email" [(ngModel)]="email" #emailCtrl="ngModel" required email
-      placeholder="correo@ejemplo.com" class="w-full rounded-lg
-             border bg-zinc-50
-             px-3 py-2.5 text-sm text-zinc-900
-             outline-none transition-all duration-150
-             placeholder:text-zinc-400
+    <div class="relative">
+      <!-- Icono -->
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" width="15" height="15"
+        viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+        <polyline points="22,6 12,13 2,6" />
+      </svg>
 
-             focus:bg-white focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900
+      <input type="email" name="email" [(ngModel)]="email" #emailCtrl="ngModel" required email
+        placeholder="correo@valledelcauca.gov.co"
+        class="w-full rounded-xl pl-9 pr-4 py-2.5 text-sm outline-none transition-all duration-150 placeholder:text-gray-300"
+        style="background: #F0F4FA; border: 1.5px solid #D6E0F0; color: #1B3A6B;" [ngClass]="{
+          'focus:ring-2': true,
+          'border-rose-400 ring-1 ring-rose-400': showError(emailCtrl)
+        }"
+        onfocus="this.style.borderColor='#1B3A6B'; this.style.background='#fff'; this.style.boxShadow='0 0 0 3px rgba(27,58,107,0.1)'"
+        onblur="this.style.borderColor='#D6E0F0'; this.style.background='#F0F4FA'; this.style.boxShadow='none'" />
+    </div>
 
-             disabled:opacity-60" [ngClass]="{
-        'border-zinc-300': !showError(emailCtrl),
-        'border-rose-400 ring-1 ring-rose-400 focus:ring-rose-500 focus:border-rose-500 bg-white': showError(emailCtrl)
-      }" />
-
-    <!-- ERRORES -->
-    <div *ngIf="showError(emailCtrl)" class="text-xs text-rose-500 mt-1">
-      <span *ngIf="emailCtrl.errors?.['required']">
-        El correo es obligatorio.
-      </span>
-      <span *ngIf="emailCtrl.errors?.['email']">
-        Debe ser un correo válido.
-      </span>
+    <div *ngIf="showError(emailCtrl)" class="text-[11px] text-rose-500 mt-1 flex items-center gap-1">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        stroke-linecap="round">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      <span *ngIf="emailCtrl.errors?.['required']">El correo es obligatorio.</span>
+      <span *ngIf="emailCtrl.errors?.['email']">Debe ser un correo válido.</span>
     </div>
   </div>
 
   <!-- ================= PASSWORD ================= -->
-  <div class="space-y-2">
-    <label class="text-sm font-medium text-zinc-700">
+  <div class="space-y-1.5">
+    <label class="text-[12px] font-bold uppercase tracking-[0.4px]" style="color: #1B3A6B;">
       Contraseña
     </label>
 
-    <input type="password" name="password" [(ngModel)]="password" #passwordCtrl="ngModel" required minlength="3"
-      placeholder="••••••••" class="w-full rounded-lg
-             border bg-zinc-50
-             px-3 py-2.5 text-sm text-zinc-900
-             outline-none transition-all duration-150
-             placeholder:text-zinc-400
+    <div class="relative">
+      <!-- Icono -->
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" width="15" height="15"
+        viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" />
+        <path d="M7 11V7a5 5 0 0110 0v4" />
+      </svg>
 
-             focus:bg-white focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900" [ngClass]="{
-        'border-zinc-300': !showError(passwordCtrl),
-        'border-rose-400 ring-1 ring-rose-400 focus:ring-rose-500 focus:border-rose-500 bg-white': showError(passwordCtrl)
-      }" />
+      <input type="password" name="password" [(ngModel)]="password" #passwordCtrl="ngModel" required minlength="3"
+        placeholder="••••••••••"
+        class="w-full rounded-xl pl-9 pr-4 py-2.5 text-sm outline-none transition-all duration-150 placeholder:text-gray-300"
+        style="background: #F0F4FA; border: 1.5px solid #D6E0F0; color: #1B3A6B;" [ngClass]="{
+          'border-rose-400 ring-1 ring-rose-400': showError(passwordCtrl)
+        }"
+        onfocus="this.style.borderColor='#1B3A6B'; this.style.background='#fff'; this.style.boxShadow='0 0 0 3px rgba(27,58,107,0.1)'"
+        onblur="this.style.borderColor='#D6E0F0'; this.style.background='#F0F4FA'; this.style.boxShadow='none'" />
+    </div>
 
-    <!-- ERRORES -->
-    <div *ngIf="showError(passwordCtrl)" class="text-xs text-rose-500 mt-1">
-      <span *ngIf="passwordCtrl.errors?.['required']">
-        La contraseña es obligatoria.
-      </span>
-      <span *ngIf="passwordCtrl.errors?.['minlength']">
-        Debe tener al menos 3 caracteres.
-      </span>
+    <div *ngIf="showError(passwordCtrl)" class="text-[11px] text-rose-500 mt-1 flex items-center gap-1">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        stroke-linecap="round">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      <span *ngIf="passwordCtrl.errors?.['required']">La contraseña es obligatoria.</span>
+      <span *ngIf="passwordCtrl.errors?.['minlength']">Debe tener al menos 3 caracteres.</span>
     </div>
   </div>
 
   <!-- BOTON -->
-  <button type="submit" [disabled]="loginForm.invalid" class="w-full
-         bg-zinc-900 hover:bg-black active:scale-[0.99]
-         text-white text-sm font-medium
-         py-2.5 rounded-lg
-         transition-all duration-150
-         cursor-pointer
-         disabled:bg-zinc-300 disabled:text-zinc-500 disabled:cursor-not-allowed">
+  <button type="submit" [disabled]="loginForm.invalid"
+    class="w-full text-white text-[14px] font-bold py-2.5 rounded-xl transition-all duration-150 active:scale-[0.99] flex items-center justify-center gap-2"
+    style="background: linear-gradient(135deg, #1B3A6B 0%, #2d5fa8 100%);"
+    [style.opacity]="loginForm.invalid ? '0.45' : '1'" [style.cursor]="loginForm.invalid ? 'not-allowed' : 'pointer'"
+    onmouseover="if(!this.disabled) this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">
+
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
+      stroke-linejoin="round">
+      <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4" />
+      <polyline points="10 17 15 12 10 7" />
+      <line x1="15" y1="12" x2="3" y2="12" />
+    </svg>
     Iniciar sesión
   </button>
-
 
 </form>

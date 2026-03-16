@@ -1,126 +1,188 @@
-<div *ngIf="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden">
+<div *ngIf="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
 
-        <!-- Header -->
-        <div class="px-6 py-4 border-b border-zinc-200 flex items-center justify-between flex-shrink-0">
-            <div>
-                <h2 class="text-sm font-semibold text-zinc-900">Red Animalia</h2>
-                <p class="text-xs text-zinc-500 mt-0.5">
-                    Municipio: <span class="font-medium">{{ interventionLocation }}</span>
-                    <span *ngIf="actors_added.length > 0" class="ml-2 text-emerald-600 font-medium">
-                        · {{ actors_added.length }} actor{{ actors_added.length !== 1 ? 'es' : '' }} agregado{{
-                        actors_added.length !== 1 ? 's' : '' }}
-                    </span>
-                </p>
+    <div
+        class="w-full max-w-4xl max-h-[92vh] flex flex-col rounded-2xl overflow-hidden shadow-2xl bg-white border border-zinc-200">
+
+        <!-- HEADER -->
+        <div class="px-6 py-4 flex items-center justify-between text-white"
+            style="background:linear-gradient(135deg,#1B3A6B 0%,#2d5fa8 100%)">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5V4H2v16h5" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 9h6v11H9z" />
+                    </svg>
+                </div>
+
+                <div>
+                    <h2 class="text-sm font-semibold tracking-wide">Red Animalia</h2>
+
+                    <p class="text-xs text-blue-100 mt-0.5">
+                        Municipio:
+                        <span class="font-medium text-white">{{ interventionLocation }}</span>
+
+                        <span *ngIf="actors_added.length > 0"
+                            class="ml-2 bg-white/15 px-2 py-0.5 rounded-md text-[11px] font-medium text-white">
+                            {{ actors_added.length }} actor{{ actors_added.length !== 1 ? 'es' : '' }} agregado{{
+                            actors_added.length !== 1 ? 's' : '' }}
+                        </span>
+                    </p>
+                </div>
             </div>
+
             <button type="button" (click)="onClose()"
-                class="p-2 text-zinc-400 hover:text-zinc-900 transition-colors cursor-pointer">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                class="p-2 rounded-lg hover:bg-white/20 transition cursor-pointer">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
         </div>
 
-        <div class="overflow-y-auto flex-1 p-6 space-y-6">
+        <!-- BODY -->
+        <div class="overflow-y-auto flex-1 p-6 space-y-6 bg-[#F8FAFF]">
 
-            <!-- Loading -->
-            <div *ngIf="loading" class="flex items-center gap-2 p-4 bg-zinc-50 rounded-lg">
-                <div class="w-4 h-4 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin"></div>
-                <span class="text-xs text-zinc-500">Cargando actores...</span>
+            <!-- LOADING -->
+            <div *ngIf="loading" class="flex items-center gap-3 p-4 bg-white border border-zinc-200 rounded-xl">
+                <div class="w-4 h-4 border-2 border-[#2d5fa8] border-t-transparent rounded-full animate-spin"></div>
+                <span class="text-xs text-zinc-600">Cargando actores...</span>
             </div>
 
-            <!-- Error -->
-            <div *ngIf="error" class="p-3 bg-red-50 border border-red-200 rounded-lg">
+            <!-- ERROR -->
+            <div *ngIf="error" class="p-4 bg-red-50 border border-red-200 rounded-xl">
                 <p class="text-xs text-red-600">{{ error }}</p>
             </div>
 
-            <!-- ── ACTORES YA AGREGADOS ── -->
-            <div *ngIf="actors_added.length > 0" class="space-y-2">
-                <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Actores agregados</p>
+            <!-- ACTORES AGREGADOS -->
+            <div *ngIf="actors_added.length > 0" class="space-y-3">
+
+                <p class="text-xs font-semibold text-[#1B3A6B] uppercase tracking-wider">
+                    Actores agregados
+                </p>
 
                 <div *ngFor="let entry of actors_added; let i = index"
-                    class="flex items-center justify-between px-4 py-3 border rounded-xl transition-colors"
+                    class="flex items-center justify-between px-4 py-3 rounded-xl border transition-all"
                     [class.border-zinc-200]="editingIndex !== i" [class.bg-white]="editingIndex !== i"
-                    [class.border-zinc-900]="editingIndex === i" [class.bg-zinc-50]="editingIndex === i">
+                    [class.border-[#2d5fa8]]="editingIndex === i" [class.bg-blue-50]="editingIndex === i">
+
                     <div class="flex items-center gap-3">
-                        <div class="w-7 h-7 rounded-full bg-zinc-900 flex items-center justify-center flex-shrink-0">
+
+                        <div class="w-8 h-8 rounded-xl bg-[#1B3A6B] flex items-center justify-center">
                             <span class="text-xs font-bold text-white">{{ i + 1 }}</span>
                         </div>
-                        <p class="text-sm font-medium text-zinc-900">{{ entry.actor_name }}</p>
+
+                        <p class="text-sm font-medium text-zinc-800">
+                            {{ entry.actor_name }}
+                        </p>
+
                     </div>
+
                     <div class="flex items-center gap-2">
+
                         <button type="button" (click)="editActor(i)"
-                            class="px-3 py-1.5 text-xs text-zinc-600 border border-zinc-200 rounded-lg hover:border-zinc-900 hover:text-zinc-900 transition-colors cursor-pointer">
+                            class="px-3 py-1.5 text-xs font-medium text-[#1B3A6B] border border-blue-200 rounded-lg hover:bg-blue-50 transition cursor-pointer">
                             Editar
                         </button>
+
                         <button type="button" (click)="removeActor(i)"
-                            class="px-3 py-1.5 text-xs text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors cursor-pointer">
+                            class="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition cursor-pointer">
                             Eliminar
                         </button>
+
                     </div>
+
                 </div>
+
             </div>
 
-            <!-- ── AGREGAR / EDITAR ACTOR ── -->
+            <!-- AGREGAR / EDITAR -->
             <div *ngIf="!loading && !error" class="space-y-4">
 
-                <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wide">
+                <p class="text-xs font-semibold text-[#1B3A6B] uppercase tracking-wider">
                     {{ editingIndex >= 0 ? 'Editando actor' : 'Agregar actor' }}
                 </p>
 
-                <!-- Buscador -->
-                <input type="text" [(ngModel)]="search" (ngModelChange)="filterActors()"
-                    placeholder="Buscar actor por nombre..."
-                    class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900" />
+                <!-- SEARCH -->
+                <div class="relative">
 
-                <!-- Lista actores -->
-                <div class="max-h-44 overflow-y-auto border border-zinc-200 rounded-xl divide-y divide-zinc-100">
+                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-[#2d5fa8]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.3-4.3" />
+                            <circle cx="11" cy="11" r="7" />
+                        </svg>
+                    </div>
+
+                    <input type="text" [(ngModel)]="search" (ngModelChange)="filterActors()"
+                        placeholder="Buscar actor por nombre..." class="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-zinc-200 bg-[#F0F4FA]
+                   focus:outline-none focus:ring-2 focus:ring-[#2d5fa8] focus:border-[#1B3A6B]" />
+
+                </div>
+
+                <!-- LISTA -->
+                <div class="max-h-52 overflow-y-auto border border-zinc-200 rounded-xl bg-white divide-y">
+
                     <div *ngFor="let actor of filteredActors" (click)="selectActorForStaging(actor)"
-                        class="px-4 py-3 cursor-pointer transition-colors"
-                        [class.bg-zinc-900]="isStagingActorSelected(actor)"
-                        [class.hover:bg-zinc-50]="!isStagingActorSelected(actor)">
+                        class="px-4 py-3 cursor-pointer transition" [class.bg-[#1B3A6B]]="isStagingActorSelected(actor)"
+                        [class.hover:bg-blue-50]="!isStagingActorSelected(actor)">
+
                         <p class="text-sm font-medium" [class.text-white]="isStagingActorSelected(actor)"
                             [class.text-zinc-900]="!isStagingActorSelected(actor)">
                             {{ actor.data?.nombre }}
                         </p>
-                        <p class="text-xs mt-0.5" [class.text-zinc-300]="isStagingActorSelected(actor)"
+
+                        <p class="text-xs mt-0.5" [class.text-blue-100]="isStagingActorSelected(actor)"
                             [class.text-zinc-400]="!isStagingActorSelected(actor)">
                             {{ actor.data?.municipio }} · {{ actor.data?.servicio }}
                         </p>
+
                     </div>
-                    <div *ngIf="filteredActors.length === 0" class="p-4 text-center text-xs text-zinc-400">
+
+                    <div *ngIf="filteredActors.length === 0" class="p-5 text-center text-xs text-zinc-400">
                         No se encontraron actores disponibles
                     </div>
+
                 </div>
 
-                <!-- Botón agregar (solo si hay actor seleccionado) -->
+                <!-- BOTON AGREGAR -->
                 <div *ngIf="stagingActor" class="flex justify-end">
-                    <button type="button" (click)="commitStaging()"
-                        class="px-5 py-2 text-sm font-medium text-white bg-zinc-900 rounded-lg hover:bg-black transition-colors cursor-pointer">
+
+                    <button type="button" (click)="commitStaging()" class="px-5 py-2 text-sm font-semibold text-white rounded-xl
+                   bg-gradient-to-r from-[#1B3A6B] to-[#2d5fa8]
+                   hover:opacity-95 transition cursor-pointer shadow">
                         {{ editingIndex >= 0 ? 'Actualizar actor' : '+ Agregar actor' }}
                     </button>
+
                 </div>
 
             </div>
 
         </div>
 
-        <!-- Footer -->
-        <div class="px-6 py-4 border-t border-zinc-200 flex items-center justify-between flex-shrink-0">
-            <p class="text-xs text-zinc-400">
+        <!-- FOOTER -->
+        <div class="px-6 py-4 border-t border-zinc-200 flex items-center justify-between bg-white">
+
+            <p class="text-xs text-zinc-500">
                 {{ actors_added.length }} actor{{ actors_added.length !== 1 ? 'es' : '' }} en total
             </p>
+
             <div class="flex items-center gap-3">
+
                 <button type="button" (click)="onClose()"
-                    class="px-4 py-2 text-sm text-zinc-600 hover:text-zinc-900 transition-colors cursor-pointer">
+                    class="px-4 py-2 text-sm text-zinc-600 hover:text-zinc-900 transition cursor-pointer">
                     Cancelar
                 </button>
-                <button type="button" (click)="onSave()" [disabled]="!canSave"
-                    class="px-6 py-2 text-sm font-medium text-white bg-zinc-900 rounded-lg hover:bg-black transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+
+                <button type="button" (click)="onSave()" [disabled]="!canSave" class="px-6 py-2 text-sm font-semibold text-white rounded-xl
+                 bg-gradient-to-r from-[#1B3A6B] to-[#2d5fa8]
+                 hover:opacity-95 transition cursor-pointer
+                 disabled:opacity-40 disabled:cursor-not-allowed">
                     Guardar
                 </button>
+
             </div>
+
         </div>
 
     </div>
+
 </div>

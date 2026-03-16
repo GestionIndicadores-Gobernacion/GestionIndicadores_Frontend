@@ -1,131 +1,284 @@
-<div class="min-h-screen bg-zinc-50">
+<div class="min-h-screen">
 
-    <!-- HEADER -->
-    <div class="border-b border-zinc-200 bg-white">
-        <div class="max-w-4xl mx-auto px-6 py-6 flex items-center gap-4">
+    <!-- PAGE HEADER -->
+    <div class="px-6 pt-7 pb-6">
+        <div class="flex items-center gap-4">
+
             <a routerLink="/reports"
-                class="p-2 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                class="w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm transition-all duration-150 cursor-pointer"
+                style="background:#F0F4FA; color:#1B3A6B;" onmouseover="this.style.background='#E2ECF8'"
+                onmouseout="this.style.background='#F0F4FA'">
+
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 18l-6-6 6-6" />
                 </svg>
+
             </a>
-            <div>
-                <h1 class="text-lg font-semibold text-zinc-900">Detalle del reporte</h1>
-                <p class="text-xs text-zinc-500 mt-0.5" *ngIf="report">#{{ report.id }}</p>
+
+            <div class="flex items-center gap-4">
+
+                <div class="w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm"
+                    style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);">
+
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="1.8"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                    </svg>
+
+                </div>
+
+                <div>
+                    <h1 class="text-[20px] font-bold leading-none" style="color:#1B3A6B;">
+                        Detalle del reporte
+                    </h1>
+
+                    <p class="text-sm mt-1" style="color:#4A6A9B;" *ngIf="report">
+                        Identificador · #{{ report.id }}
+                    </p>
+                </div>
+
             </div>
+
         </div>
     </div>
 
-    <!-- LOADING -->
-    <div *ngIf="loading" class="flex items-center gap-3 max-w-4xl mx-auto px-6 py-12 text-sm text-zinc-500">
-        <div class="w-4 h-4 border-2 border-zinc-200 border-t-zinc-500 rounded-full animate-spin"></div>
-        Cargando reporte...
-    </div>
+    <!-- CONTENT -->
+    <div class="max-w-5xl mx-auto px-6 py-8 space-y-6">
 
-    <!-- ERROR -->
-    <div *ngIf="error" class="max-w-4xl mx-auto px-6 py-12 text-center">
-        <p class="text-sm text-zinc-500">No se pudo cargar el reporte.</p>
-    </div>
-
-    <div *ngIf="report && !loading" class="max-w-4xl mx-auto px-6 py-8 space-y-6">
-
-        <!-- INFO GENERAL -->
-        <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
-            <div class="px-6 py-4 border-b border-zinc-100">
-                <h2 class="text-sm font-semibold text-zinc-900">Información general</h2>
+        <!-- LOADING -->
+        <div *ngIf="loading" class="flex items-center gap-3 py-8">
+            <div class="w-4 h-4 rounded-full animate-spin" style="border:2px solid #D6E0F0;border-top-color:#1B3A6B">
             </div>
-            <div class="px-6 py-5 grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
-                <div>
-                    <p class="text-xs text-zinc-400 uppercase tracking-wide mb-1">Fecha de reporte</p>
-                    <p class="text-zinc-900 font-medium">{{ report.report_date | date:'dd/MM/yyyy' }}</p>
-                </div>
-                <div>
-                    <p class="text-xs text-zinc-400 uppercase tracking-wide mb-1">Zona</p>
-                    <p class="text-zinc-900 font-medium">{{ formatZone(report.zone_type) }}</p>
-                </div>
-                <div>
-                    <p class="text-xs text-zinc-400 uppercase tracking-wide mb-1">Ubicación</p>
-                    <p class="text-zinc-900 font-medium">{{ report.intervention_location || '—' }}</p>
-                </div>
-                <div>
-                    <p class="text-xs text-zinc-400 uppercase tracking-wide mb-1">Fecha de creación</p>
-                    <p class="text-zinc-900 font-medium">{{ report.created_at | date:'dd/MM/yyyy' }}</p>
-                </div>
-                <div class="col-span-2">
-                    <p class="text-xs text-zinc-400 uppercase tracking-wide mb-1">Resumen ejecutivo</p>
-                    <p class="text-zinc-700 leading-relaxed">{{ report.executive_summary || '—' }}</p>
-                </div>
+            <span class="text-[13px]" style="color:#8A9DC0;">
+                Cargando reporte...
+            </span>
+        </div>
+
+        <!-- ERROR -->
+        <div *ngIf="error" class="rounded-2xl p-10 text-center border" style="background:white;border-color:#D6E0F0">
+
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style="background:#F0F4FA">
+
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"
+                    stroke-linecap="round" stroke-linejoin="round" style="color:#4A6A9B">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="15" y1="9" x2="9" y2="15" />
+                    <line x1="9" y1="9" x2="15" y2="15" />
+                </svg>
+
             </div>
-        </section>
 
-        <!-- EVIDENCIA -->
-        <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
-            <div class="px-6 py-4 border-b border-zinc-100">
-                <h2 class="text-sm font-semibold text-zinc-900">Evidencia</h2>
-            </div>
-            <div class="px-6 py-5">
-                <ng-container *ngIf="report.evidence_link; else noEvidence">
-                    <a *ngIf="isValidUrl(report.evidence_link)" [href]="report.evidence_link" target="_blank"
-                        rel="noopener"
-                        class="inline-flex items-center gap-2 px-4 py-2.5 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-black transition">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                        Ver evidencia
-                    </a>
-                    <p *ngIf="!isValidUrl(report.evidence_link)"
-                        class="text-sm text-zinc-600 font-mono bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-2.5">
-                        {{ report.evidence_link }}
-                    </p>
-                </ng-container>
-                <ng-template #noEvidence>
-                    <p class="text-sm text-zinc-400">Sin evidencia registrada</p>
-                </ng-template>
-            </div>
-        </section>
+            <p class="text-sm font-semibold" style="color:#1B3A6B">
+                No se pudo cargar el reporte
+            </p>
 
-        <!-- INDICADORES -->
-        <!-- INDICADORES -->
-        <section *ngIf="report.indicator_values.length"
-            class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
-            <div class="px-6 py-4 border-b border-zinc-100">
-                <h2 class="text-sm font-semibold text-zinc-900">Variables registradas</h2>
-            </div>
-            <div class="divide-y divide-zinc-100">
-                <div *ngFor="let iv of report.indicator_values" class="px-6 py-4">
+        </div>
 
-                    <p class="text-sm text-zinc-500 mb-2">
-                        {{ indicatorName(iv.indicator_id, iv.indicator?.name ?? 'Indicador #' + iv.indicator_id) }}
-                    </p>
+        <ng-container *ngIf="report && !loading">
 
-                    <!-- Valor simple (string o número) -->
-                    <p *ngIf="!isObject(iv.value)" class="text-sm font-medium text-zinc-900">
-                        {{ iv.value ?? '—' }}
-                    </p>
+            <!-- INFO GENERAL -->
+            <div class="space-y-0">
 
-                    <!-- Valor objeto — aplanar y mostrar como tabla -->
-                    <div *ngIf="isObject(iv.value)">
-                        <ng-container *ngIf="flattenNestedValue(iv.value) as rows">
+                <div class="h-[3px] w-full rounded-t-xl"
+                    style="background:linear-gradient(90deg,#1B3A6B,#2d5fa8,#1B3A6B)">
+                </div>
 
-                            <!-- Si hay filas con total > 0 -->
-                            <div *ngIf="rows.length > 0" class="space-y-1">
-                                <div *ngFor="let row of rows"
-                                    class="flex items-center justify-between gap-4 py-1.5 px-3 rounded-lg bg-zinc-50">
-                                    <span class="text-xs text-zinc-600">{{ row.label }}</span>
-                                    <span class="text-xs font-semibold text-zinc-900">{{ row.total | number }}</span>
-                                </div>
+                <div class="rounded-b-xl overflow-hidden border" style="border-color:#D6E0F0;background:white">
+
+                    <div class="flex items-center gap-3 px-5 py-4 border-b"
+                        style="border-color:#D6E0F0;background:#F8FAFD">
+
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#D6E4F7">
+
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="8" y1="6" x2="21" y2="6" />
+                                <line x1="8" y1="12" x2="21" y2="12" />
+                                <line x1="8" y1="18" x2="21" y2="18" />
+                                <line x1="3" y1="6" x2="3.01" y2="6" />
+                                <line x1="3" y1="12" x2="3.01" y2="12" />
+                                <line x1="3" y1="18" x2="3.01" y2="18" />
+                            </svg>
+
+                        </div>
+
+                        <div>
+                            <span class="text-[11px] font-bold uppercase tracking-[1px]" style="color:#1B3A6B">
+                                Información general
+                            </span>
+                        </div>
+
+                    </div>
+
+                    <div class="p-6 grid grid-cols-2 gap-x-10 gap-y-6 text-[13px]">
+
+                        <div>
+                            <p class="text-[10px]" style="color:#8A9DC0">
+                                Fecha de reporte
+                            </p>
+                            <p class="font-semibold" style="color:#1B3A6B">
+                                {{ report.report_date | date:'dd/MM/yyyy' }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <p class="text-[10px]" style="color:#8A9DC0">
+                                Zona
+                            </p>
+                            <p class="font-semibold" style="color:#1B3A6B">
+                                {{ formatZone(report.zone_type) }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <p class="text-[10px]" style="color:#8A9DC0">
+                                Ubicación
+                            </p>
+                            <p class="font-semibold" style="color:#1B3A6B">
+                                {{ report.intervention_location || '—' }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <p class="text-[10px]" style="color:#8A9DC0">
+                                Fecha de creación
+                            </p>
+                            <p class="font-semibold" style="color:#1B3A6B">
+                                {{ report.created_at | date:'dd/MM/yyyy' }}
+                            </p>
+                        </div>
+
+                        <div class="col-span-2">
+
+                            <p class="text-[10px]" style="color:#8A9DC0">
+                                Resumen ejecutivo
+                            </p>
+
+                            <div class="rounded-xl p-4 border"
+                                style="background:#F0F4FA;border-color:#D6E0F0;color:#1B3A6B">
+
+                                {{ report.executive_summary || '—' }}
+
                             </div>
 
-                            <!-- Si todos son 0 o vacío -->
-                            <p *ngIf="rows.length === 0" class="text-xs text-zinc-400 italic">Sin datos registrados</p>
+                        </div>
 
-                        </ng-container>
                     </div>
 
                 </div>
+
             </div>
-        </section>
+
+            <!-- EVIDENCIA -->
+            <div class="space-y-0">
+
+                <div class="h-[3px] w-full rounded-t-xl"
+                    style="background:linear-gradient(90deg,#1B3A6B,#2d5fa8,#1B3A6B)">
+                </div>
+
+                <div class="rounded-b-xl overflow-hidden border" style="border-color:#D6E0F0;background:white">
+
+                    <div class="px-6 py-6">
+
+                        <ng-container *ngIf="report.evidence_link; else noEvidence">
+
+                            <a *ngIf="isValidUrl(report.evidence_link)" [href]="report.evidence_link" target="_blank"
+                                rel="noopener"
+                                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-bold shadow-sm"
+                                style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);color:white">
+
+                                Ver evidencia
+
+                            </a>
+
+                            <p *ngIf="!isValidUrl(report.evidence_link)"
+                                class="text-[12px] rounded-xl px-4 py-2 border font-mono"
+                                style="background:#F0F4FA;border-color:#D6E0F0">
+                                {{ report.evidence_link }}
+                            </p>
+
+                        </ng-container>
+
+                        <ng-template #noEvidence>
+                            <p class="text-[12px]" style="color:#8A9DC0">
+                                Sin evidencia registrada
+                            </p>
+                        </ng-template>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- INDICADORES -->
+            <div *ngIf="report.indicator_values.length" class="space-y-0">
+
+                <div class="h-[3px] w-full rounded-t-xl"
+                    style="background:linear-gradient(90deg,#1B3A6B,#2d5fa8,#1B3A6B)">
+                </div>
+
+                <div class="rounded-b-xl overflow-hidden border" style="border-color:#D6E0F0;background:white">
+
+                    <div class="divide-y" style="border-color:#EEF3FA">
+
+                        <div *ngFor="let iv of report.indicator_values" class="px-6 py-5">
+
+                            <p class="text-[13px] font-semibold mb-3" style="color:#1B3A6B">
+                                {{ indicatorName(iv.indicator_id,
+                                iv.indicator?.name ?? 'Indicador #' + iv.indicator_id) }}
+                            </p>
+
+                            <p *ngIf="!isObject(iv.value)" class="text-[13px] font-semibold">
+                                {{ iv.value ?? '—' }}
+                            </p>
+
+                            <div *ngIf="isObject(iv.value)">
+
+                                <ng-container *ngIf="flattenNestedValue(iv.value) as rows">
+
+                                    <table *ngIf="rows.length" class="w-full text-[12.5px]">
+
+                                        <tbody class="divide-y" style="border-color:#EEF3FA">
+
+                                            <tr *ngFor="let row of rows">
+
+                                                <td class="px-4 py-2" style="color:#4A6A9B">
+                                                    {{ formatIndicatorLabel(row.label) }}
+                                                </td>
+
+                                                <td class="px-4 py-2 text-right font-semibold" style="color:#1B3A6B">
+                                                    {{ row.total | number }}
+                                                </td>
+
+                                            </tr>
+
+                                        </tbody>
+
+                                    </table>
+
+                                    <p *ngIf="rows.length === 0" class="text-[12px] italic" style="color:#8A9DC0">
+                                        Sin datos registrados
+                                    </p>
+
+                                </ng-container>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </ng-container>
 
     </div>
+
 </div>

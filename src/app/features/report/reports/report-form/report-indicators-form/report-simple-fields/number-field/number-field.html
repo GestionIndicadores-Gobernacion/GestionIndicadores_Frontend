@@ -1,0 +1,18 @@
+<div class="relative">
+
+    <!-- Icon -->
+    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-[#2d5fa8]">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 17h2M11 7h2m-6 4h10m4 0h1" />
+        </svg>
+    </div>
+
+    <!-- Input -->
+    <input type="number" [ngModel]="value" (ngModelChange)="valueChange.emit(toNumber($event))" placeholder="0" class="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-zinc-200
+           bg-[#F0F4FA] text-zinc-900
+           placeholder:text-zinc-400
+           focus:outline-none focus:ring-2 focus:ring-[#2d5fa8] focus:border-[#1B3A6B]
+           hover:border-[#2d5fa8]
+           transition-all duration-200" />
+
+</div>

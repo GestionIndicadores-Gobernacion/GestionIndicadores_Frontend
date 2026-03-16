@@ -26,7 +26,6 @@ import { ReportsMapComponent } from './components/reports-map/reports-map';
     CommonModule,
     ReportsKpiCardsComponent,
     ReportsExplorerComponent,
-    ReportsMapComponent,
   ],
   templateUrl: './home-dashboard.html',
 })

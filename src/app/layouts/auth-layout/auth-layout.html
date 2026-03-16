@@ -1,32 +1,131 @@
-<div class="min-h-screen w-full bg-zinc-100 flex items-center justify-center px-6">
+<div class="min-h-screen w-full flex items-center justify-center px-6 relative overflow-hidden"
+  style="background: linear-gradient(160deg, #0d1f3c 0%, #1B3A6B 45%, #1e4d8c 100%);">
 
-  <!-- textura sutil de fondo -->
-  <div class="absolute inset-0 pointer-events-none">
-    <div class="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-white to-transparent"></div>
+  <!-- Círculos decorativos de fondo -->
+  <div class="absolute top-[-100px] right-[-80px] w-[380px] h-[380px] rounded-full pointer-events-none"
+    style="background: rgba(255,255,255,0.04);"></div>
+  <div class="absolute bottom-[-80px] left-[-60px] w-[300px] h-[300px] rounded-full pointer-events-none"
+    style="background: rgba(255,255,255,0.03);"></div>
+  <div class="absolute top-[30%] left-[3%] w-[160px] h-[160px] rounded-full pointer-events-none"
+    style="background: rgba(255,255,255,0.025);"></div>
+
+  <!-- Líneas diagonales decorativas -->
+  <div class="absolute inset-0 pointer-events-none overflow-hidden">
+    <div class="absolute w-full h-[1px] top-[20%]"
+      style="background: rgba(255,255,255,0.06); transform: rotate(-6deg);"></div>
+    <div class="absolute w-full h-[1px] top-[75%]" style="background: rgba(255,255,255,0.04); transform: rotate(4deg);">
+    </div>
   </div>
 
   <!-- Card -->
-  <div
-    class="relative w-full max-w-md
-           bg-white
-           border border-zinc-200
-           rounded-2xl
-           shadow-[0_10px_30px_-12px_rgba(0,0,0,0.15)]
-           p-10">
+  <div class="relative w-full max-w-[420px] rounded-2xl overflow-hidden"
+    style="box-shadow: 0 28px 70px rgba(0,0,0,0.35), 0 6px 20px rgba(0,0,0,0.2);">
 
-    <!-- Header -->
-    <div class="text-center mb-8 select-none">
-      <h1 class="text-2xl font-semibold tracking-tight text-zinc-900">
-        Sistema de Indicadores
-      </h1>
+    <!-- Header institucional -->
+    <div class="relative overflow-hidden px-8 pt-7 pb-6 bg-white">
+      <div class="absolute top-0 left-0 right-0 h-[5px]"
+        style="background: linear-gradient(90deg, #1B3A6B, #2d5fa8, #1B3A6B);"></div>
 
-      <p class="text-sm text-zinc-500 mt-2">
-        Plataforma de seguimiento y reportes
-      </p>
+      <div class="flex items-center justify-center pt-2 pb-1">
+        <img src="/assets/logos/LOGO-SADS-HORIZONTAL.png"
+          alt="Gobernación del Valle del Cauca - Secretaría de Ambiente y Desarrollo Sostenible"
+          class="h-16 w-auto object-contain select-none" />
+      </div>
+
+      <div class="mt-5 mb-0 h-[3px] rounded-full"
+        style="background: linear-gradient(90deg, transparent, #7EC8E3, #1B3A6B, #7EC8E3, transparent);"></div>
     </div>
 
-    <!-- contenido -->
-    <router-outlet></router-outlet>
+    <!-- Subheader: badge del sistema -->
+    <div class="flex items-center justify-center gap-3 px-8 py-3" style="background: #1B3A6B;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 3v18h18" />
+        <path d="M18 9l-5 5-2-2-4 4" />
+      </svg>
+      <span class="text-[12px] font-bold tracking-[1.2px] uppercase" style="color: rgba(255,255,255,0.85);">Sistema de
+        Indicadores</span>
+      <span style="color: rgba(255,255,255,0.3);">·</span>
+      <span class="text-[11px]" style="color: rgba(255,255,255,0.55);">Seguimiento y Reportes</span>
+    </div>
+
+    <!-- Cuerpo -->
+    <div class="bg-white px-8 pt-7 pb-8">
+
+      <!-- Bienvenida -->
+      <div class="text-center mb-6 select-none">
+        <h2 class="text-[17px] font-bold mb-1" style="color: #1B3A6B;">
+          Bienvenido al sistema
+        </h2>
+        <p class="text-[13px] leading-relaxed" style="color: #6B7280;">
+          Ingresa tus credenciales institucionales para acceder a la plataforma.
+        </p>
+      </div>
+
+      <!-- router-outlet -->
+      <router-outlet></router-outlet>
+
+      <!-- Features inferiores -->
+      <div class="flex gap-2 mt-6">
+
+        <div class="flex-1 rounded-xl p-[10px] text-center border" style="background: #F0F4FA; border-color: #D6E0F0;">
+          <div class="w-7 h-7 rounded-lg flex items-center justify-center mx-auto mb-[5px]"
+            style="background: #D6E4F7;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 3v18h18" />
+              <path d="M18 9l-5 5-2-2-4 4" />
+            </svg>
+          </div>
+          <span class="text-[9.5px] font-bold uppercase tracking-[0.3px] leading-tight block"
+            style="color: #4A6A9B;">Indicadores en tiempo real</span>
+        </div>
+
+        <div class="flex-1 rounded-xl p-[10px] text-center border" style="background: #F0F4FA; border-color: #D6E0F0;">
+          <div class="w-7 h-7 rounded-lg flex items-center justify-center mx-auto mb-[5px]"
+            style="background: #D6E4F7;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+            </svg>
+          </div>
+          <span class="text-[9.5px] font-bold uppercase tracking-[0.3px] leading-tight block"
+            style="color: #4A6A9B;">Reportes automáticos</span>
+        </div>
+
+        <div class="flex-1 rounded-xl p-[10px] text-center border" style="background: #F0F4FA; border-color: #D6E0F0;">
+          <div class="w-7 h-7 rounded-lg flex items-center justify-center mx-auto mb-[5px]"
+            style="background: #D6E4F7;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 00-3-3.87" />
+              <path d="M16 3.13a4 4 0 010 7.75" />
+            </svg>
+          </div>
+          <span class="text-[9.5px] font-bold uppercase tracking-[0.3px] leading-tight block"
+            style="color: #4A6A9B;">Multi-secretaría</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="flex items-center justify-center gap-2 px-8 py-[13px] border-t"
+      style="background: #F0F4FA; border-color: #D6E0F0;">
+
+      <!-- Logo PYBA pequeño -->
+      <img src="../../../assets/logos/LOGO-SADS-VERTICAL.png" alt="Protección y Bienestar Animal"
+        class="h-7 w-auto object-contain opacity-70" />
+      <div class="w-[1px] h-5 mx-1" style="background: #D6E0F0;"></div>
+      <span class="text-[10.5px]" style="color: #8A9DC0;">
+        © 2026 <strong style="color: #1B3A6B;">Gobernación del Valle del Cauca</strong>
+      </span>
+    </div>
 
   </div>
 </div>

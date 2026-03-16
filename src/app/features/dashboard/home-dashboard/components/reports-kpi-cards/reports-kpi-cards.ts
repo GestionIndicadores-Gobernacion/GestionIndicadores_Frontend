@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { ReportModel } from '../../../../../core/models/report.model';
+import { DashboardCardComponent } from './dashboard-card/dashboard-card';
 
 // ─── IDs de indicadores relevantes ───────────────────────────────────────────
 const ID_ASISTENCIAS_TECNICAS = 74;
@@ -14,7 +15,7 @@ const ID_EMPRENDEDORES = 61;
 @Component({
   selector: 'app-reports-kpi-cards',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DashboardCardComponent],
   templateUrl: './reports-kpi-cards.html',
   styleUrl: './reports-kpi-cards.css',
 })

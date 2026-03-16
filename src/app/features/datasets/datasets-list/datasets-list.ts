@@ -40,6 +40,10 @@ export class DatasetsListComponent implements OnInit {
   pageSize = 10;
   totalPages = 1;
 
+  /** SORT */
+  sortColumn: keyof Dataset | '' = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
+
   /** Incrementar este valor hace que TablesListComponent recargue sus datos. */
   refreshTrigger = 0;
 
@@ -83,16 +87,61 @@ export class DatasetsListComponent implements OnInit {
   }
 
   // =========================
+  // SORT
+  // =========================
+  sort(column: keyof Dataset): void {
+
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+
+    this.applyFilters();
+  }
+
+  applySorting(): void {
+
+    if (!this.sortColumn) return;
+
+    this.filteredDatasets.sort((a: any, b: any) => {
+
+      let valueA = a[this.sortColumn];
+      let valueB = b[this.sortColumn];
+
+      if (valueA == null) valueA = '';
+      if (valueB == null) valueB = '';
+
+      if (typeof valueA === 'string') valueA = valueA.toLowerCase();
+      if (typeof valueB === 'string') valueB = valueB.toLowerCase();
+
+      if (valueA > valueB) return this.sortDirection === 'asc' ? 1 : -1;
+      if (valueA < valueB) return this.sortDirection === 'asc' ? -1 : 1;
+
+      return 0;
+    });
+
+  }
+
+  // =========================
   // FILTER + PAGINATION
   // =========================
   applyFilters(): void {
+
     const term = this.searchTerm.toLowerCase().trim();
+
     this.filteredDatasets = this.datasets.filter(d =>
       d.name.toLowerCase().includes(term) ||
       (d.description || '').toLowerCase().includes(term)
     );
+
+    this.applySorting();
+
     this.totalPages = Math.max(Math.ceil(this.filteredDatasets.length / this.pageSize), 1);
+
     this.applyPagination();
+
     this.cdr.detectChanges();
   }
 
@@ -117,9 +166,11 @@ export class DatasetsListComponent implements OnInit {
 
   onImportFinished(): void {
     this.showImportModal = false;
-    // Recargar datasets Y notificar a TablesListComponent
+
     this.loadDatasets();
-    this.refreshTrigger++;       // ← TablesListComponent reacciona a este cambio
+
+    this.refreshTrigger++;
+
     this.cdr.detectChanges();
   }
 
@@ -132,6 +183,7 @@ export class DatasetsListComponent implements OnInit {
   // DELETE
   // =========================
   remove(dataset: Dataset): void {
+
     Swal.fire({
       title: 'Eliminar dataset',
       text: `¿Eliminar el dataset "${dataset.name}"?`,
@@ -141,16 +193,35 @@ export class DatasetsListComponent implements OnInit {
       cancelButtonText: 'Cancelar',
       confirmButtonColor: '#d33'
     }).then(result => {
+
       if (!result.isConfirmed) return;
 
       this.datasetService.deactivate(dataset.id).subscribe({
+
         next: () => {
-          Swal.fire('Eliminado', 'El dataset fue eliminado correctamente', 'success');
+
+          Swal.fire(
+            'Eliminado',
+            'El dataset fue eliminado correctamente',
+            'success'
+          );
+
           this.loadDatasets();
-          this.refreshTrigger++;  // ← también refrescar tablas al eliminar
+
+          this.refreshTrigger++;
+
         },
-        error: () => Swal.fire('Error', 'No se pudo eliminar el dataset', 'error')
+
+        error: () => Swal.fire(
+          'Error',
+          'No se pudo eliminar el dataset',
+          'error'
+        )
+
       });
+
     });
+
   }
+
 }

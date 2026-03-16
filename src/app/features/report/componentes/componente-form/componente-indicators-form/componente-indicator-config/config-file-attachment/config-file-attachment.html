@@ -1,31 +1,74 @@
-<div [formGroup]="indicatorGroup" class="bg-zinc-50 border border-zinc-200 rounded-lg p-4 space-y-4">
-    <div class="flex items-start gap-2">
-        <svg class="w-4 h-4 text-zinc-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-        </svg>
-        <div>
-            <p class="text-xs font-medium text-zinc-700">Archivo adjunto</p>
-            <p class="text-xs text-zinc-500 mt-0.5">
-                El usuario podrá subir un archivo al diligenciar el reporte. Puedes restringir los tipos de archivo
-                permitidos.
-            </p>
+<div [formGroup]="indicatorGroup" class="rounded-2xl border border-[#D6E0F0] bg-white shadow-sm overflow-hidden">
+
+    <!-- TOP BAR -->
+    <div class="h-[4px] bg-gradient-to-r from-[#6B7280] via-[#9CA3AF] to-[#6B7280]"></div>
+
+    <div class="p-5 space-y-5">
+
+        <!-- INFO -->
+        <div class="flex items-start gap-3">
+
+            <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-[#EEF2F7] flex-shrink-0">
+                <svg class="w-4 h-4 text-[#4B5563]" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                </svg>
+            </div>
+
+            <div>
+                <p class="text-[11px] font-bold uppercase tracking-[1px] text-[#374151]">
+                    Archivo adjunto
+                </p>
+
+                <p class="text-[11px] text-[#6B7280] mt-0.5 max-w-xl">
+                    El usuario podrá subir un archivo al diligenciar el reporte.
+                    Puedes restringir los tipos de archivo permitidos.
+                </p>
+            </div>
+
         </div>
+
+        <!-- FILE TYPES -->
+        <div class="space-y-1.5">
+
+            <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#4A6A9B]">
+                Tipos de archivo permitidos
+            </label>
+
+            <input type="text" formControlName="configAllowedTypes" placeholder="pdf, docx, xlsx, jpg  (vacío = todos)"
+                class="w-full text-[13px] rounded-xl px-3 py-2.5 lowercase
+        bg-[#F0F4FA] border border-[#D6E0F0]
+        focus:bg-white focus:border-[#2d5fa8]
+        focus:ring-2 focus:ring-[#2d5fa8]/20
+        outline-none transition-all" />
+
+            <p class="text-[10.5px] text-[#8A9DC0]">
+                Separa con comas. Extensiones válidas: pdf, doc, docx, xls, xlsx,
+                png, jpg, jpeg, gif, txt, csv, zip
+            </p>
+
+        </div>
+
+        <!-- FILE SIZE -->
+        <div class="space-y-1.5">
+
+            <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#4A6A9B]">
+                Tamaño máximo (MB)
+            </label>
+
+            <input type="number" formControlName="configMaxSizeMb" min="1" max="50" placeholder="10" class="w-32 text-[13px] rounded-xl px-3 py-2.5
+        bg-[#F0F4FA] border border-[#D6E0F0]
+        focus:bg-white focus:border-[#2d5fa8]
+        focus:ring-2 focus:ring-[#2d5fa8]/20
+        outline-none transition-all" />
+
+            <p class="text-[10.5px] text-[#8A9DC0]">
+                Vacío = sin límite (el servidor limita a 10 MB por defecto)
+            </p>
+
+        </div>
+
     </div>
 
-    <div class="space-y-1.5">
-        <label class="block text-xs font-medium text-zinc-700">Tipos de archivo permitidos</label>
-        <input type="text" formControlName="configAllowedTypes" placeholder="pdf, docx, xlsx, jpg  (vacío = todos)"
-            class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 lowercase focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150" />
-        <p class="text-xs text-zinc-500">
-            Separa con comas. Extensiones válidas: pdf, doc, docx, xls, xlsx, png, jpg, jpeg, gif, txt, csv, zip
-        </p>
-    </div>
-
-    <div class="space-y-1.5">
-        <label class="block text-xs font-medium text-zinc-700">Tamaño máximo (MB)</label>
-        <input type="number" formControlName="configMaxSizeMb" min="1" max="50" placeholder="10"
-            class="w-32 px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150" />
-        <p class="text-xs text-zinc-500">Vacío = sin límite (el servidor limita a 10 MB por defecto)</p>
-    </div>
 </div>
