@@ -5,48 +5,71 @@ import { DatasetService } from '../../../../../core/services/datasets.service';
 @Injectable({ providedIn: 'root' })
 export class IndicatorDatasetService {
 
-    constructor(private datasetService: DatasetService) { }
+    constructor(
+        private datasetService: DatasetService,
+    ) { }
 
     loadOptions(
         indicators: ComponentIndicatorModel[],
-        options: Record<number, { id: number; label: string }[]>,
-        loading: Record<number, boolean>,
-        errors: Record<number, string>,
-        cdr: ChangeDetectorRef
-    ): void {
-        indicators.forEach(ind => {
-            if (!['dataset_select', 'dataset_multi_select'].includes(ind.field_type)) return;
-            if (options[ind.id!]?.length) {
-                loading[ind.id!] = false;
-                cdr.markForCheck();
-                return;
-            }
+        datasetOptions: Record<number, any[]>,
+        datasetLoading: Record<number, boolean>,
+        datasetError: Record<number, string>,
+        cdr: ChangeDetectorRef,
+        municipality?: string | null
+    ) {
 
-            loading[ind.id!] = true;
-            errors[ind.id!] = '';
+        indicators.forEach(ind => {
+
+            if (ind.field_type !== 'dataset_select' && ind.field_type !== 'dataset_multi_select')
+                return;
 
             const datasetId = ind.config?.dataset_id;
+            if (!datasetId) return;
 
-            if (datasetId) {
-                this.datasetService.getRecordsByDataset(datasetId).subscribe({
-                    next: (records: any[]) => {
-                        options[ind.id!] = records.map(r => ({
-                            id: r.id,
-                            label: r.data?.[ind.config?.label_field] || r.data?.nombre || String(r.id)
-                        }));
-                        loading[ind.id!] = false;
-                        cdr.markForCheck(); // o detectChanges()
-                    },
-                    error: () => {
-                        errors[ind.id!] = 'Error al cargar opciones';
-                        loading[ind.id!] = false;
-                        cdr.markForCheck();
+            datasetLoading[ind.id!] = true;
+
+            this.datasetService.getRecordsByDataset(datasetId).subscribe({
+
+                next: (rows) => {
+
+                    let data = rows || [];
+
+                    if (municipality) {
+
+                        const m = municipality.toLowerCase().trim();
+
+                        data = data.filter(r => {
+
+                            const recordMunicipio =
+                                String(r.data?.['municipio_de_residencia'] || '')
+                                    .toLowerCase()
+                                    .trim();
+
+                            return recordMunicipio === m;
+
+                        });
+
                     }
-                });
-            } else {
-                this.loadAll(ind, options, loading, errors, cdr);
-            }
+
+                    datasetOptions[ind.id!] = data.map(r => ({
+                        id: r.id,
+                        label: r.data?.['nombres_y_apellidos'] || 'Registro'
+                    }));
+
+                    datasetLoading[ind.id!] = false;
+                    cdr.markForCheck();
+                },
+
+                error: () => {
+                    datasetError[ind.id!] = 'Error cargando dataset';
+                    datasetLoading[ind.id!] = false;
+                    cdr.markForCheck();
+                }
+
+            });
+
         });
+
     }
 
     private fallbackToAll(
