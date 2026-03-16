@@ -1,76 +1,159 @@
-<div class="space-y-5">
+<div class="space-y-0">
 
-    <!-- Fila de filtros -->
-    <div class="flex flex-wrap gap-3">
+    <!-- ══ CABECERA DEL PANEL ══════════════════════════════════════════════ -->
+    <div class="h-[3px] w-full rounded-t-xl"
+        style="background: linear-gradient(90deg, #1B3A6B 0%, #2d5fa8 50%, #1B3A6B 100%);"></div>
 
-        <div class="flex flex-col gap-1.5 min-w-48 flex-1">
-            <label class="text-xs font-medium text-zinc-500 uppercase tracking-widest">Estrategia</label>
-            <select (change)="onStrategySelect($event)" class="text-sm border border-zinc-200 rounded-xl px-3 py-2.5 bg-white text-zinc-900
-               focus:outline-none focus:ring-2 focus:ring-zinc-300 transition-colors
-               hover:border-zinc-300 cursor-pointer">
-                <option *ngFor="let id of strategyIds" [value]="id" [selected]="id === selectedStrategyId">
-                    {{ strategyMap[id] }}
-                </option>
-            </select>
-        </div>
+    <div class="rounded-b-xl overflow-hidden border" style="border-color: #D6E0F0; background: #fff;">
 
-        <div class="flex flex-col gap-1.5 min-w-48 flex-1">
-            <label class="text-xs font-medium text-zinc-500 uppercase tracking-widest">Componente</label>
-            <select (change)="onComponentSelect($event)" [disabled]="components.length === 0" class="text-sm border border-zinc-200 rounded-xl px-3 py-2.5 bg-white text-zinc-900
-               focus:outline-none focus:ring-2 focus:ring-zinc-300 transition-colors
-               hover:border-zinc-300 cursor-pointer
-               disabled:opacity-40 disabled:cursor-not-allowed">
-                <option value="" [disabled]="true" [selected]="selectedComponentId === null">
-                    Selecciona un componente
-                </option>
-                <option *ngFor="let c of components" [value]="c.component_id">
-                    {{ c.component_name }}
-                </option>
-            </select>
-        </div>
-
-    </div>
-
-    <!-- Variables -->
-    <div *ngIf="selectedComponentId" class="space-y-2">
-
-        <div *ngIf="loadingComponent" class="flex items-center gap-2 py-1">
-            <div class="w-3.5 h-3.5 border-2 border-zinc-200 border-t-zinc-500 rounded-full animate-spin"></div>
-            <span class="text-xs text-zinc-400">Cargando variables...</span>
-        </div>
-
-        <p *ngIf="!loadingComponent && indicators.length === 0" class="text-xs text-zinc-400 py-1">
-            Este componente no tiene variables registradas
-        </p>
-
-        <ng-container *ngIf="!loadingComponent && indicators.length > 0">
-            <label class="text-xs font-medium text-zinc-500 uppercase tracking-widest">Variable</label>
-            <div class="flex flex-wrap gap-2 mt-1.5">
-                <button *ngFor="let ind of visibleIndicators" (click)="onIndicatorSelect(ind)"
-                    [class.bg-zinc-900]="selectedIndicator?.indicator_id === ind.indicator_id"
-                    [class.text-white]="selectedIndicator?.indicator_id === ind.indicator_id"
-                    [class.border-zinc-900]="selectedIndicator?.indicator_id === ind.indicator_id"
-                    [class.bg-white]="selectedIndicator?.indicator_id !== ind.indicator_id"
-                    [class.text-zinc-600]="selectedIndicator?.indicator_id !== ind.indicator_id"
-                    [class.border-zinc-200]="selectedIndicator?.indicator_id !== ind.indicator_id"
-                    class="px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-150 hover:border-zinc-400 hover:shadow-sm">
-                    {{ ind.indicator_name }}
-                </button>
-
-                <!-- Botón ver más / ver menos -->
-                <button *ngIf="hiddenCount > 0 || showAllIndicators" (click)="toggleShowAll()"
-                    class="px-3 py-1.5 rounded-full text-xs font-medium border border-dashed border-zinc-300 text-zinc-400 hover:border-zinc-400 hover:text-zinc-600 transition-all duration-150">
-                    {{ showAllIndicators ? 'Ver menos' : '+' + hiddenCount + ' más' }}
-                </button>
+        <!-- Título del panel -->
+        <div class="flex items-center gap-3 px-5 py-4 border-b" style="border-color: #D6E0F0; background: #F8FAFD;">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background: #D6E4F7;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 3v18h18" />
+                    <path d="M18 9l-5 5-2-2-4 4" />
+                </svg>
             </div>
-        </ng-container>
+            <div>
+                <span class="text-[11px] font-bold uppercase tracking-[1px]" style="color: #1B3A6B;">
+                    Explorador de indicadores
+                </span>
+                <p class="text-[10.5px] mt-0.5" style="color: #8A9DC0;">
+                    Filtra por estrategia, componente y variable para visualizar datos
+                </p>
+            </div>
+        </div>
+
+        <!-- ══ FILTROS ══════════════════════════════════════════════════════ -->
+        <div class="px-5 py-4 border-b" style="border-color: #D6E0F0;">
+
+            <div class="flex flex-wrap gap-4">
+
+                <!-- ESTRATEGIA -->
+                <div class="flex flex-col gap-1.5 min-w-[200px] flex-1">
+                    <label class="text-[10px] font-bold uppercase tracking-[0.8px]" style="color: #4A6A9B;">
+                        Estrategia
+                    </label>
+                    <div class="relative">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" width="13" height="13"
+                            viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round">
+                            <circle cx="12" cy="12" r="3" />
+                            <path
+                                d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" />
+                        </svg>
+                        <select (change)="onStrategySelect($event)"
+                            class="w-full text-[13px] rounded-xl pl-9 pr-4 py-2.5 outline-none transition-all duration-150 appearance-none cursor-pointer"
+                            style="background: #F0F4FA; border: 1.5px solid #D6E0F0; color: #1B3A6B;"
+                            onfocus="this.style.borderColor='#1B3A6B'; this.style.background='#fff'; this.style.boxShadow='0 0 0 3px rgba(27,58,107,0.08)'"
+                            onblur="this.style.borderColor='#D6E0F0'; this.style.background='#F0F4FA'; this.style.boxShadow='none'">
+                            <option *ngFor="let id of strategyIds" [value]="id" [selected]="id === selectedStrategyId">
+                                {{ strategyMap[id] }}
+                            </option>
+                        </select>
+                        <!-- flecha custom -->
+                        <svg class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" width="11"
+                            height="11" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5"
+                            stroke-linecap="round">
+                            <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- COMPONENTE -->
+                <div class="flex flex-col gap-1.5 min-w-[200px] flex-1">
+                    <label class="text-[10px] font-bold uppercase tracking-[0.8px]" style="color: #4A6A9B;">
+                        Componente
+                    </label>
+                    <div class="relative">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" width="13" height="13"
+                            viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round">
+                            <rect x="3" y="3" width="7" height="7" rx="1" />
+                            <rect x="14" y="3" width="7" height="7" rx="1" />
+                            <rect x="3" y="14" width="7" height="7" rx="1" />
+                            <rect x="14" y="14" width="7" height="7" rx="1" />
+                        </svg>
+                        <select (change)="onComponentSelect($event)" [disabled]="components.length === 0"
+                            class="w-full text-[13px] rounded-xl pl-9 pr-4 py-2.5 outline-none transition-all duration-150 appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                            style="background: #F0F4FA; border: 1.5px solid #D6E0F0; color: #1B3A6B;"
+                            onfocus="this.style.borderColor='#1B3A6B'; this.style.background='#fff'; this.style.boxShadow='0 0 0 3px rgba(27,58,107,0.08)'"
+                            onblur="this.style.borderColor='#D6E0F0'; this.style.background='#F0F4FA'; this.style.boxShadow='none'">
+                            <option value="" [disabled]="true" [selected]="selectedComponentId === null">
+                                Selecciona un componente
+                            </option>
+                            <option *ngFor="let c of components" [value]="c.component_id">
+                                {{ c.component_name }}
+                            </option>
+                        </select>
+                        <svg class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" width="11"
+                            height="11" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5"
+                            stroke-linecap="round">
+                            <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ══ VARIABLES ════════════════════════════════════════════════════ -->
+        <div *ngIf="selectedComponentId" class="px-5 py-4 border-b" style="border-color: #D6E0F0; background: #FAFCFF;">
+
+            <!-- Loading -->
+            <div *ngIf="loadingComponent" class="flex items-center gap-2.5">
+                <div class="w-3.5 h-3.5 border-2 border-t-transparent rounded-full animate-spin"
+                    style="border-color: #D6E0F0; border-top-color: #1B3A6B;"></div>
+                <span class="text-[11px] font-medium" style="color: #8A9DC0;">Cargando variables...</span>
+            </div>
+
+            <!-- Sin variables -->
+            <p *ngIf="!loadingComponent && indicators.length === 0" class="text-[11px]" style="color: #8A9DC0;">
+                Este componente no tiene variables registradas.
+            </p>
+
+            <!-- Pills -->
+            <ng-container *ngIf="!loadingComponent && indicators.length > 0">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="text-[10px] font-bold uppercase tracking-[0.8px]"
+                        style="color: #4A6A9B;">Variable</span>
+                    <div class="flex-1 h-[1px]" style="background: #D6E0F0;"></div>
+                    <span class="text-[10px]" style="color: #B0BDD0;">{{ indicators.length }} disponibles</span>
+                </div>
+
+                <div class="flex flex-wrap gap-2">
+
+                    <button *ngFor="let ind of visibleIndicators" (click)="onIndicatorSelect(ind)"
+                        class="px-3.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-150 border"
+                        [style.background]="selectedIndicator?.indicator_id === ind.indicator_id ? '#1B3A6B' : '#F0F4FA'"
+                        [style.color]="selectedIndicator?.indicator_id === ind.indicator_id ? '#fff' : '#4A6A9B'"
+                        [style.border-color]="selectedIndicator?.indicator_id === ind.indicator_id ? '#1B3A6B' : '#D6E0F0'"
+                        [style.box-shadow]="selectedIndicator?.indicator_id === ind.indicator_id ? '0 2px 8px rgba(27,58,107,0.25)' : 'none'">
+                        {{ ind.indicator_name }}
+                    </button>
+
+                    <!-- Ver más / menos -->
+                    <button *ngIf="hiddenCount > 0 || showAllIndicators" (click)="toggleShowAll()"
+                        class="px-3.5 py-1.5 rounded-lg text-[11px] font-semibold border border-dashed transition-all duration-150"
+                        style="background: transparent; border-color: #B0BDD0; color: #8A9DC0;"
+                        onmouseover="this.style.borderColor='#4A6A9B'; this.style.color='#4A6A9B'"
+                        onmouseout="this.style.borderColor='#B0BDD0'; this.style.color='#8A9DC0'">
+                        {{ showAllIndicators ? '↑ Ver menos' : '+' + hiddenCount + ' más' }}
+                    </button>
+
+                </div>
+            </ng-container>
+
+        </div>
+
+        <!-- ══ GRÁFICO ═══════════════════════════════════════════════════════ -->
+        <div class="px-5 py-5">
+            <app-reports-explorer-chart [componentAggregate]="componentAggregate"
+                [selectedIndicator]="selectedIndicator" [indicatorDetail]="selectedIndicatorDetail"
+                [selectedYear]="selectedYear" [componentId]="selectedComponentId" (yearChange)="onYearChange($event)"
+                (barClick)="onChartBarClick($event)">
+            </app-reports-explorer-chart>
+        </div>
 
     </div>
-
-    <!-- Gráfico -->
-    <app-reports-explorer-chart [componentAggregate]="componentAggregate" [selectedIndicator]="selectedIndicator"
-        [indicatorDetail]="selectedIndicatorDetail" [selectedYear]="selectedYear" [componentId]="selectedComponentId"
-        (yearChange)="onYearChange($event)" (barClick)="onChartBarClick($event)">
-    </app-reports-explorer-chart>
 
 </div>

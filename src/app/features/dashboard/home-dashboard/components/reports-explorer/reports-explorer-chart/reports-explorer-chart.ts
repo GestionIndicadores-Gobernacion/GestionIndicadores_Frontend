@@ -62,20 +62,10 @@ export class ReportsExplorerChartComponent implements OnChanges {
   }
 
   get indicatorTotal(): number | null {
-    const d = this.indicatorDetail;
-    if (!d) return null;
-    if (d.field_type === 'by_month_reports') {
-      return this.componentAggregate?.by_month
-        .filter(e => Number(e.month.split('-')[0]) === this.currentYear)
-        .reduce((s, e) => s + ((e as any).total ?? (e.urbana ?? 0) + (e.rural ?? 0)), 0) ?? null;
-    }
-    if (d.by_month?.length) {
-      return d.by_month.filter(e => Number(e.month.split('-')[0]) === this.currentYear).reduce((s, e) => s + e.total, 0);
-    }
-    if (d.by_location?.length) return d.by_location.reduce((s, e) => s + e.total, 0);
-    if (d.by_category?.length) return d.by_category.reduce((s, e) => s + e.total, 0);
-    if (d.by_nested) return Object.values(d.by_nested).flat().reduce((s, e) => s + e.total, 0);
-    return null;
+    const data = this.chartData?.datasets?.[0]?.data as number[] | undefined;
+    if (!data || !data.length) return null;
+
+    return data.reduce((sum, v) => sum + Number(v || 0), 0);
   }
 
   get chartHeight(): number {
@@ -107,14 +97,20 @@ export class ReportsExplorerChartComponent implements OnChanges {
   }
 
   private handleBarClick(event: BarClickEvent): void {
-    this.barClick.emit(event);
-    this.router.navigate(['/reports'], {
-      queryParams: {
-        component: event.componentId,
-        label: event.label,
-        indicatorId: event.indicatorId ?? undefined,
-      }
-    });
+
+    // this.router.navigate(['/reports'], {
+    //   queryParams: {
+    //     component: event.componentId,
+    //     metric: event.label,          
+    //     label: event.datasetLabel,    
+    //     indicatorId: event.indicatorId ?? undefined,
+    //   }
+    // });
+
+
+    console.log("");
+    
+
   }
 
   private computeYears(): void {

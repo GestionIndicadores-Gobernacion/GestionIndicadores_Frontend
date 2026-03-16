@@ -1,264 +1,311 @@
-<div class="min-h-screen bg-zinc-50">
+<div class="min-h-screen bg-[#F5F8FE]">
 
-    <!-- PAGE HEADER -->
-    <div class="border-b border-zinc-200 bg-white">
-        <div class="max-w-5xl mx-auto px-6 py-8">
-            <div class="flex items-start justify-between">
-                <div class="space-y-1">
-                    <h1 class="text-2xl font-semibold text-zinc-900 tracking-tight">
+    <!-- CONTENT -->
+    <div class="max-w-5xl mx-auto px-6 py-8 space-y-6">
+
+        <!-- SECTION HEADER -->
+        <div class="flex items-center justify-between">
+
+            <div class="flex items-center gap-4">
+
+                <div class="w-11 h-11 rounded-2xl flex items-center justify-center shadow-md
+        bg-gradient-to-br from-[#1B3A6B] to-[#2d5fa8]">
+
+                    <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                    </svg>
+
+                </div>
+
+                <div>
+                    <h2 class="text-[16px] font-bold text-[#1B3A6B] leading-none">
                         {{ isEdit ? 'Editar reporte' : 'Nuevo reporte' }}
-                    </h1>
-                    <p class="text-sm text-zinc-500">
+                    </h2>
+
+                    <p class="text-[12px] text-[#5A78A8] mt-0.5">
                         {{ isEdit ? 'Actualiza la información del reporte' : 'Registro operativo de la intervención' }}
                     </p>
                 </div>
-                <button type="button" (click)="cancel()"
-                    class="text-sm text-zinc-400 hover:text-zinc-900 transition-colors duration-150 cursor-pointer">
-                    Cancelar
-                </button>
+
             </div>
+
+            <button type="button" (click)="cancel()" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold
+        border border-[#D6E0F0] text-[#1B3A6B] bg-white
+        hover:bg-[#F0F4FA] hover:border-[#2d5fa8]
+        transition-all">
+
+                Cancelar
+
+            </button>
+
         </div>
-    </div>
 
-    <!-- FORM CONTAINER -->
-    <div class="max-w-5xl mx-auto px-6 py-10">
-
+        <!-- FORM -->
         <form (ngSubmit)="save(f)" #f="ngForm" novalidate class="space-y-6">
 
-            <!-- ====== UBICACIÓN Y CONTEXTO ====== -->
-            <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
+            <!-- UBICACIÓN Y CONTEXTO -->
+            <section class="rounded-2xl border border-[#D6E0F0] bg-white shadow-sm overflow-hidden">
 
-                <div class="px-6 py-4 border-b border-zinc-100">
-                    <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-900">
-                        Ubicación y contexto
-                    </h2>
-                    <p class="text-xs text-zinc-500 mt-0.5">
-                        Define dónde y cuándo se realizó la intervención
-                    </p>
-                </div>
+                <div class="h-[4px] bg-gradient-to-r from-[#1B3A6B] via-[#2d5fa8] to-[#1B3A6B]"></div>
 
-                <div class="p-6 space-y-4">
+                <div class="flex items-center gap-3 px-6 py-5 border-b border-[#D6E0F0] bg-[#F4F7FC]">
 
-                    <!-- Hint -->
-                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                        <div class="flex items-start gap-2">
-                            <svg class="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <p class="text-xs text-amber-800">
-                                <strong class="font-medium">Importante:</strong> Selecciona la fecha exacta de la
-                                intervención, el municipio y zona donde se ejecutó. Luego elige la estrategia y
-                                componente al que pertenece esta actividad.
-                            </p>
-                        </div>
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-[#E6EEF9]">
+
+                        <svg class="w-4 h-4 text-[#1B3A6B]" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+                            <circle cx="12" cy="9" r="2.5" />
+                        </svg>
+
                     </div>
 
-                    <!-- Fields Grid -->
-                    <div class="grid grid-cols-12 gap-4">
+                    <div>
+                        <span class="text-[11px] font-bold uppercase tracking-[1px] text-[#1B3A6B]">
+                            Ubicación y contexto
+                        </span>
+
+                        <p class="text-[11px] text-[#7C94BD] mt-0.5">
+                            Define dónde y cuándo se realizó la intervención
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="p-6 space-y-5">
+
+                    <div
+                        class="flex items-start gap-3 px-4 py-3 rounded-xl border border-[#FDE68A] bg-[#FFFBEB] text-[#92400E]">
+
+                        <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+
+                        <p class="text-[12px]">
+                            <strong>Importante:</strong> Selecciona la fecha exacta de la intervención,
+                            el municipio y zona donde se ejecutó.
+                            Luego elige la estrategia y componente.
+                        </p>
+
+                    </div>
+
+                    <div class="grid grid-cols-12 gap-5">
 
                         <!-- Fecha -->
                         <div class="col-span-12 sm:col-span-3 space-y-1.5">
-                            <label class="block text-xs font-medium text-zinc-700">
-                                Fecha <span class="text-red-500">*</span>
+
+                            <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#4A6A9B]">
+                                Fecha <span class="text-red-600">*</span>
                             </label>
+
                             <input type="date" [max]="todayDate" [(ngModel)]="form.report_date" name="report_date"
-                                required class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
-                                bg-white text-zinc-900
-                                focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
-                                transition-colors duration-150" />
-                            <p class="text-xs text-zinc-500">No puede ser una fecha futura</p>
+                                required class="w-full text-[13px] rounded-xl px-3 py-2.5
+                bg-[#F0F4FA] border border-[#D6E0F0]
+                focus:bg-white focus:border-[#2d5fa8]
+                focus:ring-2 focus:ring-[#2d5fa8]/20
+                outline-none transition-all" />
+
+                            <p class="text-[10.5px] text-[#8A9DC0]">
+                                No puede ser una fecha futura
+                            </p>
+
                         </div>
 
                         <!-- Municipio -->
                         <div class="col-span-12 sm:col-span-5 space-y-1.5">
-                            <label class="block text-xs font-medium text-zinc-700">
-                                Municipio <span class="text-red-500">*</span>
+
+                            <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#4A6A9B]">
+                                Municipio <span class="text-red-600">*</span>
                             </label>
+
                             <select [(ngModel)]="form.intervention_location" name="intervention_location" required
-                                class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
-                                bg-white text-zinc-900 cursor-pointer
-                                focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
-                                transition-colors duration-150">
+                                class="w-full text-[13px] rounded-xl px-3 py-2.5
+                bg-[#F0F4FA] border border-[#D6E0F0]
+                focus:bg-white focus:border-[#2d5fa8]
+                focus:ring-2 focus:ring-[#2d5fa8]/20
+                outline-none transition-all">
+
                                 <option [ngValue]="null" disabled>Seleccione un municipio...</option>
                                 <option *ngFor="let m of municipios" [ngValue]="m">{{ m }}</option>
+
                             </select>
-                            <p class="text-xs text-zinc-500">Lugar donde se realizó la intervención</p>
+
+                            <p class="text-[10.5px] text-[#8A9DC0]">
+                                Lugar donde se realizó la intervención
+                            </p>
+
                         </div>
 
                         <!-- Zona -->
                         <div class="col-span-12 sm:col-span-4 space-y-1.5">
-                            <label class="block text-xs font-medium text-zinc-700">
-                                Zona <span class="text-red-500">*</span>
+
+                            <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#4A6A9B]">
+                                Zona <span class="text-red-600">*</span>
                             </label>
-                            <select [(ngModel)]="form.zone_type" name="zone_type" required class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
-                                bg-white text-zinc-900 cursor-pointer
-                                focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
-                                transition-colors duration-150">
+
+                            <select [(ngModel)]="form.zone_type" name="zone_type" required class="w-full text-[13px] rounded-xl px-3 py-2.5
+                bg-[#F0F4FA] border border-[#D6E0F0]
+                focus:bg-white focus:border-[#2d5fa8]
+                focus:ring-2 focus:ring-[#2d5fa8]/20
+                outline-none transition-all">
+
                                 <option [ngValue]="null" disabled>Seleccione una zona...</option>
                                 <option value="Urbana">Urbana</option>
                                 <option value="Rural">Rural</option>
+
                             </select>
-                            <p class="text-xs text-zinc-500">Clasificación del área de intervención</p>
+
+                            <p class="text-[10.5px] text-[#8A9DC0]">
+                                Clasificación del área de intervención
+                            </p>
+
                         </div>
 
                         <!-- Estrategia -->
                         <div class="col-span-12 sm:col-span-7 space-y-1.5">
-                            <label class="block text-xs font-medium text-zinc-700">
-                                Estrategia <span class="text-red-500">*</span>
+
+                            <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#4A6A9B]">
+                                Estrategia <span class="text-red-600">*</span>
                             </label>
+
                             <select [(ngModel)]="form.strategy_id" name="strategy_id" (change)="onStrategyChange()"
-                                required class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
-                                bg-white text-zinc-900 cursor-pointer
-                                focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
-                                transition-colors duration-150">
+                                required class="w-full text-[13px] rounded-xl px-3 py-2.5
+                bg-[#F0F4FA] border border-[#D6E0F0]
+                focus:bg-white focus:border-[#2d5fa8]
+                focus:ring-2 focus:ring-[#2d5fa8]/20
+                outline-none transition-all">
+
                                 <option [ngValue]="null" disabled>Seleccione una estrategia...</option>
                                 <option *ngFor="let s of strategies" [ngValue]="s.id">{{ s.name }}</option>
+
                             </select>
-                            <p class="text-xs text-zinc-500">La estrategia determina el contexto general del reporte</p>
+
+                            <p class="text-[10.5px] text-[#8A9DC0]">
+                                La estrategia determina el contexto general del reporte
+                            </p>
+
                         </div>
 
                         <!-- Componente -->
                         <div class="col-span-12 sm:col-span-5 space-y-1.5">
-                            <label class="block text-xs font-medium text-zinc-700">
-                                Componente <span class="text-red-500">*</span>
+
+                            <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#4A6A9B]">
+                                Componente <span class="text-red-600">*</span>
                             </label>
+
                             <select [(ngModel)]="form.component_id" name="component_id" [disabled]="!form.strategy_id"
-                                (change)="onComponentChange()" required class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
-                                bg-white text-zinc-900 cursor-pointer
-                                disabled:bg-zinc-50 disabled:text-zinc-400 disabled:cursor-not-allowed
-                                focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
-                                transition-colors duration-150">
+                                (change)="onComponentChange()" required class="w-full text-[13px] rounded-xl px-3 py-2.5
+                bg-[#F0F4FA] border border-[#D6E0F0]
+                focus:bg-white focus:border-[#2d5fa8]
+                focus:ring-2 focus:ring-[#2d5fa8]/20
+                disabled:opacity-40
+                outline-none transition-all">
+
                                 <option [ngValue]="null" disabled>Seleccione un componente...</option>
                                 <option *ngFor="let c of components" [ngValue]="c.id">{{ c.name }}</option>
+
                             </select>
-                            <p class="text-xs text-zinc-500">Primero selecciona una estrategia</p>
+
+                            <p class="text-[10.5px] text-[#8A9DC0]">
+                                Primero selecciona una estrategia
+                            </p>
+
                         </div>
 
                     </div>
+
                 </div>
+
             </section>
 
-            <!-- ====== DESCRIPCIÓN ====== -->
-            <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
+            <!-- DESCRIPCIÓN -->
+            <section class="rounded-2xl border border-[#D6E0F0] bg-white shadow-sm overflow-hidden">
 
-                <div class="px-6 py-4 border-b border-zinc-100">
-                    <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-900">
-                        Descripción de actividades
-                    </h2>
-                    <p class="text-xs text-zinc-500 mt-0.5">
-                        Documenta los resultados obtenidos durante la intervención
-                    </p>
-                </div>
+                <div class="h-[4px] bg-gradient-to-r from-[#2d5fa8] via-[#5F8FD0] to-[#2d5fa8]"></div>
 
                 <div class="p-6 space-y-4">
 
-                    <!-- Hint -->
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                        <div class="flex items-start gap-2">
-                            <svg class="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                            </svg>
-                            <div class="space-y-1.5">
-                                <p class="text-xs font-medium text-blue-900">Guía para completar esta sección:</p>
-                                <p class="text-xs font-medium text-blue-800 mb-0.5">Resultado obtenido:</p>
-                                <ul class="text-xs text-blue-700 space-y-0.5 list-disc list-inside">
-                                    <li>Logros principales alcanzados</li>
-                                    <li>Número de beneficiarios atendidos</li>
-                                    <li>Impacto directo en la comunidad</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
+                    <label class="text-[11px] font-bold uppercase tracking-[1px] text-[#1B3A6B]">
+                        Resultado obtenido <span class="text-red-600">*</span>
+                    </label>
 
-                    <!-- Resultado obtenido -->
-                    <div class="space-y-1.5">
-                        <label class="block text-xs font-medium text-zinc-700">
-                            Resultado obtenido <span class="text-red-500">*</span>
-                        </label>
-                        <textarea rows="6" [(ngModel)]="form.executive_summary" name="executive_summary"
-                            placeholder="Ej: Se realizó jornada de esterilización con 45 animales atendidos..." required
-                            class="w-full px-3 py-2.5 text-sm border border-zinc-200 rounded-lg
-                            bg-white text-zinc-900 resize-none
-                            focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
-                            transition-colors duration-150"></textarea>
-                        <p class="text-xs text-zinc-500">Describe el impacto y los logros de la intervención</p>
-                    </div>
+                    <textarea rows="6" [(ngModel)]="form.executive_summary" name="executive_summary" required class="w-full text-[13px] rounded-xl px-4 py-3 resize-none
+            bg-[#F0F4FA] border border-[#D6E0F0]
+            focus:bg-white focus:border-[#2d5fa8]
+            focus:ring-2 focus:ring-[#2d5fa8]/20
+            outline-none transition-all"></textarea>
+
+                    <p class="text-[10.5px] text-[#8A9DC0]">
+                        Describe el impacto y los logros de la intervención
+                    </p>
 
                 </div>
+
             </section>
 
-            <!-- ====== INDICADORES ====== -->
+            <!-- INDICADORES -->
             <app-report-indicators-form *ngIf="indicators.length" [indicators]="indicators"
                 [reportDate]="form.report_date" [values]="indicatorValues"
                 [interventionLocation]="form.intervention_location" (valuesChange)="onIndicatorValuesChange($event)">
             </app-report-indicators-form>
 
-            <!-- ====== EVIDENCIA ====== -->
-            <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
+            <!-- EVIDENCIA -->
+            <section class="mt-6 rounded-2xl border border-[#D6E0F0] bg-white shadow-sm overflow-hidden">
 
-                <div class="px-6 py-4 border-b border-zinc-100">
-                    <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-900">
-                        Evidencia fotográfica / Actas / Listados de Asistencias / Historias Clinicas / Entre otros.
-                    </h2>
-                    <p class="text-xs text-zinc-500 mt-0.5">
-                        Opcional - Comparte fotos de la intervención
-                    </p>
-                </div>
+                <div class="h-[4px] bg-gradient-to-r from-[#7c3aed] via-[#a78bfa] to-[#7c3aed]"></div>
 
                 <div class="p-6 space-y-4">
 
-                    <!-- Hint -->
-                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                        <div class="flex items-start gap-2">
-                            <svg class="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <p class="text-xs text-purple-800">
-                                <strong class="font-medium">Tip:</strong> Sube las fotos a una carpeta de Google Drive y
-                                comparte el enlace aquí. Asegúrate de que el enlace tenga permisos de visualización para
-                                cualquier persona con el link.
-                            </p>
-                        </div>
-                    </div>
+                    <label class="text-[11px] font-bold uppercase tracking-[1px] text-[#1B3A6B]">
+                        Enlace a Google Drive
+                    </label>
 
-                    <div class="space-y-1.5">
-                        <label class="block text-xs font-medium text-zinc-700">
-                            Enlace a Google Drive
-                        </label>
-                        <input type="url" [(ngModel)]="form.evidence_link" name="evidence_link"
-                            placeholder="https://drive.google.com/..." class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
-                            bg-white text-zinc-900
-                            focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
-                            transition-colors duration-150" />
-                        <p class="text-xs text-zinc-500">Asegúrate de que el enlace sea público antes de pegarlo</p>
-                    </div>
+                    <input type="url" [(ngModel)]="form.evidence_link" name="evidence_link"
+                        placeholder="https://drive.google.com/..." class="w-full text-[13px] rounded-xl px-3 py-2.5
+            bg-[#F0F4FA] border border-[#D6E0F0]
+            focus:bg-white focus:border-[#7c3aed]
+            focus:ring-2 focus:ring-[#7c3aed]/20
+            outline-none transition-all" />
+
+                    <p class="text-[10.5px] text-[#8A9DC0]">
+                        Asegúrate de que el enlace sea público
+                    </p>
 
                 </div>
+
             </section>
 
-            <!-- ====== ACCIONES ====== -->
-            <div class="pt-6 flex items-center justify-end gap-3">
-                <button type="button" (click)="cancel()" class="px-4 py-2 text-sm font-medium text-zinc-600
-                    hover:text-zinc-900 transition-colors duration-150 cursor-pointer">
+            <!-- ACTIONS -->
+            <div class="flex justify-end gap-3 pt-3 pb-6">
+
+                <button type="button" (click)="cancel()" class="px-5 py-2.5 text-[13px] font-semibold rounded-xl
+          border border-[#D6E0F0] bg-[#F0F4FA] text-[#4A6A9B]
+          hover:bg-[#E8EEF7] transition-all">
+
                     Cancelar
+
                 </button>
 
-                <button type="submit" [disabled]="saving" class="px-6 py-2 text-sm font-medium text-white bg-zinc-900 rounded-lg
-                    hover:bg-black transition-colors duration-150 cursor-pointer
-                    disabled:opacity-40 disabled:cursor-not-allowed">
+                <button type="submit" [disabled]="saving" class="px-6 py-2.5 text-[13px] font-bold rounded-xl
+          text-white shadow-sm
+          bg-gradient-to-r from-[#1B3A6B] to-[#2d5fa8]
+          disabled:opacity-40">
+
                     {{ saving ? 'Guardando...' : (isEdit ? 'Actualizar reporte' : 'Guardar reporte') }}
+
                 </button>
+
             </div>
 
         </form>
 
     </div>
+
 </div>

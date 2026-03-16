@@ -40,11 +40,9 @@ export interface FlatActivity {
   imports: [
     CommonModule,
     RouterModule,
-    PlansCountByStatusPipe,
     ActionPlanCreateModalComponent,
     ActionPlanReportModalComponent,
     ActionPlanListComponent,
-    ActionPlanAuditLogComponent
   ],
   templateUrl: './action-plan-calendar.html',
   styleUrl: './action-plan-calendar.css',
@@ -58,6 +56,7 @@ export class ActionPlanCalendarComponent implements OnInit {
 
   selectedStrategyId: number | null = null;
   selectedComponentId: number | null = null;
+  selectedDayFilter: Date | null = null;
 
   currentDate = new Date();
   calendarDays: CalendarDay[] = [];
@@ -178,6 +177,24 @@ export class ActionPlanCalendarComponent implements OnInit {
           activities: (obj.activities ?? []).filter(act =>
             act.requires_boss_assistance === true
           )
+        })).filter(obj => obj.activities.length > 0)
+      })).filter(plan => plan.plan_objectives.length > 0);
+    }
+
+    // NUEVO FILTRO POR DÍA
+    if (this.selectedDayFilter) {
+      const y = this.selectedDayFilter.getFullYear();
+      const m = this.selectedDayFilter.getMonth();
+      const d = this.selectedDayFilter.getDate();
+
+      result = result.map(plan => ({
+        ...plan,
+        plan_objectives: (plan.plan_objectives ?? []).map(obj => ({
+          ...obj,
+          activities: (obj.activities ?? []).filter(act => {
+            const p = this.parseDateOnly(act.delivery_date);
+            return p.y === y && p.m === m && p.d === d;
+          })
         })).filter(obj => obj.activities.length > 0)
       })).filter(plan => plan.plan_objectives.length > 0);
     }
@@ -438,5 +455,15 @@ export class ActionPlanCalendarComponent implements OnInit {
 
     this.calendarDays = [...days];
     this.cdr.detectChanges();
+  }
+
+  openDayAgenda(day: CalendarDay): void {
+    this.selectedDayFilter = day.date;
+    this.viewMode = 'agenda';
+  }
+
+  clearDayFilter(): void {
+    this.selectedDayFilter = null;
+    this.viewMode = 'calendar';
   }
 }

@@ -16,7 +16,11 @@ export class IndicatorDatasetService {
     ): void {
         indicators.forEach(ind => {
             if (!['dataset_select', 'dataset_multi_select'].includes(ind.field_type)) return;
-            if (options[ind.id!]?.length) return;
+            if (options[ind.id!]?.length) {
+                loading[ind.id!] = false;
+                cdr.markForCheck();
+                return;
+            }
 
             loading[ind.id!] = true;
             errors[ind.id!] = '';
@@ -28,12 +32,16 @@ export class IndicatorDatasetService {
                     next: (records: any[]) => {
                         options[ind.id!] = records.map(r => ({
                             id: r.id,
-                            label: r.data?.nombre || r.data?.albergue_o_fundación || String(r.id)
+                            label: r.data?.[ind.config?.label_field] || r.data?.nombre || String(r.id)
                         }));
                         loading[ind.id!] = false;
-                        cdr.markForCheck();
+                        cdr.markForCheck(); // o detectChanges()
                     },
-                    error: () => this.fallbackToAll(ind, options, loading, errors, cdr)
+                    error: () => {
+                        errors[ind.id!] = 'Error al cargar opciones';
+                        loading[ind.id!] = false;
+                        cdr.markForCheck();
+                    }
                 });
             } else {
                 this.loadAll(ind, options, loading, errors, cdr);

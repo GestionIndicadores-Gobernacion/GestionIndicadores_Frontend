@@ -1,0 +1,30 @@
+<div class="rounded-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl overflow-hidden border bg-white"
+    [style]="borderStyle">
+
+    <!-- barra: estilo inline, siempre visible sin depender de Tailwind purge -->
+    <div class="h-[4px] w-full" [style]="barStyle"></div>
+
+    <div class="p-6">
+
+        <div class="flex items-center gap-3 mb-6">
+
+            <div class="shrink-0 w-12 h-12 rounded-xl flex items-center justify-center" [style]="iconStyle">
+                <ng-content select="[icon]"></ng-content>
+            </div>
+
+            <span class="text-xs font-bold uppercase tracking-wider text-gray-700 leading-tight">
+                {{title}}
+            </span>
+
+        </div>
+
+        <div class="text-[38px] font-black tracking-tight leading-none text-gray-900">
+            {{value}}
+        </div>
+
+        <p class="text-xs mt-2 text-gray-500">
+            {{description}}
+        </p>
+
+    </div>
+</div>

@@ -1,0 +1,181 @@
+<div class="space-y-6">
+
+    <!-- Categorías -->
+    <div>
+
+        <p class="text-[10px] font-bold uppercase tracking-[0.8px] mb-2" style="color:#4A6A9B;">
+            {{ indicator.config?.category_label || 'Categorías' }}
+        </p>
+
+        <div class="flex flex-wrap gap-2">
+
+            <button *ngFor="let cat of indicator.config?.categories" type="button" (click)="toggleCategory(cat)"
+                [class.bg-[#1B3A6B]]="isCategorySelected(cat)" [class.text-white]="isCategorySelected(cat)"
+                [class.border-[#1B3A6B]]="isCategorySelected(cat)" [class.bg-white]="!isCategorySelected(cat)"
+                [class.text-[#4A6A9B]]="!isCategorySelected(cat)" [class.border-[#D6E0F0]]="!isCategorySelected(cat)"
+                class="px-3 py-1.5 text-[11px] font-semibold border rounded-full transition-all duration-150 cursor-pointer">
+
+                {{ cat }}
+
+            </button>
+
+        </div>
+
+        <p *ngIf="indicator.is_required && selectedCategories.length === 0" class="text-[11px] text-red-500 mt-2">
+            Selecciona al menos una categoría
+        </p>
+
+    </div>
+
+    <!-- Tablas -->
+    <div *ngFor="let cat of selectedCategories" class="border rounded-xl overflow-hidden" style="border-color:#D6E0F0;">
+
+        <!-- Header -->
+        <div class="px-4 py-3 flex items-center justify-between"
+            style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);">
+
+            <span class="text-[13px] font-bold text-white">
+                {{ cat }}
+            </span>
+
+            <span class="text-[11px] text-blue-200">
+                Total:
+                <span class="text-white font-bold tabular-nums">
+                    {{ allMetricsTotal(cat) }}
+                </span>
+            </span>
+
+        </div>
+
+        <!-- Tabla -->
+        <div class="overflow-x-auto">
+
+            <table class="w-full text-xs">
+
+                <thead>
+
+                    <tr class="border-b" style="background:#F0F4FA;border-color:#D6E0F0;">
+
+                        <th class="px-4 py-2 text-left text-[10px] font-bold uppercase tracking-[0.8px]"
+                            style="color:#4A6A9B;width:190px;">
+                            Indicador
+                        </th>
+
+                        <th *ngFor="let group of indicator.config?.groups"
+                            class="px-4 py-2 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
+                            style="color:#1B3A6B;">
+                            {{ group }}
+                        </th>
+
+                        <th class="px-4 py-2 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
+                            style="color:#4A6A9B;">
+                            Total
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody class="divide-y" style="border-color:#EEF2F9;">
+
+                    <tr *ngFor="let metric of indicator.config?.metrics; let mi = index"
+                        [style.background]="mi % 2 === 0 ? 'white' : '#FAFCFF'">
+
+                        <td class="px-4 py-2 text-[12px] font-medium" style="color:#1B3A6B;">
+                            {{ metric.label }}
+                        </td>
+
+                        <td *ngFor="let group of indicator.config?.groups" class="px-3 py-2 text-center">
+
+                            <input type="number" min="0" [ngModel]="metricValue(cat, group, metric.key)"
+                                (ngModelChange)="setMetricValue(cat, group, metric.key, $event)" placeholder="0"
+                                class="w-20 px-2 py-1.5 text-sm text-center border rounded-lg outline-none"
+                                style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B;" />
+
+                        </td>
+
+                        <td class="px-4 py-2 text-center">
+
+                            <span class="text-sm font-bold tabular-nums" style="color:#1B3A6B;">
+                                {{ metricTotal(cat, metric.key) }}
+                            </span>
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- Empty -->
+    <div *ngIf="selectedCategories.length === 0" class="p-5 border rounded-xl text-center"
+        style="background:#F8FAFD;border-color:#D6E0F0;">
+
+        <p class="text-[11px]" style="color:#8A9DC0;">
+            Selecciona una o más categorías para ingresar los datos
+        </p>
+
+    </div>
+
+    <!-- Grand total -->
+    <div *ngIf="selectedCategories.length > 0" class="flex items-center justify-between px-6 py-4 rounded-xl shadow"
+        style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);">
+
+        <div>
+
+            <p class="text-[10px] font-bold uppercase tracking-[0.8px]" style="color:#C7D8F5;">
+                Total animales atendidos
+            </p>
+
+            <p class="text-[10px]" style="color:#AFC3E8;">
+                Suma de todas las métricas
+            </p>
+
+        </div>
+
+        <span class="text-2xl font-black text-white tabular-nums">
+            {{ grandTotal }}
+        </span>
+
+    </div>
+
+    <!-- Red Animalia -->
+    <ng-container *ngIf="hasRedAnimalia && selectedCategories.length > 0">
+
+        <div class="flex items-center justify-between p-4 border rounded-xl"
+            style="border-color:#A7F3D0;background:#ECFDF5;">
+
+            <div>
+
+                <p class="text-[10px] font-bold uppercase tracking-[0.8px]" style="color:#047857;">
+                    Red Animalia
+                </p>
+
+                <p *ngIf="redAnimaliaActorName" class="text-[11px] mt-0.5" style="color:#065F46;">
+                    Actor:
+                    <span class="font-semibold">{{ redAnimaliaActorName }}</span>
+                </p>
+
+            </div>
+
+            <button type="button" (click)="redAnimaliaOpen = true"
+                class="px-4 py-2 text-[11px] font-bold text-white rounded-lg" style="background:#059669;">
+
+                {{ redAnimaliaActorName ? 'Editar' : 'Reportar Red Animalia' }}
+
+            </button>
+
+        </div>
+
+    </ng-container>
+
+</div>
+
+<app-red-animalia-modal [open]="redAnimaliaOpen" [indicator]="indicator" [interventionLocation]="interventionLocation"
+    [existing]="existingRedAnimalia" (save)="onSaveRedAnimalia($event)" (close)="redAnimaliaOpen = false">
+</app-red-animalia-modal>

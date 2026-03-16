@@ -1,0 +1,77 @@
+<div class="rounded-2xl border border-zinc-200 bg-white overflow-hidden">
+
+    <!-- HEADER -->
+    <div class="px-4 py-3 text-white text-sm font-semibold flex items-center gap-2"
+        style="background:linear-gradient(135deg,#1B3A6B 0%,#2d5fa8 100%)">
+        <svg class="w-4 h-4 opacity-90" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h10" />
+        </svg>
+        <span>Datasets</span>
+    </div>
+
+    <!-- BODY -->
+    <div class="p-4 bg-[#F8FAFF] space-y-3">
+
+        <!-- LOADING -->
+        <div *ngIf="loading" class="flex items-center gap-3 p-3 bg-white border border-zinc-200 rounded-xl">
+            <div class="w-4 h-4 border-2 border-[#2d5fa8] border-t-transparent rounded-full animate-spin"></div>
+            <span class="text-xs text-zinc-600">Cargando datasets...</span>
+        </div>
+
+        <!-- ERROR -->
+        <div *ngIf="error" class="p-3 bg-red-50 border border-red-200 rounded-xl">
+            <p class="text-xs text-red-600">{{ error }}</p>
+        </div>
+
+        <!-- OPTIONS -->
+        <div *ngIf="!loading && !error" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+
+            <div *ngFor="let ds of options" (click)="toggle(ds.id)" class="group flex items-center gap-3 p-3 rounded-xl border border-zinc-200 bg-[#F0F4FA]
+               hover:border-[#2d5fa8] hover:bg-white transition-all cursor-pointer" [ngClass]="{
+          'border-[#1B3A6B] bg-white shadow-sm': isSelected(ds.id)
+        }">
+
+                <!-- CHECKBOX -->
+                <div class="flex items-center justify-center w-5 h-5 rounded-md border transition-all" [ngClass]="{
+            'bg-[#1B3A6B] border-[#1B3A6B] text-white': isSelected(ds.id),
+            'border-zinc-300 bg-white': !isSelected(ds.id)
+          }">
+                    <svg *ngIf="isSelected(ds.id)" class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                        stroke-width="3" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+
+                <!-- LABEL -->
+                <label class="flex-1 text-sm font-medium text-zinc-700 select-none cursor-pointer">
+                    {{ ds.label }}
+                </label>
+
+            </div>
+
+            <!-- EMPTY -->
+            <div *ngIf="options.length === 0"
+                class="p-5 text-center text-xs text-zinc-400 border border-dashed border-zinc-300 rounded-xl bg-white">
+                No hay datasets disponibles
+            </div>
+
+        </div>
+
+        <!-- SELECTED TAGS -->
+        <div *ngIf="(value || []).length > 0" class="flex flex-wrap gap-2 pt-2">
+
+            <span *ngFor="let id of value" class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full
+               text-white bg-gradient-to-r from-[#1B3A6B] to-[#2d5fa8]">
+                {{ labelFor(id) }}
+
+                <button type="button" (click)="toggle(id)" class="ml-0.5 hover:opacity-80 transition cursor-pointer">
+                    ×
+                </button>
+
+            </span>
+
+        </div>
+
+    </div>
+
+</div>

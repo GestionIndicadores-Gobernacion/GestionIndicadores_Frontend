@@ -1,190 +1,293 @@
-<div class="min-h-screen bg-zinc-50">
+<div class="min-h-screen" style="background:#F0F4FA;">
 
   <!-- HEADER -->
-  <div class="border-b border-zinc-200 bg-white">
-    <div class="max-w-3xl mx-auto px-6 py-8">
-      <div class="flex items-start justify-between">
-        <div class="space-y-1">
-          <h1 class="text-2xl font-semibold text-zinc-900 tracking-tight">
+  <div class="px-6 pt-7 pb-6 border-b" style="background:white;border-color:#D6E0F0;">
+    <div class="max-w-3xl mx-auto flex items-start justify-between">
+
+      <div class="flex items-center gap-4">
+
+        <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"
+          style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);">
+
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="1.8" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 00-3-3.87" />
+            <path d="M7 21v-2a4 4 0 013-3.87" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+
+        </div>
+
+        <div>
+          <h1 class="text-[20px] font-bold leading-none" style="color:#1B3A6B;">
             {{ isEdit ? 'Editar usuario' : 'Nuevo usuario' }}
           </h1>
-          <p class="text-sm text-zinc-500">
+
+          <p class="text-sm mt-1" style="color:#4A6A9B;">
             {{ isEdit ? 'Actualiza la información del usuario' : 'Completa los datos para crear un nuevo usuario' }}
           </p>
         </div>
-        <button type="button" [routerLink]="['/users']"
-          class="text-sm text-zinc-400 hover:text-zinc-900 transition-colors duration-150 cursor-pointer">
-          Cancelar
-        </button>
+
       </div>
+
+      <button type="button" [routerLink]="['/users']" class="text-[12px] font-semibold cursor-pointer transition"
+        style="color:#4A6A9B" onmouseover="this.style.color='#1B3A6B'" onmouseout="this.style.color='#4A6A9B'">
+
+        Cancelar
+
+      </button>
+
     </div>
   </div>
 
-  <div class="max-w-3xl mx-auto px-6 py-10">
+
+
+  <div class="max-w-3xl mx-auto px-6 py-10 space-y-6">
 
     <!-- LOADING -->
-    <div *ngIf="loading" class="bg-white border border-zinc-200 rounded-2xl p-12">
-      <div class="flex flex-col items-center justify-center gap-3">
-        <div class="w-5 h-5 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin"></div>
-        <p class="text-sm text-zinc-500">Cargando formulario...</p>
-      </div>
+    <div *ngIf="loading" class="flex items-center gap-3 py-8">
+
+      <div class="w-4 h-4 rounded-full animate-spin" style="border:2px solid #D6E0F0;border-top-color:#1B3A6B;"></div>
+
+      <span class="text-[13px]" style="color:#8A9DC0;">
+        Cargando formulario...
+      </span>
+
     </div>
+
+
 
     <!-- FORM -->
     <form *ngIf="!loading" (ngSubmit)="save()" class="space-y-6">
 
+
+
       <!-- INFORMACIÓN PERSONAL -->
-      <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
-        <div class="px-6 py-4 border-b border-zinc-100">
-          <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-900">
-            Información personal
-          </h2>
+      <section>
+
+        <div class="h-[3px] w-full rounded-t-xl" style="background:linear-gradient(90deg,#1B3A6B,#2d5fa8,#1B3A6B);">
         </div>
 
-        <div class="p-6 grid md:grid-cols-2 gap-5">
+        <div class="rounded-b-xl overflow-hidden border" style="border-color:#D6E0F0;background:white;">
 
-          <!-- Nombre -->
-          <div class="space-y-1.5">
-            <label class="block text-xs font-medium text-zinc-700">
-              Nombre *
-            </label>
-            <input type="text" name="first_name" [(ngModel)]="form.first_name" required [disabled]="isMainAdmin()"
-              [class.border-red-300]="attemptedSubmit && !form.first_name" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
-                     bg-white text-zinc-900
-                     focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
-                     disabled:bg-zinc-50 disabled:text-zinc-500
-                     transition-colors duration-150" placeholder="Juan" />
-            <p *ngIf="attemptedSubmit && !form.first_name" class="text-xs text-red-600">
-              El nombre es obligatorio
-            </p>
+          <div class="px-6 py-4 border-b flex items-center gap-3" style="border-color:#D6E0F0;background:#F8FAFD;">
+
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#D6E4F7;">
+
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+
+                <circle cx="12" cy="7" r="4" />
+                <path d="M5.5 21a6.5 6.5 0 0113 0" />
+
+              </svg>
+
+            </div>
+
+            <span class="text-[11px] font-bold uppercase tracking-[1px]" style="color:#1B3A6B;">
+              Información personal
+            </span>
+
           </div>
 
-          <!-- Apellido -->
-          <div class="space-y-1.5">
-            <label class="block text-xs font-medium text-zinc-700">
-              Apellido *
-            </label>
-            <input type="text" name="last_name" [(ngModel)]="form.last_name" required [disabled]="isMainAdmin()"
-              [class.border-red-300]="attemptedSubmit && !form.last_name" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
-                     bg-white text-zinc-900
-                     focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
-                     disabled:bg-zinc-50 disabled:text-zinc-500
-                     transition-colors duration-150" placeholder="Pérez" />
-            <p *ngIf="attemptedSubmit && !form.last_name" class="text-xs text-red-600">
-              El apellido es obligatorio
-            </p>
+
+
+          <div class="p-6 grid md:grid-cols-2 gap-5">
+
+            <!-- NOMBRE -->
+            <div class="space-y-1.5">
+
+              <label class="text-[11px] font-semibold" style="color:#1B3A6B;">
+                Nombre *
+              </label>
+
+              <input type="text" name="first_name" [(ngModel)]="form.first_name" required [disabled]="isMainAdmin()"
+                [class.border-red-300]="attemptedSubmit && !form.first_name" placeholder="Juan"
+                class="text-[12px] rounded-xl px-3 py-2 outline-none transition-all duration-150 w-full"
+                style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B"
+                onfocus="this.style.borderColor='#1B3A6B';this.style.background='#fff';this.style.boxShadow='0 0 0 3px rgba(27,58,107,0.08)'"
+                onblur="this.style.borderColor='#D6E0F0';this.style.background='#F0F4FA';this.style.boxShadow='none'" />
+
+              <p *ngIf="attemptedSubmit && !form.first_name" class="text-[11px]" style="color:#dc2626;">
+                El nombre es obligatorio
+              </p>
+
+            </div>
+
+
+
+            <!-- APELLIDO -->
+            <div class="space-y-1.5">
+
+              <label class="text-[11px] font-semibold" style="color:#1B3A6B;">
+                Apellido *
+              </label>
+
+              <input type="text" name="last_name" [(ngModel)]="form.last_name" required [disabled]="isMainAdmin()"
+                [class.border-red-300]="attemptedSubmit && !form.last_name" placeholder="Pérez"
+                class="text-[12px] rounded-xl px-3 py-2 outline-none transition-all duration-150 w-full"
+                style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B"
+                onfocus="this.style.borderColor='#1B3A6B';this.style.background='#fff';this.style.boxShadow='0 0 0 3px rgba(27,58,107,0.08)'"
+                onblur="this.style.borderColor='#D6E0F0';this.style.background='#F0F4FA';this.style.boxShadow='none'" />
+
+              <p *ngIf="attemptedSubmit && !form.last_name" class="text-[11px]" style="color:#dc2626;">
+                El apellido es obligatorio
+              </p>
+
+            </div>
+
           </div>
 
         </div>
+
       </section>
+
+
 
       <!-- CREDENCIALES -->
-      <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
-        <div class="px-6 py-4 border-b border-zinc-100">
-          <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-900">
-            Credenciales de acceso
-          </h2>
+      <section>
+
+        <div class="h-[3px] w-full rounded-t-xl" style="background:linear-gradient(90deg,#1B3A6B,#2d5fa8,#1B3A6B);">
         </div>
 
-        <div class="p-6 space-y-5">
+        <div class="rounded-b-xl overflow-hidden border" style="border-color:#D6E0F0;background:white;">
 
-          <!-- Email -->
-          <div class="space-y-1.5">
-            <label class="block text-xs font-medium text-zinc-700">
-              Correo electrónico *
-            </label>
-            <input type="email" name="email" [(ngModel)]="form.email" required [disabled]="isMainAdmin()"
-              [class.border-red-300]="attemptedSubmit && (!form.email || !isValidEmail(form.email))" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
-                     bg-white text-zinc-900
-                     focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
-                     disabled:bg-zinc-50 disabled:text-zinc-500
-                     transition-colors duration-150" placeholder="usuario@gobernacion.gov.co" />
-            <p *ngIf="attemptedSubmit && !form.email" class="text-xs text-red-600">
-              El correo es obligatorio
-            </p>
-            <p *ngIf="attemptedSubmit && form.email && !isValidEmail(form.email)" class="text-xs text-red-600">
-              Ingresa un correo válido
-            </p>
+          <div class="px-6 py-4 border-b" style="border-color:#D6E0F0;background:#F8FAFD;">
+
+            <span class="text-[11px] font-bold uppercase tracking-[1px]" style="color:#1B3A6B;">
+              Credenciales de acceso
+            </span>
+
           </div>
 
-          <!-- Contraseña -->
-          <div class="space-y-1.5">
-            <label class="block text-xs font-medium text-zinc-700">
-              Contraseña {{ isEdit ? '' : '*' }}
-            </label>
-            <input type="password" name="password" [(ngModel)]="form.password" [required]="!isEdit"
-              [disabled]="isMainAdmin()" [class.border-red-300]="attemptedSubmit && passwordInvalid()" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
-                     bg-white text-zinc-900
-                     focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
-                     disabled:bg-zinc-50 disabled:text-zinc-500
-                     transition-colors duration-150"
-              [placeholder]="isEdit ? 'Dejar en blanco para no modificar' : 'Mínimo 6 caracteres'" />
-            <p *ngIf="attemptedSubmit && !isEdit && !form.password" class="text-xs text-red-600">
-              La contraseña es obligatoria
-            </p>
-            <p *ngIf="attemptedSubmit && isEdit && form.password && form.password.length < 6"
-              class="text-xs text-red-600">
-              Mínimo 6 caracteres
-            </p>
-            <p *ngIf="isEdit && !isMainAdmin()" class="text-xs text-zinc-500">
-              Solo completa este campo si deseas cambiar la contraseña
-            </p>
+
+
+          <div class="p-6 space-y-5">
+
+            <!-- EMAIL -->
+            <div class="space-y-1.5">
+
+              <label class="text-[11px] font-semibold" style="color:#1B3A6B;">
+                Correo electrónico *
+              </label>
+
+              <input type="email" name="email" [(ngModel)]="form.email" required [disabled]="isMainAdmin()"
+                [class.border-red-300]="attemptedSubmit && (!form.email || !isValidEmail(form.email))"
+                placeholder="usuario@gobernacion.gov.co"
+                class="text-[12px] rounded-xl px-3 py-2 outline-none transition-all duration-150 w-full"
+                style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B"
+                onfocus="this.style.borderColor='#1B3A6B';this.style.background='#fff';this.style.boxShadow='0 0 0 3px rgba(27,58,107,0.08)'"
+                onblur="this.style.borderColor='#D6E0F0';this.style.background='#F0F4FA';this.style.boxShadow='none'" />
+
+            </div>
+
+
+
+            <!-- PASSWORD -->
+            <div class="space-y-1.5">
+
+              <label class="text-[11px] font-semibold" style="color:#1B3A6B;">
+                Contraseña {{ isEdit ? '' : '*' }}
+              </label>
+
+              <input type="password" name="password" [(ngModel)]="form.password" [required]="!isEdit"
+                [disabled]="isMainAdmin()" [class.border-red-300]="attemptedSubmit && passwordInvalid()"
+                [placeholder]="isEdit ? 'Dejar en blanco para no modificar' : 'Mínimo 6 caracteres'"
+                class="text-[12px] rounded-xl px-3 py-2 outline-none transition-all duration-150 w-full"
+                style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B"
+                onfocus="this.style.borderColor='#1B3A6B';this.style.background='#fff';this.style.boxShadow='0 0 0 3px rgba(27,58,107,0.08)'"
+                onblur="this.style.borderColor='#D6E0F0';this.style.background='#F0F4FA';this.style.boxShadow='none'" />
+
+            </div>
+
           </div>
 
         </div>
+
       </section>
 
-      <!-- ROL Y PERMISOS -->
-      <section class="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
-        <div class="px-6 py-4 border-b border-zinc-100">
-          <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-900">
-            Rol y permisos
-          </h2>
+
+
+      <!-- ROL -->
+      <section>
+
+        <div class="h-[3px] w-full rounded-t-xl" style="background:linear-gradient(90deg,#1B3A6B,#2d5fa8,#1B3A6B);">
         </div>
 
-        <div class="p-6">
-          <div class="space-y-1.5">
-            <label class="block text-xs font-medium text-zinc-700">
+        <div class="rounded-b-xl overflow-hidden border" style="border-color:#D6E0F0;background:white;">
+
+          <div class="px-6 py-4 border-b" style="border-color:#D6E0F0;background:#F8FAFD;">
+
+            <span class="text-[11px] font-bold uppercase tracking-[1px]" style="color:#1B3A6B;">
+              Rol y permisos
+            </span>
+
+          </div>
+
+
+
+          <div class="p-6 space-y-1.5">
+
+            <label class="text-[11px] font-semibold" style="color:#1B3A6B;">
               Rol *
             </label>
+
             <select name="role_id" [(ngModel)]="form.role_id" required [disabled]="isMainAdmin()"
-              [class.border-red-300]="attemptedSubmit && !form.role_id" class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg
-                     bg-white text-zinc-900
-                     focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900
-                     disabled:bg-zinc-50 disabled:text-zinc-500
-                     transition-colors duration-150 cursor-pointer">
-              <option [ngValue]="null" disabled>Seleccionar rol...</option>
+              [class.border-red-300]="attemptedSubmit && !form.role_id"
+              class="text-[12px] rounded-xl px-3 py-2 outline-none transition-all duration-150 w-full cursor-pointer"
+              style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B"
+              onfocus="this.style.borderColor='#1B3A6B';this.style.background='#fff';this.style.boxShadow='0 0 0 3px rgba(27,58,107,0.08)'"
+              onblur="this.style.borderColor='#D6E0F0';this.style.background='#F0F4FA';this.style.boxShadow='none'">
+
+              <option [ngValue]="null" disabled>
+                Seleccionar rol...
+              </option>
+
               <option *ngFor="let r of roles" [ngValue]="r.id">
                 {{ r.name }}
               </option>
+
             </select>
-            <p *ngIf="attemptedSubmit && !form.role_id" class="text-xs text-red-600">
-              Debes seleccionar un rol
-            </p>
-            <p *ngIf="!isMainAdmin()" class="text-xs text-zinc-500">
-              Define el nivel de acceso del usuario
-            </p>
+
           </div>
+
         </div>
+
       </section>
 
-      <!-- BOTONES -->
+
+
+      <!-- ACTIONS -->
       <div class="pt-6 flex items-center justify-end gap-3">
-        <button type="button" [routerLink]="['/users']" class="px-4 py-2 text-sm font-medium text-zinc-600 
-                 hover:text-zinc-900 transition-colors duration-150 cursor-pointer">
+
+        <button type="button" [routerLink]="['/users']"
+          class="px-4 py-2 text-[12px] font-semibold cursor-pointer transition" style="color:#4A6A9B"
+          onmouseover="this.style.color='#1B3A6B'" onmouseout="this.style.color='#4A6A9B'">
+
           Cancelar
+
         </button>
 
-        <button *ngIf="isMainAdmin()" type="button" disabled class="px-6 py-2 text-sm font-medium text-white bg-zinc-400 rounded-lg
-                 cursor-not-allowed">
+
+
+        <button *ngIf="isMainAdmin()" type="button" disabled class="px-5 py-2 text-[12px] font-semibold rounded-xl"
+          style="background:#94A3B8;color:white">
+
           Usuario principal — No editable
+
         </button>
 
-        <button *ngIf="!isMainAdmin()" type="submit" class="px-6 py-2 text-sm font-medium text-white bg-zinc-900 rounded-lg
-                 hover:bg-black transition-colors duration-150
-                 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer" [disabled]="saving">
+
+
+        <button *ngIf="!isMainAdmin()" type="submit" [disabled]="saving"
+          class="px-6 py-2.5 rounded-xl text-[12px] font-bold shadow-sm cursor-pointer transition"
+          style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);color:white"
+          onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">
+
           {{ saving ? 'Guardando...' : (isEdit ? 'Actualizar usuario' : 'Crear usuario') }}
+
         </button>
+
       </div>
 
     </form>

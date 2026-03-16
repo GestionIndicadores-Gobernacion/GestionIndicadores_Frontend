@@ -1,102 +1,223 @@
-<div [formGroup]="indicatorGroup" class="bg-violet-50 border border-violet-200 rounded-lg p-4 space-y-4">
+<div [formGroup]="indicatorGroup" class="rounded-2xl border border-[#D6E0F0] bg-white shadow-sm overflow-hidden">
 
-    <div class="flex items-start gap-2">
-        <svg class="w-4 h-4 text-violet-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7M4 7c0-2 1-3 3-3h10c2 0 3 1 3 3M4 7h16M10 12h4" />
-        </svg>
-        <div>
-            <p class="text-xs font-medium text-violet-900">
-                Vinculado a base de datos
-                <span class="ml-1 text-violet-500 font-normal">({{ isMulti ? 'selección múltiple' : 'selección simple' }})</span>
-            </p>
-            <p class="text-xs text-violet-700 mt-0.5">
-                El usuario podrá elegir registros del dataset al diligenciar el reporte.
-            </p>
-        </div>
-    </div>
+    <!-- TOP BAR -->
+    <div class="h-[4px] bg-gradient-to-r from-[#7C3AED] via-[#8B5CF6] to-[#7C3AED]"></div>
 
-    <!-- Dataset -->
-    <div *ngIf="loading" class="flex items-center gap-2 px-3 py-2 bg-white border border-zinc-200 rounded-lg">
-        <div class="w-3.5 h-3.5 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin"></div>
-        <span class="text-xs text-zinc-500">Cargando datasets...</span>
-    </div>
+    <div class="p-5 space-y-5">
 
-    <div *ngIf="error" class="px-3 py-2 bg-red-50 border border-red-200 rounded-lg">
-        <p class="text-xs text-red-600">{{ error }}</p>
-    </div>
+        <!-- INFO -->
+        <div class="flex items-start gap-3">
 
-    <div *ngIf="!loading && !error" class="space-y-1.5">
-        <label class="block text-xs font-medium text-zinc-700">Dataset permitido *</label>
-        <select formControlName="configDatasetId"
-            class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 cursor-pointer focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150">
-            <option [ngValue]="null">-- Selecciona un dataset --</option>
-            <option *ngFor="let ds of allDatasets" [ngValue]="ds.id">{{ ds.name }}</option>
-        </select>
-        <p class="text-xs text-zinc-500">
-            Al reportar, el usuario verá los registros del dataset {{ isMulti ? 'y podrá elegir varios' : 'y elegirá uno' }}.
-        </p>
+            <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-violet-100 flex-shrink-0">
+                <svg class="w-4 h-4 text-violet-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7M4 7c0-2 1-3 3-3h10c2 0 3 1 3 3M4 7h16M10 12h4" />
+                </svg>
+            </div>
 
-        <div *ngIf="selectedDatasetId"
-            class="flex items-center gap-2 px-3 py-2 bg-violet-100 border border-violet-200 rounded-lg mt-2">
-            <svg class="w-3.5 h-3.5 text-violet-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clip-rule="evenodd" />
-            </svg>
-            <span class="text-xs text-violet-800 font-medium">Dataset: {{ selectedDatasetName }}</span>
-        </div>
-    </div>
-
-    <!-- ── SHOW_IF ────────────────────────────────────────────────── -->
-    <div class="border-t border-violet-200 pt-4 space-y-3">
-
-        <div class="flex items-center justify-between">
             <div>
-                <p class="text-xs font-semibold text-violet-900">Visibilidad condicional <span class="font-normal text-violet-500">(opcional)</span></p>
-                <p class="text-xs text-violet-700 mt-0.5">
-                    Muestra este campo solo cuando otro indicador tenga un valor específico.
+                <p class="text-[11px] font-bold uppercase tracking-[1px] text-violet-800">
+                    Vinculado a base de datos
+                    <span class="ml-1 font-normal text-violet-500">
+                        ({{ isMulti ? 'selección múltiple' : 'selección simple' }})
+                    </span>
+                </p>
+
+                <p class="text-[11px] text-violet-600 mt-0.5">
+                    El usuario podrá elegir registros del dataset al diligenciar el reporte.
                 </p>
             </div>
-            <button *ngIf="showIfIndicatorName" type="button" (click)="clearShowIf()"
-                class="text-xs text-red-500 hover:text-red-700 transition-colors cursor-pointer">
-                Quitar condición
-            </button>
+
         </div>
 
-        <!-- Indicador padre -->
-        <div class="space-y-1.5">
-            <label class="block text-xs font-medium text-zinc-700">Mostrar cuando el indicador...</label>
-            <select *ngIf="indicatorGroup.get('configShowIfIndicatorName')" formControlName="configShowIfIndicatorName"
-                class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 cursor-pointer focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150">
-                <option [ngValue]="null">-- Sin condición --</option>
-                <option *ngFor="let ind of selectIndicators" [ngValue]="ind.name">{{ ind.name }}</option>
-            </select>
-            <p class="text-xs text-zinc-400">Solo se listan indicadores de tipo "Selección simple" del mismo componente</p>
-        </div>
+        <!-- LOADING -->
+        <div *ngIf="loading" class="flex items-center gap-2 px-3 py-2 bg-[#F0F4FA] border border-[#D6E0F0] rounded-xl">
 
-        <!-- Valor requerido -->
-        <div *ngIf="showIfIndicatorName" class="space-y-1.5">
-            <label class="block text-xs font-medium text-zinc-700">...tenga el valor</label>
-            <select *ngIf="indicatorGroup.get('configShowIfValue')" formControlName="configShowIfValue"
-                class="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg bg-white text-zinc-900 cursor-pointer focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors duration-150">
-                <option [ngValue]="null">-- Selecciona un valor --</option>
-                <option *ngFor="let opt of parentIndicatorOptions" [ngValue]="opt">{{ opt }}</option>
-            </select>
-        </div>
+            <div class="w-3.5 h-3.5 border-2 border-[#D6E0F0] border-t-violet-600 rounded-full animate-spin"></div>
 
-        <!-- Preview de la condición activa -->
-        <div *ngIf="showIfIndicatorName && showIfValue"
-            class="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
-            <svg class="w-3.5 h-3.5 text-amber-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            </svg>
-            <span class="text-xs text-amber-800">
-                Solo visible cuando <strong>{{ showIfIndicatorName }}</strong> = <strong>{{ showIfValue }}</strong>
+            <span class="text-[12px] text-[#6B7FA8]">
+                Cargando datasets...
             </span>
+
+        </div>
+
+        <!-- ERROR -->
+        <div *ngIf="error" class="px-3 py-2 bg-red-50 border border-red-200 rounded-xl">
+
+            <p class="text-[12px] text-red-600">
+                {{ error }}
+            </p>
+
+        </div>
+
+        <!-- DATASET CONFIG -->
+        <div *ngIf="!loading && !error" class="space-y-3">
+
+            <div class="space-y-1.5">
+
+                <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#4A6A9B]">
+                    Dataset permitido *
+                </label>
+
+                <select formControlName="configDatasetId" class="w-full text-[13px] rounded-xl px-3 py-2.5
+          bg-[#F0F4FA] border border-[#D6E0F0]
+          focus:bg-white focus:border-violet-500
+          focus:ring-2 focus:ring-violet-500/20
+          outline-none transition-all cursor-pointer">
+
+                    <option [ngValue]="null">-- Selecciona un dataset --</option>
+                    <option *ngFor="let ds of allDatasets" [ngValue]="ds.id">
+                        {{ ds.name }}
+                    </option>
+
+                </select>
+
+            </div>
+
+            <!-- COLUMN -->
+            <div *ngIf="selectedDatasetId && datasetFields.length" class="space-y-1.5">
+
+                <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#4A6A9B]">
+                    Columna para mostrar / buscar *
+                </label>
+
+                <select formControlName="configLabelField" class="w-full text-[13px] rounded-xl px-3 py-2.5
+          bg-[#F0F4FA] border border-[#D6E0F0]
+          focus:bg-white focus:border-violet-500
+          focus:ring-2 focus:ring-violet-500/20
+          outline-none transition-all cursor-pointer">
+
+                    <option [ngValue]="null">-- Selecciona una columna --</option>
+
+                    <option *ngFor="let f of datasetFields" [ngValue]="f">
+                        {{ f }}
+                    </option>
+
+                </select>
+
+                <p class="text-[10.5px] text-[#8A9DC0]">
+                    Esta columna del dataset se usará para mostrar y buscar registros.
+                </p>
+
+            </div>
+
+            <p class="text-[10.5px] text-[#8A9DC0]">
+                Al reportar, el usuario verá los registros del dataset
+                {{ isMulti ? 'y podrá elegir varios' : 'y elegirá uno' }}.
+            </p>
+
+            <div *ngIf="selectedDatasetId"
+                class="flex items-center gap-2 px-3 py-2 bg-violet-100 border border-violet-200 rounded-xl">
+
+                <svg class="w-3.5 h-3.5 text-violet-700 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clip-rule="evenodd" />
+                </svg>
+
+                <span class="text-[12px] text-violet-900 font-semibold">
+                    Dataset: {{ selectedDatasetName }}
+                </span>
+
+            </div>
+
+        </div>
+
+        <!-- SHOW_IF -->
+        <div class="border-t border-[#D6E0F0] pt-5 space-y-4">
+
+            <div class="flex items-center justify-between">
+
+                <div>
+                    <p class="text-[11px] font-bold uppercase tracking-[1px] text-[#1B3A6B]">
+                        Visibilidad condicional
+                        <span class="font-normal text-[#8A9DC0]">(opcional)</span>
+                    </p>
+
+                    <p class="text-[11px] text-[#7C94BD] mt-0.5">
+                        Muestra este campo solo cuando otro indicador tenga un valor específico.
+                    </p>
+                </div>
+
+                <button *ngIf="showIfIndicatorName" type="button" (click)="clearShowIf()"
+                    class="text-[11px] text-red-500 hover:text-red-700 transition cursor-pointer">
+
+                    Quitar condición
+
+                </button>
+
+            </div>
+
+            <!-- INDICATOR -->
+            <div class="space-y-1.5">
+
+                <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#4A6A9B]">
+                    Mostrar cuando el indicador...
+                </label>
+
+                <select *ngIf="indicatorGroup.get('configShowIfIndicatorName')"
+                    formControlName="configShowIfIndicatorName" class="w-full text-[13px] rounded-xl px-3 py-2.5
+          bg-[#F0F4FA] border border-[#D6E0F0]
+          focus:bg-white focus:border-violet-500
+          focus:ring-2 focus:ring-violet-500/20
+          outline-none transition-all cursor-pointer">
+
+                    <option [ngValue]="null">-- Sin condición --</option>
+
+                    <option *ngFor="let ind of selectIndicators" [ngValue]="ind.name">
+                        {{ ind.name }}
+                    </option>
+
+                </select>
+
+                <p class="text-[10px] text-[#8A9DC0]">
+                    Solo se listan indicadores de tipo "Selección simple" del mismo componente
+                </p>
+
+            </div>
+
+            <!-- VALUE -->
+            <div *ngIf="showIfIndicatorName" class="space-y-1.5">
+
+                <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#4A6A9B]">
+                    ...tenga el valor
+                </label>
+
+                <select *ngIf="indicatorGroup.get('configShowIfValue')" formControlName="configShowIfValue" class="w-full text-[13px] rounded-xl px-3 py-2.5
+          bg-[#F0F4FA] border border-[#D6E0F0]
+          focus:bg-white focus:border-violet-500
+          focus:ring-2 focus:ring-violet-500/20
+          outline-none transition-all cursor-pointer">
+
+                    <option [ngValue]="null">-- Selecciona un valor --</option>
+
+                    <option *ngFor="let opt of parentIndicatorOptions" [ngValue]="opt">
+                        {{ opt }}
+                    </option>
+
+                </select>
+
+            </div>
+
+            <!-- PREVIEW -->
+            <div *ngIf="showIfIndicatorName && showIfValue"
+                class="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-xl">
+
+                <svg class="w-3.5 h-3.5 text-amber-600 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+
+                <span class="text-[12px] text-amber-800">
+                    Solo visible cuando <strong>{{ showIfIndicatorName }}</strong> =
+                    <strong>{{ showIfValue }}</strong>
+                </span>
+
+            </div>
+
         </div>
 
     </div>

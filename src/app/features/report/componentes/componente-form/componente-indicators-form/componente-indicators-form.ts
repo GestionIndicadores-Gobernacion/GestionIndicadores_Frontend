@@ -104,7 +104,7 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
       configMaxSizeMb: [data?.config?.max_size_mb || null],
       configDatasetId: [data?.config?.dataset_id || null],
       configTableId: [data?.config?.table_id || null],
-      configLabelField: [data?.config?.label_field || ''],
+      configLabelField: [data?.config?.label_field || null],
       cgCategoryLabel: [data?.config?.category_label || ''],
       cgCategories: [data?.config?.categories?.join('\n') || ''],
       cgGroups: [data?.config?.groups?.join('\n') || ''],
@@ -268,7 +268,10 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
         case 'dataset_select':
         case 'dataset_multi_select': {
 
-          const cfg: any = { dataset_id: ind.configDatasetId };
+          const cfg: any = {
+            dataset_id: ind.configDatasetId,
+            label_field: ind.configLabelField || null
+          };
 
           if (ind.configShowIfIndicatorName) {
             cfg.show_if = {
