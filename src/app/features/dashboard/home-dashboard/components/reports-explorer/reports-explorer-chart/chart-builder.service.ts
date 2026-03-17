@@ -44,7 +44,7 @@ export class ChartBuildersService {
 
         if (d.by_nested) return this.donut(d, onBarClick, componentId);
         if (d.by_location) return this.location(d, onBarClick, componentId);
-        if (d.by_category) return this.category(d, onBarClick, componentId);
+        if (d.by_category) return this.category(d, aggregate, onBarClick, componentId);
         if (d.by_month) return this.month(d, year, onBarClick, componentId);
 
         return this.jornadas(aggregate, year, onBarClick, componentId);
@@ -163,11 +163,15 @@ export class ChartBuildersService {
 
     private category(
         d: IndicatorDetail,
+        aggregate: ComponentAggregate,
         onBarClick: (e: BarClickEvent) => void,
         componentId: number | null,
     ): ChartResult {
 
-        const c = d.by_category!;
+        let c = (d.by_category ?? []).map(x => ({
+            category: x.category,
+            total: Number(x.total)
+        }));
 
         if (c.length <= 6) {
             return this.donutFromArray(
