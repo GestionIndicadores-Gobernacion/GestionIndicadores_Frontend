@@ -77,7 +77,7 @@
                         <option value="file_attachment">Archivo adjunto</option>
                         <option value="dataset_select">Base de datos (selección simple)</option>
                         <option value="dataset_multi_select">Base de datos (selección múltiple)</option>
-
+                        <option value="red_animalia">Red Animalia</option>
                     </select>
 
                 </div>
@@ -236,6 +236,10 @@
             <app-indicator-targets *ngIf="TYPES_WITH_TARGETS.includes(ind.get('field_type')?.value)"
                 [indicatorGroup]="$any(ind)" [fieldType]="ind.get('field_type')?.value">
             </app-indicator-targets>
+
+            <app-config-dataset *ngIf="ind.get('field_type')?.value === 'red_animalia'" [indicatorGroup]="$any(ind)"
+                [isMulti]="false" [allIndicatorControls]="getIndicatorControls()">
+            </app-config-dataset>
 
         </div>
 

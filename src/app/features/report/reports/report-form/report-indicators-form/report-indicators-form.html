@@ -14,25 +14,20 @@
 
                 <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round">
-
                     <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z" />
                     <path d="M9 19V9a2 2 0 012-2h2a2 2 0 012 2v10" />
                     <path d="M15 19a2 2 0 002 2h2a2 2 0 002-2V5" />
-
                 </svg>
 
             </div>
 
             <div>
-
                 <span class="text-[11px] font-bold uppercase tracking-[1px] text-[#1B3A6B]">
                     Indicadores medidos
                 </span>
-
                 <p class="text-[11px] text-[#6B86B3] mt-0.5">
                     Valores registrados durante la ejecución
                 </p>
-
             </div>
 
         </div>
@@ -42,15 +37,11 @@
             class="mx-6 mt-5 mb-4 flex items-start gap-3 px-4 py-3 rounded-xl border border-[#CFE0F5] bg-gradient-to-r from-[#F2F6FC] to-[#EEF4FB]">
 
             <div class="w-7 h-7 rounded-lg flex items-center justify-center bg-[#E6EEF9] shrink-0">
-
                 <svg class="w-4 h-4 text-[#2d5fa8]" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                     stroke-width="2">
-
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10" />
-
                 </svg>
-
             </div>
 
             <p class="text-[12px] text-[#35507F] leading-snug">
@@ -67,19 +58,15 @@
             <div class="mx-6 mt-4 mb-3 border border-[#D6E0F0] rounded-2xl overflow-hidden bg-white">
 
                 <div class="px-5 py-4 border-b border-[#D6E0F0] bg-[#F0F4FA]">
-
                     <p class="text-[10px] font-bold uppercase tracking-[1px] text-[#2d5fa8]">
                         ¿Qué vas a reportar?
                     </p>
-
                     <p class="text-[11px] text-[#6B86B3] mt-0.5">
                         Selecciona el tipo de intervención que realizaste
                     </p>
-
                 </div>
 
                 <div class="p-4 flex flex-wrap gap-3">
-
                     <button *ngFor="let member of groupEntry.value" type="button"
                         (click)="selectGroupMode(groupEntry.key, member.id!)"
                         [class.bg-gradient-to-r]="selectedGroupMode[groupEntry.key] === member.id"
@@ -91,11 +78,8 @@
                         [class.text-[#35507F]]="selectedGroupMode[groupEntry.key] !== member.id"
                         [class.border-[#D6E0F0]]="selectedGroupMode[groupEntry.key] !== member.id"
                         class="px-4 py-2 text-[12px] font-semibold border rounded-xl transition-all duration-200 hover:bg-[#E6EEF9] hover:border-[#2d5fa8] focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/40">
-
                         {{ member.name }}
-
                     </button>
-
                 </div>
 
             </div>
@@ -114,26 +98,17 @@
                     <div class="md:w-72 flex-shrink-0">
 
                         <h3 class="text-[14px] font-semibold leading-tight mb-1 text-[#1B3A6B]">
-
                             {{ ind.name }}
-
                             <span *ngIf="ind.is_required" class="text-red-600">*</span>
-
                         </h3>
 
                         <p class="text-[11.5px]" *ngIf="getTarget(ind) as meta; else noMeta">
-
                             Meta:
-                            <span class="font-semibold text-[#2d5fa8]">
-                                {{ meta }}
-                            </span>
-
+                            <span class="font-semibold text-[#2d5fa8]">{{ meta }}</span>
                         </p>
 
                         <ng-template #noMeta>
-                            <p class="text-[11px] text-[#8FA4C7]">
-                                Sin meta
-                            </p>
+                            <p class="text-[11px] text-[#8FA4C7]">Sin meta</p>
                         </ng-template>
 
                     </div>
@@ -194,6 +169,48 @@
                             [value]="values[getIndicatorId(ind)]" [interventionLocation]="interventionLocation"
                             (valueChange)="onValueChange(getIndicatorId(ind), $event)">
                         </app-categorized-group-field>
+
+                        <!-- RED ANIMALIA -->
+                        <ng-container *ngIf="ind.field_type === 'red_animalia'">
+
+                            <!-- Botón trigger -->
+                            <button type="button" (click)="openRedAnimaliaModal(ind.id!)" class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-xl
+                                       bg-gradient-to-r from-[#1B3A6B] to-[#2d5fa8]
+                                       hover:opacity-95 transition cursor-pointer shadow">
+
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5V4H2v16h5" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 9h6v11H9z" />
+                                </svg>
+
+                                <span>
+                                    {{ values[ind.id!]?.actors?.length > 0
+                                    ? values[ind.id!].actors.length + ' actor(es) seleccionado(s)'
+                                    : '+ Agregar actores' }}
+                                </span>
+
+                            </button>
+
+                            <!-- Resumen actores guardados -->
+                            <div *ngIf="values[ind.id!]?.actors?.length > 0" class="mt-3 space-y-1.5">
+                                <div *ngFor="let actor of values[ind.id!].actors"
+                                    class="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#F0F4FA] border border-[#D6E0F0]">
+                                    <div class="w-2 h-2 rounded-full bg-[#2d5fa8] shrink-0"></div>
+                                    <span class="text-[12px] font-medium text-[#1B3A6B]">{{ actor.actor_name }}</span>
+                                    <span *ngIf="actor.actor_type" class="text-[11px] text-[#6B86B3]">· {{
+                                        actor.actor_type }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Modal -->
+                            <app-red-animalia-modal [open]="openRedAnimaliaModalId === ind.id" [indicator]="ind"
+                                [interventionLocation]="interventionLocation" [existing]="values[ind.id!]"
+                                (save)="onValueChange(ind.id!, $event); closeRedAnimaliaModal()"
+                                (close)="closeRedAnimaliaModal()">
+                            </app-red-animalia-modal>
+
+                        </ng-container>
 
                     </div>
 

@@ -18,6 +18,7 @@ import { SelectFieldComponent } from './report-simple-fields/select-field/select
 import { SumGroupFieldComponent } from './report-simple-fields/sum-group-field/sum-group-field';
 import { TextFieldComponent } from './report-simple-fields/text-field/text-field';
 import { ShowIfService } from './show-if.service';
+import { RedAnimaliaModalComponent } from './red-animalia-modal/red-animalia-modal';
 
 
 @Component({
@@ -36,6 +37,7 @@ import { ShowIfService } from './show-if.service';
     FileAttachmentFieldComponent,
     GroupedDataFieldComponent,
     CategorizedGroupFieldComponent,
+    RedAnimaliaModalComponent
   ],
   templateUrl: './report-indicators-form.html'
 })
@@ -51,6 +53,9 @@ export class ReportIndicatorsFormComponent implements OnChanges {
   datasetOptions: Record<number, { id: number; label: string }[]> = {};
   datasetLoading: Record<number, boolean> = {};
   datasetError: Record<number, string> = {};
+
+  openRedAnimaliaModalId: number | null = null;
+
 
   constructor(
     private groupSvc: IndicatorGroupService,
@@ -241,4 +246,13 @@ export class ReportIndicatorsFormComponent implements OnChanges {
   emit(): void {
     this.valuesChange.emit(sanitizeEmit(this.values, this.activeIndicators));
   }
+
+  openRedAnimaliaModal(indicatorId: number): void {
+    this.openRedAnimaliaModalId = indicatorId;
+  }
+
+  closeRedAnimaliaModal(): void {
+    this.openRedAnimaliaModalId = null;
+  }
+
 }

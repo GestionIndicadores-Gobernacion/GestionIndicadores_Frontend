@@ -205,7 +205,11 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
 
   serializeIndicators(): any[] {
     const cgList = this.cgComponents?.toArray() || [];
+
     const gdList = this.gdComponents?.toArray() || [];
+
+    let cgIndex = 0;
+    let gdIndex = 0;
 
     return this.indicators.controls.map((ctrl, i) => {
       const ind = ctrl.value;
@@ -246,9 +250,11 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
           indicator.config = {
             parent_field: ind.configParentField,
             auto_total: ind.configAutoTotal || false,
-            sub_fields: gdList[i]?.subFields || []
+            sub_fields: gdList[gdIndex]?.subFields || []  // ← usa gdIndex
           };
+          gdIndex++;  // ← INCREMENTAR
           break;
+
 
         case 'file_attachment': {
           const types = ind.configAllowedTypes
@@ -262,7 +268,8 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
         }
 
         case 'categorized_group':
-          indicator.config = cgList[i]?.getConfig() ?? null;
+          indicator.config = cgList[cgIndex]?.getConfig() ?? null;  // ← usa cgIndex
+          cgIndex++;
           break;
 
         case 'dataset_select':
@@ -283,7 +290,15 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
           indicator.config = cfg;
           break;
         }
+        case 'red_animalia': {
+          indicator.config = {
+            dataset_id: ind.configDatasetId,
+          };
+          break;
+        }
       }
+
+      console.log(`Indicador [${i}] ${ind.field_type}:`, JSON.stringify(indicator));
 
       if (this.TYPES_WITH_TARGETS.includes(ind.field_type) && Array.isArray(ind.targets)) {
         indicator.targets = ind.targets.map((t: any) => ({
