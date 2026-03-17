@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit } from '@angular/core';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { DatasetService } from '../../../../../../../core/services/datasets.service';
 
 @Component({
   selector: 'app-config-categorized-group',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './config-categorized-group.html'
 })
 export class ConfigCategorizedGroupComponent implements OnInit {
@@ -14,12 +15,45 @@ export class ConfigCategorizedGroupComponent implements OnInit {
 
   metrics: any[] = [];
   subSections: any[] = [];
+  datasets: { id: number; name: string }[] = [];
+  datasetFields: Record<number, string[]> = {}; // dataset_id → campos disponibles
+
+  constructor(
+    private datasetService: DatasetService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
-    // Restaurar desde config si venimos de edición
     const config = (this.indicatorGroup as any)._rawConfig;
     if (config?.metrics) this.metrics = [...config.metrics];
-    if (config?.sub_sections) this.subSections = [...config.sub_sections];
+    if (config?.sub_sections) this.subSections = config.sub_sections.map((s: any) => ({ ...s }));
+
+    this.datasetService.getAll().subscribe({
+      next: (ds) => {
+        this.datasets = ds.map(d => ({ id: d.id, name: d.name }));
+        this.cdr.detectChanges(); // ← AGREGAR para forzar renderizado
+
+        // Si ya hay sub-sección red_animalia con dataset_id, carga sus campos
+        const ra = this.subSections.find(s => s.key === 'red_animalia');
+        if (ra?.dataset_id) {
+          this.loadDatasetFields(ra.dataset_id);
+        }
+      },
+      error: (err) => console.error('Error cargando datasets:', err)
+    });
+  }
+
+  // Carga los campos del dataset seleccionado
+  loadDatasetFields(datasetId: number): void {
+    this.datasetService.getRecordsByDataset(datasetId).subscribe({
+      next: (records) => {
+        if (records.length > 0) {
+          this.datasetFields[datasetId] = Object.keys(records[0].data || {});
+          this.cdr.detectChanges();
+        }
+      },
+      error: () => { }
+    });
   }
 
   // ── Sanitización ────────────────────────────────────────────────
@@ -81,6 +115,22 @@ export class ConfigCategorizedGroupComponent implements OnInit {
     this.subSections[j][field] = value;
   }
 
+  updateSubSectionDatasetId(j: number, value: any): void {
+    const id = value ? Number(value) : null;
+    this.subSections[j]['dataset_id'] = id;
+    this.subSections[j]['label_field'] = null; // reset al cambiar dataset
+    if (id) this.loadDatasetFields(id);
+  }
+
+  updateSubSectionLabelField(j: number, value: any): void {
+    this.subSections[j]['label_field'] = value || null;
+  }
+
+  getFieldsForSubSection(j: number): string[] {
+    const id = this.subSections[j]?.dataset_id;
+    return id ? (this.datasetFields[id] || []) : [];
+  }
+
   // ── Serialización (llamada desde el padre en serializeIndicators) ─
 
   getConfig(): any {
@@ -91,9 +141,17 @@ export class ConfigCategorizedGroupComponent implements OnInit {
       .split('\n').map((g: string) => g.trim()).filter((g: string) => g.length > 0);
 
     const validMetrics = this.metrics.filter(m => m.key && m.label);
+
     const validSubSections = this.subSections
       .filter(s => s.key && s.label)
-      .map(s => ({ ...s, max_source: 'metrics_total' }));
+      .map(s => {
+        const section: any = { key: s.key, label: s.label, max_source: 'metrics_total' };
+        if (s.key === 'red_animalia' && s.dataset_id) {
+          section.dataset_id = s.dataset_id;
+          if (s.label_field) section.label_field = s.label_field;
+        }
+        return section;
+      });
 
     return {
       category_label: this.indicatorGroup.get('cgCategoryLabel')?.value?.trim() || '',
@@ -111,4 +169,8 @@ export class ConfigCategorizedGroupComponent implements OnInit {
       .replace(/_+/g, '_')
       .replace(/^_|_$/g, '');
   }
+
+
+
+
 }

@@ -177,5 +177,6 @@
 </div>
 
 <app-red-animalia-modal [open]="redAnimaliaOpen" [indicator]="indicator" [interventionLocation]="interventionLocation"
-    [existing]="existingRedAnimalia" (save)="onSaveRedAnimalia($event)" (close)="redAnimaliaOpen = false">
+    [existing]="existingRedAnimalia" [datasetId]="redAnimaliaDatasetId" [metricTotals]="redAnimaliaMetricTotals"
+    (save)="onSaveRedAnimalia($event)" (close)="redAnimaliaOpen = false">
 </app-red-animalia-modal>
