@@ -1,5 +1,4 @@
 <div *ngIf="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-
     <div
         class="w-full max-w-4xl max-h-[92vh] flex flex-col rounded-2xl overflow-hidden shadow-2xl bg-white border border-zinc-200">
 
@@ -14,14 +13,11 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 9h6v11H9z" />
                     </svg>
                 </div>
-
                 <div>
                     <h2 class="text-sm font-semibold tracking-wide">Red Animalia</h2>
-
                     <p class="text-xs text-blue-100 mt-0.5">
                         Municipio:
                         <span class="font-medium text-white">{{ interventionLocation }}</span>
-
                         <span *ngIf="actors_added.length > 0"
                             class="ml-2 bg-white/15 px-2 py-0.5 rounded-md text-[11px] font-medium text-white">
                             {{ actors_added.length }} actor{{ actors_added.length !== 1 ? 'es' : '' }} agregado{{
@@ -30,7 +26,6 @@
                     </p>
                 </div>
             </div>
-
             <button type="button" (click)="onClose()"
                 class="p-2 rounded-lg hover:bg-white/20 transition cursor-pointer">
                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -66,29 +61,24 @@
                     [class.border-[#2d5fa8]]="editingIndex === i" [class.bg-blue-50]="editingIndex === i">
 
                     <div class="flex items-center gap-3">
-
                         <div class="w-8 h-8 rounded-xl bg-[#1B3A6B] flex items-center justify-center">
                             <span class="text-xs font-bold text-white">{{ i + 1 }}</span>
                         </div>
-
-                        <p class="text-sm font-medium text-zinc-800">
-                            {{ entry.actor_name }}
-                        </p>
-
+                        <div>
+                            <p class="text-sm font-medium text-zinc-800">{{ entry.actor_name }}</p>
+                            <p *ngIf="entry.actor_type" class="text-xs text-zinc-400 mt-0.5">{{ entry.actor_type }}</p>
+                        </div>
                     </div>
 
                     <div class="flex items-center gap-2">
-
                         <button type="button" (click)="editActor(i)"
                             class="px-3 py-1.5 text-xs font-medium text-[#1B3A6B] border border-blue-200 rounded-lg hover:bg-blue-50 transition cursor-pointer">
                             Editar
                         </button>
-
                         <button type="button" (click)="removeActor(i)"
                             class="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition cursor-pointer">
                             Eliminar
                         </button>
-
                     </div>
 
                 </div>
@@ -104,18 +94,15 @@
 
                 <!-- SEARCH -->
                 <div class="relative">
-
                     <div class="absolute left-3 top-1/2 -translate-y-1/2 text-[#2d5fa8]">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.3-4.3" />
                             <circle cx="11" cy="11" r="7" />
                         </svg>
                     </div>
-
                     <input type="text" [(ngModel)]="search" (ngModelChange)="filterActors()"
                         placeholder="Buscar actor por nombre..." class="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-zinc-200 bg-[#F0F4FA]
-                   focus:outline-none focus:ring-2 focus:ring-[#2d5fa8] focus:border-[#1B3A6B]" />
-
+                               focus:outline-none focus:ring-2 focus:ring-[#2d5fa8] focus:border-[#1B3A6B]" />
                 </div>
 
                 <!-- LISTA -->
@@ -127,12 +114,13 @@
 
                         <p class="text-sm font-medium" [class.text-white]="isStagingActorSelected(actor)"
                             [class.text-zinc-900]="!isStagingActorSelected(actor)">
-                            {{ actor.data?.nombre }}
+                            {{ actor.data?.[labelField] }}
                         </p>
 
                         <p class="text-xs mt-0.5" [class.text-blue-100]="isStagingActorSelected(actor)"
                             [class.text-zinc-400]="!isStagingActorSelected(actor)">
-                            {{ actor.data?.municipio }} · {{ actor.data?.servicio }}
+                            {{ actor.data?.['municipio_de_residencia'] }} · {{
+                            actor.data?.['tipo_de_vinculacion_dentro_de_la_red_animalia_valle'] }}
                         </p>
 
                     </div>
@@ -143,14 +131,71 @@
 
                 </div>
 
-                <!-- BOTON AGREGAR -->
-                <div *ngIf="stagingActor" class="flex justify-end">
+                <!-- TABLA DE MÉTRICAS -->
+                <div *ngIf="stagingActor" class="space-y-3">
 
-                    <button type="button" (click)="commitStaging()" class="px-5 py-2 text-sm font-semibold text-white rounded-xl
+                    <div class="rounded-xl border border-[#D6E0F0] overflow-hidden">
+
+                        <div class="px-4 py-3 flex items-center justify-between bg-[#F0F4FA] border-b border-[#D6E0F0]">
+                            <p class="text-[11px] font-bold uppercase tracking-wider text-[#1B3A6B]">
+                                ¿Cuántos pertenecen a la Red Animalia?
+                            </p>
+                            <p class="text-[10px] text-[#8A9DC0]">valor ≤ total de cada métrica</p>
+                        </div>
+
+                        <table class="w-full text-xs">
+                            <thead>
+                                <tr class="border-b border-[#EEF2F9]" style="background:#F8FAFF;">
+                                    <th
+                                        class="px-4 py-2 text-left text-[10px] font-bold uppercase tracking-[0.8px] text-[#4A6A9B]">
+                                        Indicador
+                                    </th>
+                                    <th
+                                        class="px-4 py-2 text-center text-[10px] font-bold uppercase tracking-[0.8px] text-[#1B3A6B]">
+                                        Valor
+                                    </th>
+                                    <th
+                                        class="px-4 py-2 text-center text-[10px] font-bold uppercase tracking-[0.8px] text-[#4A6A9B]">
+                                        Máx
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-[#EEF2F9]">
+                                <tr *ngFor="let metric of indicator?.config?.metrics; let mi = index"
+                                    [style.background]="mi % 2 === 0 ? 'white' : '#FAFCFF'">
+
+                                    <td class="px-4 py-2 text-[12px] font-medium text-[#1B3A6B]">
+                                        {{ metric.label }}
+                                    </td>
+
+                                    <td class="px-3 py-2 text-center">
+                                        <input type="number" min="0" [max]="getMetricMax(metric.key)"
+                                            [ngModel]="stagingMetrics[metric.key]"
+                                            (ngModelChange)="setStagingMetric(metric.key, $event)"
+                                            [disabled]="getMetricMax(metric.key) === 0"
+                                            class="w-20 px-2 py-1.5 text-sm text-center border rounded-lg outline-none"
+                                            style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B;" />
+                                    </td>
+
+                                    <td class="px-4 py-2 text-center">
+                                        <span class="text-sm font-bold tabular-nums text-[#8A9DC0]">
+                                            {{ getMetricMax(metric.key) }}
+                                        </span>
+                                    </td>
+
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button type="button" (click)="commitStaging()" class="px-5 py-2 text-sm font-semibold text-white rounded-xl
                    bg-gradient-to-r from-[#1B3A6B] to-[#2d5fa8]
                    hover:opacity-95 transition cursor-pointer shadow">
-                        {{ editingIndex >= 0 ? 'Actualizar actor' : '+ Agregar actor' }}
-                    </button>
+                            {{ editingIndex >= 0 ? 'Actualizar actor' : '+ Agregar actor' }}
+                        </button>
+                    </div>
 
                 </div>
 
@@ -160,29 +205,22 @@
 
         <!-- FOOTER -->
         <div class="px-6 py-4 border-t border-zinc-200 flex items-center justify-between bg-white">
-
             <p class="text-xs text-zinc-500">
                 {{ actors_added.length }} actor{{ actors_added.length !== 1 ? 'es' : '' }} en total
             </p>
-
             <div class="flex items-center gap-3">
-
                 <button type="button" (click)="onClose()"
                     class="px-4 py-2 text-sm text-zinc-600 hover:text-zinc-900 transition cursor-pointer">
                     Cancelar
                 </button>
-
                 <button type="button" (click)="onSave()" [disabled]="!canSave" class="px-6 py-2 text-sm font-semibold text-white rounded-xl
-                 bg-gradient-to-r from-[#1B3A6B] to-[#2d5fa8]
-                 hover:opacity-95 transition cursor-pointer
-                 disabled:opacity-40 disabled:cursor-not-allowed">
+                           bg-gradient-to-r from-[#1B3A6B] to-[#2d5fa8]
+                           hover:opacity-95 transition cursor-pointer
+                           disabled:opacity-40 disabled:cursor-not-allowed">
                     Guardar
                 </button>
-
             </div>
-
         </div>
 
     </div>
-
 </div>

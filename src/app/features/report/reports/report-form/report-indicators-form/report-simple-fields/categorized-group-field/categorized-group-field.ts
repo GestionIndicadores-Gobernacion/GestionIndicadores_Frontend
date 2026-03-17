@@ -147,6 +147,25 @@ export class CategorizedGroupFieldComponent {
 
   }
 
+  get redAnimaliaDatasetId(): number | null {
+    const subSection = (this.indicator.config?.sub_sections || [])
+      .find((s: any) => s.key === 'red_animalia');
+    console.log('sub_sections:', this.indicator.config?.sub_sections);
+    console.log('redAnimaliaDatasetId:', subSection?.dataset_id);
+    return subSection?.dataset_id ?? null;
+  }
+  
+  get redAnimaliaMetricTotals(): Record<string, number> {
+    const metrics: any[] = this.indicator.config?.metrics || [];
+    const result: Record<string, number> = {};
+    metrics.forEach(m => {
+      result[m.key] = this.selectedCategories.reduce((sum, cat) => {
+        return sum + this.metricTotal(cat, m.key);
+      }, 0);
+    });
+    return result;
+  }
+
   get existingRedAnimalia(): RedAnimaliaResult | null {
 
     const raw = this.value?.sub_sections?.red_animalia;
