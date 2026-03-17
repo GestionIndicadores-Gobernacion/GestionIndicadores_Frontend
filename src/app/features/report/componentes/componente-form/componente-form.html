@@ -248,11 +248,12 @@
       </section>
 
       <!-- INDICADORES -->
+      <!-- INDICADORES -->
       <section class="rounded-2xl border border-[#D6E0F0] bg-white shadow-sm overflow-hidden">
 
         <div class="h-[4px] bg-gradient-to-r from-[#2d5fa8] via-[#5F8FD0] to-[#2d5fa8]"></div>
 
-        <div class="flex items-center px-6 py-5 border-b border-[#D6E0F0] bg-[#F4F7FC]">
+        <div class="flex items-center justify-between px-6 py-5 border-b border-[#D6E0F0] bg-[#F4F7FC]">
 
           <div>
             <span class="text-[11px] font-bold uppercase tracking-[1px] text-[#1B3A6B]">
@@ -263,6 +264,14 @@
               Define los campos que se usarán posteriormente en los reportes
             </p>
           </div>
+
+          <!-- BOTÓN AGREGAR -->
+          <button type="button" (click)="addIndicator()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-semibold
+      border border-[#D6E0F0] bg-white text-[#1B3A6B]
+      hover:bg-[#F0F4FA] hover:border-[#2d5fa8]
+      transition-all cursor-pointer">
+            Agregar indicador
+          </button>
 
         </div>
 

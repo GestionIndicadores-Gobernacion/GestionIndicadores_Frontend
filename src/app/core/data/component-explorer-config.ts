@@ -126,30 +126,34 @@ export const COMPONENT_EXPLORER_CONFIG: Record<number, ExplorerVirtualConfig> = 
         showReportesPorMunicipio: true,
         showIndicadoresPorMunicipio: true,
         hiddenIndicators: [113],
+        locationLabel: 'Jornadas por municipio'
     },
 
     // Dejando huella
     24: {
         showReportesPorMes: false,
-        showReportesPorMunicipio: true,
-        showIndicadoresPorMunicipio: true,
-        hiddenIndicators: [116],
+        showReportesPorMunicipio: false,          // ← quitar jornadas por municipio genérico
+        showIndicadoresPorMunicipio: false,        // ← desactivar el genérico
+        hiddenIndicators: [116, 117, 118],         // ← ocultar todos los reales
     },
 
     // Alianzas académicas
     25: {
         showReportesPorMes: false,
-        showReportesPorMunicipio: true,
-        showIndicadoresPorMunicipio: true,
-        hiddenIndicators: [119, 120],
+        showReportesPorMunicipio: false,
+        showIndicadoresPorMunicipio: false,
+        hiddenIndicators: [119, 120, 121],
     },
 
     // Experiencias culturales
+    // Experiencias culturales
     26: {
         showReportesPorMes: false,
-        showReportesPorMunicipio: true,
-        showIndicadoresPorMunicipio: true,
-        hiddenIndicators: [],
+        showReportesPorMunicipio: false,
+        showIndicadoresPorMunicipio: false,
+        hiddenIndicators: [81, 146, 147],  // los negativos no pasan por hidden
+        // pero -7002 llega en list si el backend
+        // lo retorna con field_type no reconocido
     },
     // Mesa PYBA
     28: {
