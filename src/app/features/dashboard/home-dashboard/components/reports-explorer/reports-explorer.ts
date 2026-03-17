@@ -45,6 +45,7 @@ export class ReportsExplorerComponent implements OnChanges {
 
     const list = (this.indicatorsAggregate?.indicators ?? [])
       .filter(ind => !hidden.has(ind.indicator_id))
+      .filter(ind => ind.indicator_id > 0)  // ← excluir virtuales del backend
       .map(ind => ({
         ...ind,
         indicator_name: getIndicatorDisplayName(ind.indicator_id, ind.indicator_name)
@@ -85,6 +86,66 @@ export class ReportsExplorerComponent implements OnChanges {
           by_month: asistentes.by_month,
         });
       }
+    }
+
+    // Dejando huella ID 24
+    if (this.selectedComponentId === 24) {
+      const raw = this.indicatorsAggregate?.indicators ?? [];
+      const byLocationIndicator = this.indicatorsAggregate?.by_location_indicator ?? [];
+
+      const institucion = raw.find(i => i.indicator_id === 116);
+      const jovenes = raw.find(i => i.indicator_id === 117);
+      const proyectos = raw.find(i => i.indicator_id === 118);
+
+      // 1. Cantidad de jóvenes inscritos / institución educativa
+      // Usa by_category del indicador 116 si existe, si no construye desde by_location_indicator
+      if (institucion?.by_category?.length) {
+        virtual.push({
+          indicator_id: -6001,
+          indicator_name: 'Cantidad de jóvenes inscritos / institución educativa',
+          field_type: 'by_category',
+          by_category: institucion.by_category
+        });
+      }
+
+      // 2. Jóvenes inscritos / municipios
+      if (byLocationIndicator.length > 0) {
+        const locationDataJovenes = byLocationIndicator
+          .map(l => {
+            const match = l.indicators.find((i: any) => i.indicator_id === 117);
+            return match ? { location: l.location, total: match.total } : null;
+          })
+          .filter(Boolean) as { location: string; total: number }[];
+
+        if (locationDataJovenes.length > 0) {
+          virtual.push({
+            indicator_id: -6002,
+            indicator_name: 'Jóvenes inscritos / municipios',
+            field_type: 'by_location',
+            by_location: locationDataJovenes,
+          });
+        }
+      }
+
+      // 3. Proyectos / municipios
+      if (byLocationIndicator.length > 0) {
+        const locationDataProyectos = byLocationIndicator
+          .map(l => {
+            const match = l.indicators.find((i: any) => i.indicator_id === 118);
+            return match ? { location: l.location, total: match.total } : null;
+          })
+          .filter(Boolean) as { location: string; total: number }[];
+
+        if (locationDataProyectos.length > 0) {
+          virtual.push({
+            indicator_id: -6003,
+            indicator_name: 'Proyectos / municipios',
+            field_type: 'by_location',
+            by_location: locationDataProyectos,
+          });
+        }
+      }
+
     }
 
     // Virtuales específicos para CBA (component 7)
@@ -155,7 +216,7 @@ export class ReportsExplorerComponent implements OnChanges {
     if (config.showReportesPorMunicipio && byLocation.length > 0) {
       virtual.push({
         indicator_id: -1,
-        indicator_name: config.locationLabel ?? 'Reportes por municipio',
+        indicator_name: config.locationLabel ?? 'Jornadas por municipio',
         field_type: 'by_location',
         by_location: byLocation,
       });
@@ -180,7 +241,9 @@ export class ReportsExplorerComponent implements OnChanges {
 
         virtual.push({
           indicator_id: -(indId + 1000),
-          indicator_name: `${meta.indicator_name} por municipio`,
+          indicator_name: meta.indicator_id === 114
+            ? 'Cantidad de niños por municipio'
+            : `${meta.indicator_name} por municipio`,
           field_type: 'by_location',
           by_location: locationData,
         });
@@ -195,7 +258,9 @@ export class ReportsExplorerComponent implements OnChanges {
       ) {
         virtual.push({
           indicator_id: -(ind.indicator_id + 2000),
-          indicator_name: `${ind.indicator_name} por mes`,
+          indicator_name: ind.indicator_id === 114
+            ? 'Cantidad de niños por mes'
+            : `${ind.indicator_name} por mes`,
           field_type: 'by_month_sum',
           by_month: ind.by_month,
         });
@@ -220,6 +285,85 @@ export class ReportsExplorerComponent implements OnChanges {
           });
         });
       });
+    }
+
+    // Alianzas académicas ID 25
+    if (this.selectedComponentId === 25) {
+      const raw = this.indicatorsAggregate?.indicators ?? [];
+      const byLocationIndicator = this.indicatorsAggregate?.by_location_indicator ?? [];
+      const byLocation = this.indicatorsAggregate?.by_location ?? [];
+
+      // 1. Cantidad de foros realizados / municipios (1 reporte = 1 foro)
+      if (byLocation.length > 0) {
+        virtual.push({
+          indicator_id: -8002,
+          indicator_name: 'Cantidad de foros realizados / municipios',
+          field_type: 'by_location',
+          by_location: byLocation,
+        });
+      }
+
+      // 2. Cantidad de personas / municipios (indicator 121 x municipio)
+      const locationPersonas = byLocationIndicator
+        .map(l => {
+          const match = l.indicators.find((i: any) => i.indicator_id === 121);
+          return match ? { location: l.location, total: match.total } : null;
+        })
+        .filter(Boolean) as { location: string; total: number }[];
+
+      if (locationPersonas.length > 0) {
+        virtual.push({
+          indicator_id: -8003,
+          indicator_name: 'Cantidad de personas / municipios',
+          field_type: 'by_location',
+          by_location: locationPersonas,
+        });
+      }
+
+      // 3. Temas tratados / foros (cruce 120×121 — viene del backend)
+      const cross = raw.find(i => i.indicator_id === -8001);
+      if (cross?.by_category?.length) {
+        virtual.push({
+          indicator_id: -8001,
+          indicator_name: 'Temas tratados / foros',
+          field_type: 'by_category',
+          by_category: cross.by_category,
+        });
+      }
+    }
+
+    // Experiencias culturales ID 26
+    if (this.selectedComponentId === 26) {
+      const raw = this.indicatorsAggregate?.indicators ?? [];
+      const byLocationIndicator = this.indicatorsAggregate?.by_location_indicator ?? [];
+
+      // 1. Cantidad de experiencias / municipios
+      const locationExperiencias = byLocationIndicator
+        .map(l => {
+          const match = l.indicators.find((i: any) => i.indicator_id === 81);
+          return match ? { location: l.location, total: match.total } : null;
+        })
+        .filter(Boolean) as { location: string; total: number }[];
+
+      if (locationExperiencias.length > 0) {
+        virtual.push({
+          indicator_id: -7001,
+          indicator_name: 'Cantidad de experiencias / municipios',
+          field_type: 'by_location',
+          by_location: locationExperiencias,
+        });
+      }
+
+      // 2. Cantidad de personas / experiencia — viene del backend como virtual cross
+      const cross = raw.find(i => i.indicator_id === -7002);
+      if (cross?.by_category?.length) {
+        virtual.push({
+          indicator_id: -7002,
+          indicator_name: 'Cantidad de personas / experiencia',
+          field_type: 'by_category',
+          by_category: cross.by_category,
+        });
+      }
     }
 
     return [...virtual, ...list];

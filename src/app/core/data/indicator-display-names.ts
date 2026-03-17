@@ -79,10 +79,12 @@ export const INDICATOR_DISPLAY_NAMES: Record<number, string> = {
     // Alianzas académicas
     119: 'Nombre foro',
     120: 'Tema tratado',
-    121: 'Personas asistentes',
+    121: 'Personas asistentes',  // ya existía, confirmar
 
     // Experiencias culturales
     81: 'Acciones artísticas/culturales',
+    146: 'Nombre del evento',       // ← nuevo
+    147: 'Personas asistentes',     // ← nuevo
 
     // MESA PYBA
     129: 'Tipo de actor / Mesas',
