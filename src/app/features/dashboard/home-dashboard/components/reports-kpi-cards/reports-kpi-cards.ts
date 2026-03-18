@@ -7,7 +7,7 @@ import { DatasetService } from '../../../../../core/services/datasets.service';
 // ─── IDs de indicadores relevantes ───────────────────────────────────────────
 const ID_DENUNCIAS_REPORTADAS = 137;  // NO DE CASOS REPORTADOS - componente 31
 const ID_NINOS_SENSIBILIZADOS = 114;
-const ID_ASISTENCIAS_JUNTAS = 74;   // NO DE ASISTENCIAS TECNICAS - componente 21
+const ID_ASISTENCIAS_JUNTAS = 160;  // NO DE ASISTENCIAS TECNICAS - componente 21
 
 // ─── IDs de componentes relevantes ───────────────────────────────────────────
 const COMPONENT_ID_ASISTENCIAS = 2;
@@ -131,7 +131,6 @@ export class ReportsKpiCardsComponent implements OnInit, OnChanges {
     }
     return total;
   }
-
   get denunciasReportadas(): number {
     return this.sumNumeric(ID_DENUNCIAS_REPORTADAS);
   }
