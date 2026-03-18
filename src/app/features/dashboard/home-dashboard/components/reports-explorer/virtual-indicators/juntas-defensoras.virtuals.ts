@@ -14,7 +14,7 @@ export function getJuntasDefensorasVirtuals(
     // 0. Jornadas por mes (cantidad de reportes)
     virtual.push({
         indicator_id: -21000,
-        indicator_name: 'Jornadas por mes',
+        indicator_name: 'Reportes por mes',
         field_type: 'by_month_reports',
         by_month: [],
     });
