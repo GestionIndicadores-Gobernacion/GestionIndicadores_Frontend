@@ -15,7 +15,7 @@ export const DATASETS_ROUTES: Routes = [
   {
     path: 'tables/:tableId/records',
     loadComponent: () =>
-      import('./table-viewer/table-viewer')
+      import('./tables/table-viewer/table-viewer')
         .then(m => m.TableViewerComponent),
   },
 ];

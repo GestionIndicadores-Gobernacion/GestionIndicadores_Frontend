@@ -2,13 +2,13 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { DatasetService } from '../../../core/services/datasets.service';
 import { DashboardBarComponent } from './visualizations/dashboard-bar/dashboard-bar';
 import { DashboardCardsComponent } from './visualizations/dashboard-cards/dashboard-cards';
 import { DashboardDonutComponent } from './visualizations/dashboard-donut/dashboard-donut';
 import { DashboardHistogramComponent } from './visualizations/dashboard-histogram/dashboard-histogram';
 import { DashboardTableComponent } from './visualizations/dashboard-table/dashboard-table';
 import { DashboardTextComponent } from './visualizations/dashboard-text/dashboard-text';
+import { DatasetService } from '../../../../core/services/datasets.service';
 
 
 
@@ -130,18 +130,11 @@ export class TableViewerComponent implements OnInit {
   activeFilters = signal<ActiveFilter[]>([])
 
   searchQuery = signal('')
-
-
-
   constructor(
-
     private route: ActivatedRoute,
     private router: Router,
     private datasetService: DatasetService
-
   ) { }
-
-
 
   ngOnInit(): void {
 

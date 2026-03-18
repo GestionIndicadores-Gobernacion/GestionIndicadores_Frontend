@@ -351,8 +351,14 @@
                                     </td>
 
                                     <td class="px-4 py-3">
-
                                         <div class="flex justify-end gap-1">
+
+                                            <!-- ← NUEVO botón Actualizar -->
+                                            <button (click)="openUpdateModal(d)" *ngIf="d.active"
+                                                class="cursor-pointer px-2.5 py-1.5 text-[11px] font-bold rounded-lg border transition"
+                                                style="background:#EFF6FF;color:#1d4ed8;border-color:#BFDBFE">
+                                                Actualizar
+                                            </button>
 
                                             <button (click)="remove(d)" *ngIf="d.active"
                                                 class="cursor-pointer px-2.5 py-1.5 text-[11px] font-bold rounded-lg border transition"
@@ -361,7 +367,6 @@
                                             </button>
 
                                         </div>
-
                                     </td>
 
                                 </tr>
@@ -399,3 +404,7 @@
 <!-- IMPORT MODAL -->
 <app-import-dataset-modal *ngIf="showImportModal" (close)="onImportClosed()" (imported)="onImportFinished()">
 </app-import-dataset-modal>
+
+<app-update-dataset-modal *ngIf="showUpdateModal && selectedDatasetToUpdate" [dataset]="selectedDatasetToUpdate"
+    (close)="onUpdateClosed()" (updated)="onUpdateFinished()">
+</app-update-dataset-modal>

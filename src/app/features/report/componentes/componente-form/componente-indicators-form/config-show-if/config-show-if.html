@@ -1,0 +1,66 @@
+<div class="border-t border-[#EDF2FA] pt-4 space-y-4">
+
+    <div class="flex items-center justify-between">
+        <div>
+            <p class="text-[11px] font-bold uppercase tracking-[1px] text-[#1B3A6B]">
+                Visibilidad condicional
+                <span class="font-normal text-[#8A9DC0]">(opcional)</span>
+            </p>
+            <p class="text-[11px] text-[#7C94BD] mt-0.5">
+                Muestra este campo solo cuando otro indicador tenga un valor específico.
+            </p>
+        </div>
+        <button *ngIf="showIfIndicatorName" type="button" (click)="clearShowIf()"
+            class="text-[11px] text-red-500 hover:text-red-700 transition cursor-pointer">
+            Quitar condición
+        </button>
+    </div>
+
+    <div class="space-y-1.5">
+        <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#4A6A9B]">
+            Mostrar cuando el indicador...
+        </label>
+        <select [formControl]="$any(indicatorGroup.get('configShowIfIndicatorName'))" class="w-full text-[13px] rounded-xl px-3 py-2.5
+            bg-[#F0F4FA] border border-[#D6E0F0]
+            focus:bg-white focus:border-[#2d5fa8]
+            focus:ring-2 focus:ring-[#2d5fa8]/20
+            outline-none transition-all cursor-pointer">
+            <option [ngValue]="null">-- Sin condición --</option>
+            <option *ngFor="let ind of selectIndicators" [value]="ind.name">
+                {{ ind.name }}
+            </option>
+        </select>
+        <p class="text-[10px] text-[#8A9DC0]">
+            Solo se listan indicadores de tipo "Selección simple" anteriores a este
+        </p>
+    </div>
+
+    <div *ngIf="showIfIndicatorName" class="space-y-1.5">
+        <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#4A6A9B]">
+            ...tenga el valor
+        </label>
+        <select [formControl]="$any(indicatorGroup.get('configShowIfValue'))" class="w-full text-[13px] rounded-xl px-3 py-2.5
+            bg-[#F0F4FA] border border-[#D6E0F0]
+            focus:bg-white focus:border-[#2d5fa8]
+            focus:ring-2 focus:ring-[#2d5fa8]/20
+            outline-none transition-all cursor-pointer">
+            <option [ngValue]="null">-- Selecciona un valor --</option>
+            <option *ngFor="let opt of parentOptions" [value]="opt">{{ opt }}</option>
+        </select>
+    </div>
+
+    <div *ngIf="showIfIndicatorName && showIfValue"
+        class="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-xl">
+        <svg class="w-3.5 h-3.5 text-amber-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        </svg>
+        <span class="text-[12px] text-amber-800">
+            Solo visible cuando <strong>{{ showIfIndicatorName }}</strong> =
+            <strong>{{ showIfValue }}</strong>
+        </span>
+    </div>
+
+</div>

@@ -133,8 +133,8 @@
         <!-- EXPLORER — sin cabecera propia, el componente ya la tiene -->
         <div class="mt-4">
           <app-reports-explorer [strategyIds]="strategyIds" [strategyMap]="strategyMap"
-            [selectedStrategyId]="selectedStrategyId" [components]="components"
-            (strategyChange)="onStrategyChange($event)">
+            [selectedStrategyId]="selectedStrategyId" [components]="components" [selectedYear]="selectedYear"
+            (strategyChange)="onStrategyChange($event)" (yearChange)="onYearChange($event)">
           </app-reports-explorer>
         </div>
       </ng-container>

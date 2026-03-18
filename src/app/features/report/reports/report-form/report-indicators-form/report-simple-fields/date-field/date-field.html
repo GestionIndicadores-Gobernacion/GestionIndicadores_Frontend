@@ -1,0 +1,39 @@
+<div class="rounded-2xl border border-zinc-200 bg-white overflow-hidden">
+
+    <!-- Header -->
+    <div class="px-4 py-3 text-white text-sm font-semibold flex items-center gap-2"
+        style="background:linear-gradient(135deg,#1B3A6B 0%,#2d5fa8 100%)">
+        <svg class="w-4 h-4 opacity-90" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+        <span>Fecha</span>
+    </div>
+
+    <!-- Field -->
+    <div class="p-4 bg-[#F8FAFF]">
+        <div class="relative">
+
+            <!-- Icon -->
+            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-[#2d5fa8] pointer-events-none">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+            </div>
+
+            <!-- Input date -->
+            <input type="date" [ngModel]="value" (ngModelChange)="valueChange.emit($event)" class="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-zinc-200
+                       bg-[#F0F4FA] text-zinc-900
+                       focus:outline-none focus:ring-2 focus:ring-[#2d5fa8] focus:border-[#1B3A6B]
+                       hover:border-[#2d5fa8]
+                       transition-all duration-200" />
+
+        </div>
+    </div>
+
+</div>

@@ -84,7 +84,6 @@ export class ConfigDatasetComponent implements OnInit, OnChanges {
   // ─────────────────────────────────────────────
 
   private loadDatasetFields(datasetId: number): void {
-
     if (!datasetId) {
       this.datasetFields = [];
       return;
@@ -92,16 +91,18 @@ export class ConfigDatasetComponent implements OnInit, OnChanges {
 
     this.datasetService.getRecordsByDataset(datasetId).subscribe({
       next: records => {
-
         if (records?.length) {
-          this.datasetFields = Object.keys(records[0].data || {});
+          // ← union de todas las keys de todos los registros
+          const allKeys = new Set<string>();
+          records.forEach(r => {
+            Object.keys(r.data || {}).forEach(k => allKeys.add(k));
+          });
+          this.datasetFields = Array.from(allKeys).sort();
         } else {
           this.datasetFields = [];
         }
 
-        // 🔥 restaurar valor guardado al editar
         const saved = this.indicatorGroup.get('configLabelField')?.value;
-
         if (saved && this.datasetFields.includes(saved)) {
           this.indicatorGroup.get('configLabelField')?.setValue(saved, { emitEvent: false });
         }
