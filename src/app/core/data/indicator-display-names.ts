@@ -108,3 +108,19 @@ export const METRIC_DISPLAY_NAMES: Record<string, string> = {
 export function getMetricDisplayName(key: string): string {
     return METRIC_DISPLAY_NAMES[key] ?? key.replace(/_/g, ' ');
 }
+
+export const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
+
+    // ── Animales por especie/sexo ──────────────────────────────
+    'CANINO atendidos': 'Caninos atendidos',
+    'CANINO – Hembra': 'Caninas hembra',
+    'CANINO – Macho': 'Caninos macho',
+    'FELINO atendidos': 'Felinos atendidos',
+    'FELINO – Hembra': 'Felinas hembra',
+    'FELINO – Macho': 'Felinos macho',
+
+};
+
+export function getCategoryDisplayName(key: string): string {
+    return CATEGORY_DISPLAY_NAMES[key] ?? key;
+}

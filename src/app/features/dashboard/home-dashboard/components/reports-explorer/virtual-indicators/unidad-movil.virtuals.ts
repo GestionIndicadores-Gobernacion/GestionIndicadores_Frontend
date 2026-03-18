@@ -1,4 +1,4 @@
-import { getMetricDisplayName } from '../../../../../../core/data/indicator-display-names';
+import { getCategoryDisplayName, getMetricDisplayName } from '../../../../../../core/data/indicator-display-names';
 import { IndicatorDetail, ComponentIndicatorsAggregate } from '../../../../../../core/models/report-aggregate.model';
 
 export function getUnidadMovilVirtuals(
@@ -148,19 +148,23 @@ export function getUnidadMovilVirtuals(
         }
     }
 
-    // 8. Subvistas dinámicas por especie  ← era 7, ahora es 8
-    if (animales?.by_nested) {
-        Object.keys(animales.by_nested).forEach((key, i) => {
-            if (key.startsWith('sub:')) return;
-            virtual.push({
-                indicator_id: -(99 + 3000 + i),
-                indicator_name: key.includes(' – ') ? key : `${key} atendidos`,
-                field_type: 'categorized_subview',
-                by_nested: { [key]: animales!.by_nested![key] },
-                by_month: animales!.by_month,
-            });
-        });
-    }
+    // 8. Subvistas dinámicas por especie
+    // if (animales?.by_nested) {
+    //     Object.keys(animales.by_nested).forEach((key, i) => {
+    //         if (key.startsWith('sub:')) return;
+
+    //         const rawName = key.includes(' – ') ? key : `${key} atendidos`;
+    //         const displayName = getCategoryDisplayName(rawName);
+
+    //         virtual.push({
+    //             indicator_id: -(99 + 3000 + i),
+    //             indicator_name: displayName,
+    //             field_type: 'categorized_subview',
+    //             by_nested: { [key]: animales!.by_nested![key] },
+    //             by_month: animales!.by_month,
+    //         });
+    //     });
+    // }
 
     return virtual;
 }
