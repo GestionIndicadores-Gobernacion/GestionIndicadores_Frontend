@@ -23,11 +23,11 @@ export const INDICATOR_DISPLAY_NAMES: Record<number, string> = {
     35: 'Tipo de avistamiento',
 
     // UNIDAD MOVIL
-    97: 'Cantidad de jornadas con insumos vs sin insumos',
-    99: 'Cantidad de animales atendidos vs meses',
+    97: 'Insumos (jornadas)',
+    99: 'Animales atendidos',
 
-    // ATENCION VETERINARIA EN CAMPO 
-    100: 'Insumos',
+    // ATENCION VETERINARIA EN CAMPO
+    100: 'Insumos (jornadas)',
     102: 'Espacio atendido',
     103: 'Nombre',
     125: 'Animales atendidos',
@@ -68,7 +68,7 @@ export const INDICATOR_DISPLAY_NAMES: Record<number, string> = {
 
     // Escuadrón Benji
     113: 'Institución educativa',
-    114: 'Cantidad impactada',
+    114: 'Niños impactados',
     115: 'Rango de edades',
 
     // Dejando huella

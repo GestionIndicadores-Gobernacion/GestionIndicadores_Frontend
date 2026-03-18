@@ -31,35 +31,36 @@ export class IndicatorDatasetService {
             this.datasetService.getRecordsByDataset(datasetId).subscribe({
 
                 next: (rows) => {
-
                     let data = rows || [];
 
                     if (municipality) {
-
                         const m = municipality.toLowerCase().trim();
-
                         data = data.filter(r => {
-
-                            const recordMunicipio =
-                                String(r.data?.['municipio_de_residencia'] || '')
-                                    .toLowerCase()
-                                    .trim();
-
+                            const recordMunicipio = String(r.data?.['municipio_de_residencia'] || '')
+                                .toLowerCase().trim();
                             return recordMunicipio === m;
-
                         });
+                    }
 
+                    const labelField = ind.config?.label_field || 'nombres_y_apellidos';
+
+                    // ← si hay label_field configurado, filtrar solo registros que tengan ese campo
+                    if (ind.config?.label_field) {
+                        data = data.filter(r =>
+                            r.data?.[labelField] !== undefined &&
+                            r.data?.[labelField] !== null &&
+                            r.data?.[labelField] !== ''
+                        );
                     }
 
                     datasetOptions[ind.id!] = data.map(r => ({
                         id: r.id,
-                        label: r.data?.['nombres_y_apellidos'] || 'Registro'
+                        label: r.data?.[labelField] || 'Registro'
                     }));
 
                     datasetLoading[ind.id!] = false;
                     cdr.markForCheck();
                 },
-
                 error: () => {
                     datasetError[ind.id!] = 'Error cargando dataset';
                     datasetLoading[ind.id!] = false;

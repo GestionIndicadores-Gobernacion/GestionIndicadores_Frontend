@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Dataset, DatasetImportPreview, DatasetImportResult } from '../models/dataset.model';
 import { Field } from '../models/field.model';
-import { DashboardData } from '../../features/datasets/table-viewer/table-viewer';
+import { DashboardData } from '../../features/datasets/tables/table-viewer/table-viewer';
 
 export interface ViewerData {
   table: {
@@ -87,6 +87,15 @@ export class DatasetService {
   getRecordsByDataset(datasetId: number): Observable<{ id: number; data: Record<string, any> }[]> {
     return this.http.get<{ id: number; data: Record<string, any> }[]>(
       `${this.baseUrl}/${datasetId}/records`
+    );
+  }
+
+  updateFromExcel(datasetId: number, file: File): Observable<DatasetImportResult> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.put<DatasetImportResult>(
+      `${this.baseUrl}/${datasetId}/update-excel`,
+      formData
     );
   }
 }

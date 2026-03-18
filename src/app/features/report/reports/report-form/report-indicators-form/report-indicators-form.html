@@ -170,6 +170,10 @@
                             (valueChange)="onValueChange(getIndicatorId(ind), $event)">
                         </app-categorized-group-field>
 
+                        <app-date-field *ngIf="ind.field_type === 'date'" [value]="values[getIndicatorId(ind)]"
+                            (valueChange)="onValueChange(getIndicatorId(ind), $event)">
+                        </app-date-field>
+
                         <!-- RED ANIMALIA -->
                         <ng-container *ngIf="ind.field_type === 'red_animalia'">
 

@@ -83,8 +83,6 @@ export class ActionPlanListComponent {
   }
 
   canModify(plan: ActionPlanModel): boolean {
-    if (this.isAdmin) return true;
-    if (plan.user_id === null || plan.user_id === undefined) return false;
-    return plan.user_id === this.currentUserId;
+    return true;
   }
 }

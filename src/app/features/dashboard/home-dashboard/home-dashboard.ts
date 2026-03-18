@@ -78,6 +78,10 @@ export class HomeDashboardComponent implements OnInit {
     this.loadAggregate(strategyId);
   }
 
+  onYearChange(year: number): void {
+    this.selectedYear = year;
+    this.cd.detectChanges();
+  }
 
   // =========================================================
   // DATA LOADING
