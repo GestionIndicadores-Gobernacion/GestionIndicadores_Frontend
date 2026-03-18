@@ -5,14 +5,16 @@ import { DashboardCardComponent } from './dashboard-card/dashboard-card';
 import { DatasetService } from '../../../../../core/services/datasets.service';
 
 // ─── IDs de indicadores relevantes ───────────────────────────────────────────
-const ID_DENUNCIAS_REPORTADAS = 137;  // NO DE CASOS REPORTADOS - componente 31
-const ID_NINOS_SENSIBILIZADOS = 114;
-const ID_ASISTENCIAS_JUNTAS = 160;  // NO DE ASISTENCIAS TECNICAS - componente 21
+const ID_DENUNCIAS_REPORTADAS = 137;
+const ID_NINOS_SENSIBILIZADOS = 114;  // ya no se usa pero déjalo por si acaso
+const ID_NINOS_CAPACITADOS_PROMOTORES = 163;  // ← agregar
+const ID_ASISTENCIAS_JUNTAS = 160;
 
 // ─── IDs de componentes relevantes ───────────────────────────────────────────
 const COMPONENT_ID_ASISTENCIAS = 2;
 const COMPONENT_ID_JUNTAS = 21;
-const COMPONENT_ID_EMPRENDEDORES = 14;  // Autosostenibilidad de Refugios y Emprendimientos
+const COMPONENT_ID_EMPRENDEDORES = 14;
+const COMPONENT_ID_PROMOTORES = 22;
 
 // ─── ID del dataset externo ───────────────────────────────────────────────────
 const DATASET_ID_PERSONAS_CAPACITADAS = 8;
@@ -141,9 +143,24 @@ export class ReportsKpiCardsComponent implements OnInit, OnChanges {
   }
 
   get ninosSensibilizados(): number {
-    return this.sumNumeric(ID_NINOS_SENSIBILIZADOS);
-  }
+    let total = 0;
 
+    for (const report of this.filteredReports) {
+      if (report.component_id !== COMPONENT_ID_PROMOTORES) continue;
+
+      const iv = report.indicator_values?.find(i => i.indicator_id === ID_NINOS_CAPACITADOS_PROMOTORES);
+      if (!iv?.value || typeof iv.value !== 'object') continue;
+
+      const val = iv.value as Record<string, any>;
+      for (const v of Object.values(val)) {
+        const n = Number(v);
+        if (!isNaN(n)) total += n;
+      }
+    }
+
+    return total;
+  }
+  
   get animalesEsterilizados(): number {
     const relevant = this.filteredReports.filter(
       r => r.strategy_id === 3 && r.component_id === 8  // ← solo comp 8

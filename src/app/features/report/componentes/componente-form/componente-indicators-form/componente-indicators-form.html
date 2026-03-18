@@ -152,7 +152,8 @@
             </div>
 
             <!-- SHOW IF (text, date, number) -->
-            <app-config-show-if *ngIf="['text','date','number','multi_select'].includes(ind.get('field_type')?.value)"
+            <app-config-show-if
+                *ngIf="['text','date','number','select','multi_select','sum_group','grouped_data','categorized_group','file_attachment','dataset_select','dataset_multi_select','red_animalia'].includes(ind.get('field_type')?.value)"
                 [indicatorGroup]="$any(ind)" [allIndicatorControls]="getIndicatorControls()" [currentIndex]="i">
             </app-config-show-if>
 

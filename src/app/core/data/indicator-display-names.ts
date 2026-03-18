@@ -46,6 +46,13 @@ export const INDICATOR_DISPLAY_NAMES: Record<number, string> = {
     69: 'Alimento entregado (kg)',
     70: 'Nombre refugio',
 
+    // Promotores
+    76: 'Personas capacitadas',
+    77: 'Temáticas implementadas',
+    162: '¿Qué se va a reportar?',
+    163: 'Niños y niñas capacitados',
+    164: 'Temáticas implementadas (niños)',
+
     // Acompañamiento psicosocial
     106: 'Red Animalia',
     107: 'Nombre refugio',
