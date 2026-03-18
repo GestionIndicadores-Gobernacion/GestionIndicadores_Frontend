@@ -73,6 +73,7 @@ export interface IndicatorDetail {
   by_nested?: Record<string, IndicatorByNestedEntry[]>;
   by_location?: IndicatorByLocation[];
   indicator_name_short?: string;
+  navigable?: boolean;  // ← si false o ausente, el click en el chart no navega
 }
 
 

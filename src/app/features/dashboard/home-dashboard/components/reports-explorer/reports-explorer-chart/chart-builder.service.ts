@@ -38,16 +38,20 @@ export class ChartBuildersService {
         componentId: number | null = null,
     ): ChartResult {
 
+        const safeClick = (e: BarClickEvent) => {
+            if (d?.navigable) onBarClick(e);
+        };
+
         if (!d || d.field_type === 'by_month_reports') {
-            return this.jornadas(aggregate, year, onBarClick, componentId);
+            return this.jornadas(aggregate, year, safeClick, componentId);
         }
 
-        if (d.by_nested) return this.donut(d, onBarClick, componentId);
-        if (d.by_location) return this.location(d, onBarClick, componentId);
-        if (d.by_category) return this.category(d, aggregate, onBarClick, componentId);
-        if (d.by_month) return this.month(d, year, onBarClick, componentId);
+        if (d.by_nested) return this.donut(d, safeClick, componentId);
+        if (d.by_location) return this.location(d, safeClick, componentId);
+        if (d.by_category) return this.category(d, aggregate, safeClick, componentId);
+        if (d.by_month) return this.month(d, year, safeClick, componentId);
 
-        return this.jornadas(aggregate, year, onBarClick, componentId);
+        return this.jornadas(aggregate, year, safeClick, componentId);
     }
 
     // ─────────────────────────────────────────
@@ -93,7 +97,7 @@ export class ChartBuildersService {
                 }]
             },
             options: {
-                ...this.baseOptions(false, false),
+                ...this.baseOptions(false, false, true),
                 onClick: (_e: any, elements: any[]) => {
                     if (!elements.length) return;
 
@@ -142,7 +146,7 @@ export class ChartBuildersService {
                 }]
             },
             options: {
-                ...this.baseOptions(false, false),
+                ...this.baseOptions(false, false, !!d.navigable),
                 onClick: (_e: any, elements: any[]) => {
                     if (!elements.length) return;
 
@@ -196,20 +200,20 @@ export class ChartBuildersService {
                 }]
             },
             options: {
-                ...this.baseOptions(true, true),
-                onClick: (_e: any, elements: any[]) => {
+                ...this.baseOptions(true, true, false),
+                // onClick: (_e: any, elements: any[]) => {
 
-                    if (!elements.length) return;
+                //     if (!elements.length) return;
 
-                    const i = elements[0].index;
+                //     const i = elements[0].index;
 
-                    onBarClick({
-                        label: c[i].category,
-                        datasetLabel: d.indicator_name,
-                        componentId,
-                        indicatorId: d.indicator_id
-                    });
-                }
+                //     onBarClick({
+                //         label: c[i].category,
+                //         datasetLabel: d.indicator_name,
+                //         componentId,
+                //         indicatorId: d.indicator_id
+                //     });
+                // }
             }
         };
     }
@@ -239,7 +243,7 @@ export class ChartBuildersService {
                 }]
             },
             options: {
-                ...this.baseOptions(true, true),
+                ...this.baseOptions(true, true, !!d.navigable),
                 onClick: (_e: any, elements: any[]) => {
 
                     if (!elements.length) return;
@@ -357,13 +361,21 @@ export class ChartBuildersService {
     // Helpers
     // ─────────────────────────────────────────
 
-    private baseOptions(showLegend: boolean, horizontal: boolean): ChartConfiguration['options'] {
+    private baseOptions(
+        showLegend: boolean,
+        horizontal: boolean,
+        navigable: boolean = false
+    ): ChartConfiguration['options'] {
 
         return {
             responsive: true,
             maintainAspectRatio: false,
             indexAxis: horizontal ? 'y' : 'x',
-
+            onHover: navigable
+                ? (event: any, elements: any[]) => {
+                    event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+                }
+                : undefined,
             interaction: {
                 mode: 'nearest',
                 intersect: true

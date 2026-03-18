@@ -1,3 +1,4 @@
+// getExperienciasCulturalesVirtuals.ts
 import { IndicatorDetail, ComponentIndicatorsAggregate } from '../../../../../../core/models/report-aggregate.model';
 
 export function getExperienciasCulturalesVirtuals(
@@ -8,17 +9,16 @@ export function getExperienciasCulturalesVirtuals(
     const byLocation = indicatorsAggregate?.by_location ?? [];
     const byLocationIndicator = indicatorsAggregate?.by_location_indicator ?? [];
 
-    // 1. Cantidad de experiencias / municipios (1 reporte = 1 experiencia)
     if (byLocation.length > 0) {
         virtual.push({
             indicator_id: -7001,
             indicator_name: 'Cantidad de experiencias / municipios',
             field_type: 'by_location',
             by_location: byLocation,
+            navigable: true,
         });
     }
 
-    // 2. Cantidad de personas / experiencia (cruce nombre × personas del backend)
     const cross = raw.find(i => i.indicator_id === -7002);
     if (cross?.by_category?.length) {
         virtual.push({
@@ -29,7 +29,6 @@ export function getExperienciasCulturalesVirtuals(
         });
     }
 
-    // 3. Personas asistentes / municipios
     if (byLocationIndicator.length > 0) {
         const locationPersonas = byLocationIndicator
             .map(l => {
@@ -44,6 +43,7 @@ export function getExperienciasCulturalesVirtuals(
                 indicator_name: 'Personas asistentes / municipios',
                 field_type: 'by_location',
                 by_location: locationPersonas,
+                navigable: true,
             });
         }
     }

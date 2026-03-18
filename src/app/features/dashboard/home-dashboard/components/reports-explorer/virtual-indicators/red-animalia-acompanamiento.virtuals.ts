@@ -1,3 +1,4 @@
+// getRedAnimaliaAcompanamientoVirtuals.ts
 import { IndicatorDetail, ComponentIndicatorsAggregate } from '../../../../../../core/models/report-aggregate.model';
 
 export function getRedAnimaliaAcompanamientoVirtuals(
@@ -10,17 +11,16 @@ export function getRedAnimaliaAcompanamientoVirtuals(
     const actorInd = raw.find(i => i.indicator_id === 64);
     const tipoAcomp = raw.find(i => i.indicator_id === 66);
 
-    // 1. Jornadas por mes
     if (actorInd?.by_month?.length) {
         virtual.push({
             indicator_id: -17001,
             indicator_name: 'Jornadas por mes',
             field_type: 'by_month_sum',
             by_month: actorInd.by_month,
+            navigable: true,
         });
     }
 
-    // 2. Tipo de acompañamiento
     if (tipoAcomp?.by_category?.length) {
         virtual.push({
             indicator_id: -17002,
@@ -30,17 +30,16 @@ export function getRedAnimaliaAcompanamientoVirtuals(
         });
     }
 
-    // 3. Jornadas por municipio
     if (byLocation.length > 0) {
         virtual.push({
             indicator_id: -17003,
             indicator_name: 'Jornadas por municipio',
             field_type: 'by_location',
             by_location: byLocation,
+            navigable: true,
         });
     }
 
-    // 4. Actores asistidos
     if (actorInd?.by_category?.length) {
         virtual.push({
             indicator_id: -17004,
