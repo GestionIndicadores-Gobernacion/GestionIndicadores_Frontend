@@ -43,7 +43,7 @@ export const INDICATOR_DISPLAY_NAMES: Record<number, string> = {
 
     // Donatón
     68: 'Red Animalia',
-    69: 'Alimento entregado',
+    69: 'Alimento entregado (kg)',
     70: 'Nombre refugio',
 
     // Acompañamiento psicosocial
@@ -109,15 +109,28 @@ export function getMetricDisplayName(key: string): string {
     return METRIC_DISPLAY_NAMES[key] ?? key.replace(/_/g, ' ');
 }
 
+// indicator-display-names.ts — CATEGORY_DISPLAY_NAMES actualizado
 export const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
 
-    // ── Animales por especie/sexo ──────────────────────────────
+    // ── Caninos ────────────────────────────────────────────────
     'CANINO atendidos': 'Caninos atendidos',
     'CANINO – Hembra': 'Caninas hembra',
     'CANINO – Macho': 'Caninos macho',
+
+    // ── Felinos ────────────────────────────────────────────────
     'FELINO atendidos': 'Felinos atendidos',
     'FELINO – Hembra': 'Felinas hembra',
     'FELINO – Macho': 'Felinos macho',
+
+    // ── Equinos ────────────────────────────────────────────────
+    'EQUINO (VTA) atendidos': 'Equinos atendidos',
+    'EQUINO (VTA) – Hembra': 'Equinas hembra',
+    'EQUINO (VTA) – Macho': 'Equinos macho',
+
+    // ── Animales de producción ─────────────────────────────────
+    'ANIMALES DE PRODUCCION Y/O GRANJA atendidos': 'Animales de granja atendidos',
+    'ANIMALES DE PRODUCCION Y/O GRANJA – Hembra': 'Animales de granja hembra',
+    'ANIMALES DE PRODUCCION Y/O GRANJA – Macho': 'Animales de granja macho',
 
 };
 
