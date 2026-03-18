@@ -51,10 +51,9 @@ export const COMPONENT_EXPLORER_CONFIG: Record<number, ExplorerVirtualConfig> = 
     },
     9: {
         showReportesPorMes: true,
-        showReportesPorMunicipio: true,
+        showReportesPorMunicipio: false,   // ← apagar el genérico
         showIndicadoresPorMunicipio: false,
-        hiddenIndicators: [103, 100, 102, 125],  // ← ocultar reales, usamos virtuales
-        locationLabel: 'Cantidad de animales vs municipios',
+        hiddenIndicators: [103, 100, 102, 125],
         jornadasPorMesLabel: 'Cantidad de jornadas vs meses',
     },
     14: {
