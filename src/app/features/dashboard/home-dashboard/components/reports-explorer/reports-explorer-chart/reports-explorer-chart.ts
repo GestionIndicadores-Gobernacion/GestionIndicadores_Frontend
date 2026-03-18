@@ -57,10 +57,11 @@ export class ReportsExplorerChartComponent implements OnChanges {
   }
 
   get isChartEmpty(): boolean {
+    if (!this.yearHasData) return true;
     const d = this.chartData.datasets?.[0]?.data;
     return !d || (d as number[]).every(v => v === 0);
   }
-
+  
   get indicatorTotal(): number | null {
     const data = this.chartData?.datasets?.[0]?.data as number[] | undefined;
     if (!data || !data.length) return null;
@@ -96,6 +97,12 @@ export class ReportsExplorerChartComponent implements OnChanges {
     this.chartKey++;
   }
 
+  get yearHasData(): boolean {
+    return (this.componentAggregate?.by_month ?? [])
+      .some(e => Number(e.month.split('-')[0]) === this.currentYear);
+  }
+
+
   private handleBarClick(event: BarClickEvent): void {
 
     // this.router.navigate(['/reports'], {
@@ -109,7 +116,7 @@ export class ReportsExplorerChartComponent implements OnChanges {
 
 
     console.log("");
-    
+
 
   }
 

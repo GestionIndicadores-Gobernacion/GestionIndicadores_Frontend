@@ -19,6 +19,7 @@ import { SumGroupFieldComponent } from './report-simple-fields/sum-group-field/s
 import { TextFieldComponent } from './report-simple-fields/text-field/text-field';
 import { ShowIfService } from './show-if.service';
 import { RedAnimaliaModalComponent } from './red-animalia-modal/red-animalia-modal';
+import { DateFieldComponent } from './report-simple-fields/date-field/date-field';
 
 
 @Component({
@@ -37,7 +38,8 @@ import { RedAnimaliaModalComponent } from './red-animalia-modal/red-animalia-mod
     FileAttachmentFieldComponent,
     GroupedDataFieldComponent,
     CategorizedGroupFieldComponent,
-    RedAnimaliaModalComponent
+    RedAnimaliaModalComponent,
+    DateFieldComponent
   ],
   templateUrl: './report-indicators-form.html'
 })
@@ -219,6 +221,7 @@ export class ReportIndicatorsFormComponent implements OnChanges {
       case 'select': return value != null && value !== '';
       case 'multi_select': return Array.isArray(value) && value.length > 0;
       case 'number': return value != null && value !== '';
+      case 'date': return value != null && value !== '';
       case 'text': return value != null && value.trim() !== '';
       case 'sum_group': return !!value && Object.values(value).some(v => Number(v) > 0);
       case 'grouped_data': return !!value && Object.keys(value).length > 0;

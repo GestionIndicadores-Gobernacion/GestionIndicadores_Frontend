@@ -11,6 +11,7 @@ import { ConfigGroupedDataComponent } from './componente-indicator-config/config
 import { ConfigSelectComponent } from './componente-indicator-config/config-select/config-select';
 import { ConfigSumGroupComponent } from './componente-indicator-config/config-sum-group/config-sum-group';
 import { IndicatorTargetsComponent } from './componente-indicator-targets/indicator-targets/indicator-targets';
+import { ConfigShowIfComponent } from './config-show-if/config-show-if';
 
 
 @Component({
@@ -21,7 +22,7 @@ import { IndicatorTargetsComponent } from './componente-indicator-targets/indica
     ConfigSelectComponent, ConfigSumGroupComponent,
     ConfigGroupedDataComponent, ConfigCategorizedGroupComponent,
     ConfigFileAttachmentComponent, ConfigDatasetComponent,
-    IndicatorTargetsComponent
+    IndicatorTargetsComponent, ConfigShowIfComponent
   ],
   templateUrl: './componente-indicators-form.html'
 })
@@ -214,6 +215,7 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
     return this.indicators.controls.map((ctrl, i) => {
       const ind = ctrl.value;
       const indicator: any = {
+        id: ind.id || null,
         name: ind.name.trim(),
         field_type: ind.field_type,
         is_required: ind.is_required,
@@ -225,18 +227,19 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
 
       switch (ind.field_type) {
 
-        case 'number':
-          if (ind.configMinValue !== null && ind.configMinValue !== '') {
-            indicator.config = { min_value: Number(ind.configMinValue) };
-          }
-          break;
-
         case 'select':
         case 'multi_select':
-          indicator.config = {
+          const selectCfg: any = {
             options: ind.configOptions.split('\n')
               .map((o: string) => o.trim()).filter((o: string) => o.length > 0)
           };
+          if (ind.configShowIfIndicatorName) {
+            selectCfg.show_if = {
+              indicator_name: ind.configShowIfIndicatorName,
+              value: ind.configShowIfValue
+            };
+          }
+          indicator.config = selectCfg;
           break;
 
         case 'sum_group':
@@ -296,6 +299,33 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
           };
           break;
         }
+        case 'text':
+        case 'date':
+          if (ind.configShowIfIndicatorName) {
+            indicator.config = {
+              show_if: {
+                indicator_name: ind.configShowIfIndicatorName,
+                value: ind.configShowIfValue
+              }
+            };
+          }
+          break;
+
+        case 'number': {
+          const numCfg: any = {};
+          if (ind.configMinValue !== null && ind.configMinValue !== '') {
+            numCfg.min_value = Number(ind.configMinValue);
+          }
+          if (ind.configShowIfIndicatorName) {
+            numCfg.show_if = {
+              indicator_name: ind.configShowIfIndicatorName,
+              value: ind.configShowIfValue
+            };
+          }
+          if (Object.keys(numCfg).length) indicator.config = numCfg;
+          break;
+        }
+
       }
 
       console.log(`Indicador [${i}] ${ind.field_type}:`, JSON.stringify(indicator));

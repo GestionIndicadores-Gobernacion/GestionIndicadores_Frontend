@@ -71,7 +71,7 @@ export interface IndicatorDetail {
   by_month?: IndicatorByMonth[];
   by_category?: IndicatorByCategory[];
   by_nested?: Record<string, IndicatorByNestedEntry[]>;
-  by_location?: IndicatorByLocation[]; 
+  by_location?: IndicatorByLocation[];
   indicator_name_short?: string;
 }
 
@@ -86,4 +86,20 @@ export interface ComponentIndicatorsAggregate {
   indicators: IndicatorDetail[];
   by_location: IndicatorByLocation[];
   by_location_indicator: LocationIndicatorEntry[];
+  by_location_nested?: LocationNested[];
+}
+
+export interface LocationNestedMetric {
+  metric: string;
+  total: number;
+}
+
+export interface LocationNestedIndicator {
+  indicator_id: number;
+  metrics: LocationNestedMetric[];
+}
+
+export interface LocationNested {
+  location: string;
+  indicators: LocationNestedIndicator[];
 }

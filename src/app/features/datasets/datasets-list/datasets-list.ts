@@ -1,13 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import Swal from 'sweetalert2';
 import { Dataset } from '../../../core/models/dataset.model';
 import { DatasetService } from '../../../core/services/datasets.service';
 import { Pagination } from '../../../shared/components/pagination/pagination';
-import { ImportDatasetModalComponent } from '../import-dataset-modal/import-dataset-modal';
-import { TablesListComponent } from './tables/tables-list/tables-list';
+import { TablesListComponent } from '../tables/tables-list/tables-list';
+import { ImportDatasetModalComponent } from './import-dataset-modal/import-dataset-modal';
+import { UpdateDatasetModalComponent } from './update-dataset-modal/update-dataset-modal';
 
 @Component({
   selector: 'app-datasets-list',
@@ -17,6 +18,7 @@ import { TablesListComponent } from './tables/tables-list/tables-list';
     RouterModule,
     FormsModule,
     ImportDatasetModalComponent,
+    UpdateDatasetModalComponent,
     Pagination,
     TablesListComponent
   ],
@@ -46,6 +48,9 @@ export class DatasetsListComponent implements OnInit {
 
   /** Incrementar este valor hace que TablesListComponent recargue sus datos. */
   refreshTrigger = 0;
+
+  selectedDatasetToUpdate: Dataset | null = null;
+  showUpdateModal = false;
 
   constructor(
     private datasetService: DatasetService,
@@ -224,4 +229,23 @@ export class DatasetsListComponent implements OnInit {
 
   }
 
+  openUpdateModal(dataset: Dataset): void {
+    this.selectedDatasetToUpdate = dataset;
+    this.showUpdateModal = true;
+    this.cdr.detectChanges();
+  }
+
+  onUpdateFinished(): void {
+    this.showUpdateModal = false;
+    this.selectedDatasetToUpdate = null;
+    this.loadDatasets();
+    this.refreshTrigger++;
+    this.cdr.detectChanges();
+  }
+
+  onUpdateClosed(): void {
+    this.showUpdateModal = false;
+    this.selectedDatasetToUpdate = null;
+    this.cdr.detectChanges();
+  }
 }

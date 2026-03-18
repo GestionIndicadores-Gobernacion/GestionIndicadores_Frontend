@@ -45,42 +45,35 @@ export const COMPONENT_EXPLORER_CONFIG: Record<number, ExplorerVirtualConfig> = 
         showReportesPorMes: true,
         showReportesPorMunicipio: true,
         showIndicadoresPorMunicipio: false,
-        hiddenIndicators: [],
-        locationLabel: 'Cantidad de animales vs municipios',
-        subViews: {
-            99: {
-                'CANINO': 'Cantidad de perros atendidos',
-                'FELINO': 'Cantidad de gatos atendidos',
-                'CANINO – Hembra': 'Cantidad de hembras (perro)',
-                'CANINO – Macho': 'Cantidad de machos (perro)',
-                'FELINO – Hembra': 'Cantidad de hembras (gato)',
-                'FELINO – Macho': 'Cantidad de machos (gato)',
-                'sub:red_animalia': 'Animales atendidos Red Animalia',
-            }
-        },
-        jornadasPorMesLabel: 'Jornadas por mes',
+        hiddenIndicators: [97, 99],
+        locationLabel: 'Jornadas por municipio',  // ← antes decía 'Cantidad de animales vs municipios'
+        jornadasPorMesLabel: 'Cantidad de jornadas vs meses',
     },
     9: {
         showReportesPorMes: true,
         showReportesPorMunicipio: true,
         showIndicadoresPorMunicipio: false,
-        hiddenIndicators: [103],
-        subViews: {
-            125: {
-                'CANINO': 'Perros atendidos',
-                'FELINO': 'Gatos atendidos',
-                'CANINO – Hembra': 'Perras (hembra)',
-                'CANINO – Macho': 'Perros (macho)',
-                'FELINO – Hembra': 'Gatas (hembra)',
-                'FELINO – Macho': 'Gatos (macho)',
-            }
-        }
+        hiddenIndicators: [103, 100, 102, 125],  // ← ocultar reales, usamos virtuales
+        locationLabel: 'Cantidad de animales vs municipios',
+        jornadasPorMesLabel: 'Cantidad de jornadas vs meses',
     },
-    17: {
-        showReportesPorMes: true,  // ← número de actores vs meses
+    14: {
+        showReportesPorMes: false,
         showReportesPorMunicipio: false,
         showIndicadoresPorMunicipio: false,
-        hiddenIndicators: [65],
+        hiddenIndicators: [143, 144, 145],
+    },
+    15: {
+        showReportesPorMes: false,
+        showReportesPorMunicipio: false,
+        showIndicadoresPorMunicipio: false,
+        hiddenIndicators: [141, 142],
+    },
+    17: {
+        showReportesPorMes: false,
+        showReportesPorMunicipio: false,
+        showIndicadoresPorMunicipio: false,
+        hiddenIndicators: [64, 65, 66, 156, 157, 158],
     },
     // Donatón salvando huellas
     16: {
@@ -123,9 +116,9 @@ export const COMPONENT_EXPLORER_CONFIG: Record<number, ExplorerVirtualConfig> = 
     // Escuadrón Benji
     23: {
         showReportesPorMes: false,
-        showReportesPorMunicipio: true,
-        showIndicadoresPorMunicipio: true,
-        hiddenIndicators: [113],
+        showReportesPorMunicipio: false,
+        showIndicadoresPorMunicipio: false,
+        hiddenIndicators: [113, 114, 115],  // ← volver a agregar 115
         locationLabel: 'Jornadas por municipio'
     },
 
@@ -142,18 +135,15 @@ export const COMPONENT_EXPLORER_CONFIG: Record<number, ExplorerVirtualConfig> = 
         showReportesPorMes: false,
         showReportesPorMunicipio: false,
         showIndicadoresPorMunicipio: false,
-        hiddenIndicators: [119, 120, 121],
+        hiddenIndicators: [119, 120, 121, 155],
     },
 
-    // Experiencias culturales
     // Experiencias culturales
     26: {
         showReportesPorMes: false,
         showReportesPorMunicipio: false,
         showIndicadoresPorMunicipio: false,
-        hiddenIndicators: [81, 146, 147],  // los negativos no pasan por hidden
-        // pero -7002 llega en list si el backend
-        // lo retorna con field_type no reconocido
+        hiddenIndicators: [81, 146],
     },
     // Mesa PYBA
     28: {
