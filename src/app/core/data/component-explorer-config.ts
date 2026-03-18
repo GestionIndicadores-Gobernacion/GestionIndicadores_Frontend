@@ -41,19 +41,19 @@ export const COMPONENT_EXPLORER_CONFIG: Record<number, ExplorerVirtualConfig> = 
         hiddenIndicators: [49, 50, 132],  // ocultar todos los reales
         locationLabel: 'CBA dotados por municipio',
     },
+    // component-explorer-config.ts — solo cambia comp 8
     8: {
         showReportesPorMes: true,
-        showReportesPorMunicipio: true,
+        showReportesPorMunicipio: false,  // ← apagar el genérico, lo manejamos en virtuales
         showIndicadoresPorMunicipio: false,
         hiddenIndicators: [97, 99],
-        locationLabel: 'Jornadas por municipio',  // ← antes decía 'Cantidad de animales vs municipios'
         jornadasPorMesLabel: 'Cantidad de jornadas vs meses',
     },
     9: {
         showReportesPorMes: true,
-        showReportesPorMunicipio: false,   // ← apagar el genérico
+        showReportesPorMunicipio: false,
         showIndicadoresPorMunicipio: false,
-        hiddenIndicators: [103, 100, 102, 125],
+        hiddenIndicators: [103, 100, 102, 125, 136],  // ← agregar 136
         jornadasPorMesLabel: 'Cantidad de jornadas vs meses',
     },
     14: {
