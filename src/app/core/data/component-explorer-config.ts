@@ -103,15 +103,12 @@ export const COMPONENT_EXPLORER_CONFIG: Record<number, ExplorerVirtualConfig> = 
         showIndicadoresPorMunicipio: true,
         hiddenIndicators: [],
     },
-
-    // Juntas defensoras de animales
     21: {
-        showReportesPorMes: false,
-        showReportesPorMunicipio: true,
-        showIndicadoresPorMunicipio: true,
-        hiddenIndicators: [],
+        showReportesPorMes: false,          // ← apagar el genérico
+        showReportesPorMunicipio: false,
+        showIndicadoresPorMunicipio: false,
+        hiddenIndicators: [74, 94, 95, 96, 126, 159, 160],  // ← ocultar todos los reales
     },
-
     // Escuadrón Benji
     23: {
         showReportesPorMes: false,

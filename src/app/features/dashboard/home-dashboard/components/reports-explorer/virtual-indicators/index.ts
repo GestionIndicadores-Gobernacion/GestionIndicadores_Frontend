@@ -12,3 +12,4 @@ export { getEscuadronBenjiVirtuals } from './escuadron-benji.virtuals';
 export { getAutosostenibilidadVirtuals } from './autosostenibilidad.virtuals';
 export { getAlianzasEstrategicasVirtuals } from './alianzas-estrategicas.virtuals';
 export { getRedAnimaliaAcompanamientoVirtuals } from './red-animalia-acompanamiento.virtuals';
+export { getJuntasDefensorasVirtuals } from './juntas-defensoras.virtuals';

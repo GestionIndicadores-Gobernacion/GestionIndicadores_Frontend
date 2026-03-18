@@ -131,6 +131,7 @@ export class ReportsKpiCardsComponent implements OnInit, OnChanges {
     }
     return total;
   }
+  
   get denunciasReportadas(): number {
     return this.sumNumeric(ID_DENUNCIAS_REPORTADAS);
   }

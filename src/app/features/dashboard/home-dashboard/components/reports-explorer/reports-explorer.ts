@@ -9,7 +9,7 @@ import { AggregateByComponent, ComponentAggregate, ComponentIndicatorsAggregate,
 import { ReportsService } from "../../../../../core/services/reports.service";
 import { BarClickEvent } from "./reports-explorer-chart/chart-builder.service";
 import { ReportsExplorerChartComponent } from "./reports-explorer-chart/reports-explorer-chart";
-import { getCbaVirtuals, getUnidadMovilVirtuals, getAtencionVeterinariaVirtuals, getDejandoHuellaVirtuals, getAlianzasAcademicasVirtuals, getExperienciasCulturalesVirtuals, getMesaPybaVirtuals, getGenericVirtuals, getEscuadronBenjiVirtuals, getAutosostenibilidadVirtuals, getAlianzasEstrategicasVirtuals, getRedAnimaliaAcompanamientoVirtuals } from "./virtual-indicators";
+import { getCbaVirtuals, getUnidadMovilVirtuals, getAtencionVeterinariaVirtuals, getDejandoHuellaVirtuals, getAlianzasAcademicasVirtuals, getExperienciasCulturalesVirtuals, getMesaPybaVirtuals, getGenericVirtuals, getEscuadronBenjiVirtuals, getAutosostenibilidadVirtuals, getAlianzasEstrategicasVirtuals, getRedAnimaliaAcompanamientoVirtuals, getJuntasDefensorasVirtuals } from "./virtual-indicators";
 const PILLS_VISIBLE = 6;
 
 const COMPONENT_VIRTUAL_MAP: Record<number, (agg: ComponentIndicatorsAggregate | null) => IndicatorDetail[]> = {
@@ -19,6 +19,7 @@ const COMPONENT_VIRTUAL_MAP: Record<number, (agg: ComponentIndicatorsAggregate |
   14: (agg) => getAutosostenibilidadVirtuals(agg),
   15: (agg) => getAlianzasEstrategicasVirtuals(agg),
   17: (agg) => getRedAnimaliaAcompanamientoVirtuals(agg),
+  21: (agg) => getJuntasDefensorasVirtuals(agg),
   23: (agg) => getEscuadronBenjiVirtuals(agg),  // ← nuevo
   24: (agg) => getDejandoHuellaVirtuals(agg),
   25: (agg) => getAlianzasAcademicasVirtuals(agg),
