@@ -1,3 +1,4 @@
+// getEscuadronBenjiVirtuals.ts
 import { IndicatorDetail, ComponentIndicatorsAggregate } from '../../../../../../core/models/report-aggregate.model';
 
 export function getEscuadronBenjiVirtuals(
@@ -9,19 +10,17 @@ export function getEscuadronBenjiVirtuals(
     const byLocation = indicatorsAggregate?.by_location ?? [];
 
     const ninos = raw.find(i => i.indicator_id === 114);
-    const rangos = raw.find(i => i.indicator_id === 115);
 
-    // 1. Niños impactados vs meses
     if (ninos?.by_month?.length) {
         virtual.push({
             indicator_id: -11001,
             indicator_name: 'Niños impactados vs meses',
             field_type: 'by_month_sum',
             by_month: ninos.by_month,
+            navigable: true,
         });
     }
 
-    // 2. Niños impactados vs municipios
     if (byLocationIndicator.length > 0) {
         const locationData = byLocationIndicator
             .map(l => {
@@ -36,28 +35,18 @@ export function getEscuadronBenjiVirtuals(
                 indicator_name: 'Niños impactados vs municipios',
                 field_type: 'by_location',
                 by_location: locationData,
+                navigable: true,
             });
         }
     }
 
-    // 3. Niños atendidos por rango de edades
-    // const cross = raw.find(i => i.indicator_id === -11005);
-    // if (cross?.by_category?.length) {
-    //     virtual.push({
-    //         indicator_id: -11005,
-    //         indicator_name: 'Niños impactados por rango de edad',
-    //         field_type: 'by_category',
-    //         by_category: cross.by_category,
-    //     });
-    // }
-
-    // 4. Jornadas por municipio
     if (byLocation.length > 0) {
         virtual.push({
             indicator_id: -11004,
             indicator_name: 'Jornadas por municipio',
             field_type: 'by_location',
             by_location: byLocation,
+            navigable: true,
         });
     }
 

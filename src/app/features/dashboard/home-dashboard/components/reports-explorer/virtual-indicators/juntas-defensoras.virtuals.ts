@@ -1,3 +1,4 @@
+// getJuntasDefensorasVirtuals.ts
 import { IndicatorDetail, ComponentIndicatorsAggregate } from '../../../../../../core/models/report-aggregate.model';
 
 export function getJuntasDefensorasVirtuals(
@@ -11,45 +12,44 @@ export function getJuntasDefensorasVirtuals(
     const juntasFormalizadas = raw.find(i => i.indicator_id === 126);
     const byLocInd = indicatorsAggregate?.by_location_indicator ?? [];
 
-    // 0. Jornadas por mes (cantidad de reportes)
     virtual.push({
         indicator_id: -21000,
         indicator_name: 'Reportes por mes',
         field_type: 'by_month_reports',
         by_month: [],
+        navigable: true,
     });
 
-    // 1. Asistencias técnicas vs meses (= cantidad de asistentes)
     if (cantAsistentes?.by_month?.length) {
         virtual.push({
             indicator_id: -21001,
             indicator_name: 'Asistencias técnicas vs meses',
             field_type: 'by_month_sum',
             by_month: cantAsistentes.by_month,
+            navigable: true,
         });
     }
 
-    // 2. Juntas en proceso de formalización vs meses
     if (juntasFormalizando?.by_month?.some(m => m.total > 0)) {
         virtual.push({
             indicator_id: -21002,
             indicator_name: 'Juntas en proceso de formalización vs meses',
             field_type: 'by_month_sum',
             by_month: juntasFormalizando.by_month,
+            navigable: true,
         });
     }
 
-    // 3. Juntas formalizadas vs meses
     if (juntasFormalizadas?.by_month?.some(m => m.total > 0)) {
         virtual.push({
             indicator_id: -21003,
             indicator_name: 'Juntas formalizadas vs meses',
             field_type: 'by_month_sum',
             by_month: juntasFormalizadas.by_month,
+            navigable: true,
         });
     }
 
-    // 4. Asistentes por municipio
     if (byLocInd.length > 0) {
         const locationData = byLocInd
             .map(l => {
@@ -66,6 +66,7 @@ export function getJuntasDefensorasVirtuals(
                 indicator_name: 'Asistentes por municipio',
                 field_type: 'by_location',
                 by_location: locationData,
+                navigable: true,
             });
         }
     }

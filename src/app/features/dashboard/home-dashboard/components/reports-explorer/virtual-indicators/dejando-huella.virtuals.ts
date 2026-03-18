@@ -1,3 +1,4 @@
+// getDejandoHuellaVirtuals.ts
 import { ComponentIndicatorsAggregate, IndicatorDetail } from "../../../../../../core/models/report-aggregate.model";
 
 export function getDejandoHuellaVirtuals(
@@ -7,7 +8,6 @@ export function getDejandoHuellaVirtuals(
     const raw = indicatorsAggregate?.indicators ?? [];
     const byLocationIndicator = indicatorsAggregate?.by_location_indicator ?? [];
 
-    // 1. Cantidad de jóvenes inscritos / institución educativa (viene del backend)
     const crossInstituciones = raw.find(i => i.indicator_id === -6001);
     if (crossInstituciones?.by_category?.length) {
         virtual.push({
@@ -18,7 +18,6 @@ export function getDejandoHuellaVirtuals(
         });
     }
 
-    // 2. Jóvenes inscritos / municipios
     if (byLocationIndicator.length > 0) {
         const locationDataJovenes = byLocationIndicator
             .map(l => {
@@ -33,11 +32,11 @@ export function getDejandoHuellaVirtuals(
                 indicator_name: 'Jóvenes inscritos / municipios',
                 field_type: 'by_location',
                 by_location: locationDataJovenes,
+                navigable: true,
             });
         }
     }
 
-    // 3. Proyectos / municipios
     if (byLocationIndicator.length > 0) {
         const locationDataProyectos = byLocationIndicator
             .map(l => {
@@ -52,6 +51,7 @@ export function getDejandoHuellaVirtuals(
                 indicator_name: 'Proyectos / municipios',
                 field_type: 'by_location',
                 by_location: locationDataProyectos,
+                navigable: true,
             });
         }
     }

@@ -1,3 +1,4 @@
+// getAutosostenibilidadVirtuals.ts
 import { IndicatorDetail, ComponentIndicatorsAggregate } from '../../../../../../core/models/report-aggregate.model';
 
 export function getAutosostenibilidadVirtuals(
@@ -9,17 +10,16 @@ export function getAutosostenibilidadVirtuals(
 
     const tipoApoyo = raw.find(i => i.indicator_id === 145);
 
-    // 1. Tipo de apoyo / tiempo
     if (tipoApoyo?.by_month?.length) {
         virtual.push({
             indicator_id: -14001,
             indicator_name: 'Tipo de apoyo / tiempo',
             field_type: 'by_month_sum',
             by_month: tipoApoyo.by_month,
+            navigable: true,
         });
     }
 
-    // 2. Tipo de apoyo entregado (distribución)
     if (tipoApoyo?.by_category?.length) {
         virtual.push({
             indicator_id: -14002,
@@ -29,13 +29,13 @@ export function getAutosostenibilidadVirtuals(
         });
     }
 
-    // 3. Jornadas por municipio
     if (byLocation.length > 0) {
         virtual.push({
             indicator_id: -14003,
             indicator_name: 'Jornadas por municipio',
             field_type: 'by_location',
             by_location: byLocation,
+            navigable: true,
         });
     }
 
