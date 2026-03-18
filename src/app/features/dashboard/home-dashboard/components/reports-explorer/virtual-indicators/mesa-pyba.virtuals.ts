@@ -1,3 +1,4 @@
+// getMesaPybaVirtuals.ts
 import { IndicatorDetail, ComponentIndicatorsAggregate } from '../../../../../../core/models/report-aggregate.model';
 
 export function getMesaPybaVirtuals(
@@ -23,6 +24,7 @@ export function getMesaPybaVirtuals(
             indicator_name: 'Total asistentes por mes',
             field_type: 'by_month_sum',
             by_month: asistentes.by_month,
+            navigable: true,
         });
     }
 

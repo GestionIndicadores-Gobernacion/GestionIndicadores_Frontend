@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 import { ReportModel } from '../../../../core/models/report.model';
@@ -31,10 +31,17 @@ export class ReportsListComponent implements OnInit {
   strategyMap: Record<number, string> = {};
   componentMap: Record<number, string> = {};
 
-  loading = true;
+  @ViewChild('tableSection') tableSection!: ElementRef;
 
+  loading = true;
   currentUserId: number | null = null;
   isAdmin = false;
+
+  chartFilter: { componentId: number | null; label: string | null; year: number | null } = {
+    componentId: null,
+    label: null,
+    year: null,
+  };
 
   constructor(
     private reportsService: ReportsService,
@@ -46,8 +53,6 @@ export class ReportsListComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
   ) { }
-
-  chartFilter: { componentId: number | null; label: string | null } = { componentId: null, label: null };
 
   ngOnInit(): void {
     this.usersService.getMe().subscribe(user => {
@@ -62,9 +67,27 @@ export class ReportsListComponent implements OnInit {
       this.chartFilter = {
         componentId: params['component'] ? Number(params['component']) : null,
         label: params['label'] ?? null,
+        year: params['year'] ? Number(params['year']) : null,
       };
+
+      if (params['component'] || params['label']) {
+        setTimeout(() => {
+          this.tableSection?.nativeElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 300);
+      }
+
       this.cd.detectChanges();
     });
+  }
+
+  clearChartFilter(): void {
+    this.chartFilter = { componentId: null, label: null, year: null };
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true,
+    });
+    this.cd.detectChanges();
   }
 
   deleteReport(id: number): void {
@@ -88,7 +111,6 @@ export class ReportsListComponent implements OnInit {
       next: strategies => {
         this.strategyMap = Object.fromEntries(strategies.map(s => [s.id, s.name]));
 
-        // Cargar componentes para construir el mapa
         this.componentsService.getAll().subscribe({
           next: (resp: any) => {
             const components = Array.isArray(resp) ? resp
@@ -112,24 +134,10 @@ export class ReportsListComponent implements OnInit {
     });
   }
 
-  clearChartFilter(): void {
-    this.chartFilter = { componentId: null, label: null };
-    // Limpiar queryParams también
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: {},
-      replaceUrl: true,
-    });
-    this.cd.detectChanges();
-  }
-
   private loadReports(): void {
     this.reportsService.getAll().subscribe({
       next: reports => {
         this.reports = reports ?? [];
-
-        // Build componentMap from report data directly if available,
-        // otherwise it stays empty — the table component handles missing names gracefully.
         this.loading = false;
         this.cd.detectChanges();
       },

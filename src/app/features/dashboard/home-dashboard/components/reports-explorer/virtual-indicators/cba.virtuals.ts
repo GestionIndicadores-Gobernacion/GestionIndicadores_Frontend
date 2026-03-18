@@ -1,3 +1,4 @@
+// getCbaVirtuals.ts
 import { IndicatorDetail, ComponentIndicatorsAggregate } from '../../../../../../core/models/report-aggregate.model';
 
 export function getCbaVirtuals(
@@ -22,6 +23,7 @@ export function getCbaVirtuals(
             indicator_name: 'Dotación por tiempo',
             field_type: 'by_month_sum',
             by_month: tipoDotacion.by_month,
+            navigable: true,
         });
     }
 

@@ -1,3 +1,4 @@
+// getGenericVirtuals.ts
 import { ExplorerVirtualConfig } from '../../../../../../core/data/component-explorer-config';
 import { IndicatorDetail, ComponentIndicatorsAggregate } from '../../../../../../core/models/report-aggregate.model';
 
@@ -10,16 +11,15 @@ export function getGenericVirtuals(
     const byLocation = indicatorsAggregate?.by_location ?? [];
     const byLocationIndicator = indicatorsAggregate?.by_location_indicator ?? [];
 
-    // Jornadas por mes
     if (config.showReportesPorMes) {
         virtual.push({
             indicator_id: -2,
             indicator_name: config.jornadasPorMesLabel ?? 'Jornadas por mes',
             field_type: 'by_month_reports',
+            navigable: true,
         });
     }
 
-    // Personas asistidas por tiempo (Asistencias Técnicas)
     if (config.jornadasPorMesLabel) {
         const personasMeta = list.find(i => i.indicator_id === 96);
         if (personasMeta?.by_month?.length) {
@@ -28,11 +28,11 @@ export function getGenericVirtuals(
                 indicator_name: config.jornadasPorMesLabel,
                 field_type: 'by_month_sum',
                 by_month: personasMeta.by_month,
+                navigable: true,
             });
         }
     }
 
-    // Temas tratados por municipio (Asistencias Técnicas)
     if (config.showTemasPorMunicipio && byLocationIndicator.length > 0) {
         const temasMeta = list.find(i => i.indicator_id === 95);
         if (temasMeta) {
@@ -49,22 +49,22 @@ export function getGenericVirtuals(
                     indicator_name: 'Temas tratados por municipio',
                     field_type: 'by_location',
                     by_location: locationData,
+                    navigable: true,
                 });
             }
         }
     }
 
-    // Reportes por municipio
     if (config.showReportesPorMunicipio && byLocation.length > 0) {
         virtual.push({
             indicator_id: -1,
             indicator_name: config.locationLabel ?? 'Jornadas por municipio',
             field_type: 'by_location',
             by_location: byLocation,
+            navigable: true,
         });
     }
 
-    // X por municipio
     if (config.showIndicadoresPorMunicipio && byLocationIndicator.length > 0) {
         const indicatorIds = new Set(
             byLocationIndicator.flatMap(l => l.indicators.map((i: any) => i.indicator_id))
@@ -88,11 +88,11 @@ export function getGenericVirtuals(
                     : `${meta.indicator_name} por municipio`,
                 field_type: 'by_location',
                 by_location: locationData,
+                navigable: true,
             });
         });
     }
 
-    // X por mes (sum_group / grouped_data)
     list.forEach(ind => {
         if (
             (ind.field_type === 'sum_group' || ind.field_type === 'grouped_data') &&
@@ -105,11 +105,11 @@ export function getGenericVirtuals(
                     : `${ind.indicator_name} por mes`,
                 field_type: 'by_month_sum',
                 by_month: ind.by_month,
+                navigable: true,
             });
         }
     });
 
-    // Subvistas por config (otros componentes)
     if (config.subViews) {
         Object.entries(config.subViews).forEach(([indIdStr, keyMap]) => {
             const indId = Number(indIdStr);

@@ -113,9 +113,12 @@ export class ReportsExplorerComponent implements OnChanges {
   }
 
   onChartBarClick(event: BarClickEvent): void {
-    this.router.navigate(['/reports'], {
-      queryParams: { component: event.componentId, label: event.label }
-    });
+    const params = new URLSearchParams();
+    if (event.componentId) params.set('component', String(event.componentId));
+    if (event.label) params.set('label', event.label);
+    params.set('year', String(this.selectedYear));
+
+    window.open(`/reports?${params.toString()}`, '_blank');
   }
 
   private loadComponentData(id: number): void {

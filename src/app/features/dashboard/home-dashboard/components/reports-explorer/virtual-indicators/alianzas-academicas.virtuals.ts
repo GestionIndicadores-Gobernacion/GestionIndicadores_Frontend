@@ -1,3 +1,4 @@
+// getAlianzasAcademicasVirtuals.ts
 import { IndicatorDetail, ComponentIndicatorsAggregate } from '../../../../../../core/models/report-aggregate.model';
 
 export function getAlianzasAcademicasVirtuals(
@@ -14,6 +15,7 @@ export function getAlianzasAcademicasVirtuals(
             indicator_name: 'Cantidad de foros realizados / municipios',
             field_type: 'by_location',
             by_location: byLocation,
+            navigable: true,
         });
     }
 
@@ -30,6 +32,7 @@ export function getAlianzasAcademicasVirtuals(
             indicator_name: 'Cantidad de personas / municipios',
             field_type: 'by_location',
             by_location: locationPersonas,
+            navigable: true,
         });
     }
 

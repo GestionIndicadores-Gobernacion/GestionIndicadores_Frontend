@@ -61,7 +61,7 @@ export class ReportsExplorerChartComponent implements OnChanges {
     const d = this.chartData.datasets?.[0]?.data;
     return !d || (d as number[]).every(v => v === 0);
   }
-  
+
   get indicatorTotal(): number | null {
     const data = this.chartData?.datasets?.[0]?.data as number[] | undefined;
     if (!data || !data.length) return null;
@@ -104,20 +104,7 @@ export class ReportsExplorerChartComponent implements OnChanges {
 
 
   private handleBarClick(event: BarClickEvent): void {
-
-    // this.router.navigate(['/reports'], {
-    //   queryParams: {
-    //     component: event.componentId,
-    //     metric: event.label,          
-    //     label: event.datasetLabel,    
-    //     indicatorId: event.indicatorId ?? undefined,
-    //   }
-    // });
-
-
-    console.log("");
-
-
+    this.barClick.emit(event);
   }
 
   private computeYears(): void {

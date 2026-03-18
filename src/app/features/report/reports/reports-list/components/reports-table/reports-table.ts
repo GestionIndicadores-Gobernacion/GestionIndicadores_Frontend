@@ -25,7 +25,11 @@ export class ReportsTableComponent implements OnChanges {
   @Input() componentMap: Record<number, string> = {};
   @Input() currentUserId: number | null = null;
   @Input() isAdmin = false;
-  @Input() chartFilter: { componentId: number | null; label: string | null } = { componentId: null, label: null };
+  @Input() chartFilter: { componentId: number | null; label: string | null; year: number | null } = {
+    componentId: null,
+    label: null,
+    year: null,
+  };
 
   @Output() clearFilter = new EventEmitter<void>();
   @Output() delete = new EventEmitter<number>();
@@ -88,6 +92,11 @@ export class ReportsTableComponent implements OnChanges {
 
       // Filtro desde gráfico — componente
       if (this.chartFilter.componentId !== null && r.component_id !== this.chartFilter.componentId) return false;
+
+      if (this.chartFilter.year !== null) {
+        const reportYear = new Date(r.report_date).getFullYear();
+        if (reportYear !== this.chartFilter.year) return false;
+      }
 
       // Filtro desde gráfico — label (mes o municipio/categoría)
       if (this.chartFilter.label) {
