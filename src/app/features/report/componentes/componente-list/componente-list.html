@@ -27,19 +27,29 @@
 
       </div>
 
-      <button (click)="goToCreate()" [disabled]="loading"
-        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-bold shadow-sm cursor-pointer transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
-        style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);color:white;"
-        onmouseover="this.style.filter='brightness(1.08)'" onmouseout="this.style.filter='none'">
+      <div class="flex items-center gap-3">
+        <button (click)="openPoliciesModal()"
+          class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-bold border border-[#D6E0F0] bg-white cursor-pointer transition-all"
+          style="color:#1B3A6B" onmouseover="this.style.background='#F0F4FA'"
+          onmouseout="this.style.background='white'">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 12h6M9 16h6M9 8h6M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" />
+          </svg>
+          Políticas públicas
+        </button>
 
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"
-          stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 4v16m8-8H4" />
-        </svg>
-
-        Crear componente
-
-      </button>
+        <button (click)="goToCreate()" [disabled]="loading"
+          class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-bold shadow-sm cursor-pointer transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+          style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);color:white;"
+          onmouseover="this.style.filter='brightness(1.08)'" onmouseout="this.style.filter='none'">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 4v16m8-8H4" />
+          </svg>
+          Crear componente
+        </button>
+      </div>
 
     </div>
   </div>
@@ -320,5 +330,8 @@
     </ng-container>
 
   </div>
+
+  <app-public-policy-modal *ngIf="showPoliciesModal" (closed)="closePoliciesModal()">
+  </app-public-policy-modal>
 
 </div>

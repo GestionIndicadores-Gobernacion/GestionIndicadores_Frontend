@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ChartConfiguration, ChartType } from 'chart.js';
-import { getMetricDisplayName } from '../../../../../../core/data/indicator-display-names';
+import { getCategoryDisplayName, getMetricDisplayName } from '../../../../../../core/data/indicator-display-names';
 import { ComponentAggregate, IndicatorDetail } from '../../../../../../core/models/report-aggregate.model';
 
 export interface ChartResult {
@@ -169,7 +169,7 @@ export class ChartBuildersService {
     ): ChartResult {
 
         let c = (d.by_category ?? []).map(x => ({
-            category: x.category,
+            category: getCategoryDisplayName(x.category),  // ← aquí
             total: Number(x.total)
         }));
 
@@ -270,7 +270,7 @@ export class ChartBuildersService {
         const key = Object.keys(d.by_nested!)[0];
         const arr = d.by_nested![key];
 
-        const labels = arr.map(x => getMetricDisplayName(x.metric));
+        const labels = arr.map(x => getCategoryDisplayName(getMetricDisplayName(x.metric)));
         const metrics = arr.map(x => x.metric);
 
         return this.donutFromArray(

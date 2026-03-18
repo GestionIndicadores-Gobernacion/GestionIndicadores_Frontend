@@ -1,18 +1,18 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import {
-  FormBuilder,
-  FormGroup,
-  FormArray,
-  Validators,
-  ReactiveFormsModule
+  FormBuilder, FormGroup, FormArray,
+  Validators, ReactiveFormsModule,
+  FormsModule
 } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 import { ComponentsService } from '../../../../core/services/components.service';
 import { StrategiesService } from '../../../../core/services/strategies.service';
+import { PublicPoliciesService } from '../../../../core/services/public-policies.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { StrategyModel } from '../../../../core/models/strategy.model';
+import { PublicPolicyModel } from '../../../../core/models/component.model';
 import { ComponenteIndicatorsFormComponent } from './componente-indicators-form/componente-indicators-form';
 
 @Component({
@@ -22,7 +22,8 @@ import { ComponenteIndicatorsFormComponent } from './componente-indicators-form/
     CommonModule,
     ReactiveFormsModule,
     RouterModule,
-    ComponenteIndicatorsFormComponent
+    ComponenteIndicatorsFormComponent,
+    FormsModule
   ],
   templateUrl: './componente-form.html',
   styleUrl: './componente-form.css'
@@ -35,21 +36,14 @@ export class ComponenteFormComponent implements OnInit {
 
   @ViewChild(ComponenteIndicatorsFormComponent)
   set indicatorsComponent(component: ComponenteIndicatorsFormComponent) {
-
     this._indicatorsComponent = component;
-
     if (component && !this.indicatorsLoaded && this.pendingIndicators.length > 0) {
-
       this.indicatorsLoaded = true;
       const toLoad = [...this.pendingIndicators];
       this.pendingIndicators = [];
-
       setTimeout(() => {
-        toLoad.forEach(ind => {
-          component.addIndicator(ind);
-        });
-
-        this.cdr.detectChanges(); // 🔥 forzar render tras cargar indicadores
+        toLoad.forEach(ind => component.addIndicator(ind));
+        this.cdr.detectChanges();
       });
     }
   }
@@ -60,6 +54,11 @@ export class ComponenteFormComponent implements OnInit {
 
   form!: FormGroup;
   strategies: StrategyModel[] = [];
+
+  // ── Políticas públicas ──────────────────────────────────────
+  allPolicies: PublicPolicyModel[] = [];
+  selectedPolicyIds: Set<number> = new Set();
+  policySearch = '';
 
   loading = false;
   saving = false;
@@ -72,6 +71,7 @@ export class ComponenteFormComponent implements OnInit {
     private router: Router,
     private service: ComponentsService,
     private strategiesService: StrategiesService,
+    private publicPoliciesService: PublicPoliciesService,
     private toast: ToastService,
     private cdr: ChangeDetectorRef
   ) { }
@@ -90,6 +90,7 @@ export class ComponenteFormComponent implements OnInit {
     });
 
     this.loadStrategies();
+    this.loadPolicies();
 
     if (this.isEdit) {
       this.loadComponent();
@@ -99,6 +100,8 @@ export class ComponenteFormComponent implements OnInit {
     }
   }
 
+  // ── Getters ─────────────────────────────────────────────────
+
   get objectives(): FormArray {
     return this.form.get('objectives') as FormArray;
   }
@@ -107,69 +110,90 @@ export class ComponenteFormComponent implements OnInit {
     return this.form.get('mga_activities') as FormArray;
   }
 
-  addObjective(data?: any) {
-    this.objectives.push(
-      this.fb.group({
-        id: [data?.id || null],
-        description: [data?.description || '', Validators.required]
-      })
+  // ── Políticas públicas ──────────────────────────────────────
+
+  loadPolicies(): void {
+    this.publicPoliciesService.getAll().subscribe({
+      next: policies => {
+        this.allPolicies = policies ?? [];
+        this.cdr.detectChanges();
+      },
+      error: () => this.toast.error('Error cargando políticas públicas')
+    });
+  }
+
+  get filteredPolicies(): PublicPolicyModel[] {
+    const term = this.policySearch.toLowerCase().trim();
+    if (!term) return this.allPolicies;
+    return this.allPolicies.filter(p =>
+      p.code.toLowerCase().includes(term) ||
+      p.description.toLowerCase().includes(term)
     );
   }
 
-  removeObjective(i: number) {
-    this.objectives.removeAt(i);
+  togglePolicy(id: number): void {
+    if (this.selectedPolicyIds.has(id)) {
+      this.selectedPolicyIds.delete(id);
+    } else {
+      this.selectedPolicyIds.add(id);
+    }
+    this.cdr.detectChanges();
   }
 
-  addActivity(data?: any) {
-    this.activities.push(
-      this.fb.group({
-        id: [data?.id || null],
-        name: [data?.name || '', Validators.required]
-      })
-    );
+  isPolicySelected(id: number): boolean {
+    return this.selectedPolicyIds.has(id);
   }
 
-  removeActivity(i: number) {
-    this.activities.removeAt(i);
+  get selectedPoliciesCount(): number {
+    return this.selectedPolicyIds.size;
   }
 
-  addIndicator() {
+  // ── Objectives / Activities ──────────────────────────────────
+
+  addObjective(data?: any): void {
+    this.objectives.push(this.fb.group({
+      id: [data?.id || null],
+      description: [data?.description || '', Validators.required]
+    }));
+  }
+
+  removeObjective(i: number): void { this.objectives.removeAt(i); }
+
+  addActivity(data?: any): void {
+    this.activities.push(this.fb.group({
+      id: [data?.id || null],
+      name: [data?.name || '', Validators.required]
+    }));
+  }
+
+  removeActivity(i: number): void { this.activities.removeAt(i); }
+
+  addIndicator(): void {
     if (this._indicatorsComponent) {
       this._indicatorsComponent.addIndicator();
       this.cdr.detectChanges();
     }
   }
 
-  // =========================
-  // LOAD STRATEGIES
-  // =========================
-  loadStrategies() {
+  // ── Load data ───────────────────────────────────────────────
+
+  loadStrategies(): void {
     this.strategiesService.getAll().subscribe({
       next: s => {
         this.strategies = s ?? [];
         this.cdr.detectChanges();
       },
-      error: () => {
-        this.toast.error('Error cargando estrategias');
-      }
+      error: () => this.toast.error('Error cargando estrategias')
     });
   }
 
-  // =========================
-  // LOAD COMPONENT (EDIT)
-  // =========================
-  loadComponent() {
-
+  loadComponent(): void {
     this.loading = true;
-    this.cdr.detectChanges(); // mostrar spinner
+    this.cdr.detectChanges();
 
     this.service.getById(this.id!).subscribe({
       next: data => {
-
-        this.form.patchValue({
-          strategy_id: data.strategy_id,
-          name: data.name
-        });
+        this.form.patchValue({ strategy_id: data.strategy_id, name: data.name });
 
         data.objectives?.forEach(o => this.addObjective(o));
         data.mga_activities?.forEach(a => this.addActivity(a));
@@ -178,10 +202,14 @@ export class ComponenteFormComponent implements OnInit {
           this.pendingIndicators = data.indicators;
         }
 
-        this.form.get('strategy_id')?.disable();
+        // ── Cargar políticas seleccionadas ──────────────────
+        if (data.public_policies?.length) {
+          this.selectedPolicyIds = new Set(data.public_policies.map(p => p.id));
+        }
 
+        this.form.get('strategy_id')?.disable();
         this.loading = false;
-        this.cdr.detectChanges(); // 🔥 forzar actualización vista
+        this.cdr.detectChanges();
       },
       error: () => {
         this.toast.error('Error cargando componente');
@@ -191,11 +219,9 @@ export class ComponenteFormComponent implements OnInit {
     });
   }
 
-  // =========================
-  // SUBMIT
-  // =========================
-  submit() {
+  // ── Submit ───────────────────────────────────────────────────
 
+  submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -203,7 +229,6 @@ export class ComponenteFormComponent implements OnInit {
 
     this.saving = true;
     this.cdr.detectChanges();
-
     this.form.get('strategy_id')?.enable();
 
     const raw = this.form.value;
@@ -211,13 +236,10 @@ export class ComponenteFormComponent implements OnInit {
     const payload = {
       strategy_id: raw.strategy_id,
       name: raw.name,
-      objectives: raw.objectives.map((o: any) => ({
-        description: o.description
-      })),
-      mga_activities: raw.mga_activities.map((a: any) => ({
-        name: a.name
-      })),
-      indicators: this._indicatorsComponent?.serializeIndicators() || []
+      objectives: raw.objectives.map((o: any) => ({ description: o.description })),
+      mga_activities: raw.mga_activities.map((a: any) => ({ name: a.name })),
+      indicators: this._indicatorsComponent?.serializeIndicators() || [],
+      public_policy_ids: Array.from(this.selectedPolicyIds)   // ← NUEVO
     };
 
     const req = this.isEdit

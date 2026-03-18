@@ -11,11 +11,12 @@ import { StrategiesService } from '../../../../core/services/strategies.service'
 import { ToastService } from '../../../../core/services/toast.service';
 
 import { Pagination } from '../../../../shared/components/pagination/pagination';
+import { PublicPolicyModalComponent } from './public-policy-modal/public-policy-modal';
 
 @Component({
   selector: 'app-component-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, Pagination],
+  imports: [CommonModule, FormsModule, Pagination, PublicPolicyModalComponent],
   templateUrl: './componente-list.html',
   styleUrl: './componente-list.css',
 })
@@ -35,17 +36,22 @@ export class ComponentesListComponent implements OnInit {
   sortColumn: keyof ComponentModel | 'strategy' | '' = '';
   sortDirection: 'asc' | 'desc' = 'asc';
 
+
   constructor(
     private componentsService: ComponentsService,
     private strategiesService: StrategiesService,
     private router: Router,
     private toast: ToastService,
     private cd: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.load();
   }
+
+  showPoliciesModal = false;
+  openPoliciesModal(): void { this.showPoliciesModal = true; }
+  closePoliciesModal(): void { this.showPoliciesModal = false; }
 
   // =========================
   // LOAD DATA

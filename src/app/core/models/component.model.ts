@@ -6,9 +6,18 @@ export interface ComponentModel {
   id: number;
   strategy_id: number;
   name: string;
+  created_at: string;
+  updated_at: string;
+}
 
-  created_at: string;  // ISO
-  updated_at: string;  // ISO
+/* =========================
+   Política Pública
+========================= */
+
+export interface PublicPolicyModel {
+  id: number;
+  code: string;
+  description: string;
 }
 
 /* =========================
@@ -37,17 +46,12 @@ export interface ComponentIndicatorTargetModel {
 export interface ComponentIndicatorModel {
   id?: number;
   component_id?: number;
-
   name: string;
   field_type: string;
   config?: any;
   is_required: boolean;
-
-  // ── GRUPO MUTUAMENTE EXCLUYENTE ──────────────────────────────
   group_name?: string | null;
   group_required?: boolean;
-  // ─────────────────────────────────────────────────────────────
-
   targets?: ComponentIndicatorTargetModel[];
   created_at?: string;
 }
@@ -60,6 +64,7 @@ export interface ComponentDetailResponse extends ComponentModel {
   objectives?: ComponentObjectiveModel[];
   mga_activities?: ComponentMGAActivityModel[];
   indicators?: ComponentIndicatorModel[];
+  public_policies?: PublicPolicyModel[];   // ← NUEVO
 }
 
 /* =========================
@@ -72,6 +77,7 @@ export interface ComponentCreateRequest {
   objectives: ComponentObjectiveModel[];
   mga_activities: ComponentMGAActivityModel[];
   indicators: ComponentIndicatorModel[];
+  public_policy_ids?: number[];            // ← NUEVO
 }
 
 export interface ComponentUpdateRequest {
@@ -80,4 +86,5 @@ export interface ComponentUpdateRequest {
   objectives: ComponentObjectiveModel[];
   mga_activities: ComponentMGAActivityModel[];
   indicators: ComponentIndicatorModel[];
+  public_policy_ids?: number[];            // ← NUEVO
 }

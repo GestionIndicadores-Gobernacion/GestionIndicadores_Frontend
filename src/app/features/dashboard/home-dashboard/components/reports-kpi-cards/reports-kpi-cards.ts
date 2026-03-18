@@ -5,9 +5,14 @@ import { DashboardCardComponent } from './dashboard-card/dashboard-card';
 import { DatasetService } from '../../../../../core/services/datasets.service';
 
 // ─── IDs de indicadores relevantes ───────────────────────────────────────────
-const ID_DENUNCIAS_REPORTADAS = 31;
+const ID_DENUNCIAS_REPORTADAS = 137;  // NO DE CASOS REPORTADOS - componente 31
 const ID_NINOS_SENSIBILIZADOS = 114;
-const ID_EMPRENDEDORES = 61;
+const ID_ASISTENCIAS_JUNTAS = 74;   // NO DE ASISTENCIAS TECNICAS - componente 21
+
+// ─── IDs de componentes relevantes ───────────────────────────────────────────
+const COMPONENT_ID_ASISTENCIAS = 2;
+const COMPONENT_ID_JUNTAS = 21;
+const COMPONENT_ID_EMPRENDEDORES = 14;  // Autosostenibilidad de Refugios y Emprendimientos
 
 // ─── ID del dataset externo ───────────────────────────────────────────────────
 const DATASET_ID_PERSONAS_CAPACITADAS = 8;
@@ -38,16 +43,16 @@ export class ReportsKpiCardsComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // Recalcular cuando cambia el año seleccionado
     if (changes['selectedYear'] && !changes['selectedYear'].firstChange) {
       this.calcularPersonasCapacitadas();
     }
   }
 
+  // ─── Dataset personas capacitadas ─────────────────────────────────────────
+
   private loadPersonasCapacitadas(): void {
     this.datasetService.getById(DATASET_ID_PERSONAS_CAPACITADAS).subscribe({
       next: (dataset) => {
-        // Extraer año del nombre: "PERSONAS CAPACITADAS CONSOLIDADO - ENERO Y FEBRERO 2026"
         const match = dataset.name.match(/\b(20\d{2})\b/);
         this._datasetYear = match ? Number(match[1]) : null;
 
@@ -71,14 +76,12 @@ export class ReportsKpiCardsComponent implements OnInit, OnChanges {
   }
 
   private calcularPersonasCapacitadas(): void {
-    // Solo mostrar si el año del dataset coincide con el año seleccionado
     if (this._datasetYear !== this.selectedYear) {
       this._personasCapacitadasDataset = 0;
       this.cdr.markForCheck();
       return;
     }
 
-    // Contar registros con mes definido
     this._personasCapacitadasDataset = this._datasetRecords.filter(r =>
       r.data?.['mes'] !== null &&
       r.data?.['mes'] !== undefined &&
@@ -112,7 +115,21 @@ export class ReportsKpiCardsComponent implements OnInit, OnChanges {
   // ─── KPIs ──────────────────────────────────────────────────────────────────
 
   get asistenciasTecnicas(): number {
-    return this.filteredReports.filter(r => r.component_id === 2).length;
+    let total = 0;
+    for (const report of this.filteredReports) {
+      if (report.component_id === COMPONENT_ID_ASISTENCIAS) {
+        total += 1;
+        continue;
+      }
+      if (report.component_id === COMPONENT_ID_JUNTAS) {
+        const iv = report.indicator_values?.find(i => i.indicator_id === ID_ASISTENCIAS_JUNTAS);
+        if (iv?.value != null) {
+          const n = Number(iv.value);
+          if (!isNaN(n)) total += n;
+        }
+      }
+    }
+    return total;
   }
 
   get denunciasReportadas(): number {
@@ -175,7 +192,9 @@ export class ReportsKpiCardsComponent implements OnInit, OnChanges {
   }
 
   get emprendedoresCofinanciados(): number {
-    return this.sumNumeric(ID_EMPRENDEDORES);
+    return this.filteredReports.filter(
+      r => r.component_id === COMPONENT_ID_EMPRENDEDORES
+    ).length;
   }
 
   get lastReportDate(): Date | null {
