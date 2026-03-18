@@ -109,6 +109,14 @@ export const COMPONENT_EXPLORER_CONFIG: Record<number, ExplorerVirtualConfig> = 
         showIndicadoresPorMunicipio: false,
         hiddenIndicators: [74, 94, 95, 96, 126, 159, 160],  // ← ocultar todos los reales
     },
+    // Promotores
+    22: {
+        showReportesPorMes: true,
+        showReportesPorMunicipio: false,
+        showIndicadoresPorMunicipio: false,
+        hiddenIndicators: [76, 77, 162, 163, 164],  // ocultar todos los reales
+        jornadasPorMesLabel: 'Jornadas por mes',
+    },
     // Escuadrón Benji
     23: {
         showReportesPorMes: false,

@@ -206,7 +206,6 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
 
   serializeIndicators(): any[] {
     const cgList = this.cgComponents?.toArray() || [];
-
     const gdList = this.gdComponents?.toArray() || [];
 
     let cgIndex = 0;
@@ -228,7 +227,7 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
       switch (ind.field_type) {
 
         case 'select':
-        case 'multi_select':
+        case 'multi_select': {
           const selectCfg: any = {
             options: ind.configOptions.split('\n')
               .map((o: string) => o.trim()).filter((o: string) => o.length > 0)
@@ -241,23 +240,39 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
           }
           indicator.config = selectCfg;
           break;
+        }
 
-        case 'sum_group':
-          indicator.config = {
+        case 'sum_group': {
+          const sumCfg: any = {
             fields: ind.configFields.split('\n')
               .map((o: string) => o.trim()).filter((o: string) => o.length > 0)
           };
+          if (ind.configShowIfIndicatorName) {
+            sumCfg.show_if = {
+              indicator_name: ind.configShowIfIndicatorName,
+              value: ind.configShowIfValue
+            };
+          }
+          indicator.config = sumCfg;
           break;
+        }
 
-        case 'grouped_data':
-          indicator.config = {
+        case 'grouped_data': {
+          const gdCfg: any = {
             parent_field: ind.configParentField,
             auto_total: ind.configAutoTotal || false,
-            sub_fields: gdList[gdIndex]?.subFields || []  // ← usa gdIndex
+            sub_fields: gdList[gdIndex]?.subFields || []
           };
-          gdIndex++;  // ← INCREMENTAR
+          if (ind.configShowIfIndicatorName) {
+            gdCfg.show_if = {
+              indicator_name: ind.configShowIfIndicatorName,
+              value: ind.configShowIfValue
+            };
+          }
+          indicator.config = gdCfg;
+          gdIndex++;
           break;
-
+        }
 
         case 'file_attachment': {
           const types = ind.configAllowedTypes
@@ -266,41 +281,61 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
           const cfg: any = {};
           if (types.length) cfg.allowed_types = types;
           if (ind.configMaxSizeMb) cfg.max_size_mb = Number(ind.configMaxSizeMb);
-          indicator.config = Object.keys(cfg).length ? cfg : null;
-          break;
-        }
-
-        case 'categorized_group':
-          indicator.config = cgList[cgIndex]?.getConfig() ?? null;  // ← usa cgIndex
-          cgIndex++;
-          break;
-
-        case 'dataset_select':
-        case 'dataset_multi_select': {
-
-          const cfg: any = {
-            dataset_id: ind.configDatasetId,
-            label_field: ind.configLabelField || null
-          };
-
           if (ind.configShowIfIndicatorName) {
             cfg.show_if = {
               indicator_name: ind.configShowIfIndicatorName,
               value: ind.configShowIfValue
             };
           }
+          indicator.config = Object.keys(cfg).length ? cfg : null;
+          break;
+        }
 
+        case 'categorized_group': {
+          const cgCfg = cgList[cgIndex]?.getConfig() ?? null;
+          if (cgCfg && ind.configShowIfIndicatorName) {
+            cgCfg.show_if = {
+              indicator_name: ind.configShowIfIndicatorName,
+              value: ind.configShowIfValue
+            };
+          }
+          indicator.config = cgCfg;
+          cgIndex++;
+          break;
+        }
+
+        case 'dataset_select':
+        case 'dataset_multi_select': {
+          const cfg: any = {
+            dataset_id: ind.configDatasetId,
+            label_field: ind.configLabelField || null
+          };
+          if (ind.configShowIfIndicatorName) {
+            cfg.show_if = {
+              indicator_name: ind.configShowIfIndicatorName,
+              value: ind.configShowIfValue
+            };
+          }
           indicator.config = cfg;
           break;
         }
+
         case 'red_animalia': {
-          indicator.config = {
+          const cfg: any = {
             dataset_id: ind.configDatasetId,
           };
+          if (ind.configShowIfIndicatorName) {
+            cfg.show_if = {
+              indicator_name: ind.configShowIfIndicatorName,
+              value: ind.configShowIfValue
+            };
+          }
+          indicator.config = cfg;
           break;
         }
+
         case 'text':
-        case 'date':
+        case 'date': {
           if (ind.configShowIfIndicatorName) {
             indicator.config = {
               show_if: {
@@ -310,6 +345,7 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
             };
           }
           break;
+        }
 
         case 'number': {
           const numCfg: any = {};
