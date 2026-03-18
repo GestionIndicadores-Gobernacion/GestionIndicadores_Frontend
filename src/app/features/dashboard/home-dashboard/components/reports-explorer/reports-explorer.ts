@@ -124,7 +124,7 @@ export class ReportsExplorerComponent implements OnChanges {
     this.indicatorsAggregate = null;
 
     forkJoin({
-      aggregate: this.reportsService.aggregateByComponent(id),
+      aggregate: this.reportsService.aggregateByComponent(id, this.selectedYear), // ← agregar año
       indicators: this.reportsService.aggregateIndicatorsByComponent(id, this.selectedYear)
     }).subscribe({
       next: ({ aggregate, indicators }) => {
@@ -149,19 +149,21 @@ export class ReportsExplorerComponent implements OnChanges {
     this.yearChange.emit(year);
 
     if (this.selectedComponentId) {
-      this.reportsService
-        .aggregateIndicatorsByComponent(this.selectedComponentId, year)
-        .subscribe({
-          next: (result: ComponentIndicatorsAggregate) => {
-            const currentId = this.selectedIndicator?.indicator_id ?? null;
-            this.indicatorsAggregate = result;
-            if (currentId !== null) {
-              const same = this.indicators.find(i => i.indicator_id === currentId);
-              if (same) this.selectedIndicator = same;
-            }
-            this.cd.detectChanges();
+      forkJoin({
+        aggregate: this.reportsService.aggregateByComponent(this.selectedComponentId, year), // ← agregar año
+        indicators: this.reportsService.aggregateIndicatorsByComponent(this.selectedComponentId, year)
+      }).subscribe({
+        next: ({ aggregate, indicators }) => {
+          const currentId = this.selectedIndicator?.indicator_id ?? null;
+          this.componentAggregate = aggregate;  // ← actualizar también
+          this.indicatorsAggregate = indicators;
+          if (currentId !== null) {
+            const same = this.indicators.find(i => i.indicator_id === currentId);
+            if (same) this.selectedIndicator = same;
           }
-        });
+          this.cd.detectChanges();
+        }
+      });
     }
   }
 

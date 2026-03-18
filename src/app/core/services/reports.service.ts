@@ -49,10 +49,11 @@ export class ReportsService {
       `${this.api}/aggregate/strategy/${strategyId}`
     );
   }
-
-  aggregateByComponent(componentId: number) {
+  
+  aggregateByComponent(componentId: number, year?: number): Observable<ComponentAggregate> {
+    const params = year ? `?year=${year}` : '';
     return this.http.get<ComponentAggregate>(
-      `${this.api}/aggregate/component/${componentId}`
+      `${this.api}/aggregate/component/${componentId}${params}`
     );
   }
 

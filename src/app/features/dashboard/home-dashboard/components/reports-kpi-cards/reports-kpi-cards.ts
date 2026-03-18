@@ -131,7 +131,7 @@ export class ReportsKpiCardsComponent implements OnInit, OnChanges {
     }
     return total;
   }
-  
+
   get denunciasReportadas(): number {
     return this.sumNumeric(ID_DENUNCIAS_REPORTADAS);
   }
@@ -146,36 +146,28 @@ export class ReportsKpiCardsComponent implements OnInit, OnChanges {
 
   get animalesEsterilizados(): number {
     const relevant = this.filteredReports.filter(
-      r => r.strategy_id === 3 && (r.component_id === 8 || r.component_id === 9)
+      r => r.strategy_id === 3 && r.component_id === 8  // ← solo comp 8
     );
 
-    const INDICATOR_BY_COMPONENT: Record<number, number> = {
-      8: 99,
-      9: 125,
-    };
-
     let total = 0;
-    for (const report of relevant) {
-      const indicatorId = INDICATOR_BY_COMPONENT[report.component_id];
-      if (!indicatorId) continue;
 
-      const iv = report.indicator_values?.find(i => i.indicator_id === indicatorId);
+    for (const report of relevant) {
+      const iv = report.indicator_values?.find(i => i.indicator_id === 99);
       if (!iv?.value || typeof iv.value !== 'object') continue;
 
       const raw = iv.value as Record<string, any>;
       const data = raw['data'];
       if (!data || typeof data !== 'object') continue;
 
-      let reportTotal = 0;
-      for (const category of Object.values(data)) {
-        if (typeof category !== 'object') continue;
-        for (const group of Object.values(category as Record<string, any>)) {
-          if (typeof group !== 'object') continue;
-          const val = (group as Record<string, any>)['no_de_animales_esterilizados'];
-          if (typeof val === 'number' && !isNaN(val)) reportTotal += val;
+      // data -> especie (CANINO/FELINO) -> sexo (Hembra/Macho) -> no_de_animales_esterilizados
+      for (const especie of Object.values(data)) {
+        if (!especie || typeof especie !== 'object') continue;
+        for (const sexo of Object.values(especie as Record<string, any>)) {
+          if (!sexo || typeof sexo !== 'object') continue;
+          const val = (sexo as Record<string, any>)['no_de_animales_esterilizados'];
+          if (typeof val === 'number' && !isNaN(val)) total += val;
         }
       }
-      total += reportTotal;
     }
 
     return total;
