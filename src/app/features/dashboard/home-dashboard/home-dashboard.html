@@ -8,44 +8,25 @@
 
       <!-- SECTION HEADER -->
       <div class="flex items-center justify-between">
-
         <div class="flex items-center gap-3">
-
           <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
             style="background: linear-gradient(135deg,#1B3A6B,#2d5fa8);">
-
             <svg class="w-4.5 h-4.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"
               stroke-width="1.8">
-
               <path stroke-linecap="round" stroke-linejoin="round"
                 d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-
             </svg>
-
           </div>
-
           <div>
-
-            <h2 class="text-[15px] font-bold leading-none" style="color:#1B3A6B;">
-              Panel analítico
-            </h2>
-
-            <p class="text-xs mt-0.5" style="color:#4A6A9B;">
-              Tendencias · Cobertura · Distribución
-            </p>
-
+            <h2 class="text-[15px] font-bold leading-none" style="color:#1B3A6B;">Panel analítico</h2>
+            <p class="text-xs mt-0.5" style="color:#4A6A9B;">Tendencias · Cobertura · Distribución</p>
           </div>
-
           <span *ngIf="!loading && reports.length > 0"
             class="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
             style="background:#D6E4F7;border:1px solid #B3CCE8;color:#1B3A6B;">
-
             <span class="w-1.5 h-1.5 rounded-full inline-block animate-pulse" style="background:#2d5fa8;"></span>
-
             {{ reports.length }} reportes
-
           </span>
-
         </div>
 
         <button (click)="toggleDashboard()" [disabled]="loading"
@@ -53,90 +34,92 @@
           style="background:white;border:1.5px solid #D6E0F0;color:#1B3A6B;"
           onmouseover="this.style.borderColor='#1B3A6B';this.style.background='#F0F4FA'"
           onmouseout="this.style.borderColor='#D6E0F0';this.style.background='white'">
-
           <div *ngIf="loading" class="w-3.5 h-3.5 rounded-full animate-spin"
             style="border:2px solid #D6E0F0;border-top-color:#1B3A6B;"></div>
-
           <ng-container *ngIf="!loading">
-
             <svg *ngIf="showDashboard" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
               stroke-width="2">
-
               <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
-
             </svg>
-
             <svg *ngIf="!showDashboard" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
               stroke-width="2">
-
               <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-
             </svg>
-
             {{ showDashboard ? 'Ocultar' : 'Mostrar' }}
-
           </ng-container>
-
           <span *ngIf="loading">Cargando...</span>
-
         </button>
-
       </div>
 
       <!-- EMPTY STATE -->
       <div *ngIf="showDashboard && !loading && reports.length === 0"
         class="rounded-2xl p-16 text-center border backdrop-blur-sm"
         style="background:rgba(255,255,255,0.92);border-color:#D6E0F0;">
-
         <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5" style="background:#F0F4FA;">
-
           <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"
             style="color:#4A6A9B;">
-
             <path stroke-linecap="round" stroke-linejoin="round"
               d="M9 17v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6m4 0h6m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v8" />
-
           </svg>
-
         </div>
-
-        <h3 class="text-sm font-bold" style="color:#1B3A6B;">
-          Sin datos aún
-        </h3>
-
+        <h3 class="text-sm font-bold" style="color:#1B3A6B;">Sin datos aún</h3>
         <p class="text-xs mt-1 max-w-xs mx-auto leading-relaxed" style="color:#4A6A9B;">
           Cuando se registren actividades aparecerán métricas consolidadas aquí
         </p>
-
       </div>
 
       <ng-container *ngIf="showDashboard && !loading && reports.length > 0">
 
         <!-- YEAR SELECTOR -->
         <div class="flex gap-2">
-
           <button *ngFor="let y of availableYears" (click)="selectedYear = y"
             class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all duration-150 shadow-sm"
             [style.background]="y === selectedYear ? '#1B3A6B' : 'white'"
             [style.color]="y === selectedYear ? 'white' : '#4A6A9B'"
             [style.border]="y === selectedYear ? '1.5px solid #1B3A6B' : '1.5px solid #D6E0F0'">
-
             {{ y }}
-
           </button>
-
         </div>
 
         <app-reports-kpi-cards [reports]="reports" [selectedYear]="selectedYear">
         </app-reports-kpi-cards>
 
-        <!-- EXPLORER — sin cabecera propia, el componente ya la tiene -->
+        <!-- EXPLORER -->
         <div class="mt-4">
           <app-reports-explorer [strategyIds]="strategyIds" [strategyMap]="strategyMap"
             [selectedStrategyId]="selectedStrategyId" [components]="components" [selectedYear]="selectedYear"
             (strategyChange)="onStrategyChange($event)" (yearChange)="onYearChange($event)">
           </app-reports-explorer>
         </div>
+
+        <!-- MAPA DE COBERTURA -->
+        <div class="space-y-0 mt-4">
+          <div class="h-[3px] w-full rounded-t-xl"
+            style="background: linear-gradient(90deg, #1B3A6B 0%, #2d5fa8 50%, #1B3A6B 100%);"></div>
+          <div class="rounded-b-xl overflow-hidden border" style="border-color: #D6E0F0; background: white;">
+            <div class="flex items-center gap-3 px-5 py-4 border-b" style="border-color: #D6E0F0; background: #F8FAFD;">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style="background: #D6E4F7;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+                  <circle cx="12" cy="9" r="2.5" />
+                </svg>
+              </div>
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-[1px]" style="color: #1B3A6B;">
+                  Mapa de cobertura
+                </span>
+                <p class="text-[10.5px] mt-0.5" style="color: #8A9DC0;">
+                  Distribución geográfica de reportes por municipio
+                </p>
+              </div>
+            </div>
+            <app-reports-map [reports]="reports" [strategyMap]="strategyMap" [componentMap]="componentMap"
+              [selectedYear]="selectedYear" (yearChange)="onYearChange($event)">
+            </app-reports-map>
+          </div>
+        </div>
+
       </ng-container>
 
     </section>
