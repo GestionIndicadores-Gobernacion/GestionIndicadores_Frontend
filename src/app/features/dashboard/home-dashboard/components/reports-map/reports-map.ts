@@ -1,28 +1,24 @@
-import {
-  Component, Input, OnChanges, SimpleChanges,
-  OnDestroy, AfterViewInit, ChangeDetectorRef, NgZone
-} from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+  AfterViewInit, ChangeDetectorRef, Component, EventEmitter, Input,
+  NgZone, OnChanges, OnDestroy, Output, SimpleChanges
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-
 import * as L from 'leaflet';
-import { MunicipioCentroid, normalizeMunicipio, findCentroid } from '../../../../../core/data/valle-geo.data';
+import { normalizeMunicipio } from '../../../../../core/data/valle-geo.data';
 import { ReportModel } from '../../../../../core/models/report.model';
-
-
-// ─── Tipos locales ────────────────────────────────────────────────────────────
+import { ReportsKpiService } from '../../../../../core/services/reports-kpi.service';
+import { buildMunicipioMap, buildMunicipioSummary } from './helpers/reports-map.helpers';
 
 export interface MunicipioSummary {
   name: string;
-  centroid: MunicipioCentroid;
+  centroid: { lat: number; lng: number; name: string };
   totalReports: number;
   urbana: number;
   rural: number;
   reports: ReportModel[];
-  /** Componentes con conteo de reportes en este municipio */
   byComponent: { component_id: number; component_name: string; count: number }[];
-  /** Indicadores con sus totales agregados */
-  indicators: { id: number; name: string; field_type: string; total: number; unit?: string }[];
+  indicators: { id: number; name: string; field_type: string; total: number }[];
 }
 
 @Component({
@@ -36,79 +32,72 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
 
   @Input() reports: ReportModel[] = [];
   @Input() strategyMap: Record<number, string> = {};
-  /** Mapa de component_id → component_name (se construye de los propios reportes si no llega) */
   @Input() componentMap: Record<number, string> = {};
+  @Input() selectedYear: number = new Date().getFullYear();
 
-  // ─── Estado del mapa ────────────────────────────────────────────────────────
   private map!: L.Map;
   private markersLayer!: L.LayerGroup;
   private mapInitialized = false;
   readonly MAP_ID = 'reports-leaflet-map';
 
-  // ─── Filtros ────────────────────────────────────────────────────────────────
-  selectedComponentId: number | null = null;
-  selectedZone: 'all' | 'Urbana' | 'Rural' = 'all';
   searchQuery = '';
-
-  // ─── Panel lateral ──────────────────────────────────────────────────────────
   selectedMunicipio: MunicipioSummary | null = null;
-  activeTab: 'overview' | 'indicators' | 'reports' = 'overview';
-
-  // ─── Datos procesados ───────────────────────────────────────────────────────
+  activeTab: 'indicators' | 'overview' | 'reports' = 'indicators';
   municipioMap: Map<string, MunicipioSummary> = new Map();
-  availableComponents: { id: number; name: string }[] = [];
+  selectedKpi = 'asistencias';
 
-  // ─── Estilos de mapa ─────────────────────────────────────────────────────────
-  readonly MAP_STYLES: { id: string; label: string; icon: string; url: string; attribution: string }[] = [
-    {
-      id: 'light',
-      label: 'Claro',
-      icon: '☀️',
-      url: 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
-      attribution: '© OpenStreetMap © CARTO',
-    },
-    {
-      id: 'dark',
-      label: 'Oscuro',
-      icon: '🌑',
-      url: 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',
-      attribution: '© OpenStreetMap © CARTO',
-    },
-    {
-      id: 'satellite',
-      label: 'Satélite',
-      icon: '🛰️',
-      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      attribution: '© Esri, Maxar, Earthstar Geographics',
-    },
-    {
-      id: 'topo',
-      label: 'Topográfico',
-      icon: '⛰️',
-      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
-      attribution: '© Esri, HERE, Garmin, FAO, NOAA, USGS',
-    },
+  // Agregar EventEmitter para notificar al padre
+  @Output() yearChange = new EventEmitter<number>();
+
+
+  readonly MAP_STYLES = [
+    { id: 'light', label: 'Claro', icon: '☀️', url: 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', attribution: '© OpenStreetMap © CARTO' },
+    { id: 'dark', label: 'Oscuro', icon: '🌑', url: 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', attribution: '© OpenStreetMap © CARTO' },
+    { id: 'satellite', label: 'Satélite', icon: '🛰️', url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', attribution: '© Esri, Maxar, Earthstar Geographics' },
+    { id: 'topo', label: 'Topográfico', icon: '⛰️', url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', attribution: '© Esri, HERE, Garmin, FAO, NOAA, USGS' },
   ];
+
+  get availableYears(): number[] {
+    const years = new Set(this.reports.map(r =>
+      new Date(r.report_date).getFullYear()
+    ));
+    return Array.from(years).sort((a, b) => b - a);
+  }
+
+  onYearChange(year: number | string): void {
+    const y = Number(year); // ← fix string→number
+    this.yearChange.emit(y);
+  }
+
 
   selectedStyleId = 'light';
   private tileLayer!: L.TileLayer;
   showStylePicker = false;
 
-  constructor(private cdr: ChangeDetectorRef, private zone: NgZone) { }
+  readonly KPI_OPTIONS = [
+    { id: 'asistencias', label: 'Asistencias', color: '#0891b2', bg: '#ECFEFF' },
+    { id: 'denuncias', label: 'Denuncias', color: '#dc2626', bg: '#FEF2F2' },
+    { id: 'esterilizados', label: 'Esterilizados', color: '#059669', bg: '#ECFDF5' },
+    { id: 'refugios', label: 'Refugios', color: '#7c3aed', bg: '#F5F3FF' },
+    { id: 'ninos', label: 'Niños sensib.', color: '#db2777', bg: '#FDF2F8' },
+    { id: 'emprendedores', label: 'Emprendedores', color: '#65a30d', bg: '#F7FEE7' },
+  ];
 
-  // ─── Lifecycle ───────────────────────────────────────────────────────────────
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private zone: NgZone,
+    private kpiService: ReportsKpiService,
+  ) { }
+
+  // ── Lifecycle ─────────────────────────────────────────────
 
   ngAfterViewInit(): void {
-    this.zone.runOutsideAngular(() => {
-      setTimeout(() => this.initMap(), 100);
-    });
+    this.zone.runOutsideAngular(() => setTimeout(() => this.initMap(), 100));
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['reports'] || changes['componentMap']) {
-      this.buildComponentList();
-      this.buildMunicipioMap();
-      if (this.mapInitialized) this.renderMarkers();
+    if (changes['reports'] || changes['componentMap'] || changes['selectedYear']) {
+      this.rebuildMap();
     }
   }
 
@@ -116,86 +105,109 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     if (this.map) this.map.remove();
   }
 
-  // ─── Getters ─────────────────────────────────────────────────────────────────
+  // ── Filtro por año ────────────────────────────────────────
 
-  get filteredReports(): ReportModel[] {
-    return this.reports.filter(r => {
-      if (this.selectedComponentId && r.component_id !== this.selectedComponentId) return false;
-      if (this.selectedZone !== 'all' && this.normalizeZone(r.zone_type) !== this.selectedZone) return false;
-      if (this.searchQuery) {
-        const q = this.searchQuery.toLowerCase();
-        if (!r.intervention_location.toLowerCase().includes(q)) return false;
-      }
-      return true;
-    });
+  private get filteredReports(): ReportModel[] {
+    return this.kpiService.filterByYear(this.reports, this.selectedYear);
   }
 
+  // ── Build municipio map ───────────────────────────────────
+
+  private rebuildMap(): void {
+    this.municipioMap = buildMunicipioMap(
+      this.filteredReports,
+      this.componentMap,
+      this.normalizeZone.bind(this),
+      this.kpiService,
+    );
+    if (this.mapInitialized) this.renderMarkers();
+  }
+
+  // ── Getters ───────────────────────────────────────────────
+
   get filteredMunicipios(): MunicipioSummary[] {
-    const filtered = this.filteredReports;
+    const q = this.searchQuery.toLowerCase();
+    const source = q
+      ? this.filteredReports.filter(r => r.intervention_location.toLowerCase().includes(q))
+      : this.filteredReports;
+
     const byMun = new Map<string, ReportModel[]>();
-    for (const r of filtered) {
+    for (const r of source) {
       const key = normalizeMunicipio(r.intervention_location);
       if (!byMun.has(key)) byMun.set(key, []);
       byMun.get(key)!.push(r);
     }
-    return Array.from(byMun.entries())
-      .map(([key, reps]) => this.buildSummary(reps[0].intervention_location, reps))
+
+    return Array.from(byMun.values())
+      .map(reps => buildMunicipioSummary(
+        reps[0].intervention_location,
+        reps,
+        this.componentMap,
+        this.normalizeZone.bind(this),
+        this.kpiService,
+      ))
       .filter((s): s is MunicipioSummary => s !== null)
-      .sort((a, b) => b.totalReports - a.totalReports);
+      .sort((a, b) => this.getKpiValue(b) - this.getKpiValue(a));
   }
 
-  get totalFilteredReports(): number {
-    return this.filteredReports.length;
-  }
+  get totalReports(): number { return this.filteredReports.length; }
+  get totalMunicipios(): number { return this.municipioMap.size; }
 
-  get maxReportsInMunicipio(): number {
-    return Math.max(...Array.from(this.municipioMap.values()).map(m => m.totalReports), 1);
-  }
+  // ── KPI ──────────────────────────────────────────────────
 
-  getMunicipioColor(total: number): string {
-    const max = this.maxReportsInMunicipio;
-    const ratio = total / max;
-    if (ratio === 0) return '#f4f4f5';
-    if (ratio < 0.25) return '#d4f1e9';
-    if (ratio < 0.5) return '#6ee7b7';
-    if (ratio < 0.75) return '#10b981';
-    return '#065f46';
-  }
-
-  getProgressColor(ratio: number): string {
-    if (ratio >= 1) return 'bg-emerald-500';
-    if (ratio >= 0.75) return 'bg-emerald-400';
-    if (ratio >= 0.5) return 'bg-amber-400';
-    if (ratio >= 0.25) return 'bg-orange-400';
-    return 'bg-red-400';
-  }
-
-  // ─── Filtros ────────────────────────────────────────────────────────────────
-
-  onComponentFilter(id: number | null): void {
-    this.selectedComponentId = id;
+  onKpiSelect(kpiId: string): void {
+    this.selectedKpi = kpiId;
     this.renderMarkers();
+    this.cdr.detectChanges();
   }
 
-  onZoneFilter(zone: 'all' | 'Urbana' | 'Rural'): void {
-    this.selectedZone = zone;
-    this.renderMarkers();
+  getKpiValue(summary: MunicipioSummary): number {
+    const map: Record<string, number> = {
+      asistencias: summary.indicators.find(i => i.id === -1)?.total ?? 0,
+      denuncias: summary.indicators.find(i => i.id === -2)?.total ?? 0,
+      esterilizados: summary.indicators.find(i => i.id === -3)?.total ?? 0,
+      refugios: summary.indicators.find(i => i.id === -4)?.total ?? 0,
+      ninos: summary.indicators.find(i => i.id === -5)?.total ?? 0,
+      emprendedores: summary.indicators.find(i => i.id === -6)?.total ?? 0,
+    };
+    return map[this.selectedKpi] ?? 0;
+  }
+
+  getMaxKpiValue(): number {
+    return Math.max(...Array.from(this.municipioMap.values()).map(s => this.getKpiValue(s)), 1);
+  }
+
+  getKpiColor(value: number, maxValue: number): string {
+    const kpi = this.KPI_OPTIONS.find(k => k.id === this.selectedKpi);
+    const base = kpi?.color ?? '#2563eb';
+    if (value === 0) return '#CBD5E1';
+    const ratio = Math.max(0.18, value / maxValue);
+    const alpha = Math.round(ratio * 255).toString(16).padStart(2, '0');
+    return base + alpha;
+  }
+
+  getActiveKpi() {
+    return this.KPI_OPTIONS.find(k => k.id === this.selectedKpi) ?? this.KPI_OPTIONS[0];
+  }
+
+  getTotalKpiValue(): number {
+    return Array.from(this.municipioMap.values()).reduce((sum, m) => sum + this.getKpiValue(m), 0);
+  }
+
+  // ── Utilidades ────────────────────────────────────────────
+
+  normalizeZone(zone: string): 'Urbana' | 'Rural' {
+    return (zone ?? '').toLowerCase().includes('urban') ? 'Urbana' : 'Rural';
   }
 
   onSearch(): void {
     this.renderMarkers();
-  }
-
-  clearFilters(): void {
-    this.selectedComponentId = null;
-    this.selectedZone = 'all';
-    this.searchQuery = '';
-    this.renderMarkers();
+    this.cdr.detectChanges();
   }
 
   selectMunicipioFromList(summary: MunicipioSummary): void {
     this.selectedMunicipio = summary;
-    this.activeTab = 'overview';
+    this.activeTab = 'indicators';
     this.map?.flyTo([summary.centroid.lat, summary.centroid.lng], 11, { duration: 0.8 });
     this.cdr.detectChanges();
   }
@@ -203,112 +215,6 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   closeSidePanel(): void {
     this.selectedMunicipio = null;
     this.cdr.detectChanges();
-  }
-
-  // ─── Construcción de datos ──────────────────────────────────────────────────
-
-  private buildComponentList(): void {
-    const map = new Map<number, string>();
-    for (const r of this.reports) {
-      if (!map.has(r.component_id)) {
-        const name = this.componentMap[r.component_id];
-        map.set(r.component_id, name ?? `Componente ${r.component_id}`);
-      }
-    }
-    this.availableComponents = Array.from(map.entries())
-      .map(([id, name]) => ({ id, name }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }
-
-  /**
-   * Normaliza zone_type: el backend puede devolver 'ZoneTypeEnum.RURAL' o 'Rural'.
-   */
-  normalizeZone(zone: string): 'Urbana' | 'Rural' {
-    const lower = (zone ?? '').toLowerCase();
-    return lower.includes('urban') ? 'Urbana' : 'Rural';
-  }
-
-  /**
-   * Extrae el valor legible de un indicator_value.
-   * Soporta number, string, y objetos con clave 'value', 'total', etc.
-   */
-  formatIndicatorValue(value: number | string | Record<string, any> | null): string {
-    if (value === null || value === undefined) return '—';
-    if (typeof value === 'number') return value.toLocaleString();
-    if (typeof value === 'string') return value;
-    const obj = value as Record<string, any>;
-    if ('value' in obj) return String(obj['value']);
-    if ('total' in obj) return String(obj['total']);
-    if ('count' in obj) return String(obj['count']);
-    const firstPrimitive = Object.entries(obj).find(
-      ([, v]) => typeof v === 'number' || typeof v === 'string'
-    );
-    if (firstPrimitive) return `${firstPrimitive[0]}: ${firstPrimitive[1]}`;
-    return JSON.stringify(obj);
-  }
-
-  private buildMunicipioMap(): void {
-    this.municipioMap = new Map();
-    const grouped = new Map<string, ReportModel[]>();
-    for (const r of this.reports) {
-      const key = normalizeMunicipio(r.intervention_location);
-      if (!grouped.has(key)) grouped.set(key, []);
-      grouped.get(key)!.push(r);
-    }
-    for (const [, reps] of grouped) {
-      const summary = this.buildSummary(reps[0].intervention_location, reps);
-      if (summary) this.municipioMap.set(normalizeMunicipio(summary.name), summary);
-    }
-  }
-
-  private buildSummary(location: string, reps: ReportModel[]): MunicipioSummary | null {
-    const centroid = findCentroid(location);
-    if (!centroid) return null;
-
-    const urbana = reps.filter(r => this.normalizeZone(r.zone_type) === 'Urbana').length;
-    const rural = reps.filter(r => this.normalizeZone(r.zone_type) === 'Rural').length;
-
-    // Agrupar por componente
-    const compCount = new Map<number, number>();
-    for (const r of reps) {
-      compCount.set(r.component_id, (compCount.get(r.component_id) ?? 0) + 1);
-    }
-    const byComponent = Array.from(compCount.entries()).map(([id, count]) => ({
-      component_id: id,
-      component_name: this.componentMap[id] ?? `Componente ${id}`,
-      count,
-    })).sort((a, b) => b.count - a.count);
-
-    // Agregar indicadores numéricos
-    const indMap = new Map<number, { id: number; name: string; field_type: string; total: number }>();
-    for (const r of reps) {
-      for (const iv of r.indicator_values) {
-        if (typeof iv.value === 'number' && iv.indicator) {
-          if (!indMap.has(iv.indicator_id)) {
-            indMap.set(iv.indicator_id, {
-              id: iv.indicator_id,
-              name: iv.indicator.name,
-              field_type: iv.indicator.field_type,
-              total: 0,
-            });
-          }
-          indMap.get(iv.indicator_id)!.total += iv.value;
-        }
-      }
-    }
-
-    return {
-      name: centroid.name,
-      centroid,
-      totalReports: reps.length,
-      urbana,
-      rural,
-      reports: reps.sort((a, b) =>
-        new Date(b.report_date).getTime() - new Date(a.report_date).getTime()
-      ),
-      byComponent,
-      indicators: Array.from(indMap.values()),
-    };
   }
 
   getSelectedStyle() {
@@ -321,43 +227,23 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     if (!this.mapInitialized) return;
     const style = this.MAP_STYLES.find(s => s.id === styleId)!;
     if (this.tileLayer) this.map.removeLayer(this.tileLayer);
-    this.tileLayer = L.tileLayer(style.url, {
-      attribution: style.attribution,
-      maxZoom: 14,
-    });
-    this.tileLayer.addTo(this.map);
+    this.tileLayer = L.tileLayer(style.url, { attribution: style.attribution, maxZoom: 14 }).addTo(this.map);
   }
 
-  // ─── Mapa Leaflet ───────────────────────────────────────────────────────────
+  // ── Mapa ──────────────────────────────────────────────────
 
   private initMap(): void {
     const container = document.getElementById(this.MAP_ID);
     if (!container) return;
-
-    // Bounding box del Valle del Cauca con un pequeño margen
-    const valleBounds = L.latLngBounds(
-      L.latLng(2.8, -77.5),  // SW
-      L.latLng(5.3, -75.5)   // NE
-    );
-
+    const bounds = L.latLngBounds(L.latLng(2.8, -77.5), L.latLng(5.3, -75.5));
     this.map = L.map(this.MAP_ID, {
-      center: [3.8, -76.5],
-      zoom: 8,
-      minZoom: 8,
-      maxZoom: 14,
-      zoomControl: true,
-      scrollWheelZoom: true,
-      maxBounds: valleBounds,
-      maxBoundsViscosity: 1.0, // rebote duro — no se puede salir del área
+      center: [3.8, -76.5], zoom: 8, minZoom: 7, maxZoom: 14,
+      scrollWheelZoom: true, maxBounds: bounds, maxBoundsViscosity: 0.8,
+      zoomControl: false,
     });
-
-    // Tile layer inicial (claro)
-    const initialStyle = this.MAP_STYLES.find(s => s.id === this.selectedStyleId)!;
-    this.tileLayer = L.tileLayer(initialStyle.url, {
-      attribution: initialStyle.attribution,
-      maxZoom: 14,
-    }).addTo(this.map);
-
+    L.control.zoom({ position: 'bottomright' }).addTo(this.map);
+    const style = this.MAP_STYLES.find(s => s.id === this.selectedStyleId)!;
+    this.tileLayer = L.tileLayer(style.url, { attribution: style.attribution, maxZoom: 14 }).addTo(this.map);
     this.markersLayer = L.layerGroup().addTo(this.map);
     this.mapInitialized = true;
     this.renderMarkers();
@@ -367,66 +253,75 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     if (!this.mapInitialized) return;
     this.markersLayer.clearLayers();
 
-    const filtered = this.filteredReports;
+    const maxKpi = this.getMaxKpiValue();
+    const activeKpi = this.getActiveKpi();
+
     const grouped = new Map<string, ReportModel[]>();
-    for (const r of filtered) {
+    for (const r of this.filteredReports) {
       const key = normalizeMunicipio(r.intervention_location);
       if (!grouped.has(key)) grouped.set(key, []);
       grouped.get(key)!.push(r);
     }
 
-    for (const [key, reps] of grouped) {
-      const summary = this.buildSummary(reps[0].intervention_location, reps);
+    for (const [, reps] of grouped) {
+      const summary = buildMunicipioSummary(
+        reps[0].intervention_location,
+        reps,
+        this.componentMap,
+        this.normalizeZone.bind(this),
+        this.kpiService,
+      );
       if (!summary) continue;
 
       const { lat, lng } = summary.centroid;
-      const count = reps.length;
-      const color = this.getMunicipioColor(count);
+      const kpiValue = this.getKpiValue(summary);
+      const color = this.getKpiColor(kpiValue, maxKpi);
+      const ratio = maxKpi > 0 ? kpiValue / maxKpi : 0;
+      const radius = kpiValue === 0 ? 7 : Math.max(11, Math.min(36, 10 + ratio * 26));
 
-      // Círculo de municipio
       const circle = L.circleMarker([lat, lng], {
-        radius: Math.max(10, Math.min(32, 8 + count * 3)),
+        radius,
         fillColor: color,
-        color: '#fff',
+        color: 'rgba(255,255,255,0.9)',
         weight: 2,
         opacity: 1,
-        fillOpacity: 0.85,
+        fillOpacity: 0.92,
       });
+
+      const tooltipKpiRow = this.selectedKpi !== 'reportes'
+        ? `<div style="display:flex;justify-content:space-between;gap:10px;margin-top:4px;padding-top:4px;border-top:1px solid #f1f5f9">
+            <span style="color:#94a3b8;font-size:10px">${activeKpi.label}</span>
+            <span style="font-weight:700;color:${activeKpi.color};font-size:11px">${kpiValue.toLocaleString()}</span>
+           </div>`
+        : '';
 
       circle.bindTooltip(`
-        <div style="font-family:system-ui;font-size:12px;font-weight:600;color:#18181b">
-          ${summary.name}
+        <div style="font-family:system-ui;min-width:130px">
+          <div style="font-size:12px;font-weight:700;color:#0f172a">${summary.name}</div>
+          <div style="font-size:10px;color:#94a3b8;margin-top:1px">${summary.totalReports} reporte${summary.totalReports !== 1 ? 's' : ''}</div>
+          ${tooltipKpiRow}
         </div>
-        <div style="font-size:11px;color:#71717a;margin-top:2px">
-          ${count} reporte${count !== 1 ? 's' : ''}
-        </div>
-      `, { direction: 'top', offset: [0, -8] });
+      `, { direction: 'top', offset: [0, -radius - 2], className: 'pyba-tooltip' });
 
-      circle.on('click', () => {
-        this.zone.run(() => {
-          this.selectedMunicipio = summary;
-          this.activeTab = 'overview';
-          this.cdr.detectChanges();
-        });
-      });
+      circle.on('click', () => this.zone.run(() => {
+        this.selectedMunicipio = summary;
+        this.activeTab = 'indicators';
+        this.cdr.detectChanges();
+      }));
 
       this.markersLayer.addLayer(circle);
 
-      // Label con el número encima
-      const label = L.divIcon({
-        html: `<span style="
-          font-family:system-ui;font-size:11px;font-weight:700;
-          color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.4);
-          display:flex;align-items:center;justify-content:center;
-          width:100%;height:100%;
-        ">${count}</span>`,
-        className: '',
-        iconSize: [24, 24],
-        iconAnchor: [12, 12],
-      });
-
-      const labelMarker = L.marker([lat, lng], { icon: label, interactive: false });
-      this.markersLayer.addLayer(labelMarker);
+      if (kpiValue > 0) {
+        const labelVal = this.selectedKpi === 'reportes' ? summary.totalReports : kpiValue;
+        const displayLabel = labelVal >= 1000 ? (labelVal / 1000).toFixed(1) + 'k' : String(labelVal);
+        this.markersLayer.addLayer(L.marker([lat, lng], {
+          icon: L.divIcon({
+            html: `<span style="font-family:system-ui;font-size:10px;font-weight:800;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;width:100%;height:100%;letter-spacing:-0.3px">${displayLabel}</span>`,
+            className: '', iconSize: [30, 30], iconAnchor: [15, 15],
+          }),
+          interactive: false,
+        }));
+      }
     }
   }
 }
