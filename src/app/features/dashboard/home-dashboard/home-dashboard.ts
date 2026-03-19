@@ -26,10 +26,21 @@ import { ReportsMapComponent } from './components/reports-map/reports-map';
     CommonModule,
     ReportsKpiCardsComponent,
     ReportsExplorerComponent,
+    ReportsMapComponent
   ],
   templateUrl: './home-dashboard.html',
 })
 export class HomeDashboardComponent implements OnInit {
+
+  private readonly MAP_KPI_COMPONENT_PERSONAS = 22;
+  private readonly MAP_KPI_INDICATOR_PERSONAS = 76;
+  private readonly MAP_KPI_INDICATOR_NINOS = 163;
+  private readonly MAP_KPI_COMPONENT_ASISTENCIAS = 2;
+  private readonly MAP_KPI_COMPONENT_JUNTAS = 21;
+  private readonly MAP_KPI_INDICATOR_ASISTENCIAS_JUNTAS = 160;
+  private readonly MAP_KPI_INDICATOR_DENUNCIAS = 137;
+  private readonly MAP_KPI_COMPONENT_EMPRENDEDORES = 14;
+  private readonly MAP_KPI_INDICATOR_NINOS_SENSIBILIZADOS = 114;
 
   // ── Navigation sections ──────────────────────────────────
   roleId: number | null = null;
@@ -62,6 +73,12 @@ export class HomeDashboardComponent implements OnInit {
     this.sections = this.buildDashboardSections();
   }
 
+  get reportsForMap(): ReportModel[] {
+    return this.reports.filter(r =>
+      new Date(r.report_date).getFullYear() === this.selectedYear
+    );
+  }
+  
   ngOnInit(): void {
     this.loadData();
   }
