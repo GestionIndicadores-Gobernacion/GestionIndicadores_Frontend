@@ -8,6 +8,7 @@ export const COMPONENT_ID_ASISTENCIAS = 2;
 export const COMPONENT_ID_JUNTAS = 21;
 export const COMPONENT_ID_EMPRENDEDORES = 14;
 export const COMPONENT_ID_PROMOTORES = 22;
+export const COMPONENT_ID_NINOS = 23;  // ← nuevo
 export const COMPONENT_ID_ESTERILIZACION = 8;
 export const STRATEGY_ID_ESTERILIZACION = 3;
 
@@ -16,6 +17,7 @@ export const ID_DENUNCIAS_REPORTADAS = 137;
 export const ID_ANIMALES_ESTERILIZADOS = 99;
 export const ID_REFUGIOS = 102;
 export const ID_NINOS_CAPACITADOS_PROMOTORES = 163;
+export const ID_NINOS_CANTIDAD_IMPACTADA = 114;
 
 const DATASET_ID_PERSONAS_CAPACITADAS = 8;
 const ESPACIOS_ACOGIDA = ['albergue/refugio', 'fundacion', 'hogar de paso'];
@@ -154,16 +156,12 @@ export class ReportsKpiService {
 
   ninosSensibilizados(reports: ReportModel[]): number {
     return reports
-      .filter(r => r.component_id === COMPONENT_ID_PROMOTORES)
+      .filter(r => r.component_id === COMPONENT_ID_NINOS)  // ← componente 23
       .reduce((sum, r) => {
-        const iv = r.indicator_values?.find(i => i.indicator_id === ID_NINOS_CAPACITADOS_PROMOTORES);
-        if (!iv?.value || typeof iv.value !== 'object') return sum;
-        let s = 0;
-        for (const v of Object.values(iv.value as Record<string, any>)) {
-          const n = Number(v);
-          if (!isNaN(n)) s += n;
-        }
-        return sum + s;
+        const iv = r.indicator_values?.find(i => i.indicator_id === ID_NINOS_CANTIDAD_IMPACTADA); // ← indicator 114
+        if (iv?.value == null) return sum;
+        const n = Number(iv.value);
+        return sum + (isNaN(n) ? 0 : n);
       }, 0);
   }
 
