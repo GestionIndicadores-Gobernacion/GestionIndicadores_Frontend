@@ -55,10 +55,16 @@ export class ReportsListComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.usersService.getMe().subscribe(user => {
-      this.currentUserId = user.id;
-      this.isAdmin = user.role?.name === 'admin';
-      this.cd.detectChanges();
+    this.usersService.getMe().subscribe({
+      next: user => {
+        this.currentUserId = user.id;
+        this.isAdmin = user.role?.name === 'admin';
+        this.cd.detectChanges();
+      },
+      error: () => {
+        this.isAdmin = false;
+        this.cd.detectChanges();
+      }
     });
 
     this.loadData();

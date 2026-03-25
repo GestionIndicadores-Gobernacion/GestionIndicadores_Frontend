@@ -1,3 +1,13 @@
+export interface UserComponent {
+  component_id: number;
+  component_name: string;
+}
+
+export interface RoleModel {
+  id: number;
+  name: string;
+}
+
 export interface UserModel {
   id: number;
   first_name: string;
@@ -8,11 +18,7 @@ export interface UserModel {
   created_at: string;
   updated_at: string;
   role?: RoleModel;
-}
-
-export interface RoleModel {
-  id: number;
-  name: string;
+  component_assignments?: UserComponent[];
 }
 
 export interface UserCreateRequest {
@@ -22,6 +28,7 @@ export interface UserCreateRequest {
   password: string;
   role_id?: number;
   profile_image_url?: string;
+  component_ids?: number[];
 }
 
 export interface UserUpdateRequest {
@@ -31,6 +38,7 @@ export interface UserUpdateRequest {
   password?: string;
   role_id?: number;
   profile_image_url?: string;
+  component_ids?: number[];
 }
 
 export interface UserResponse extends UserModel {}

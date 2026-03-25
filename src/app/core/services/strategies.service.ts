@@ -16,14 +16,23 @@ export class StrategiesService {
 
   private api = `${environment.apiUrl}/strategies`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getAll() {
     return this.http.get<StrategyModel[]>(this.api);
   }
+  
+  getDashboard(year?: number) {
+    const params = year ? `?year=${year}` : '';
+    return this.http.get<StrategyModel[]>(`${this.api}/dashboard${params}`);
+  }
 
   getById(id: number) {
     return this.http.get<StrategyModel>(`${this.api}/${id}`);
+  }
+
+  getProgress(id: number) {
+    return this.http.get<StrategyModel>(`${this.api}/${id}/progress`);
   }
 
   create(body: StrategyCreateRequest) {

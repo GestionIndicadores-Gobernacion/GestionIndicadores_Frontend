@@ -71,11 +71,11 @@ export function getAtencionVeterinariaVirtuals(
     // 3. Tipo de atención vs municipios
     if (byLocNested.length > 0) {
         const metricas = [
-            { metric: 'no_de_animales_esterilizados',            label: 'Esterilizados vs municipios' },
-            { metric: 'no_de_animales_desparasitados',           label: 'Desparasitados vs municipios' },
+            { metric: 'no_de_animales_esterilizados', label: 'Esterilizados vs municipios' },
+            { metric: 'no_de_animales_desparasitados', label: 'Desparasitados vs municipios' },
             { metric: 'no_de_animales_con_atencion_veterinaria', label: 'Atención veterinaria vs municipios' },
-            { metric: 'no_de_animales_vitaminizados',            label: 'Vitaminizados vs municipios' },
-            { metric: 'no_de_animales_vacunados',                label: 'Vacunados vs municipios' },
+            { metric: 'no_de_animales_vitaminizados', label: 'Vitaminizados vs municipios' },
+            { metric: 'no_de_animales_vacunados', label: 'Vacunados vs municipios' },
         ];
 
         metricas.forEach(({ metric, label }, idx) => {
@@ -165,9 +165,9 @@ export function getAtencionVeterinariaVirtuals(
     if (animales?.by_nested) {
         CATEGORIAS_ANIMALES.forEach((cat, idx) => {
             const hembraKey = `${cat} – Hembra`;
-            const machoKey  = `${cat} – Macho`;
+            const machoKey = `${cat} – Macho`;
             const hembraRows = animales.by_nested![hembraKey];
-            const machoRows  = animales.by_nested![machoKey];
+            const machoRows = animales.by_nested![machoKey];
 
             const hembraTotal = hembraRows
                 ? (hembraRows.find(r => r.metric === 'no_de_animales_con_atencion_veterinaria')?.total ?? 0)
@@ -179,7 +179,7 @@ export function getAtencionVeterinariaVirtuals(
             if (hembraTotal > 0 || machoTotal > 0) {
                 const byCateg: { category: string; total: number }[] = [];
                 if (hembraTotal > 0) byCateg.push({ category: getCategoryDisplayName(hembraKey), total: hembraTotal });
-                if (machoTotal  > 0) byCateg.push({ category: getCategoryDisplayName(machoKey),  total: machoTotal  });
+                if (machoTotal > 0) byCateg.push({ category: getCategoryDisplayName(machoKey), total: machoTotal });
 
                 virtual.push({
                     indicator_id: -(10050 + idx),
@@ -218,26 +218,25 @@ export function getAtencionVeterinariaVirtuals(
         });
     }
 
-    // 10. Cantidad de albergues atendidos
+    // 10. Cantidad de espacios atendidos
     if (espacio?.by_category?.length) {
         virtual.push({
             indicator_id: -10002,
-            indicator_name: 'Cantidad de albergues atendidos',
+            indicator_name: 'Cantidad de espacios atendidos',
             field_type: 'by_category',
             by_category: espacio.by_category,
         });
     }
-
-    // 11. Albergues atendidos por municipio
+    
+    // 11. Espacios atendidos por municipio
     if (byLoc.length > 0) {
         virtual.push({
             indicator_id: -10020,
-            indicator_name: 'Albergues atendidos por municipio',
+            indicator_name: 'Espacios atendidos por municipio',
             field_type: 'by_location',
             by_location: byLoc,
             navigable: true,
         });
     }
-
     return virtual;
 }
