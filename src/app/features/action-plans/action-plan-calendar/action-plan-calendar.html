@@ -380,7 +380,7 @@
                                             <div class="flex-1 min-w-0">
 
                                                 <p class="text-xs font-semibold truncate leading-tight">
-                                                    {{ activity.deliverable }}
+                                                    {{ activity.name }}
                                                 </p>
 
                                                 <p *ngIf="activity.score !== null && activity.score !== undefined"
@@ -494,11 +494,11 @@
         </p>
 
         <p class="text-sm font-bold leading-tight mb-1 text-white">
-            {{ hoveredFlat.activity.deliverable }}
+            {{ hoveredFlat.activity.name }}
         </p>
 
         <p class="text-xs mb-1 text-[#8A9DC0]">
-            {{ hoveredFlat.activity.name }}
+            {{ hoveredFlat.activity.deliverable }}
         </p>
 
         <div *ngIf="hoveredFlat.plan.responsible"
