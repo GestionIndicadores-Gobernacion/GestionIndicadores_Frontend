@@ -3,174 +3,101 @@
   <!-- HEADER -->
   <div class="px-6 pt-7 pb-6 border-b" style="background:white;border-color:#D6E0F0;">
     <div class="max-w-3xl mx-auto flex items-start justify-between">
-
       <div class="flex items-center gap-4">
-
         <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"
           style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);">
-
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="1.8" stroke-linecap="round"
             stroke-linejoin="round">
             <path d="M17 21v-2a4 4 0 00-3-3.87" />
             <path d="M7 21v-2a4 4 0 013-3.87" />
             <circle cx="12" cy="7" r="4" />
           </svg>
-
         </div>
-
         <div>
           <h1 class="text-[20px] font-bold leading-none" style="color:#1B3A6B;">
             {{ isEdit ? 'Editar usuario' : 'Nuevo usuario' }}
           </h1>
-
           <p class="text-sm mt-1" style="color:#4A6A9B;">
             {{ isEdit ? 'Actualiza la información del usuario' : 'Completa los datos para crear un nuevo usuario' }}
           </p>
         </div>
-
       </div>
-
       <button type="button" [routerLink]="['/users']" class="text-[12px] font-semibold cursor-pointer transition"
         style="color:#4A6A9B" onmouseover="this.style.color='#1B3A6B'" onmouseout="this.style.color='#4A6A9B'">
-
         Cancelar
-
       </button>
-
     </div>
   </div>
-
-
 
   <div class="max-w-3xl mx-auto px-6 py-10 space-y-6">
 
     <!-- LOADING -->
     <div *ngIf="loading" class="flex items-center gap-3 py-8">
-
       <div class="w-4 h-4 rounded-full animate-spin" style="border:2px solid #D6E0F0;border-top-color:#1B3A6B;"></div>
-
-      <span class="text-[13px]" style="color:#8A9DC0;">
-        Cargando formulario...
-      </span>
-
+      <span class="text-[13px]" style="color:#8A9DC0;">Cargando formulario...</span>
     </div>
-
-
 
     <!-- FORM -->
     <form *ngIf="!loading" (ngSubmit)="save()" class="space-y-6">
 
-
-
       <!-- INFORMACIÓN PERSONAL -->
       <section>
-
         <div class="h-[3px] w-full rounded-t-xl" style="background:linear-gradient(90deg,#1B3A6B,#2d5fa8,#1B3A6B);">
         </div>
-
         <div class="rounded-b-xl overflow-hidden border" style="border-color:#D6E0F0;background:white;">
-
           <div class="px-6 py-4 border-b flex items-center gap-3" style="border-color:#D6E0F0;background:#F8FAFD;">
-
             <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#D6E4F7;">
-
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="2.2"
                 stroke-linecap="round" stroke-linejoin="round">
-
                 <circle cx="12" cy="7" r="4" />
                 <path d="M5.5 21a6.5 6.5 0 0113 0" />
-
               </svg>
-
             </div>
-
-            <span class="text-[11px] font-bold uppercase tracking-[1px]" style="color:#1B3A6B;">
-              Información personal
-            </span>
-
+            <span class="text-[11px] font-bold uppercase tracking-[1px]" style="color:#1B3A6B;">Información
+              personal</span>
           </div>
-
-
-
           <div class="p-6 grid md:grid-cols-2 gap-5">
-
             <!-- NOMBRE -->
             <div class="space-y-1.5">
-
-              <label class="text-[11px] font-semibold" style="color:#1B3A6B;">
-                Nombre *
-              </label>
-
+              <label class="text-[11px] font-semibold" style="color:#1B3A6B;">Nombre *</label>
               <input type="text" name="first_name" [(ngModel)]="form.first_name" required [disabled]="isMainAdmin()"
                 [class.border-red-300]="attemptedSubmit && !form.first_name" placeholder="Juan"
                 class="text-[12px] rounded-xl px-3 py-2 outline-none transition-all duration-150 w-full"
                 style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B"
                 onfocus="this.style.borderColor='#1B3A6B';this.style.background='#fff';this.style.boxShadow='0 0 0 3px rgba(27,58,107,0.08)'"
                 onblur="this.style.borderColor='#D6E0F0';this.style.background='#F0F4FA';this.style.boxShadow='none'" />
-
-              <p *ngIf="attemptedSubmit && !form.first_name" class="text-[11px]" style="color:#dc2626;">
-                El nombre es obligatorio
-              </p>
-
+              <p *ngIf="attemptedSubmit && !form.first_name" class="text-[11px]" style="color:#dc2626;">El nombre es
+                obligatorio</p>
             </div>
-
-
-
             <!-- APELLIDO -->
             <div class="space-y-1.5">
-
-              <label class="text-[11px] font-semibold" style="color:#1B3A6B;">
-                Apellido *
-              </label>
-
+              <label class="text-[11px] font-semibold" style="color:#1B3A6B;">Apellido *</label>
               <input type="text" name="last_name" [(ngModel)]="form.last_name" required [disabled]="isMainAdmin()"
                 [class.border-red-300]="attemptedSubmit && !form.last_name" placeholder="Pérez"
                 class="text-[12px] rounded-xl px-3 py-2 outline-none transition-all duration-150 w-full"
                 style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B"
                 onfocus="this.style.borderColor='#1B3A6B';this.style.background='#fff';this.style.boxShadow='0 0 0 3px rgba(27,58,107,0.08)'"
                 onblur="this.style.borderColor='#D6E0F0';this.style.background='#F0F4FA';this.style.boxShadow='none'" />
-
-              <p *ngIf="attemptedSubmit && !form.last_name" class="text-[11px]" style="color:#dc2626;">
-                El apellido es obligatorio
-              </p>
-
+              <p *ngIf="attemptedSubmit && !form.last_name" class="text-[11px]" style="color:#dc2626;">El apellido es
+                obligatorio</p>
             </div>
-
           </div>
-
         </div>
-
       </section>
-
-
 
       <!-- CREDENCIALES -->
       <section>
-
         <div class="h-[3px] w-full rounded-t-xl" style="background:linear-gradient(90deg,#1B3A6B,#2d5fa8,#1B3A6B);">
         </div>
-
         <div class="rounded-b-xl overflow-hidden border" style="border-color:#D6E0F0;background:white;">
-
           <div class="px-6 py-4 border-b" style="border-color:#D6E0F0;background:#F8FAFD;">
-
-            <span class="text-[11px] font-bold uppercase tracking-[1px]" style="color:#1B3A6B;">
-              Credenciales de acceso
-            </span>
-
+            <span class="text-[11px] font-bold uppercase tracking-[1px]" style="color:#1B3A6B;">Credenciales de
+              acceso</span>
           </div>
-
-
-
           <div class="p-6 space-y-5">
-
             <!-- EMAIL -->
             <div class="space-y-1.5">
-
-              <label class="text-[11px] font-semibold" style="color:#1B3A6B;">
-                Correo electrónico *
-              </label>
-
+              <label class="text-[11px] font-semibold" style="color:#1B3A6B;">Correo electrónico *</label>
               <input type="email" name="email" [(ngModel)]="form.email" required [disabled]="isMainAdmin()"
                 [class.border-red-300]="attemptedSubmit && (!form.email || !isValidEmail(form.email))"
                 placeholder="usuario@gobernacion.gov.co"
@@ -178,18 +105,10 @@
                 style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B"
                 onfocus="this.style.borderColor='#1B3A6B';this.style.background='#fff';this.style.boxShadow='0 0 0 3px rgba(27,58,107,0.08)'"
                 onblur="this.style.borderColor='#D6E0F0';this.style.background='#F0F4FA';this.style.boxShadow='none'" />
-
             </div>
-
-
-
             <!-- PASSWORD -->
             <div class="space-y-1.5">
-
-              <label class="text-[11px] font-semibold" style="color:#1B3A6B;">
-                Contraseña {{ isEdit ? '' : '*' }}
-              </label>
-
+              <label class="text-[11px] font-semibold" style="color:#1B3A6B;">Contraseña {{ isEdit ? '' : '*' }}</label>
               <input type="password" name="password" [(ngModel)]="form.password" [required]="!isEdit"
                 [disabled]="isMainAdmin()" [class.border-red-300]="attemptedSubmit && passwordInvalid()"
                 [placeholder]="isEdit ? 'Dejar en blanco para no modificar' : 'Mínimo 6 caracteres'"
@@ -197,101 +116,142 @@
                 style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B"
                 onfocus="this.style.borderColor='#1B3A6B';this.style.background='#fff';this.style.boxShadow='0 0 0 3px rgba(27,58,107,0.08)'"
                 onblur="this.style.borderColor='#D6E0F0';this.style.background='#F0F4FA';this.style.boxShadow='none'" />
-
             </div>
-
           </div>
-
         </div>
-
       </section>
-
-
 
       <!-- ROL -->
       <section>
-
         <div class="h-[3px] w-full rounded-t-xl" style="background:linear-gradient(90deg,#1B3A6B,#2d5fa8,#1B3A6B);">
         </div>
-
         <div class="rounded-b-xl overflow-hidden border" style="border-color:#D6E0F0;background:white;">
-
           <div class="px-6 py-4 border-b" style="border-color:#D6E0F0;background:#F8FAFD;">
-
-            <span class="text-[11px] font-bold uppercase tracking-[1px]" style="color:#1B3A6B;">
-              Rol y permisos
-            </span>
-
+            <span class="text-[11px] font-bold uppercase tracking-[1px]" style="color:#1B3A6B;">Rol y permisos</span>
           </div>
-
-
-
           <div class="p-6 space-y-1.5">
-
-            <label class="text-[11px] font-semibold" style="color:#1B3A6B;">
-              Rol *
-            </label>
-
+            <label class="text-[11px] font-semibold" style="color:#1B3A6B;">Rol *</label>
             <select name="role_id" [(ngModel)]="form.role_id" required [disabled]="isMainAdmin()"
               [class.border-red-300]="attemptedSubmit && !form.role_id"
               class="text-[12px] rounded-xl px-3 py-2 outline-none transition-all duration-150 w-full cursor-pointer"
               style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B"
               onfocus="this.style.borderColor='#1B3A6B';this.style.background='#fff';this.style.boxShadow='0 0 0 3px rgba(27,58,107,0.08)'"
               onblur="this.style.borderColor='#D6E0F0';this.style.background='#F0F4FA';this.style.boxShadow='none'">
-
-              <option [ngValue]="null" disabled>
-                Seleccionar rol...
-              </option>
-
-              <option *ngFor="let r of roles" [ngValue]="r.id">
-                {{ r.name }}
-              </option>
-
+              <option [ngValue]="null" disabled>Seleccionar rol...</option>
+              <option *ngFor="let r of roles" [ngValue]="r.id">{{ r.name }}</option>
             </select>
-
           </div>
-
         </div>
-
       </section>
 
+      <!-- COMPONENTES — solo si el rol NO es admin -->
+      <section *ngIf="form.role_id && !selectedRoleIsAdmin">
+        <div class="h-[3px] w-full rounded-t-xl" style="background:linear-gradient(90deg,#1B3A6B,#2d5fa8,#1B3A6B);">
+        </div>
+        <div class="rounded-b-xl overflow-hidden border" style="border-color:#D6E0F0;background:white;">
 
+          <!-- Header sección -->
+          <div class="px-6 py-4 border-b flex items-center justify-between"
+            style="border-color:#D6E0F0;background:#F8FAFD;">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#D6E4F7;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1" />
+                  <rect x="14" y="3" width="7" height="7" rx="1" />
+                  <rect x="3" y="14" width="7" height="7" rx="1" />
+                  <rect x="14" y="14" width="7" height="7" rx="1" />
+                </svg>
+              </div>
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-[1px]" style="color:#1B3A6B;">
+                  Componentes asignados
+                </span>
+                <p class="text-[10.5px] mt-0.5" style="color:#8A9DC0;">
+                  El usuario solo podrá acceder a los componentes seleccionados
+                </p>
+              </div>
+            </div>
+            <!-- Contador -->
+            <span *ngIf="selectedComponentIds.length > 0" class="text-[11px] font-semibold px-2.5 py-1 rounded-full"
+              style="background:#D6E4F7;border:1px solid #B3CCE8;color:#1B3A6B;">
+              {{ selectedComponentIds.length }} seleccionado{{ selectedComponentIds.length !== 1 ? 's' : '' }}
+            </span>
+          </div>
+
+          <!-- Lista de componentes -->
+          <div class="p-4">
+
+            <!-- Sin componentes disponibles -->
+            <p *ngIf="allComponents.length === 0" class="text-[12px] text-center py-4" style="color:#8A9DC0;">
+              No hay componentes disponibles
+            </p>
+
+            <!-- Grid de checkboxes -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <label *ngFor="let comp of allComponents"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer border transition-all duration-150"
+                [style.background]="isComponentSelected(comp.id) ? '#EEF5FF' : '#F8FAFD'"
+                [style.borderColor]="isComponentSelected(comp.id) ? '#1B3A6B' : '#D6E0F0'">
+
+                <!-- Checkbox custom -->
+                <div (click)="toggleComponent(comp.id)"
+                  class="w-4 h-4 rounded flex items-center justify-center shrink-0 transition-all duration-150 cursor-pointer"
+                  [style.background]="isComponentSelected(comp.id) ? '#1B3A6B' : 'white'"
+                  [style.border]="isComponentSelected(comp.id) ? '2px solid #1B3A6B' : '2px solid #B3CCE8'">
+                  <svg *ngIf="isComponentSelected(comp.id)" width="9" height="9" viewBox="0 0 12 12" fill="none">
+                    <polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round"
+                      stroke-linejoin="round" />
+                  </svg>
+                </div>
+
+                <span (click)="toggleComponent(comp.id)" class="text-[12px] font-medium leading-snug select-none"
+                  [style.color]="isComponentSelected(comp.id) ? '#1B3A6B' : '#4A6A9B'">
+                  {{ comp.name }}
+                </span>
+
+              </label>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- Mensaje admin -->
+      <div *ngIf="selectedRoleIsAdmin" class="flex items-center gap-3 px-4 py-3 rounded-xl border"
+        style="background:#F0F9FF;border-color:#BAE6FD;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        <p class="text-[12px]" style="color:#0369A1;">
+          Los administradores tienen acceso a <strong>todos los componentes</strong> automáticamente.
+        </p>
+      </div>
 
       <!-- ACTIONS -->
       <div class="pt-6 flex items-center justify-end gap-3">
-
         <button type="button" [routerLink]="['/users']"
           class="px-4 py-2 text-[12px] font-semibold cursor-pointer transition" style="color:#4A6A9B"
           onmouseover="this.style.color='#1B3A6B'" onmouseout="this.style.color='#4A6A9B'">
-
           Cancelar
-
         </button>
-
-
 
         <button *ngIf="isMainAdmin()" type="button" disabled class="px-5 py-2 text-[12px] font-semibold rounded-xl"
           style="background:#94A3B8;color:white">
-
           Usuario principal — No editable
-
         </button>
-
-
 
         <button *ngIf="!isMainAdmin()" type="submit" [disabled]="saving"
           class="px-6 py-2.5 rounded-xl text-[12px] font-bold shadow-sm cursor-pointer transition"
           style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);color:white"
           onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">
-
           {{ saving ? 'Guardando...' : (isEdit ? 'Actualizar usuario' : 'Crear usuario') }}
-
         </button>
-
       </div>
 
     </form>
-
   </div>
-
 </div>

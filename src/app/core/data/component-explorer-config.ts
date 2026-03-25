@@ -20,10 +20,10 @@ export const COMPONENT_EXPLORER_CONFIG: Record<number, ExplorerVirtualConfig> = 
         showReportesPorMes: false,
         showReportesPorMunicipio: true,
         showIndicadoresPorMunicipio: true,
-        hiddenIndicators: [94],  // ocultar TIPO DE ACTOR ASISTIDO
-        locationLabel: 'Asistencias por municipio',  // ← cambio
-        showTemasPorMunicipio: true,  // ← nuevo flag
-        jornadasPorMesLabel: 'Asistencias por tiempo',  // ← para personas asistidas x tiempo
+        hiddenIndicators: [94],
+        locationLabel: 'Asistencia técnica por municipio',
+        showTemasPorMunicipio: true,
+        jornadasPorMesLabel: 'Asistencias por tiempo',
     },
     3: {
         showReportesPorMes: false,
@@ -53,7 +53,7 @@ export const COMPONENT_EXPLORER_CONFIG: Record<number, ExplorerVirtualConfig> = 
         showReportesPorMes: true,
         showReportesPorMunicipio: false,
         showIndicadoresPorMunicipio: false,
-        hiddenIndicators: [103, 100, 102, 125, 136],  // ← agregar 136
+        hiddenIndicators: [103, 100, 102, 125, 136],
         jornadasPorMesLabel: 'Cantidad de jornadas vs meses',
     },
     14: {

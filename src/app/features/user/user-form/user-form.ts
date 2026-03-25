@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 
 import { UsersService } from '../../../core/services/users.service';
 import { RolesService } from '../../../core/services/roles.service';
+import { ComponentsService } from '../../../core/services/components.service';
 import { UserCreateRequest, UserUpdateRequest } from '../../../core/models/user.model';
 import { ToastService } from '../../../core/services/toast.service';
 
@@ -19,13 +20,13 @@ export class UserFormComponent implements OnInit {
 
   loading = true;
   saving = false;
-
   isEdit = false;
   userId: number | null = null;
-
   attemptedSubmit = false;
 
   roles: any[] = [];
+  allComponents: any[] = [];       // todos los componentes disponibles
+  selectedComponentIds: number[] = []; // IDs seleccionados
 
   form = {
     first_name: '',
@@ -41,15 +42,17 @@ export class UserFormComponent implements OnInit {
     private route: ActivatedRoute,
     private usersService: UsersService,
     private rolesService: RolesService,
+    private componentsService: ComponentsService,
     private toast: ToastService,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
-    this.userId = Number(this.route.snapshot.paramMap.get('id'));
+    this.userId = Number(this.route.snapshot.paramMap.get('id')) || null;
     this.isEdit = !!this.userId;
 
     this.loadRoles();
+    this.loadComponents();
 
     if (this.isEdit) {
       this.loadUser();
@@ -59,16 +62,35 @@ export class UserFormComponent implements OnInit {
     }
   }
 
+  // ── Helpers ──────────────────────────────────────────────────────────
+
   isMainAdmin(): boolean {
     return this.isEdit && this.form.email === 'admin@gobernacion.gov.co';
   }
 
-  // =========================================
-  // VALIDACIONES
-  // =========================================
+  /** El admin tiene acceso a todo, no necesita asignaciones */
+  get selectedRoleIsAdmin(): boolean {
+    const role = this.roles.find(r => r.id === this.form.role_id);
+    return role?.name === 'admin';
+  }
+
+  isComponentSelected(id: number): boolean {
+    return this.selectedComponentIds.includes(id);
+  }
+
+  toggleComponent(id: number) {
+    const idx = this.selectedComponentIds.indexOf(id);
+    if (idx === -1) {
+      this.selectedComponentIds = [...this.selectedComponentIds, id];
+    } else {
+      this.selectedComponentIds = this.selectedComponentIds.filter(c => c !== id);
+    }
+    this.cdr.markForCheck();
+  }
+
+  // ── Validaciones ─────────────────────────────────────────────────────
 
   isValidEmail(email: string): boolean {
-    if (!email) return false;
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
 
@@ -78,17 +100,19 @@ export class UserFormComponent implements OnInit {
     return false;
   }
 
-  // =========================================
-  // CARGAR DATOS
-  // =========================================
+  // ── Carga de datos ───────────────────────────────────────────────────
 
   loadRoles() {
     this.rolesService.getAll().subscribe({
-      next: (res) => {
-        this.roles = res;
-        this.cdr.markForCheck();
-      },
+      next: (res) => { this.roles = res; this.cdr.markForCheck(); },
       error: () => this.toast.error('Error cargando roles')
+    });
+  }
+
+  loadComponents() {
+    this.componentsService.getAll().subscribe({
+      next: (res) => { this.allComponents = res; this.cdr.markForCheck(); },
+      error: () => this.toast.error('Error cargando componentes')
     });
   }
 
@@ -103,6 +127,8 @@ export class UserFormComponent implements OnInit {
           role_id: user.role?.id || null,
           profile_image_url: user.profile_image_url || ''
         };
+        // Precargar componentes asignados
+        this.selectedComponentIds = (user.component_assignments || []).map(a => a.component_id);
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -113,9 +139,7 @@ export class UserFormComponent implements OnInit {
     });
   }
 
-  // =========================================
-  // GUARDAR
-  // =========================================
+  // ── Guardar ──────────────────────────────────────────────────────────
 
   save() {
     this.attemptedSubmit = true;
@@ -136,33 +160,23 @@ export class UserFormComponent implements OnInit {
     this.saving = true;
     this.cdr.markForCheck();
 
+    // Solo enviar component_ids si el rol NO es admin
+    const componentIds = this.selectedRoleIsAdmin ? undefined : this.selectedComponentIds;
+
     if (this.isEdit) {
       const payload: UserUpdateRequest = {
         first_name: this.form.first_name.trim(),
         last_name: this.form.last_name.trim(),
         email: this.form.email.trim(),
-        role_id: this.form.role_id!
+        role_id: this.form.role_id!,
+        component_ids: componentIds
       };
-
-      if (this.form.password.trim() !== '') {
-        payload.password = this.form.password;
-      }
-
-      if (this.form.profile_image_url.trim() !== '') {
-        payload.profile_image_url = this.form.profile_image_url.trim();
-      }
-
-      console.log('Payload enviado al backend:', JSON.stringify(payload, null, 2));
+      if (this.form.password.trim()) payload.password = this.form.password;
+      if (this.form.profile_image_url.trim()) payload.profile_image_url = this.form.profile_image_url.trim();
 
       this.usersService.update(this.userId!, payload).subscribe({
-        next: () => {
-          this.toast.success('Usuario actualizado correctamente');
-          this.router.navigate(['/users']);
-        },
-        error: () => {
-          this.saving = false;
-          this.cdr.markForCheck();
-        }
+        next: () => { this.toast.success('Usuario actualizado correctamente'); this.router.navigate(['/users']); },
+        error: () => { this.saving = false; this.cdr.markForCheck(); }
       });
 
     } else {
@@ -171,24 +185,14 @@ export class UserFormComponent implements OnInit {
         last_name: this.form.last_name.trim(),
         email: this.form.email.trim(),
         password: this.form.password,
-        role_id: this.form.role_id!
+        role_id: this.form.role_id!,
+        component_ids: componentIds
       };
-
-      if (this.form.profile_image_url.trim() !== '') {
-        payload.profile_image_url = this.form.profile_image_url.trim();
-      }
-
-      console.log('Payload enviado al backend:', JSON.stringify(payload, null, 2));
+      if (this.form.profile_image_url.trim()) payload.profile_image_url = this.form.profile_image_url.trim();
 
       this.usersService.create(payload).subscribe({
-        next: () => {
-          this.toast.success('Usuario creado correctamente');
-          this.router.navigate(['/users']);
-        },
-        error: () => {
-          this.saving = false;
-          this.cdr.markForCheck();
-        }
+        next: () => { this.toast.success('Usuario creado correctamente'); this.router.navigate(['/users']); },
+        error: () => { this.saving = false; this.cdr.markForCheck(); }
       });
     }
   }
