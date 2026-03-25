@@ -1,0 +1,233 @@
+<!-- components/map-detail/map-detail.html -->
+<div class="absolute right-3 top-12 bottom-3 w-64 z-[999] flex flex-col overflow-hidden"
+    style="background:rgba(255,255,255,0.97);border:1.5px solid #D6E0F0;border-radius:16px;backdrop-filter:blur(12px);box-shadow:0 8px 32px rgba(0,0,0,0.12);">
+
+    <!-- Header -->
+    <div class="px-4 py-3 flex-shrink-0 border-b"
+        style="border-color:#EDF2FA;background:#F8FAFD;border-radius:14px 14px 0 0;">
+        <div class="flex items-start justify-between">
+            <div>
+                <h3 class="text-[13px] font-bold leading-tight" style="color:#1B3A6B;">{{ municipio.name }}</h3>
+                <p class="text-[10px] mt-0.5" style="color:#8A9DC0;">Valle del Cauca</p>
+            </div>
+            <button (click)="close.emit()" class="w-6 h-6 rounded-lg flex items-center justify-center cursor-pointer"
+                style="color:#8A9DC0;" onmouseover="this.style.background='#F0F4FA'"
+                onmouseout="this.style.background='transparent'">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="grid grid-cols-2 gap-1.5 mt-2.5">
+            <div class="rounded-lg px-2 py-1.5 text-center" style="background:#EDF3FC;">
+                <p class="text-[14px] font-bold" style="color:#1B3A6B;">{{ municipio.totalReports }}</p>
+                <p class="text-[9px]" style="color:#4A6A9B;">Reportes</p>
+            </div>
+            <div class="rounded-lg px-2 py-1.5 text-center" [style.background]="activeKpi.bg">
+                <p class="text-[14px] font-bold" [style.color]="activeKpi.color">{{ getKpiValue() | number }}</p>
+                <p class="text-[9px]" style="color:#8A9DC0;">{{ activeKpi.label }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex border-b flex-shrink-0" style="border-color:#EDF2FA;">
+        <button
+            *ngFor="let tab of [{id:'indicators',label:'KPIs'},{id:'overview',label:'Componentes'},{id:'reports',label:'Reportes'}]"
+            (click)="activeTab = $any(tab.id)"
+            class="flex-1 py-2 text-[10px] font-semibold cursor-pointer text-center border-b-2 transition-colors"
+            [style.border-bottom-color]="activeTab === tab.id ? '#1B3A6B' : 'transparent'"
+            [style.color]="activeTab === tab.id ? '#1B3A6B' : '#8A9DC0'">
+            {{ tab.label }}
+        </button>
+    </div>
+
+    <!-- Contenido -->
+    <div class="flex-1 overflow-y-auto" style="scrollbar-width:thin;">
+
+        <!-- TAB: KPIs -->
+        <div *ngIf="activeTab === 'indicators'" class="p-3 space-y-3">
+
+            <!-- Resumen: 6 KPIs calculados -->
+            <div *ngIf="municipio.indicators.length > 0">
+                <p class="text-[9px] font-bold uppercase tracking-wide mb-1.5 px-0.5" style="color:#8A9DC0;">Resumen</p>
+                <div class="space-y-1">
+                    <div *ngFor="let ind of municipio.indicators"
+                        class="flex items-center justify-between px-2.5 py-2 rounded-xl"
+                        style="background:#F8FAFD;border:1px solid #EDF2FA;">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <div class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#2d5fa8;opacity:0.6">
+                            </div>
+                            <p class="text-[10.5px] font-medium truncate" style="color:#1B3A6B;">{{ ind.name }}</p>
+                        </div>
+                        <span class="text-[12px] font-bold flex-shrink-0 ml-2" style="color:#1B3A6B;">{{ ind.total |
+                            number }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detalle por componente -->
+            <div *ngIf="municipio.indicatorsByComponent.length > 0">
+                <p class="text-[9px] font-bold uppercase tracking-wide mb-1.5 px-0.5" style="color:#8A9DC0;">Detalle por
+                    componente</p>
+                <div class="space-y-2">
+                    <div *ngFor="let comp of municipio.indicatorsByComponent" class="rounded-xl overflow-hidden"
+                        style="border:1px solid #EDF2FA;">
+                        <!-- Nombre componente -->
+                        <div class="px-2.5 py-1.5" style="background:#EDF3FC;">
+                            <p class="text-[9.5px] font-bold leading-snug" style="color:#1B3A6B;">{{ comp.component_name
+                                }}</p>
+                        </div>
+                        <!-- Indicadores del componente -->
+                        <div class="divide-y" style="border-color:#F0F4FA;">
+                            <div *ngFor="let ind of comp.indicators"
+                                class="flex items-center justify-between px-2.5 py-1.5" style="background:#F8FAFD;">
+                                <p class="text-[9.5px] truncate flex-1 mr-2" style="color:#4A6A9B;">{{ ind.name }}</p>
+                                <span class="text-[11px] font-bold flex-shrink-0" style="color:#1B3A6B;">{{ ind.total |
+                                    number }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p *ngIf="municipio.indicators.length === 0 && municipio.indicatorsByComponent.length === 0"
+                class="text-[11px] text-center py-6" style="color:#8A9DC0;">
+                Sin indicadores
+            </p>
+
+        </div>
+
+        <!-- TAB: Componentes -->
+        <div *ngIf="activeTab === 'overview'" class="p-3 space-y-1.5">
+            <p *ngIf="municipio.byComponent.length === 0" class="text-[11px] text-center py-6" style="color:#8A9DC0;">
+                Sin datos
+            </p>
+            <div *ngFor="let comp of municipio.byComponent" class="rounded-xl p-2.5"
+                style="background:#F8FAFD;border:1px solid #EDF2FA;">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-[10.5px] font-medium leading-snug" style="color:#1B3A6B;">{{ comp.component_name
+                        }}</span>
+                    <span class="text-[10.5px] font-bold ml-2 flex-shrink-0" style="color:#2d5fa8;">
+                        {{ comp.count }} <span class="text-[9px] font-normal" style="color:#8A9DC0;">reporte{{
+                            comp.count !== 1 ? 's' : '' }}</span>
+                    </span>
+                </div>
+                <div class="h-1 rounded-full overflow-hidden" style="background:#E8EEF7;">
+                    <div class="h-full rounded-full transition-all duration-500" style="background:#2d5fa8;"
+                        [style.width.%]="municipio.totalReports > 0 ? (comp.count / municipio.totalReports) * 100 : 0">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: Reportes -->
+        <div *ngIf="activeTab === 'reports'" class="divide-y" style="border-color:#F0F4FA;">
+            <p *ngIf="municipio.reportDetails.length === 0" class="px-3 py-6 text-center text-[11px]"
+                style="color:#8A9DC0;">
+                Sin reportes
+            </p>
+            <div *ngFor="let r of municipio.reportDetails" class="transition-colors"
+                [style.background]="expandedReportId === r.id ? '#F8FAFD' : 'transparent'">
+
+                <!-- Cabecera -->
+                <button (click)="toggleReport(r.id)"
+                    class="w-full flex items-start gap-2 px-3 py-2.5 text-left cursor-pointer"
+                    onmouseover="this.style.background='#F8FAFD'" onmouseout="this.style.background='transparent'">
+                    <svg class="w-3 h-3 flex-shrink-0 mt-0.5 transition-transform duration-200"
+                        [style.transform]="expandedReportId === r.id ? 'rotate(90deg)' : 'rotate(0)'" fill="none"
+                        viewBox="0 0 24 24" stroke="#9BB1D6" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="text-[9px] font-bold uppercase tracking-wide" style="color:#8A9DC0;">
+                                {{ r.report_date | date:'dd MMM yyyy' }}
+                            </span>
+                            <span class="px-1.5 py-0.5 rounded-full text-[8px] font-bold uppercase"
+                                [style.background]="r.zone_type === 'Urbana' ? '#DBEAFE' : '#D1FAE5'"
+                                [style.color]="r.zone_type === 'Urbana' ? '#1E40AF' : '#065F46'">
+                                {{ r.zone_type }}
+                            </span>
+                        </div>
+                        <p class="text-[10px] font-semibold mt-0.5 leading-snug truncate" style="color:#1B3A6B;">
+                            {{ r.component_name }}
+                        </p>
+                        <p *ngIf="expandedReportId !== r.id && r.executive_summary"
+                            class="text-[9.5px] mt-0.5 line-clamp-2 leading-snug" style="color:#8A9DC0;">
+                            {{ r.executive_summary }}
+                        </p>
+                    </div>
+                </button>
+
+                <!-- Detalle expandido -->
+                <div *ngIf="expandedReportId === r.id" class="px-3 pb-3 space-y-2">
+
+                    <div *ngIf="r.executive_summary" class="rounded-xl p-2.5" style="background:#EDF3FC;">
+                        <p class="text-[9px] font-bold uppercase tracking-wide mb-1" style="color:#4A6A9B;">Resumen
+                            ejecutivo</p>
+                        <p class="text-[10px] leading-relaxed" style="color:#1B3A6B;">{{ r.executive_summary }}</p>
+                    </div>
+
+                    <div *ngIf="r.indicator_details.length > 0">
+                        <p class="text-[9px] font-bold uppercase tracking-wide mb-1.5 px-0.5" style="color:#8A9DC0;">
+                            Indicadores ({{ r.indicator_details.length }})
+                        </p>
+                        <div class="space-y-1">
+                            <div *ngFor="let ind of r.indicator_details" class="rounded-lg px-2.5 py-2"
+                                style="background:#F8FAFD;border:1px solid #EDF2FA;">
+                                <p class="text-[9px] font-semibold uppercase tracking-wide leading-tight"
+                                    style="color:#4A6A9B;">
+                                    {{ ind.name }}
+                                </p>
+                                <p *ngIf="ind.field_type === 'number'" class="text-[15px] font-bold mt-0.5 leading-none"
+                                    style="color:#1B3A6B;">
+                                    {{ ind.formatted_value }}
+                                </p>
+                                <span *ngIf="ind.field_type === 'select'"
+                                    class="inline-block mt-1 px-2 py-0.5 rounded-full text-[9.5px] font-semibold"
+                                    style="background:#D6E4F7;color:#1B3A6B;">
+                                    {{ ind.formatted_value }}
+                                </span>
+                                <div *ngIf="ind.field_type === 'multi_select'" class="flex flex-wrap gap-1 mt-1">
+                                    <span *ngFor="let tag of $any(ind.raw_value)"
+                                        class="px-1.5 py-0.5 rounded-full text-[9px] font-medium"
+                                        style="background:#EDF3FC;color:#1B3A6B;border:1px solid #D6E0F0;">
+                                        {{ tag }}
+                                    </span>
+                                </div>
+                                <p *ngIf="ind.field_type === 'sum_group'"
+                                    class="text-[15px] font-bold mt-0.5 leading-none" style="color:#1B3A6B;">
+                                    {{ ind.formatted_value }}
+                                    <span class="text-[9px] font-normal ml-1" style="color:#8A9DC0;">total</span>
+                                </p>
+                                <p *ngIf="ind.field_type === 'text'" class="text-[10px] mt-0.5 leading-relaxed"
+                                    style="color:#4A6A9B;">
+                                    {{ ind.formatted_value }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p *ngIf="r.indicator_details.length === 0" class="text-[10px] text-center py-2"
+                        style="color:#B0BDD0;">
+                        Sin indicadores registrados
+                    </p>
+
+                    <a *ngIf="r.evidence_link" [href]="r.evidence_link" target="_blank" rel="noopener"
+                        class="flex items-center gap-1.5 text-[9.5px] font-semibold px-2.5 py-1.5 rounded-lg"
+                        style="color:#2d5fa8;background:#EDF3FC;border:1px solid #D6E0F0;text-decoration:none;"
+                        onmouseover="this.style.background='#D6E4F7'" onmouseout="this.style.background='#EDF3FC'">
+                        <svg class="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                        Ver evidencia
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

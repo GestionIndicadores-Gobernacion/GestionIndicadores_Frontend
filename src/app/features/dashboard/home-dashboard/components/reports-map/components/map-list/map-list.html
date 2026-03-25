@@ -1,0 +1,50 @@
+<!-- components/map-list/map-list.html -->
+<div class="absolute bottom-3 left-3 z-[999] w-56"
+    style="background:rgba(255,255,255,0.96);border:1.5px solid #D6E0F0;border-radius:16px;backdrop-filter:blur(12px);box-shadow:0 4px 20px rgba(0,0,0,0.1);max-height:220px;display:flex;flex-direction:column;">
+
+    <!-- Header -->
+    <div class="px-3 py-2.5 border-b flex items-center justify-between flex-shrink-0" style="border-color:#EDF2FA;">
+        <div>
+            <p class="text-[11px] font-bold" style="color:#1B3A6B;">
+                {{ municipios.length }} municipio{{ municipios.length !== 1 ? 's' : '' }}
+            </p>
+            <p class="text-[10px]" style="color:#8A9DC0;">
+                Total: <span class="font-semibold" [style.color]="activeKpi.color">{{ getTotalKpiValue() | number
+                    }}</span>
+                {{ activeKpi.label | lowercase }}
+            </p>
+        </div>
+        <div class="flex flex-col items-end gap-1">
+            <div class="w-16 h-1.5 rounded-full"
+                [style.background]="'linear-gradient(to right, #e2e8f0, ' + activeKpi.color + ')'"></div>
+            <div class="flex justify-between w-16">
+                <span class="text-[9px]" style="color:#B0BDD0;">0</span>
+                <span class="text-[9px]" style="color:#B0BDD0;">máx</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista -->
+    <div class="overflow-y-auto flex-1" style="scrollbar-width:thin;">
+        <button *ngFor="let m of municipios; let i = index" (click)="municipioSelect.emit(m)"
+            class="w-full flex items-center gap-2 px-3 py-2 transition-all cursor-pointer text-left"
+            [style.background]="selectedMunicipio?.name === m.name ? '#EDF3FC' : 'transparent'"
+            onmouseover="if(!this.style.background||this.style.background==='transparent')this.style.background='#F8FAFD'"
+            onmouseout="if(this.style.background==='rgb(248, 250, 253)')this.style.background='transparent'">
+            <span class="text-[9px] font-bold w-4 text-center flex-shrink-0" style="color:#B0BDD0;">{{ i+1 }}</span>
+            <div class="relative flex-1 flex items-center gap-1.5 min-w-0">
+                <div class="absolute inset-y-0 left-0 rounded-sm opacity-10"
+                    [style.width]="(getMaxKpiValue() > 0 ? (getKpiValue(m) / getMaxKpiValue()) * 100 : 0) + '%'"
+                    [style.background]="activeKpi.color" style="min-width:2px;"></div>
+                <p class="text-[11px] font-semibold truncate relative z-10" style="color:#1B3A6B;">{{ m.name }}</p>
+            </div>
+            <span class="text-[11px] font-bold flex-shrink-0 relative z-10"
+                [style.color]="getKpiValue(m) > 0 ? activeKpi.color : '#CBD5E1'">
+                {{ getKpiValue(m) | number }}
+            </span>
+        </button>
+        <div *ngIf="municipios.length === 0" class="px-3 py-4 text-center text-[11px]" style="color:#8A9DC0;">
+            Sin resultados
+        </div>
+    </div>
+</div>
