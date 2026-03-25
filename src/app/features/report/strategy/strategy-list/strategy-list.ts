@@ -1,165 +1,124 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { StrategyModel } from '../../../../core/models/strategy.model';
 import { StrategiesService } from '../../../../core/services/strategies.service';
 import { ToastService } from '../../../../core/services/toast.service';
-import { Pagination } from '../../../../shared/components/pagination/pagination';
+import { StrategyDashboardComponent } from './strategy-dashboard/strategy-dashboard';
+import { StrategyTableComponent } from './strategy-table/strategy-table';
+import { FormsModule } from '@angular/forms';
+
+type ViewMode = 'list' | 'dashboard';
 
 @Component({
   selector: 'app-strategy-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, Pagination],
+  imports: [CommonModule, StrategyTableComponent, StrategyDashboardComponent, FormsModule],
   templateUrl: './strategy-list.html',
   styleUrl: './strategy-list.css',
 })
 export class StrategyListComponent implements OnInit {
 
+  viewMode: ViewMode = 'list';
+
   strategies: StrategyModel[] = [];
-  filteredStrategies: StrategyModel[] = [];
-  paginatedStrategies: StrategyModel[] = [];
-
   loading = false;
-  error: string | null = null;
 
-  // búsqueda
-  searchTerm = '';
+  dashboardStrategies: StrategyModel[] = [];
+  loadingDashboard = false;
+  dashboardLoaded = false;
 
-  // paginación
-  currentPage = 1;
-  pageSize = 10;
-  totalPages = 1;
-
-  // sorting
-  sortColumn: keyof StrategyModel | '' = '';
-  sortDirection: 'asc' | 'desc' = 'asc';
+  // ── Filtro de año ────────────────────────────────────────────────────────
+  selectedYear: number = new Date().getFullYear();
+  availableYears: number[] = [];
 
   constructor(
     private strategiesService: StrategiesService,
     private router: Router,
     private toast: ToastService,
     private cd: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadStrategies();
   }
 
-  // =========================
-  // LOAD
-  // =========================
+  setView(mode: ViewMode): void {
+    this.viewMode = mode;
+    if (mode === 'dashboard' && !this.dashboardLoaded) {
+      this.loadDashboard();
+    }
+    this.cd.detectChanges();
+  }
+
   loadStrategies(): void {
     this.loading = true;
-    this.error = null;
-    this.cd.detectChanges(); // forzar render de loading
+    this.cd.detectChanges();
 
     this.strategiesService.getAll().subscribe({
       next: (data) => {
         this.strategies = data ?? [];
-        this.applyFilters();
+        this.buildAvailableYears();
         this.loading = false;
-        this.cd.detectChanges(); // forzar actualización de vista
+        this.cd.detectChanges();
       },
       error: () => {
-        this.error = 'No se pudieron cargar las estrategias';
+        this.toast.error('No se pudieron cargar las estrategias');
         this.loading = false;
         this.cd.detectChanges();
       }
     });
   }
 
-  // =========================
-  // SEARCH
-  // =========================
-  onSearch(): void {
-    this.currentPage = 1;
-    this.applyFilters();
-    this.cd.detectChanges();
-  }
+  // Extrae los años únicos de las estrategias a partir de created_at
+  private buildAvailableYears(): void {
+    const years = new Set<number>();
+    const currentYear = new Date().getFullYear();
 
-  // =========================
-  // FILTER + PAGINATION
-  // =========================
-  applyFilters(): void {
-    const term = this.searchTerm.toLowerCase().trim();
-
-    this.filteredStrategies = this.strategies.filter(s =>
-      s.name?.toLowerCase().includes(term) ||
-      s.objective?.toLowerCase().includes(term) ||
-      s.product_goal_description?.toLowerCase().includes(term)
-    );
-
-    this.totalPages = Math.max(
-      Math.ceil(this.sortedStrategies.length / this.pageSize),
-      1
-    );
-
-    this.applyPagination();
-  }
-
-  sortBy(column: keyof StrategyModel): void {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
+    for (const s of this.strategies) {
+      const base = new Date(s.created_at).getFullYear();
+      const goalsCount = s.annual_goals?.length ?? 4;
+      for (let i = 0; i < goalsCount; i++) {
+        const year = base + i;
+        if (year <= currentYear) {  // ← solo años hasta el actual
+          years.add(year);
+        }
+      }
     }
 
-    this.applyPagination();
-    this.cd.detectChanges();
+    this.availableYears = Array.from(years).sort((a, b) => a - b);
+
+    if (!this.availableYears.includes(this.selectedYear) && this.availableYears.length > 0) {
+      this.selectedYear = this.availableYears[this.availableYears.length - 1];
+    }
   }
 
-  get sortedStrategies(): StrategyModel[] {
-    if (!this.sortColumn) return this.filteredStrategies;
+  loadDashboard(year?: number): void {
+    this.loadingDashboard = true;
+    this.dashboardLoaded = false;
+    this.cd.detectChanges();
 
-    return [...this.filteredStrategies].sort((a: any, b: any) => {
-
-      const valA = a[this.sortColumn];
-      const valB = b[this.sortColumn];
-
-      if (valA == null) return -1;
-      if (valB == null) return 1;
-
-      // números
-      if (typeof valA === 'number' && typeof valB === 'number') {
-        return this.sortDirection === 'asc' ? valA - valB : valB - valA;
+    this.strategiesService.getDashboard(year ?? this.selectedYear).subscribe({
+      next: (data) => {
+        this.dashboardStrategies = data ?? [];
+        this.dashboardLoaded = true;
+        this.loadingDashboard = false;
+        this.cd.detectChanges();
+      },
+      error: () => {
+        this.toast.error('No se pudo cargar el dashboard');
+        this.loadingDashboard = false;
+        this.cd.detectChanges();
       }
-
-      // fechas
-      if (this.sortColumn === 'created_at') {
-        const dA = new Date(valA).getTime();
-        const dB = new Date(valB).getTime();
-        return this.sortDirection === 'asc' ? dA - dB : dB - dA;
-      }
-
-      // texto
-      const textA = valA.toString().toLowerCase();
-      const textB = valB.toString().toLowerCase();
-
-      return this.sortDirection === 'asc'
-        ? textA.localeCompare(textB)
-        : textB.localeCompare(textA);
     });
   }
 
-  applyPagination(): void {
-    const start = (this.currentPage - 1) * this.pageSize;
-    const end = start + this.pageSize;
-
-    this.paginatedStrategies = this.sortedStrategies.slice(start, end);
+  onYearChange(year: number): void {
+    this.selectedYear = year;
+    this.loadDashboard(year);
   }
 
-  onPageChange(page: number): void {
-    this.currentPage = page;
-    this.applyPagination();
-    this.cd.detectChanges();
-  }
-
-  // =========================
-  // NAVIGATION
-  // =========================
   goToCreate(): void {
     this.router.navigate(['/reports/strategies/create']);
   }
@@ -168,18 +127,15 @@ export class StrategyListComponent implements OnInit {
     this.router.navigate([`/reports/strategies/${id}/edit`]);
   }
 
-  // =========================
-  // DELETE
-  // =========================
   deleteStrategy(id: number): void {
     this.toast
       .confirm('¿Eliminar estrategia?', 'Esta acción no se puede deshacer.')
       .then(result => {
         if (!result.isConfirmed) return;
-
         this.strategiesService.delete(id).subscribe({
           next: () => {
             this.toast.success('Estrategia eliminada correctamente');
+            this.dashboardLoaded = false;
             this.loadStrategies();
           },
           error: () => {

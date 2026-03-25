@@ -13,11 +13,13 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { StrategyModel } from '../../../../core/models/strategy.model';
 import { StrategiesService } from '../../../../core/services/strategies.service';
 import { ToastService } from '../../../../core/services/toast.service';
+import { StrategyMetricsComponent } from './strategy-metrics/strategy-metrics';
+import { ComponentsService } from '../../../../core/services/components.service';
 
 @Component({
   selector: 'app-strategy-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, StrategyMetricsComponent],
   templateUrl: './strategy-form.html',
   styleUrl: './strategy-form.css',
 })
@@ -30,14 +32,17 @@ export class StrategyFormComponent implements OnInit {
   isEdit = false;
   id?: number;
 
+  components: any[] = []
+
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
     private strategiesService: StrategiesService,
+    private componentService: ComponentsService,
     private toast: ToastService,
     private cd: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
 
@@ -48,10 +53,13 @@ export class StrategyFormComponent implements OnInit {
       name: ['', Validators.required],
       objective: ['', Validators.required],
       product_goal_description: ['', Validators.required],
-      annual_goals: this.fb.array([])
+      annual_goals: this.fb.array([]),
+      metrics: this.fb.array([])
     });
 
-    this.addYear(); // mínimo un año
+    this.addYear();
+
+    this.loadComponents(); // ← esta línea faltaba
 
     if (this.isEdit) {
       this.loadStrategy();
@@ -63,6 +71,10 @@ export class StrategyFormComponent implements OnInit {
   // =========================
   get years(): FormArray<FormGroup> {
     return this.form.get('annual_goals') as FormArray<FormGroup>;
+  }
+
+  get metrics(): FormArray {
+    return this.form.get('metrics') as FormArray;
   }
 
   addYear(): void {
@@ -104,6 +116,8 @@ export class StrategyFormComponent implements OnInit {
     this.strategiesService.getById(this.id!).subscribe({
       next: (data: StrategyModel) => {
 
+        console.log("METRICS BACKEND", data.metrics);
+
         this.form.patchValue({
           name: data.name,
           objective: data.objective,
@@ -120,12 +134,40 @@ export class StrategyFormComponent implements OnInit {
           );
         });
 
+        this.metrics.clear();
+
+        data.metrics?.forEach(metric => {
+          this.metrics.push(
+            this.fb.group({
+              description: metric.description,
+              metric_type: metric.metric_type,
+              component_id: metric.component_id,
+              field_name: metric.field_name,
+              dataset_id: metric.dataset_id,
+              manual_value: metric.manual_value ?? null,
+            })
+          );
+        });
+
         this.loading = false;
         this.cd.detectChanges(); // refrescar vista
       },
       error: () => {
         this.toast.error('Error al cargar la estrategia');
         this.loading = false;
+        this.cd.detectChanges();
+      }
+    });
+  }
+
+  loadComponents() {
+    const req$ = this.isEdit
+      ? this.componentService.getByStrategy(this.id!)
+      : this.componentService.getAll();
+
+    req$.subscribe({
+      next: (data) => {
+        this.components = data;
         this.cd.detectChanges();
       }
     });
@@ -146,11 +188,23 @@ export class StrategyFormComponent implements OnInit {
 
     const payload = {
       ...this.form.value,
+
       annual_goals: this.years.controls.map((g, i) => ({
         year_number: i + 1,
         value: g.get('value')?.value
+      })),
+
+      metrics: this.metrics.controls.map(m => ({
+        description: m.get('description')?.value,
+        metric_type: m.get('metric_type')?.value,
+        component_id: m.get('component_id')?.value,
+        field_name: m.get('field_name')?.value,
+        dataset_id: m.get('dataset_id')?.value ?? null,
+        manual_value: m.get('manual_value')?.value ?? null,
       }))
     };
+
+    console.log("PAYLOAD", payload);
 
     const req = this.isEdit
       ? this.strategiesService.update(this.id!, payload)

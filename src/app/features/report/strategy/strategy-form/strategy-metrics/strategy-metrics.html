@@ -1,0 +1,155 @@
+<section class="rounded-2xl border border-[#D6E0F0] bg-white shadow-sm overflow-hidden">
+
+  <div class="h-[4px] bg-gradient-to-r from-[#1B3A6B] via-[#2d5fa8] to-[#1B3A6B]"></div>
+
+  <!-- header -->
+  <div class="flex items-center justify-between px-6 py-5 border-b border-[#D6E0F0] bg-[#F4F7FC]">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-[#E6EEF9]">
+        <svg class="w-4 h-4 text-[#1B3A6B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      </div>
+      <div>
+        <span class="text-[11px] font-bold uppercase tracking-[1px] text-[#1B3A6B]">Medición de la meta</span>
+        <p class="text-[11px] text-[#7C94BD] mt-0.5">Define cómo se calculará el cumplimiento de la meta</p>
+      </div>
+    </div>
+    <button type="button" (click)="addMetric()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold
+             border border-[#D6E0F0] bg-white text-[#1B3A6B]
+             hover:bg-[#F0F4FA] hover:border-[#2d5fa8] transition-all cursor-pointer">
+      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+      </svg>
+      Agregar medición
+    </button>
+  </div>
+
+  <!-- empty state -->
+  <div *ngIf="metricGroups.length === 0" class="flex flex-col items-center justify-center py-12 px-6 text-center">
+    <div class="w-12 h-12 rounded-2xl bg-[#EEF3FB] flex items-center justify-center mb-3">
+      <svg class="w-5 h-5 text-[#7C94BD]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>
+    </div>
+    <p class="text-[13px] font-semibold text-[#4A6A9B]">Sin métricas definidas</p>
+    <p class="text-[12px] text-[#8A9DC0] mt-1 max-w-xs">
+      Agrega al menos una métrica para definir cómo se medirá el avance de esta estrategia.
+    </p>
+  </div>
+
+  <!-- metric cards -->
+  <div *ngIf="metricGroups.length > 0" class="p-6 space-y-3">
+
+    <div *ngFor="let m of metricGroups; let i = index" [formGroup]="m" class="rounded-xl border border-[#D6E0F0] bg-[#F8FAFF] overflow-hidden
+             transition-all hover:border-[#B8CEED] hover:shadow-sm">
+
+      <!-- card header -->
+      <div class="flex items-center gap-3 px-4 py-3 border-b border-[#EDF2FA]">
+        <div class="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0
+                    bg-gradient-to-br from-[#1B3A6B] to-[#2d5fa8]">
+          <span class="text-[10px] font-bold text-white">{{ i + 1 }}</span>
+        </div>
+        <input formControlName="description"
+          placeholder="Descripción de la medición (ej: Personas capacitadas en talleres)" class="flex-1 text-[13px] rounded-lg px-3 py-1.5
+                 bg-white border border-[#D6E0F0]
+                 focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20
+                 outline-none transition-all placeholder:text-[#B0BED4]" />
+        <span [ngClass]="getTypeBadgeClass(m)"
+          class="flex-shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide whitespace-nowrap">
+          {{ getTypeLabel(m) }}
+        </span>
+        <button type="button" (click)="removeMetric(i)" class="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-lg
+                 text-[#B0BED4] hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- card body -->
+      <div class="grid gap-3 px-4 py-3" [ngClass]="{
+    'grid-cols-4': showFieldName(m) && showDataset(m),
+    'grid-cols-3': showFieldName(m) !== showDataset(m),
+    'grid-cols-2': !showFieldName(m) && !showDataset(m) && !showManualValue(m),
+    'grid-cols-1': showManualValue(m)
+  }">
+
+        <!-- tipo -->
+        <div class="space-y-1">
+          <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#7C94BD]">Tipo de medición</label>
+          <select formControlName="metric_type" class="w-full text-[13px] rounded-xl px-3 py-2 bg-white border border-[#D6E0F0]
+                   focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20
+                   outline-none transition-all cursor-pointer">
+            <option *ngFor="let t of metricTypes" [value]="t[0]">{{ t[1].label }}</option>
+          </select>
+          <p class="text-[10.5px] text-[#8A9DC0]">{{ getTypeHint(m) }}</p>
+        </div>
+
+        <!-- componente -->
+        <div class="space-y-1">
+          <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#7C94BD]">Componente asociado</label>
+          <select formControlName="component_id" class="w-full text-[13px] rounded-xl px-3 py-2 bg-white border border-[#D6E0F0]
+                   focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20
+                   outline-none transition-all cursor-pointer">
+            <option [ngValue]="null">— Sin componente —</option>
+            <option *ngFor="let c of components" [ngValue]="c.id">{{ c.name }}</option>
+          </select>
+          <p class="text-[10.5px] text-[#8A9DC0]">Componente que genera los datos</p>
+        </div>
+
+        <!-- dataset (solo dataset_sum y dataset_count) -->
+        <div *ngIf="showDataset(m)" class="space-y-1">
+          <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#7C94BD]">Dataset</label>
+          <select formControlName="dataset_id" class="w-full text-[13px] rounded-xl px-3 py-2 bg-white border border-[#D6E0F0]
+                   focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20
+                   outline-none transition-all cursor-pointer">
+            <option [ngValue]="null">— Seleccionar dataset —</option>
+            <option *ngFor="let d of datasets" [ngValue]="d.id">{{ d.name }}</option>
+          </select>
+          <p class="text-[10.5px] text-[#8A9DC0]">Base de datos externa a consultar</p>
+        </div>
+
+        <!-- campo (solo report_sum y dataset_sum) -->
+        <div *ngIf="showFieldName(m)" class="space-y-1">
+          <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#7C94BD]">
+            {{ getFieldNameLabel(m) }}
+          </label>
+          <input formControlName="field_name" [placeholder]="getFieldNamePlaceholder(m)" class="w-full text-[13px] rounded-xl px-3 py-2 bg-white border border-[#D6E0F0]
+                   focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20
+                   outline-none transition-all" />
+          <p class="text-[10.5px] text-[#8A9DC0]">{{ getFieldNameHint(m) }}</p>
+        </div>
+
+        <!-- valor manual (solo tipo manual) -->
+        <div *ngIf="showManualValue(m)" class="space-y-1">
+          <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#7C94BD]">
+            Valor actual
+          </label>
+          <input type="number" formControlName="manual_value" placeholder="ej: 1" class="w-full text-[13px] rounded-xl px-3 py-2 bg-white border border-[#D6E0F0]
+           focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20
+           outline-none transition-all" />
+          <p class="text-[10.5px] text-[#8A9DC0]">Valor registrado para el período actual</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- footer -->
+  <div *ngIf="metricGroups.length > 0"
+    class="px-6 py-3 border-t border-[#D6E0F0] bg-[#F4F7FC] flex items-center justify-between">
+    <span class="text-[11px] text-[#7C94BD]">
+      {{ metricGroups.length }} {{ metricGroups.length === 1 ? 'métrica definida' : 'métricas definidas' }}
+    </span>
+    <div class="flex gap-2">
+      <span *ngFor="let type of getTypesSummary()" [ngClass]="type.class"
+        class="px-2 py-0.5 rounded-full text-[10px] font-bold">
+        {{ type.label }}: {{ type.count }}
+      </span>
+    </div>
+  </div>
+
+</section>

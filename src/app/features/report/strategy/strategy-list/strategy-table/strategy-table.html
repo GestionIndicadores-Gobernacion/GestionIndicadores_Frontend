@@ -1,0 +1,188 @@
+<div class="space-y-0">
+
+    <div class="h-[3px] w-full rounded-t-xl" style="background:linear-gradient(90deg,#1B3A6B,#2d5fa8,#1B3A6B);"></div>
+
+    <div class="rounded-b-xl overflow-hidden border" style="border-color:#D6E0F0;background:white;">
+
+        <!-- BLOCK HEADER -->
+        <div class="flex items-center justify-between gap-3 px-5 py-4 border-b"
+            style="border-color:#D6E0F0;background:#F8FAFD;">
+
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style="background:#D6E4F7;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="2.2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="8" y1="6" x2="21" y2="6" />
+                        <line x1="8" y1="12" x2="21" y2="12" />
+                        <line x1="8" y1="18" x2="21" y2="18" />
+                        <line x1="3" y1="6" x2="3.01" y2="6" />
+                        <line x1="3" y1="12" x2="3.01" y2="12" />
+                        <line x1="3" y1="18" x2="3.01" y2="18" />
+                    </svg>
+                </div>
+                <div>
+                    <span class="text-[11px] font-bold uppercase tracking-[1px]" style="color:#1B3A6B;">
+                        Estrategias registradas
+                    </span>
+                    <p class="text-[10.5px] mt-0.5" style="color:#8A9DC0;">Administración y edición de estrategias</p>
+                </div>
+            </div>
+
+            <span class="text-[11px] font-semibold px-3 py-1 rounded-full"
+                style="background:#D6E4F7;border:1px solid #B3CCE8;color:#1B3A6B;">
+                {{ filteredStrategies.length }}
+                {{ filteredStrategies.length === 1 ? 'estrategia' : 'estrategias' }}
+            </span>
+
+        </div>
+
+        <!-- SEARCH -->
+        <div class="flex items-center justify-between gap-3 px-5 py-4 border-b"
+            style="border-color:#D6E0F0;background:white;">
+            <div>
+                <h3 class="text-[13px] font-bold" style="color:#1B3A6B;">Listado de estrategias</h3>
+                <p class="text-[11px] mt-0.5" style="color:#8A9DC0;">
+                    {{ filteredStrategies.length }}
+                    {{ filteredStrategies.length === 1 ? 'estrategia' : 'estrategias' }}
+                </p>
+            </div>
+
+            <div class="relative">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" width="13" height="13"
+                    viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input type="text" placeholder="Buscar estrategia..." [(ngModel)]="searchTerm" (input)="onSearch()"
+                    class="text-[12px] rounded-xl pl-9 pr-4 py-2 outline-none transition-all duration-150 w-56"
+                    style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B"
+                    onfocus="this.style.borderColor='#1B3A6B';this.style.background='#fff';this.style.boxShadow='0 0 0 3px rgba(27,58,107,0.08)'"
+                    onblur="this.style.borderColor='#D6E0F0';this.style.background='#F0F4FA';this.style.boxShadow='none'" />
+            </div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="overflow-x-auto">
+            <table class="w-full">
+
+                <thead>
+                    <tr style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);">
+
+                        <th (click)="sortBy('name')" class="px-4 py-3 text-left cursor-pointer select-none transition"
+                            onmouseover="this.style.background='rgba(255,255,255,0.08)'"
+                            onmouseout="this.style.background='transparent'">
+                            <div class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.8px]"
+                                style="color:rgba(255,255,255,0.85)">
+                                Nombre
+                                <svg *ngIf="sortColumn === 'name'" class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                    <path [attr.d]="sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'" />
+                                </svg>
+                            </div>
+                        </th>
+
+                        <th (click)="sortBy('objective')"
+                            class="px-4 py-3 text-left cursor-pointer select-none transition"
+                            onmouseover="this.style.background='rgba(255,255,255,0.08)'"
+                            onmouseout="this.style.background='transparent'">
+                            <div class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.8px]"
+                                style="color:rgba(255,255,255,0.85)">
+                                Objetivo
+                                <svg *ngIf="sortColumn === 'objective'" class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                    <path [attr.d]="sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'" />
+                                </svg>
+                            </div>
+                        </th>
+
+                        <th (click)="sortBy('product_goal_description')"
+                            class="px-4 py-3 text-left cursor-pointer select-none transition"
+                            onmouseover="this.style.background='rgba(255,255,255,0.08)'"
+                            onmouseout="this.style.background='transparent'">
+                            <div class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.8px]"
+                                style="color:rgba(255,255,255,0.85)">
+                                Meta del producto
+                                <svg *ngIf="sortColumn === 'product_goal_description'" class="w-3 h-3" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                    <path [attr.d]="sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'" />
+                                </svg>
+                            </div>
+                        </th>
+
+                        <th (click)="sortBy('total_goal')"
+                            class="px-4 py-3 text-left cursor-pointer select-none transition"
+                            onmouseover="this.style.background='rgba(255,255,255,0.08)'"
+                            onmouseout="this.style.background='transparent'">
+                            <div class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.8px]"
+                                style="color:rgba(255,255,255,0.85)">
+                                Total programado
+                                <svg *ngIf="sortColumn === 'total_goal'" class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                    <path [attr.d]="sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'" />
+                                </svg>
+                            </div>
+                        </th>
+
+                        <th (click)="sortBy('created_at')"
+                            class="px-4 py-3 text-left cursor-pointer select-none transition"
+                            onmouseover="this.style.background='rgba(255,255,255,0.08)'"
+                            onmouseout="this.style.background='transparent'">
+                            <div class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.8px]"
+                                style="color:rgba(255,255,255,0.85)">
+                                Creado
+                                <svg *ngIf="sortColumn === 'created_at'" class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                    <path [attr.d]="sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'" />
+                                </svg>
+                            </div>
+                        </th>
+
+                        <th class="px-4 py-3 text-right text-[10px] font-bold uppercase tracking-[0.8px]"
+                            style="color:rgba(255,255,255,0.85)">
+                            Acciones
+                        </th>
+
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr *ngFor="let s of paginatedStrategies; let i = index"
+                        class="transition-colors duration-150 hover:bg-[#EDF3FC]"
+                        style="border-bottom:1px solid #EEF2F9" [style.background]="i % 2 === 0 ? 'white' : '#FAFCFF'">
+
+                        <td class="px-4 py-3 text-[12px] font-semibold" style="color:#1B3A6B;">{{ s.name }}</td>
+                        <td class="px-4 py-3 text-[12px]" style="color:#4A6A9B;">{{ s.objective }}</td>
+                        <td class="px-4 py-3 text-[12px]" style="color:#4A6A9B;">{{ s.product_goal_description }}</td>
+                        <td class="px-4 py-3 text-[12px] font-semibold" style="color:#1B3A6B;">{{ s.total_goal }}</td>
+                        <td class="px-4 py-3 text-[12px]" style="color:#8A9DC0;">
+                            {{ s.created_at | date:'dd/MM/yyyy' }}
+                        </td>
+
+                        <td class="px-4 py-3">
+                            <div class="flex justify-end gap-1">
+                                <button (click)="edit.emit(s.id)"
+                                    class="cursor-pointer px-2.5 py-1.5 text-[11px] font-bold rounded-lg border transition"
+                                    style="background:#F0F4FA;color:#4A6A9B;border-color:#D6E0F0">
+                                    Editar
+                                </button>
+                                <button (click)="delete.emit(s.id)"
+                                    class="cursor-pointer px-2.5 py-1.5 text-[11px] font-bold rounded-lg border transition"
+                                    style="background:#FEF2F2;color:#dc2626;border-color:#FECACA">
+                                    Eliminar
+                                </button>
+                            </div>
+                        </td>
+
+                    </tr>
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+
+    <!-- PAGINATION -->
+    <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
+    </app-pagination>
+
+</div>

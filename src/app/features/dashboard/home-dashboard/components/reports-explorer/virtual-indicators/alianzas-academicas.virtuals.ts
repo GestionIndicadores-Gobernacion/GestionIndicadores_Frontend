@@ -40,7 +40,7 @@ export function getAlianzasAcademicasVirtuals(
     if (cross?.by_category?.length) {
         virtual.push({
             indicator_id: -8001,
-            indicator_name: 'Temas tratados / foros',
+            indicator_name: 'Cantidad de personas / foro',
             field_type: 'by_category',
             by_category: cross.by_category,
         });
