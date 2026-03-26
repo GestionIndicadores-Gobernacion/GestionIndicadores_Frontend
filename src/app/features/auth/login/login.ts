@@ -26,7 +26,7 @@ export class LoginComponent {
     private auth: AuthService,
     private router: Router,
     private toast: ToastService
-  ) {}
+  ) { }
 
   // ==============================
   // 🔥 Igual que en tus otros forms
@@ -64,5 +64,22 @@ export class LoginComponent {
           this.loading = false;
         }
       });
+  }
+
+  enterAsPublic(): void {
+    this.loading = true;
+    this.auth.login({
+      email: 'publico@indicadorespyba.cloud',
+      password: 'publico2026'
+    }).subscribe({
+      next: (res) => {
+        this.auth.saveSession(res.access_token, res.refresh_token, res.user);
+        this.router.navigate(['/dashboard']);
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      }
+    });
   }
 }
