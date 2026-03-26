@@ -10,6 +10,14 @@ import { KpiOption, MunicipioSummary } from '../../reports-map.types';
   templateUrl: './map-detail.html',
 })
 export class MapDetailComponent {
+
+  isViewer = false;
+
+  constructor() {
+    const user = JSON.parse(localStorage.getItem('user') ?? 'null');
+    this.isViewer = user?.role?.name === 'viewer';
+  }
+
   @Input() municipio!: MunicipioSummary;
   @Input() activeKpi!: KpiOption;
   @Output() close = new EventEmitter<void>();
