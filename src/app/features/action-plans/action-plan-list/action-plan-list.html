@@ -176,6 +176,14 @@
                     {{ item.activity.status === 'Realizado' ? 'Ver' : 'Reportar' }}
 
                 </button>
+                
+                <!-- EDIT -->
+                <button *ngIf="item.activity.status !== 'Realizado'"
+                    (click)="onEdit(item.plan, item.objective, item.activity, $event)" class="text-xs font-medium px-3 py-1.5 rounded-lg
+         border border-slate-200 text-[#2d5fa8]
+         hover:border-[#2d5fa8] hover:bg-blue-50 transition">
+                    Editar
+                </button>
 
                 <!-- DELETE -->
 
