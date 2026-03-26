@@ -13,6 +13,7 @@ import { ReportsService } from '../../../../core/services/reports.service';
   styleUrl: './report-detail.css',
 })
 export class ReportDetailComponent implements OnInit {
+  isViewer = false;
 
   report: ReportModel | null = null;
   loading = true;
@@ -25,6 +26,10 @@ export class ReportDetailComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    
+    const user = JSON.parse(localStorage.getItem('user') ?? 'null');
+    this.isViewer = user?.role?.name === 'viewer';
+    
     const id = Number(this.route.snapshot.paramMap.get('id'));
 
     this.reportsService.getById(id).subscribe({
