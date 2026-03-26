@@ -17,7 +17,7 @@ export class MenuService {
 
       {
         label: 'Reportes PYBA',
-        roles: [2, 3],
+        roles: [1, 2, 3, 4],  // viewer puede ver, editor, admin, monitor
         children: [
           { label: 'Reportes', route: 'reports' },
           { label: 'Estrategias', route: 'reports/strategies', roles: [3] },
@@ -32,14 +32,16 @@ export class MenuService {
           { label: 'Gestión de Base de Datos y Tablas', route: 'datasets' },
         ],
       },
+
       {
         label: 'Planes de acción',
         route: 'action-plans',
-        roles: [1, 2, 3],
+        roles: [2, 3, 4],  // sin viewer
         children: [
           { label: 'Calendario', route: 'action-plans/calendar' },
         ],
       },
+
       {
         label: 'Usuarios',
         route: 'users',

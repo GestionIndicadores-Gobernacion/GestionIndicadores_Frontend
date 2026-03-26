@@ -1,0 +1,290 @@
+<div class="min-h-screen" style="background:#F0F4FA;">
+
+    <!-- HEADER -->
+    <div class="px-6 pt-7 pb-6">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-md"
+                    style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="1.8"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-[20px] font-bold leading-none" style="color:#1B3A6B;">Dashboard de cumplimiento</h1>
+                    <p class="text-sm mt-1" style="color:#4A6A9B;">Calificaciones y seguimiento por persona</p>
+                </div>
+            </div>
+            <a [routerLink]="['/action-plans/calendar']" class="text-[12px] font-semibold cursor-pointer transition"
+                style="color:#4A6A9B" onmouseover="this.style.color='#1B3A6B'" onmouseout="this.style.color='#4A6A9B'">
+                ← Volver al calendario
+            </a>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 py-6 space-y-4">
+
+        <!-- LOADING -->
+        <div *ngIf="loading" class="flex items-center gap-3 py-8">
+            <div class="w-4 h-4 rounded-full animate-spin" style="border:2px solid #D6E0F0;border-top-color:#1B3A6B;">
+            </div>
+            <span class="text-[13px]" style="color:#8A9DC0;">Cargando dashboard...</span>
+        </div>
+
+        <ng-container *ngIf="!loading">
+
+            <!-- FILTROS -->
+            <div class="rounded-2xl overflow-hidden border" style="border-color:#D6E0F0;background:white;">
+                <div class="h-[3px]" style="background:linear-gradient(90deg,#1B3A6B,#2d5fa8,#1B3A6B);"></div>
+                <div class="px-5 py-4 flex flex-wrap items-end gap-4">
+
+                    <!-- Búsqueda -->
+                    <div class="flex flex-col gap-1 flex-1 min-w-[200px]">
+                        <label class="text-[10.5px] font-bold uppercase tracking-[1px]"
+                            style="color:#1B3A6B;">Buscar</label>
+                        <div class="relative">
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" width="13"
+                                height="13" viewBox="0 0 24 24" fill="none" stroke="#8A9DC0" stroke-width="2"
+                                stroke-linecap="round">
+                                <circle cx="11" cy="11" r="8" />
+                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                            </svg>
+                            <input type="text" [(ngModel)]="search" (input)="applyFilters()"
+                                placeholder="Buscar por nombre o correo..."
+                                class="text-[12px] rounded-xl pl-9 pr-4 py-2 outline-none w-full"
+                                style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B"
+                                onfocus="this.style.borderColor='#1B3A6B';this.style.background='#fff'"
+                                onblur="this.style.borderColor='#D6E0F0';this.style.background='#F0F4FA'" />
+                        </div>
+                    </div>
+
+                    <!-- Filtro rol -->
+                    <div class="flex flex-col gap-1 min-w-[160px]">
+                        <label class="text-[10.5px] font-bold uppercase tracking-[1px]"
+                            style="color:#1B3A6B;">Rol</label>
+                        <select [(ngModel)]="roleFilter" (change)="applyFilters()"
+                            class="text-[12px] rounded-xl px-3 py-2 outline-none"
+                            style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B">
+                            <option value="">Todos los roles</option>
+                            <option *ngFor="let r of availableRoles" [value]="r">{{ r }}</option>
+                        </select>
+                    </div>
+
+                    <!-- Filtro estado -->
+                    <div class="flex flex-col gap-1 min-w-[160px]">
+                        <label class="text-[10.5px] font-bold uppercase tracking-[1px]"
+                            style="color:#1B3A6B;">Estado</label>
+                        <select [(ngModel)]="statusFilter" (change)="applyFilters()"
+                            class="text-[12px] rounded-xl px-3 py-2 outline-none"
+                            style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B">
+                            <option value="">Todos</option>
+                            <option value="completed">Con actividades realizadas</option>
+                            <option value="overdue">Con actividades vencidas</option>
+                            <option value="pending">Con actividades pendientes</option>
+                        </select>
+                    </div>
+
+                    <!-- Contador -->
+                    <span class="text-[11px] font-semibold px-3 py-2 rounded-full self-end"
+                        style="background:#D6E4F7;border:1px solid #B3CCE8;color:#1B3A6B;">
+                        {{ users.length }} {{ users.length === 1 ? 'persona' : 'personas' }}
+                    </span>
+
+                </div>
+            </div>
+
+            <!-- TABLA -->
+            <div class="h-[3px] w-full rounded-t-xl" style="background:linear-gradient(90deg,#1B3A6B,#2d5fa8,#1B3A6B);">
+            </div>
+            <div class="rounded-b-xl overflow-hidden border" style="border-color:#D6E0F0;background:white;">
+
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);">
+                                <th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.8px]"
+                                    style="color:rgba(255,255,255,0.85)">Persona</th>
+                                <th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.8px]"
+                                    style="color:rgba(255,255,255,0.85)">Rol</th>
+                                <th class="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
+                                    style="color:rgba(255,255,255,0.85)">Total</th>
+                                <th class="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
+                                    style="color:rgba(255,255,255,0.85)">Realizadas</th>
+                                <th class="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
+                                    style="color:rgba(255,255,255,0.85)">En ejecución</th>
+                                <th class="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
+                                    style="color:rgba(255,255,255,0.85)">Pendientes</th>
+                                <th class="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
+                                    style="color:rgba(255,255,255,0.85)">Cumplimiento</th>
+                                <th class="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
+                                    style="color:rgba(255,255,255,0.85)">Score ★</th>
+                                <th class="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
+                                    style="color:rgba(255,255,255,0.85)">Detalle</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ng-container *ngFor="let user of paginatedUsers; let i = index">
+
+                                <tr class="transition-colors duration-150 hover:bg-[#EDF3FC]"
+                                    style="border-bottom:1px solid #EEF2F9"
+                                    [style.background]="i % 2 === 0 ? 'white' : '#FAFCFF'">
+
+                                    <td class="px-5 py-3">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
+                                                style="background:#D6E4F7;color:#1B3A6B;">
+                                                {{ user.first_name.charAt(0) }}{{ user.last_name.charAt(0) }}
+                                            </div>
+                                            <div>
+                                                <p class="text-[12px] font-semibold" style="color:#1B3A6B;">{{
+                                                    user.first_name }} {{ user.last_name }}</p>
+                                                <p class="text-[11px]" style="color:#8A9DC0;">{{ user.email }}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <td class="px-5 py-3">
+                                        <span class="px-2.5 py-1 text-[11px] font-semibold rounded-full"
+                                            [ngClass]="roleClass(user.role)">
+                                            {{ user.role }}
+                                        </span>
+                                    </td>
+
+                                    <td class="px-5 py-3 text-center text-[12px] font-semibold" style="color:#1B3A6B;">
+                                        {{ user.total_activities }}</td>
+
+                                    <td class="px-5 py-3 text-center">
+                                        <span class="text-[12px] font-semibold text-emerald-700">{{ user.completed
+                                            }}</span>
+                                    </td>
+
+                                    <td class="px-5 py-3 text-center">
+                                        <span class="text-[12px] font-semibold text-blue-700">
+                                            {{ user.total_activities - user.completed - user.overdue - user.pending }}
+                                        </span>
+                                    </td>
+
+                                    <td class="px-5 py-3 text-center">
+                                        <span class="text-[12px] font-semibold text-red-600">{{ user.pending +
+                                            user.overdue }}</span>
+                                    </td>
+
+                                    <td class="px-5 py-3">
+                                        <div class="flex items-center gap-2">
+                                            <div class="flex-1 h-2 rounded-full overflow-hidden"
+                                                style="background:#EEF2F9;min-width:60px;">
+                                                <div class="h-full rounded-full transition-all duration-300"
+                                                    [style.width.%]="completionRate(user)"
+                                                    [style.background]="completionRate(user) >= 80 ? '#10b981' : completionRate(user) >= 50 ? '#3b82f6' : '#ef4444'">
+                                                </div>
+                                            </div>
+                                            <span class="text-[11px] font-bold shrink-0" style="color:#1B3A6B;">{{
+                                                completionRate(user) }}%</span>
+                                        </div>
+                                    </td>
+
+                                    <td class="px-5 py-3 text-center">
+                                        <span class="text-[13px] font-bold" style="color:#F59E0B;">{{ user.total_score
+                                            }}</span>
+                                        <span class="text-[11px] ml-0.5" style="color:#8A9DC0;">pts</span>
+                                    </td>
+
+                                    <td class="px-5 py-3 text-center">
+                                        <button (click)="toggleUser(user)"
+                                            class="px-2.5 py-1.5 text-[11px] font-bold rounded-lg border transition cursor-pointer"
+                                            style="background:#F0F4FA;color:#4A6A9B;border-color:#D6E0F0">
+                                            {{ user.expanded ? 'Ocultar' : 'Ver' }}
+                                        </button>
+                                    </td>
+
+                                </tr>
+
+                                <!-- DETALLE -->
+                                <tr *ngIf="user.expanded" style="background:#F8FAFD;">
+                                    <td colspan="9" class="px-8 py-4">
+                                        <div class="rounded-xl overflow-hidden border" style="border-color:#D6E0F0;">
+                                            <table class="w-full">
+                                                <thead>
+                                                    <tr style="background:#EDF3FC;">
+                                                        <th class="px-4 py-2 text-left text-[10px] font-bold uppercase tracking-[0.8px]"
+                                                            style="color:#4A6A9B;">Actividad</th>
+                                                        <th class="px-4 py-2 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
+                                                            style="color:#4A6A9B;">Fecha entrega</th>
+                                                        <th class="px-4 py-2 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
+                                                            style="color:#4A6A9B;">Estado</th>
+                                                        <th class="px-4 py-2 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
+                                                            style="color:#4A6A9B;">Reportado</th>
+                                                        <th class="px-4 py-2 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
+                                                            style="color:#4A6A9B;">Score</th>
+                                                        <th class="px-4 py-2 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
+                                                            style="color:#4A6A9B;">Evidencia</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr *ngFor="let act of user.activities; let j = index"
+                                                        style="border-top:1px solid #EEF2F9;"
+                                                        [style.background]="j % 2 === 0 ? 'white' : '#FAFCFF'">
+                                                        <td class="px-4 py-2.5 text-[12px]"
+                                                            style="color:#1B3A6B;max-width:300px;">
+                                                            <span class="line-clamp-2">{{ act.name }}</span>
+                                                        </td>
+                                                        <td class="px-4 py-2.5 text-center text-[11px]"
+                                                            style="color:#4A6A9B;">
+                                                            {{ act.delivery_date | date:'dd/MM/yyyy' }}
+                                                        </td>
+                                                        <td class="px-4 py-2.5 text-center">
+                                                            <span
+                                                                class="px-2 py-0.5 text-[10px] font-semibold rounded-full"
+                                                                [ngClass]="statusClass(act.status)">
+                                                                {{ act.status }}
+                                                            </span>
+                                                        </td>
+                                                        <td class="px-4 py-2.5 text-center text-[11px]"
+                                                            style="color:#8A9DC0;">
+                                                            {{ act.reported_at ? (act.reported_at | date:'dd/MM/yyyy') :
+                                                            '—' }}
+                                                        </td>
+                                                        <td class="px-4 py-2.5 text-center text-[13px]"
+                                                            style="color:#F59E0B;">
+                                                            {{ act.score !== null ? act.score + ' ★' : '—' }}
+                                                        </td>
+                                                        <td class="px-4 py-2.5 text-center">
+                                                            <a *ngIf="act.evidence_url" [href]="act.evidence_url"
+                                                                target="_blank"
+                                                                class="text-[11px] font-semibold text-blue-600 hover:underline">Ver</a>
+                                                            <span *ngIf="!act.evidence_url" class="text-[11px]"
+                                                                style="color:#8A9DC0;">—</span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                            </ng-container>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- EMPTY -->
+                <div *ngIf="users.length === 0" class="py-16 text-center">
+                    <p class="text-sm font-bold" style="color:#1B3A6B;">No hay resultados</p>
+                    <p class="text-xs mt-1" style="color:#8A9DC0;">Intenta con otros filtros</p>
+                </div>
+
+                <!-- PAGINACIÓN -->
+                <div class="border-t px-5 py-3" style="border-color:#D6E0F0;">
+                    <app-pagination [currentPage]="currentPage" [totalPages]="totalPages"
+                        (pageChange)="onPageChange($event)">
+                    </app-pagination>
+                </div>
+
+            </div>
+
+        </ng-container>
+
+    </div>
+</div>

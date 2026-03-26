@@ -28,6 +28,10 @@ export class ReportsService {
     return this.http.get<ReportModel[]>(this.api);
   }
 
+  getAllForDashboard(): Observable<ReportModel[]> {
+    return this.http.get<ReportModel[]>(`${this.api}/all`);
+  }
+
   getById(id: number) {
     return this.http.get<ReportModel>(`${this.api}/${id}`);
   }
@@ -49,7 +53,7 @@ export class ReportsService {
       `${this.api}/aggregate/strategy/${strategyId}`
     );
   }
-  
+
   aggregateByComponent(componentId: number, year?: number): Observable<ComponentAggregate> {
     const params = year ? `?year=${year}` : '';
     return this.http.get<ComponentAggregate>(

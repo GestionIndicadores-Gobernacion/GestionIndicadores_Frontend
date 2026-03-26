@@ -20,6 +20,7 @@ const MONTH_ABBR_TO_NUM: Record<string, number> = {
 })
 export class ReportsTableComponent implements OnChanges {
 
+  @Input() isViewer = false;
   @Input() reports: ReportModel[] = [];
   @Input() strategyMap: Record<number, string> = {};
   @Input() componentMap: Record<number, string> = {};
@@ -68,11 +69,12 @@ export class ReportsTableComponent implements OnChanges {
   }
 
   canModify(report: ReportModel): boolean {
+    if (this.isViewer) return false;  // ← primero
     if (this.isAdmin) return true;
     if (report.user_id === null || report.user_id === undefined) return false;
     return report.user_id === this.currentUserId;
   }
-
+  
   applyAll(): void {
     this.applyFilter();
     this.applySort();

@@ -71,9 +71,9 @@ export class UserFormComponent implements OnInit {
   /** El admin tiene acceso a todo, no necesita asignaciones */
   get selectedRoleIsAdmin(): boolean {
     const role = this.roles.find(r => r.id === this.form.role_id);
-    return role?.name === 'admin';
+    return role?.name === 'admin' || role?.name === 'monitor';
   }
-
+  
   isComponentSelected(id: number): boolean {
     return this.selectedComponentIds.includes(id);
   }
