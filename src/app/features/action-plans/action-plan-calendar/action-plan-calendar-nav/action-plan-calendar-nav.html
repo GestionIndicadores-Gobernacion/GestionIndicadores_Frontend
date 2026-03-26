@@ -1,0 +1,65 @@
+<div class="flex items-center justify-between px-3 sm:px-5 py-3 sm:py-4 gap-2 border-b border-[#EBF0FA] bg-[#F8FAFD]">
+
+    <div class="flex items-center gap-1.5 sm:gap-2">
+        <select (change)="onMonthSelect($event)" class="text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl px-2 sm:px-3 py-1 sm:py-1.5
+             bg-[#F0F4FA] border border-[#D6E0F0] text-[#1B3A6B]
+             focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20">
+            <option *ngFor="let m of MONTHS; let i = index" [value]="i" [selected]="i === currentDate.getMonth()">
+                {{ m }}
+            </option>
+        </select>
+
+        <select (change)="onYearSelect($event)" class="text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl px-2 sm:px-3 py-1 sm:py-1.5
+             bg-[#F0F4FA] border border-[#D6E0F0] text-[#1B3A6B]
+             focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20">
+            <option *ngFor="let y of availableYears" [value]="y" [selected]="y === currentDate.getFullYear()">
+                {{ y }}
+            </option>
+        </select>
+
+        <button (click)="goToToday()" class="hidden sm:block text-xs font-semibold rounded-lg px-2.5 py-1
+             bg-[#F0F4FA] border border-[#D6E0F0] text-[#4A6A9B]
+             hover:border-[#2d5fa8] hover:text-[#1B3A6B] transition">
+            Hoy
+        </button>
+    </div>
+
+    <div class="flex items-center gap-0.5 sm:gap-1">
+        <button (click)="prevMonth()"
+            class="p-1.5 sm:p-2 rounded-lg sm:rounded-xl text-[#4A6A9B] hover:bg-[#EBF0FA] transition">
+            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+        </button>
+
+        <button (click)="goToToday()" class="sm:hidden text-xs font-semibold rounded-lg px-2 py-1
+             bg-[#F0F4FA] border border-[#D6E0F0] text-[#4A6A9B]">
+            Hoy
+        </button>
+
+        <button (click)="nextMonth()"
+            class="p-1.5 sm:p-2 rounded-lg sm:rounded-xl text-[#4A6A9B] hover:bg-[#EBF0FA] transition">
+            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+        </button>
+
+        <div class="flex items-center gap-0.5 sm:gap-1 ml-1 sm:ml-2 pl-1 sm:pl-2 border-l border-[#D6E0F0]">
+            <button (click)="viewModeChange.emit('calendar')" class="p-1.5 sm:p-2 rounded-lg sm:rounded-xl transition"
+                [ngClass]="viewMode === 'calendar' ? 'bg-gradient-to-br from-[#1B3A6B] to-[#2d5fa8] text-white' : 'text-[#4A6A9B] hover:bg-[#EBF0FA]'">
+                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </button>
+            <button (click)="viewModeChange.emit('agenda')" class="p-1.5 sm:p-2 rounded-lg sm:rounded-xl transition"
+                [ngClass]="viewMode === 'agenda' ? 'bg-gradient-to-br from-[#1B3A6B] to-[#2d5fa8] text-white' : 'text-[#4A6A9B] hover:bg-[#EBF0FA]'">
+                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+</div>

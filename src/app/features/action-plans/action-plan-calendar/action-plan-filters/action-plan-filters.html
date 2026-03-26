@@ -1,0 +1,102 @@
+<div class="rounded-2xl bg-white border border-[#D6E0F0] shadow-sm overflow-hidden">
+    <div class="h-[3px] bg-gradient-to-r from-[#1B3A6B] via-[#2d5fa8] to-[#1B3A6B]"></div>
+    <div class="px-4 sm:px-5 py-3 sm:py-4 flex flex-col gap-3 sm:gap-4">
+
+        <!-- Selects -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-end gap-2 sm:gap-4">
+            <div class="flex flex-col gap-1 w-full sm:w-auto sm:min-w-[220px]">
+                <label class="text-[10.5px] font-bold uppercase tracking-[1px] text-[#1B3A6B]">Estrategia</label>
+                <select (change)="onStrategyChange($event)" class="text-sm rounded-xl px-3 py-2 w-full bg-[#F0F4FA] border border-[#D6E0F0] text-[#1B3A6B]
+                 focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20 transition">
+                    <option value="">Todas las estrategias</option>
+                    <option *ngFor="let s of strategies" [value]="s.id">{{ s.name }}</option>
+                </select>
+            </div>
+
+            <div class="flex flex-col gap-1 w-full sm:w-auto sm:min-w-[220px]">
+                <label class="text-[10.5px] font-bold uppercase tracking-[1px] text-[#1B3A6B]">Componente</label>
+                <select (change)="onComponentChange($event)" [disabled]="!selectedStrategyId" class="text-sm rounded-xl px-3 py-2 w-full bg-[#F0F4FA] border border-[#D6E0F0] text-[#1B3A6B]
+                 focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20
+                 disabled:opacity-40 disabled:cursor-not-allowed transition">
+                    <option value="">Todos los componentes</option>
+                    <option *ngFor="let c of filteredComponents" [value]="c.id">{{ c.name }}</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Quick filters — scroll horizontal en móvil -->
+        <div class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-0 sm:flex-wrap scrollbar-hide">
+            <span
+                class="text-[10px] font-bold uppercase tracking-[1px] text-[#8A9DC0] hidden sm:inline mr-1 shrink-0">Filtrar</span>
+
+            <button (click)="statusChange.emit('all')"
+                class="px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs font-semibold rounded-lg border transition shrink-0"
+                [ngClass]="activeStatusFilter === 'all'
+          ? 'bg-gradient-to-br from-[#1B3A6B] to-[#2d5fa8] text-white border-transparent'
+          : 'bg-white text-[#4A6A9B] border-[#D6E0F0] hover:border-[#2d5fa8]'">
+                Todos
+            </button>
+
+            <button (click)="statusChange.emit('Realizado')"
+                class="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs font-semibold rounded-lg border transition shrink-0"
+                [ngClass]="activeStatusFilter === 'Realizado'
+          ? 'bg-emerald-600 text-white border-transparent'
+          : 'bg-white text-emerald-600 border-emerald-200 hover:bg-emerald-50'">
+                <span class="w-1.5 h-1.5 rounded-full shrink-0" [class.bg-white]="activeStatusFilter === 'Realizado'"
+                    [class.bg-emerald-600]="activeStatusFilter !== 'Realizado'"></span>
+                Realizados
+            </button>
+
+            <button (click)="statusChange.emit('En Ejecución')"
+                class="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs font-semibold rounded-lg border transition shrink-0"
+                [ngClass]="activeStatusFilter === 'En Ejecución'
+          ? 'bg-[#2d5fa8] text-white border-transparent'
+          : 'bg-white text-[#2d5fa8] border-blue-200 hover:bg-blue-50'">
+                <span class="w-1.5 h-1.5 rounded-full shrink-0" [class.bg-white]="activeStatusFilter === 'En Ejecución'"
+                    [class.bg-blue-500]="activeStatusFilter !== 'En Ejecución'"></span>
+                En Ejecución
+            </button>
+
+            <button (click)="statusChange.emit('Pendiente')"
+                class="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs font-semibold rounded-lg border transition shrink-0"
+                [ngClass]="activeStatusFilter === 'Pendiente'
+          ? 'bg-red-600 text-white border-transparent'
+          : 'bg-white text-red-600 border-red-200 hover:bg-red-50'">
+                <span class="w-1.5 h-1.5 rounded-full shrink-0" [class.bg-white]="activeStatusFilter === 'Pendiente'"
+                    [class.bg-red-600]="activeStatusFilter !== 'Pendiente'"></span>
+                Pendientes
+            </button>
+
+            <div class="w-px h-4 sm:h-5 bg-[#D6E0F0] mx-0.5 sm:mx-1 shrink-0"></div>
+
+            <button (click)="bossChange.emit(!filterByBoss)"
+                class="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs font-semibold rounded-lg border transition shrink-0"
+                [ngClass]="filterByBoss
+          ? 'bg-amber-600 text-white border-transparent'
+          : 'bg-white text-amber-600 border-amber-200 hover:bg-amber-50'">
+                <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span class="hidden xs:inline">Requiere jefe</span>
+                <span class="xs:hidden">Jefe</span>
+            </button>
+
+            <!-- Badges de estado -->
+            <span *ngIf="activeStatusFilter !== 'all' || filterByBoss"
+                class="ml-auto shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-[#D6E4F7] text-[#1B3A6B] border border-[#B3CCE8]">
+                {{ filteredPlansCount }} {{ filteredPlansCount === 1 ? 'act.' : 'acts.' }}
+            </span>
+
+            <span *ngIf="selectedDayFilter"
+                class="shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5 bg-amber-100 text-amber-900 border border-amber-300">
+                {{ selectedDayFilter | date:'dd/MM' }}
+                <button (click)="clearDayFilter.emit()"
+                    class="text-xs font-bold w-4 h-4 rounded-full bg-amber-500 text-white hover:brightness-110 flex items-center justify-center">
+                    ×
+                </button>
+            </span>
+        </div>
+
+    </div>
+</div>

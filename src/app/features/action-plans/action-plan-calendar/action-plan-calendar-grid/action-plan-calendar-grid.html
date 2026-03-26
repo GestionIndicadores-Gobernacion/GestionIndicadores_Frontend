@@ -1,0 +1,99 @@
+<!-- CABECERA DÍAS -->
+<div class="grid grid-cols-7 border-b border-[#EBF0FA] bg-[#F8FAFD]">
+    <div *ngFor="let day of WEEKDAYS"
+        class="py-3 text-center text-[10.5px] font-bold uppercase tracking-[1px] text-[#4A6A9B]">
+        <span class="sm:hidden">{{ day[0] }}</span>
+        <span class="hidden sm:inline">{{ day }}</span>
+    </div>
+</div>
+
+
+<!-- GRID -->
+<div class="grid grid-cols-7 divide-x divide-y divide-[#EBF0FA] border-b border-[#EBF0FA]">
+    <div *ngFor="let day of calendarDays; trackBy: trackByDay"
+        class="h-[72px] sm:h-[155px] p-0.5 sm:p-2 flex flex-col gap-0.5 overflow-hidden"
+        [class.bg-[#F8FAFD]]="!day.isCurrentMonth" [class.bg-white]="day.isCurrentMonth">
+
+        <!-- Número -->
+        <div class="flex items-center justify-between px-0.5 sm:px-0 mb-0.5">
+            <span
+                class="text-[10px] sm:text-xs font-bold w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center rounded-full"
+                [ngClass]="day.isToday
+          ? 'bg-gradient-to-br from-[#1B3A6B] to-[#2d5fa8] text-white'
+          : day.isCurrentMonth ? 'text-[#1B3A6B]' : 'text-[#B3CCE8]'">
+                {{ day.date.getDate() }}
+            </span>
+            <!-- Badge contador — solo desktop -->
+            <span *ngIf="countActivitiesInDay(day) > 0 && day.isCurrentMonth"
+                class="hidden sm:inline text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#D6E4F7] text-[#1B3A6B] border border-[#B3CCE8]">
+                {{ countActivitiesInDay(day) }}
+            </span>
+        </div>
+
+        <!-- Mobile: dots de colores (máx 3 visibles) -->
+        <div class="sm:hidden flex flex-col gap-0.5 px-0.5">
+            <ng-container *ngFor="let flat of getFlatActivitiesForDay(day).slice(0, 3); trackBy: trackByFlat">
+                <div class="flex items-center gap-1 cursor-pointer"
+                    (click)="report.emit({ plan: flat.plan, objective: flat.obj, activity: flat.activity, event: $event })">
+                    <span class="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                        [ngClass]="statusDot(flat.activity.status!)"></span>
+                    <span class="text-[9px] font-medium truncate leading-tight" [ngClass]="{
+              'text-emerald-700': flat.activity.status === 'Realizado',
+              'text-blue-700': flat.activity.status === 'En Ejecución',
+              'text-red-700': flat.activity.status === 'Pendiente'
+            }">
+                        {{ flat.activity.name }}
+                    </span>
+                </div>
+            </ng-container>
+            <!-- +más móvil -->
+            <span *ngIf="countActivitiesInDay(day) > 3 && day.isCurrentMonth" (click)="openAgenda.emit(day)"
+                class="text-[9px] font-bold text-[#2d5fa8] cursor-pointer pl-2.5">
+                +{{ countActivitiesInDay(day) - 3 }} más
+            </span>
+        </div>
+
+        <!-- Desktop: cards -->
+        <ng-container *ngFor="let flat of getFlatActivitiesForDay(day).slice(0, 3); trackBy: trackByFlat">
+            <div class="hidden sm:flex group items-start gap-1 px-1.5 py-1 rounded-lg border cursor-pointer transition hover:shadow-sm"
+                [ngClass]="statusClass(flat.activity.status!)"
+                (click)="report.emit({ plan: flat.plan, objective: flat.obj, activity: flat.activity, event: $event })"
+                (mouseenter)="showTooltip({ plan: flat.plan, objective: flat.obj, activity: flat.activity }, $event)"
+                (mouseleave)="hover.emit(null)">
+
+                <span class="w-1.5 h-1.5 rounded-full mt-1 flex-shrink-0"
+                    [ngClass]="statusDot(flat.activity.status!)"></span>
+
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-semibold truncate leading-tight">{{ flat.activity.name }}</p>
+                    <p *ngIf="flat.activity.score !== null && flat.activity.score !== undefined"
+                        class="text-[10px] opacity-70 mt-0.5">★ {{ flat.activity.score }} pts</p>
+                </div>
+
+                <button *ngIf="flat.activity.status !== 'Realizado'"
+                    (click)="edit.emit({ plan: flat.plan, objective: flat.obj, activity: flat.activity, event: $event }); $event.stopPropagation()"
+                    class="opacity-0 group-hover:opacity-100 transition text-[#2d5fa8]">
+                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                </button>
+
+                <button *ngIf="flat.activity.status !== 'Realizado'"
+                    (click)="delete.emit({ activityId: flat.activity.id!, event: $event }); $event.stopPropagation()"
+                    class="opacity-0 group-hover:opacity-100 transition text-red-600">
+                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </ng-container>
+
+        <!-- +más desktop -->
+        <span *ngIf="countActivitiesInDay(day) > 3 && day.isCurrentMonth" (click)="openAgenda.emit(day)" class="hidden sm:block text-[10px] font-bold text-center py-0.5 rounded-md cursor-pointer
+             bg-[#EBF0FA] text-[#2d5fa8] border border-[#D6E0F0] hover:bg-[#D6E4F7] transition mt-auto shrink-0">
+            +{{ countActivitiesInDay(day) - 3 }} más
+        </span>
+
+    </div>
+</div>
