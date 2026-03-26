@@ -98,4 +98,24 @@
     Iniciar sesión
   </button>
 
+  <!-- SEPARADOR -->
+  <div class="flex items-center gap-3">
+    <div class="flex-1 h-px" style="background:#D6E0F0"></div>
+    <span class="text-[11px] font-semibold text-gray-400">o</span>
+    <div class="flex-1 h-px" style="background:#D6E0F0"></div>
+  </div>
+
+  <!-- BOTÓN PÚBLICO -->
+  <button type="button" (click)="enterAsPublic()" [disabled]="loading" class="w-full text-[13px] font-bold py-2.5 rounded-xl transition-all duration-150
+         flex items-center justify-center gap-2 border-2"
+    style="color:#1B3A6B; border-color:#1B3A6B; background:white;" onmouseover="this.style.background='#F0F4FA'"
+    onmouseout="this.style.background='white'">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+    Ver Indicadores PYBA
+  </button>
+
 </form>
