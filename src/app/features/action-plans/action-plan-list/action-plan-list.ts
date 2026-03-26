@@ -6,6 +6,8 @@ import {
   ActionPlanObjectiveModel,
   ActionPlanStatus
 } from '../../../core/models/action-plan.model';
+import { FormsModule } from '@angular/forms';
+import { Pagination } from '../../../shared/components/pagination/pagination';
 
 interface AgendaItem {
   date: Date;
@@ -14,10 +16,12 @@ interface AgendaItem {
   activity: ActionPlanActivityModel;
 }
 
+type SortField = 'date' | 'status' | 'name';
+
 @Component({
   selector: 'app-action-plan-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule, Pagination],
   templateUrl: './action-plan-list.html',
   styleUrl: './action-plan-list.css',
 })
@@ -25,7 +29,6 @@ export class ActionPlanListComponent {
 
   @Input() currentUserId?: number | null;
   @Input() isAdmin = false;
-
   @Input() plans: ActionPlanModel[] = [];
 
   @Output() report = new EventEmitter<{ plan: ActionPlanModel; objective: ActionPlanObjectiveModel; activity: ActionPlanActivityModel; event: Event }>();
@@ -33,18 +36,114 @@ export class ActionPlanListComponent {
 
   readonly WEEKDAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
+  search = '';
+  statusFilter: ActionPlanStatus | 'all' = 'all';
+
+  sortField: SortField = 'date';
+  sortDir: 'asc' | 'desc' = 'asc';
+
+  page = 1;
+  pageSize = 8;
+
+  // ─────────────────────────────
+  // FLATTEN ACTIVITIES
+  // ─────────────────────────────
+
   get agendaItems(): AgendaItem[] {
+
     const items: AgendaItem[] = [];
+
     for (const plan of this.plans) {
       for (const obj of plan.plan_objectives ?? []) {
         for (const activity of obj.activities ?? []) {
+
           const [y, m, d] = activity.delivery_date.split('-').map(Number);
-          items.push({ date: new Date(y, m - 1, d), plan, objective: obj, activity });
+
+          items.push({
+            date: new Date(y, m - 1, d),
+            plan,
+            objective: obj,
+            activity
+          });
+
         }
       }
     }
-    return items.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    return items;
   }
+
+  // ─────────────────────────────
+  // FILTER + SEARCH
+  // ─────────────────────────────
+
+  get filteredItems(): AgendaItem[] {
+
+    let items = [...this.agendaItems];
+
+    if (this.search) {
+
+      const s = this.search.toLowerCase();
+
+      items = items.filter(x =>
+        x.activity.name?.toLowerCase().includes(s) ||
+        x.activity.deliverable?.toLowerCase().includes(s) ||
+        x.plan.responsible?.toLowerCase().includes(s)
+      );
+    }
+
+    if (this.statusFilter !== 'all') {
+      items = items.filter(x => x.activity.status === this.statusFilter);
+    }
+
+    // SORT
+
+    items.sort((a, b) => {
+
+      let val = 0;
+
+      if (this.sortField === 'date') {
+        val = a.date.getTime() - b.date.getTime();
+      }
+
+      if (this.sortField === 'name') {
+        val = (a.activity.name ?? '').localeCompare(b.activity.name ?? '');
+      }
+
+      if (this.sortField === 'status') {
+        val = (a.activity.status ?? '').localeCompare(b.activity.status ?? '');
+      }
+
+      return this.sortDir === 'asc' ? val : -val;
+
+    });
+
+    return items;
+  }
+
+  // ─────────────────────────────
+  // PAGINATION
+  // ─────────────────────────────
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredItems.length / this.pageSize) || 1;
+  }
+
+  get paginatedItems(): AgendaItem[] {
+
+    const start = (this.page - 1) * this.pageSize;
+    const end = start + this.pageSize;
+
+    return this.filteredItems.slice(start, end);
+  }
+
+  changePage(p: number) {
+    this.page = p;
+  }
+
+  // ─────────────────────────────
+  // HELPERS
+  // ─────────────────────────────
 
   objectiveLabel(obj: ActionPlanObjectiveModel): string {
     return obj.objective_text ?? 'Objetivo del componente';
@@ -85,4 +184,5 @@ export class ActionPlanListComponent {
   canModify(plan: ActionPlanModel): boolean {
     return true;
   }
+
 }
