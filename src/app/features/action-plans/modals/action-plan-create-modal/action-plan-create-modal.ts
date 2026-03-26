@@ -2,32 +2,25 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
-import { ActionPlanCreateRequest } from '../../../../core/models/action-plan.model';
+import { ActionPlanCreateRequest, RecurrenceFrequency } from '../../../../core/models/action-plan.model';
 import { ComponentModel, ComponentObjectiveModel } from '../../../../core/models/component.model';
 import { StrategyModel } from '../../../../core/models/strategy.model';
 import { ActionPlanService } from '../../../../core/services/action-plan.service';
 import { ComponentsService } from '../../../../core/services/components.service';
 import { StrategiesService } from '../../../../core/services/strategies.service';
-
-interface ActivityForm {
-  name: string;
-  deliverable: string;
-  delivery_date: string;
-  requires_boss_assistance: boolean;
-  support_staff: { name: string }[];
-}
+import { ActivityFormData, ActionPlanActivityFormComponent } from './action-plan-activity-form/action-plan-activity-form';
 
 interface ObjectiveForm {
   objective_id: number | null;
   objective_text: string;
   isNew: boolean;
-  activities: ActivityForm[];
+  activities: ActivityFormData[];
 }
 
 @Component({
   selector: 'app-action-plan-create-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ActionPlanActivityFormComponent],
   templateUrl: './action-plan-create-modal.html',
   styleUrl: './action-plan-create-modal.css',
 })
@@ -50,12 +43,7 @@ export class ActionPlanCreateModalComponent implements OnInit {
     component_id: number;
     responsible: string;
     plan_objectives: ObjectiveForm[];
-  } = {
-      strategy_id: 0,
-      component_id: 0,
-      responsible: '',
-      plan_objectives: [],
-    };
+  } = { strategy_id: 0, component_id: 0, responsible: '', plan_objectives: [] };
 
   constructor(
     private actionPlanService: ActionPlanService,
@@ -75,12 +63,11 @@ export class ActionPlanCreateModalComponent implements OnInit {
         this.loading = false;
         this.cdr.detectChanges();
       },
-      error: () => {
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
+      error: () => { this.loading = false; this.cdr.detectChanges(); }
     });
   }
+
+  // ── Estrategia / Componente ──────────────────────────────────────
 
   onStrategyChange(): void {
     this.form.component_id = 0;
@@ -89,7 +76,6 @@ export class ActionPlanCreateModalComponent implements OnInit {
     this.filteredComponents = this.form.strategy_id
       ? this.components.filter(c => c.strategy_id === +this.form.strategy_id)
       : [];
-    this.cdr.detectChanges();
   }
 
   onComponentChange(): void {
@@ -103,8 +89,7 @@ export class ActionPlanCreateModalComponent implements OnInit {
         if (this.objectives.length > 0) {
           this.form.plan_objectives = [{
             objective_id: this.objectives[0].id ?? null,
-            objective_text: '',
-            isNew: false,
+            objective_text: '', isNew: false,
             activities: [this.newActivity()],
           }];
         }
@@ -113,110 +98,97 @@ export class ActionPlanCreateModalComponent implements OnInit {
     });
   }
 
+  // ── Objetivos ────────────────────────────────────────────────────
+
   addObjectiveFromComponent(): void {
     const next = this.nextAvailableObjective;
     if (!next) return;
     this.form.plan_objectives.push({
-      objective_id: next.id ?? null,
-      objective_text: '',
-      isNew: false,
+      objective_id: next.id ?? null, objective_text: '', isNew: false,
       activities: [this.newActivity()],
     });
   }
 
   addNewObjective(): void {
     this.form.plan_objectives.push({
-      objective_id: null,
-      objective_text: '',
-      isNew: true,
+      objective_id: null, objective_text: '', isNew: true,
       activities: [this.newActivity()],
     });
   }
 
-  removeObjective(index: number): void {
-    if (this.form.plan_objectives.length === 1) return;
-    this.form.plan_objectives.splice(index, 1);
+  removeObjective(i: number): void {
+    if (this.form.plan_objectives.length > 1) this.form.plan_objectives.splice(i, 1);
   }
 
-  objectiveLabel(obj: ObjectiveForm): string {
-    if (obj.isNew) return obj.objective_text || 'Nuevo objetivo';
-    const found = this.objectives.find(o => o.id === +obj.objective_id!);
-    return found ? found.description : 'Objetivo del componente';
+  // ── Actividades ──────────────────────────────────────────────────
+
+  private defaultUntil(): string {
+    const d = new Date();
+    d.setMonth(d.getMonth() + 3);
+    return d.toISOString().split('T')[0];
   }
 
-  private newActivity(): ActivityForm {
+  private newActivity(): ActivityFormData {
     return {
-      name: '',
-      deliverable: '',
-      delivery_date: '',
-      requires_boss_assistance: false,
-      support_staff: [],
+      name: '', deliverable: '', delivery_date: '',
+      requires_boss_assistance: false, support_staff: [],
+      recurrence: {
+        enabled: false, frequency: 'monthly' as RecurrenceFrequency,
+        until: this.defaultUntil(), day_of_month: null, day_of_week: null, interval: 7,
+      },
     };
   }
 
-  addActivity(objIndex: number): void {
-    this.form.plan_objectives[objIndex].activities.push(this.newActivity());
+  addActivity(oi: number): void {
+    this.form.plan_objectives[oi].activities.push(this.newActivity());
   }
 
-  removeActivity(objIndex: number, actIndex: number): void {
-    const acts = this.form.plan_objectives[objIndex].activities;
-    if (acts.length === 1) return;
-    acts.splice(actIndex, 1);
+  removeActivity(oi: number, ai: number): void {
+    const acts = this.form.plan_objectives[oi].activities;
+    if (acts.length > 1) acts.splice(ai, 1);
   }
 
-  addStaff(objIndex: number, actIndex: number): void {
-    this.form.plan_objectives[objIndex].activities[actIndex].support_staff.push({ name: '' });
+  addStaff(oi: number, ai: number): void {
+    this.form.plan_objectives[oi].activities[ai].support_staff.push({ name: '' });
   }
 
-  removeStaff(objIndex: number, actIndex: number, staffIndex: number): void {
-    this.form.plan_objectives[objIndex].activities[actIndex].support_staff.splice(staffIndex, 1);
+  removeStaff(oi: number, ai: number, si: number): void {
+    this.form.plan_objectives[oi].activities[ai].support_staff.splice(si, 1);
   }
 
-  trackByIndex(index: number): number { return index; }
+  trackByIndex(i: number): number { return i; }
 
   get hasAvailableComponentObjectives(): boolean {
     if (!this.objectives.length) return false;
-    const usedIds = new Set(
-      this.form.plan_objectives
-        .filter(o => !o.isNew && o.objective_id !== null)
-        .map(o => +o.objective_id!)
-    );
-    return this.objectives.some(o => !usedIds.has(o.id!));
+    const used = new Set(this.form.plan_objectives.filter(o => !o.isNew && o.objective_id !== null).map(o => +o.objective_id!));
+    return this.objectives.some(o => !used.has(o.id!));
   }
 
   get nextAvailableObjective(): ComponentObjectiveModel | null {
-    const usedIds = new Set(
-      this.form.plan_objectives
-        .filter(o => !o.isNew && o.objective_id !== null)
-        .map(o => +o.objective_id!)
-    );
-    return this.objectives.find(o => !usedIds.has(o.id!)) ?? null;
+    const used = new Set(this.form.plan_objectives.filter(o => !o.isNew && o.objective_id !== null).map(o => +o.objective_id!));
+    return this.objectives.find(o => !used.has(o.id!)) ?? null;
   }
+
+  // ── Submit ───────────────────────────────────────────────────────
 
   submit(): void {
     this.errors = {};
 
-    if (!this.form.strategy_id || +this.form.strategy_id === 0)
-      this.errors['strategy_id'] = 'Debes seleccionar una estrategia.';
-    if (!this.form.component_id || +this.form.component_id === 0)
-      this.errors['component_id'] = 'Debes seleccionar un componente.';
-    if (this.form.plan_objectives.length === 0)
-      this.errors['plan_objectives'] = 'Debes tener al menos un objetivo.';
-
-    const missingText = this.form.plan_objectives.some(o => o.isNew && !o.objective_text.trim());
-    if (missingText)
+    if (!+this.form.strategy_id) this.errors['strategy_id'] = 'Debes seleccionar una estrategia.';
+    if (!+this.form.component_id) this.errors['component_id'] = 'Debes seleccionar un componente.';
+    if (!this.form.plan_objectives.length) this.errors['plan_objectives'] = 'Debes tener al menos un objetivo.';
+    if (this.form.plan_objectives.some(o => o.isNew && !o.objective_text.trim()))
       this.errors['plan_objectives'] = 'Los objetivos nuevos deben tener descripción.';
 
     for (const obj of this.form.plan_objectives) {
-      if (obj.activities.some(a => !a.name.trim()))
-        this.errors['activities'] = 'Todas las actividades deben tener nombre.';
-      if (obj.activities.some(a => !a.deliverable.trim()))
-        this.errors['activities'] = 'Todas las actividades deben tener entregable.';
-      if (obj.activities.some(a => !a.delivery_date))
-        this.errors['activities'] = 'Todas las actividades deben tener fecha de entrega.';
+      if (obj.activities.some(a => !a.name.trim())) this.errors['activities'] = 'Todas las actividades deben tener nombre.';
+      if (obj.activities.some(a => !a.deliverable.trim())) this.errors['activities'] = 'Todas las actividades deben tener entregable.';
+      if (obj.activities.some(a => !a.delivery_date)) this.errors['activities'] = 'Todas las actividades deben tener fecha de entrega.';
+      if (obj.activities.some(a => a.recurrence.enabled && !a.recurrence.until))
+        this.errors['activities'] = 'Las actividades recurrentes deben tener fecha límite.';
     }
 
-    if (Object.keys(this.errors).length > 0) return;
+    if (Object.keys(this.errors).length) return;
 
     const payload: ActionPlanCreateRequest = {
       strategy_id: +this.form.strategy_id,
@@ -226,13 +198,17 @@ export class ActionPlanCreateModalComponent implements OnInit {
         objective_id: obj.isNew ? null : (obj.objective_id ? +obj.objective_id : null),
         objective_text: obj.isNew ? obj.objective_text.trim() : null,
         activities: obj.activities.map(a => ({
-          name: a.name.trim(),
-          deliverable: a.deliverable.trim(),
+          name: a.name.trim(), deliverable: a.deliverable.trim(),
           delivery_date: a.delivery_date,
           requires_boss_assistance: a.requires_boss_assistance,
-          support_staff: a.support_staff
-            .filter(s => s.name.trim())
-            .map(s => ({ name: s.name.trim() })),
+          support_staff: a.support_staff.filter(s => s.name.trim()).map(s => ({ name: s.name.trim() })),
+          recurrence: a.recurrence.enabled ? {
+            frequency: a.recurrence.frequency,
+            until: a.recurrence.until,
+            day_of_month: a.recurrence.frequency === 'monthly' ? a.recurrence.day_of_month : null,
+            day_of_week: ['weekly', 'biweekly'].includes(a.recurrence.frequency) ? a.recurrence.day_of_week : null,
+            interval: a.recurrence.frequency === 'custom' ? a.recurrence.interval : null,
+          } : null,
         })),
       })),
     };
@@ -240,11 +216,7 @@ export class ActionPlanCreateModalComponent implements OnInit {
     this.saving = true;
     this.actionPlanService.create(payload).subscribe({
       next: () => { this.saving = false; this.created.emit(); },
-      error: (err) => {
-        this.saving = false;
-        if (err?.error?.errors) this.errors = err.error.errors;
-        this.cdr.detectChanges();
-      }
+      error: (err) => { this.saving = false; if (err?.error?.errors) this.errors = err.error.errors; this.cdr.detectChanges(); }
     });
   }
 

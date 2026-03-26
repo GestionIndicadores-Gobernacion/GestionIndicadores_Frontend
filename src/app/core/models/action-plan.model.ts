@@ -7,6 +7,19 @@ export interface ActionPlanSupportStaffModel {
 }
 
 /* =========================
+   Recurrencia
+========================= */
+export type RecurrenceFrequency = 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'yearly' | 'custom';
+
+export interface RecurrenceRule {
+  frequency:     RecurrenceFrequency;
+  until:         string;           // YYYY-MM-DD
+  day_of_month?: number | null;    // para monthly
+  day_of_week?:  number | null;    // 0=lun..6=dom
+  interval?:     number | null;    // para custom (cada N días)
+}
+
+/* =========================
    Actividad
 ========================= */
 export type ActionPlanStatus = 'Pendiente' | 'En Ejecución' | 'Realizado';
@@ -16,7 +29,7 @@ export interface ActionPlanActivityModel {
   plan_objective_id?: number;
   name: string;
   deliverable: string;
-  delivery_date: string;           // YYYY-MM-DD
+  delivery_date: string;
   requires_boss_assistance?: boolean;
   evidence_url?: string | null;
   description?: string | null;
@@ -24,6 +37,9 @@ export interface ActionPlanActivityModel {
   score?: number | null;
   status?: ActionPlanStatus;
   support_staff?: ActionPlanSupportStaffModel[];
+  recurrence_group_id?: string | null;
+  recurrence_rule?: RecurrenceRule | null;
+  recurrence?: RecurrenceRule | null;  // solo al crear/editar
 }
 
 /* =========================
@@ -32,8 +48,8 @@ export interface ActionPlanActivityModel {
 export interface ActionPlanObjectiveModel {
   id?: number;
   action_plan_id?: number;
-  objective_id?: number | null;     // null = objetivo nuevo (solo del plan)
-  objective_text?: string | null;   // texto libre si es objetivo nuevo
+  objective_id?: number | null;
+  objective_text?: string | null;
   activities: ActionPlanActivityModel[];
 }
 
@@ -42,15 +58,16 @@ export interface ActionPlanObjectiveModel {
 ========================= */
 export interface ActionPlanModel {
   id: number;
-  user_id?: number | null;        // ← NUEVO
+  user_id?: number | null;
   strategy_id: number;
   component_id: number;
   responsible?: string | null;
-  total_score: number;            // ← NUEVO
+  total_score: number;
   plan_objectives: ActionPlanObjectiveModel[];
   created_at: string;
   updated_at: string;
 }
+
 /* =========================
    Requests
 ========================= */
@@ -64,6 +81,15 @@ export interface ActionPlanCreateRequest {
 export interface ActionPlanReportRequest {
   evidence_url: string;
   description?: string | null;
+}
+
+export interface ActionPlanActivityEditRequest {
+  name:                     string;
+  deliverable:              string;
+  delivery_date?:           string | null;
+  requires_boss_assistance?: boolean;
+  support_staff?:           ActionPlanSupportStaffModel[];
+  edit_all?:                boolean;
 }
 
 /* =========================

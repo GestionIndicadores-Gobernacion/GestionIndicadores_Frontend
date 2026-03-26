@@ -405,6 +405,10 @@ export class ActionPlanCalendarComponent implements OnInit {
     return map[status];
   }
 
+  getActivitiesForDay(obj: ActionPlanObjectiveModel, date: Date): ActionPlanActivityModel[] {
+    return (obj.activities ?? [])
+      .filter(act => this.activityFallsOnDay(act, date));
+  }
   // ═══════════════════════════════════════
   // TRACK BY
   // ═══════════════════════════════════════
