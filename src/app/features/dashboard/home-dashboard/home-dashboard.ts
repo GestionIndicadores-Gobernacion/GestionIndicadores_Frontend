@@ -123,7 +123,7 @@ export class HomeDashboardComponent implements OnInit {
 
 
   private loadReports(): void {
-    this.reportsService.getAll().subscribe({
+    this.reportsService.getAllForDashboard().subscribe({
       next: reports => {
         this.reports = reports ?? [];
 

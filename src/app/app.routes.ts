@@ -6,6 +6,7 @@ import { guestGuard } from './core/guards/guest-guard';
 
 import { AuthLayoutComponent } from './layouts/auth-layout/auth-layout';
 import { DashboardLayoutComponent } from './layouts/dashboard-layout/dashboard-layout';
+import { viewerGuard } from './core/guards/viewer-guard-guard';
 
 export const routes: Routes = [
 
@@ -58,12 +59,14 @@ export const routes: Routes = [
       },
       {
         path: 'datasets',
+        canActivate: [adminGuard],  // ya estaba, confirmar
         loadChildren: () =>
           import('./features/datasets/datasets.routes')
             .then(m => m.DATASETS_ROUTES),
       },
       {
         path: 'action-plans',
+        canActivate: [viewerGuard],  // ← agregar
         loadChildren: () =>
           import('./features/action-plans/action-plans.routes')
             .then(m => m.ACTION_PLANS_ROUTES),

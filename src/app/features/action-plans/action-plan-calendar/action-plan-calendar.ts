@@ -49,6 +49,8 @@ export interface FlatActivity {
 })
 export class ActionPlanCalendarComponent implements OnInit {
 
+  canViewDashboard = false;
+
   plans: ActionPlanModel[] = [];
   strategies: StrategyModel[] = [];
   components: ComponentModel[] = [];
@@ -94,8 +96,12 @@ export class ActionPlanCalendarComponent implements OnInit {
   // ═══════════════════════════════════════
 
   ngOnInit(): void {
-    const role = localStorage.getItem('role');
+    const userStr = localStorage.getItem('user');
+    const user = userStr ? JSON.parse(userStr) : null;
+    const role = user?.role?.name ?? null;
+
     this.canViewAudit = role === 'admin' || role === 'superadmin';
+    this.canViewDashboard = role === 'admin' || role === 'monitor';
     this.loadStrategies();
     this.loadPlans();
   }

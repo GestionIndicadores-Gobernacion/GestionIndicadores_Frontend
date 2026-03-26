@@ -23,7 +23,7 @@
                     </p>
                 </div>
             </div>
-            <a [routerLink]="['create']"
+            <a *ngIf="!isViewer" [routerLink]="['create']"
                 class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-bold transition-all duration-150 shadow-sm cursor-pointer"
                 style="background: linear-gradient(135deg, #1B3A6B 0%, #2d5fa8 100%); color: white;"
                 onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">
@@ -107,7 +107,7 @@
 
                         <div class="p-5">
                             <app-reports-table [reports]="reports" [strategyMap]="strategyMap"
-                                [componentMap]="componentMap" [currentUserId]="currentUserId" [isAdmin]="isAdmin"
+                                [componentMap]="componentMap" [currentUserId]="currentUserId" [isViewer]="isViewer" [isAdmin]="isAdmin"
                                 [chartFilter]="chartFilter" (delete)="deleteReport($event)"
                                 (clearFilter)="clearChartFilter()">
                             </app-reports-table>

@@ -47,4 +47,8 @@ export class ActionPlanService {
   deleteActivity(activityId: number): Observable<void> {
     return this.http.delete<void>(`${this.api}/activities/${activityId}`);
   }
+
+  getDashboard(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.api}/dashboard/users`);
+  }
 }
