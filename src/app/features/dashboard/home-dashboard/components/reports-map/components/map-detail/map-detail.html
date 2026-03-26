@@ -214,7 +214,7 @@
                         Sin indicadores registrados
                     </p>
 
-                    <a *ngIf="r.evidence_link" [href]="r.evidence_link" target="_blank" rel="noopener"
+                    <a *ngIf="r.evidence_link && !isViewer" [href]="r.evidence_link" target="_blank" rel="noopener"
                         class="flex items-center gap-1.5 text-[9.5px] font-semibold px-2.5 py-1.5 rounded-lg"
                         style="color:#2d5fa8;background:#EDF3FC;border:1px solid #D6E0F0;text-decoration:none;"
                         onmouseover="this.style.background='#D6E4F7'" onmouseout="this.style.background='#EDF3FC'">
