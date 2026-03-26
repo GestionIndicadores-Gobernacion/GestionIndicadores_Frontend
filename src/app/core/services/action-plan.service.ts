@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   ActionPlanActivityModel,
+  ActionPlanActivityEditRequest,
   ActionPlanCreateRequest,
   ActionPlanFilters,
   ActionPlanModel,
@@ -15,7 +16,7 @@ export class ActionPlanService {
 
   private api = `${environment.apiUrl}/action-plans`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   getAll(filters?: ActionPlanFilters): Observable<ActionPlanModel[]> {
     let params = new HttpParams();
@@ -40,15 +41,28 @@ export class ActionPlanService {
     );
   }
 
+  /** Editar actividad. edit_all=true edita todo el grupo de recurrencia */
+  editActivity(activityId: number, body: ActionPlanActivityEditRequest): Observable<ActionPlanActivityModel> {
+    return this.http.put<ActionPlanActivityModel>(
+      `${this.api}/activities/${activityId}/edit`, body
+    );
+  }
+
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.api}/${id}`);
   }
 
-  deleteActivity(activityId: number): Observable<void> {
-    return this.http.delete<void>(`${this.api}/activities/${activityId}`);
+  /** delete_all=true elimina todas las ocurrencias no reportadas del grupo */
+  deleteActivity(activityId: number, deleteAll = false): Observable<void> {
+    const params = deleteAll ? '?delete_all=true' : '';
+    return this.http.delete<void>(`${this.api}/activities/${activityId}${params}`);
   }
 
   getDashboard(): Observable<any[]> {
     return this.http.get<any[]>(`${this.api}/dashboard/users`);
+  }
+
+  getAllForDashboard(): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/reports/all`);
   }
 }

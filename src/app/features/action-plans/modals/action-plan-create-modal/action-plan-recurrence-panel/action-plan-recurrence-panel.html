@@ -1,0 +1,74 @@
+<div class="space-y-2">
+
+    <!-- Toggle -->
+    <div class="flex items-center gap-3">
+        <label class="flex items-center gap-2 cursor-pointer select-none">
+            <div (click)="toggle()"
+                class="w-9 h-5 rounded-full transition-all duration-200 flex items-center px-0.5 cursor-pointer"
+                [style.background]="recurrence.enabled ? '#1B3A6B' : '#D6E0F0'">
+                <div class="w-4 h-4 rounded-full bg-white shadow transition-all duration-200"
+                    [style.transform]="recurrence.enabled ? 'translateX(16px)' : 'translateX(0)'"></div>
+            </div>
+            <span class="text-xs font-semibold text-[#1B3A6B]">Actividad recurrente</span>
+        </label>
+
+        <span *ngIf="recurrence.enabled && delivery_date && recurrence.until"
+            class="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+            style="background:#D6E4F7;color:#1B3A6B;border:1px solid #B3CCE8;">
+            {{ preview }}
+        </span>
+    </div>
+
+    <!-- Panel -->
+    <div *ngIf="recurrence.enabled" class="rounded-xl border p-3 space-y-3"
+        style="background:#F8FAFD;border-color:#D6E0F0;">
+
+        <!-- Frecuencia + Hasta -->
+        <div class="grid grid-cols-2 gap-3">
+            <div class="flex flex-col gap-1">
+                <label class="text-[10.5px] font-semibold text-[#1B3A6B]">Frecuencia</label>
+                <select [(ngModel)]="recurrence.frequency" [name]="namePrefix + '_freq'" class="text-sm border border-[#d6e2f2] rounded-lg px-3 py-2 bg-white
+                 focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 transition">
+                    <option *ngFor="let f of FREQUENCY_OPTIONS" [value]="f.value">{{ f.label }}</option>
+                </select>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-[10.5px] font-semibold text-[#1B3A6B]">Hasta (fecha límite)</label>
+                <input type="date" [(ngModel)]="recurrence.until" [name]="namePrefix + '_until'" class="text-sm border border-[#d6e2f2] rounded-lg px-3 py-2 bg-white
+                 focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 transition" />
+            </div>
+        </div>
+
+        <!-- Día del mes -->
+        <div *ngIf="showDayOfMonth" class="flex flex-col gap-1">
+            <label class="text-[10.5px] font-semibold text-[#1B3A6B]">Día del mes</label>
+            <input type="number" [(ngModel)]="recurrence.day_of_month" [name]="namePrefix + '_dom'" min="1" max="31"
+                placeholder="Ej: 26" class="text-sm border border-[#d6e2f2] rounded-lg px-3 py-2 bg-white w-32
+               focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 transition" />
+            <p class="text-[10px] text-slate-400">Si no se especifica, usa el día de la fecha de inicio.</p>
+        </div>
+
+        <!-- Día de la semana -->
+        <div *ngIf="showDayOfWeek" class="flex flex-col gap-1">
+            <label class="text-[10.5px] font-semibold text-[#1B3A6B]">Día de la semana</label>
+            <select [(ngModel)]="recurrence.day_of_week" [name]="namePrefix + '_dow'" class="text-sm border border-[#d6e2f2] rounded-lg px-3 py-2 bg-white w-40
+               focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 transition">
+                <option [ngValue]="null">Mismo día que el inicio</option>
+                <option *ngFor="let d of WEEKDAY_LABELS; let wi = index" [value]="wi">{{ d }}</option>
+            </select>
+        </div>
+
+        <!-- Intervalo custom -->
+        <div *ngIf="showInterval" class="flex flex-col gap-1">
+            <label class="text-[10.5px] font-semibold text-[#1B3A6B]">Cada cuántos días</label>
+            <div class="flex items-center gap-2">
+                <input type="number" [(ngModel)]="recurrence.interval" [name]="namePrefix + '_interval'" min="1"
+                    max="365" class="text-sm border border-[#d6e2f2] rounded-lg px-3 py-2 bg-white w-24
+                 focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 transition" />
+                <span class="text-xs text-slate-400">días</span>
+            </div>
+        </div>
+
+    </div>
+</div>

@@ -365,8 +365,7 @@
 
                         <ng-container *ngFor="let obj of plan.plan_objectives; trackBy: trackByObjective">
 
-                            <ng-container
-                                *ngFor="let activity of obj.activities; trackBy: trackByActivity; let actIdx = index">
+                            <ng-container *ngFor="let activity of getActivitiesForDay(obj, day.date); let actIdx = index">
 
                                 <ng-container *ngIf="activityFallsOnDay(activity, day.date)">
 
