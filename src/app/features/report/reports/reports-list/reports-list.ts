@@ -36,6 +36,8 @@ export class ReportsListComponent implements OnInit {
   loading = true;
   currentUserId: number | null = null;
   isAdmin = false;
+  isViewer = false;
+
 
   chartFilter: { componentId: number | null; label: string | null; year: number | null } = {
     componentId: null,
@@ -59,6 +61,7 @@ export class ReportsListComponent implements OnInit {
       next: user => {
         this.currentUserId = user.id;
         this.isAdmin = user.role?.name === 'admin';
+        this.isViewer = user.role?.name === 'viewer';
         this.cd.detectChanges();
       },
       error: () => {
@@ -141,7 +144,7 @@ export class ReportsListComponent implements OnInit {
   }
 
   private loadReports(): void {
-    this.reportsService.getAll().subscribe({
+    this.reportsService.getAllForDashboard().subscribe({
       next: reports => {
         this.reports = reports ?? [];
         this.loading = false;

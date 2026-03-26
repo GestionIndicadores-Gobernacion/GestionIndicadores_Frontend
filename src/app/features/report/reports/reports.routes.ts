@@ -1,9 +1,10 @@
 import { Routes } from '@angular/router';
 import { adminGuard } from '../../../core/guards/admin-guard';
+import { viewerGuard } from '../../../core/guards/viewer-guard-guard';
 
 export const REPORTS_ROUTES: Routes = [
 
-  // 📄 LISTADO
+  // 📄 LISTADO — todos pueden ver
   {
     path: '',
     loadComponent: () =>
@@ -11,15 +12,16 @@ export const REPORTS_ROUTES: Routes = [
         .then(m => m.ReportsListComponent),
   },
 
-  // ➕ CREAR
+  // ➕ CREAR — sin viewer
   {
     path: 'create',
+    canActivate: [viewerGuard],
     loadComponent: () =>
       import('./report-form/report-form')
         .then(m => m.ReportFormComponent),
   },
 
-  // 🔽 SUBMÓDULOS (PRIMERO)
+  // 🔽 SUBMÓDULOS — solo admin
   {
     path: '',
     canActivateChild: [adminGuard],
@@ -39,15 +41,16 @@ export const REPORTS_ROUTES: Routes = [
     ],
   },
 
-  // ✏️ EDITAR (AL FINAL)
+  // ✏️ EDITAR — sin viewer
   {
     path: ':id/edit',
+    canActivate: [viewerGuard],
     loadComponent: () =>
       import('./report-form/report-form')
         .then(m => m.ReportFormComponent),
   },
 
-  // 🔍 DETALLE(AL FINAL DE TODO)
+  // 🔍 DETALLE — todos pueden ver
   {
     path: ':id',
     loadComponent: () =>
