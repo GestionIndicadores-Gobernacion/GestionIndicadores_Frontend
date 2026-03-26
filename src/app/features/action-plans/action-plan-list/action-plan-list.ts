@@ -33,6 +33,7 @@ export class ActionPlanListComponent {
 
   @Output() report = new EventEmitter<{ plan: ActionPlanModel; objective: ActionPlanObjectiveModel; activity: ActionPlanActivityModel; event: Event }>();
   @Output() delete = new EventEmitter<{ activityId: number; event: Event }>();
+  @Output() edit = new EventEmitter<{ plan: ActionPlanModel; objective: ActionPlanObjectiveModel; activity: ActionPlanActivityModel; event: Event }>();
 
   readonly WEEKDAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
@@ -183,6 +184,11 @@ export class ActionPlanListComponent {
 
   canModify(plan: ActionPlanModel): boolean {
     return true;
+  }
+
+  onEdit(plan: ActionPlanModel, objective: ActionPlanObjectiveModel, activity: ActionPlanActivityModel, event: Event): void {
+    event.stopPropagation();
+    this.edit.emit({ plan, objective, activity, event });
   }
 
 }
