@@ -3,6 +3,7 @@
 export interface StrategyAnnualGoal {
   year_number: number;
   value: number;
+  calendar_year?: number; // ← nuevo: viene del backend (ej: 2024, 2025...)
 }
 
 export interface StrategyMetric {
@@ -13,6 +14,7 @@ export interface StrategyMetric {
   field_name?: string | null;
   dataset_id?: number | null;
   manual_value?: number | null;
+  year?: number | null;   // ← nuevo
 }
 
 /* ===== Progreso ===== */
@@ -41,7 +43,7 @@ export interface StrategyModel {
 
   total_goal: number;
 
-  progress?: StrategyProgress;      // ← presente solo en /dashboard y /<id>/progress
+  progress?: StrategyProgress;
 
   created_at: string;
   updated_at: string;
@@ -64,7 +66,5 @@ export interface StrategyUpdateRequest {
   annual_goals?: StrategyAnnualGoal[];
   metrics?: StrategyMetric[];
 }
-
-/* ===== Response ===== */
 
 export interface StrategyResponse extends StrategyModel { }
