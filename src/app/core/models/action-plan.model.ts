@@ -63,6 +63,7 @@ export interface ActionPlanModel {
   strategy_id: number;
   component_id: number;
   responsible?: string | null;
+  responsible_user_id?: number | null;
   total_score: number;
   plan_objectives: ActionPlanObjectiveModel[];
   created_at: string;
@@ -76,6 +77,7 @@ export interface ActionPlanCreateRequest {
   strategy_id: number;
   component_id: number;
   responsible?: string | null;
+  responsible_user_id?: number | null;
   plan_objectives: ActionPlanObjectiveModel[];
 }
 
@@ -88,7 +90,7 @@ export interface ActionPlanActivityEditRequest {
   name: string;
   deliverable: string;
   delivery_date?: string | null;
-  lugar?: string | null;  
+  lugar?: string | null;
   requires_boss_assistance?: boolean;
   support_staff?: ActionPlanSupportStaffModel[];
   edit_all?: boolean;

@@ -27,7 +27,7 @@
   <div class="flex-1 flex flex-col min-w-0 relative">
 
     <!-- ===== DESKTOP HEADER ===== -->
-    <header class="hidden md:block shrink-0">
+    <header class="hidden md:block shrink-0 relative z-[50]">
 
       <!-- FRANJA INSTITUCIONAL -->
       <div class="h-[4px] w-full" style="background: linear-gradient(90deg, #1B3A6B 0%, #2d5fa8 40%, #1B3A6B 100%);">
@@ -56,30 +56,28 @@
         </div>
 
         <!-- RIGHT -->
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-3">
 
           <!-- STATUS -->
           <div class="flex items-center gap-2 px-3 py-1.5 rounded-full border"
             style="background:#EDF3FC;border-color:#D6E0F0;">
-
             <span class="w-2 h-2 rounded-full animate-pulse" style="background:#2d5fa8;"></span>
-
             <span class="text-[11px] font-semibold" style="color:#1B3A6B;">
               Plataforma activa
             </span>
-
           </div>
+
+          <!-- NOTIFICACIONES -->
+          <app-notification-bell></app-notification-bell>
 
           <!-- ICON -->
           <div class="w-9 h-9 rounded-xl flex items-center justify-center border"
             style="background:#F0F4FA;border-color:#D6E0F0;">
-
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 3v18h18" />
               <path d="M18 9l-5 5-2-2-4 4" />
             </svg>
-
           </div>
 
         </div>
@@ -110,19 +108,8 @@
         <!-- LOGO -->
         <img src="assets/logos/LOGO-SADS-HORIZONTAL.png" class="h-7 w-auto object-contain select-none" />
 
-        <!-- ICON -->
-        <div class="w-9 h-9 flex items-center justify-center rounded-lg" style="background:#F0F4FA;">
-
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-
-            <path d="M3 3v18h18" />
-            <path d="M18 9l-5 5-2-2-4 4" />
-
-          </svg>
-
-        </div>
-
+        <!-- NOTIFICACIONES MOBILE -->
+        <app-notification-bell></app-notification-bell>
       </div>
 
     </header>
