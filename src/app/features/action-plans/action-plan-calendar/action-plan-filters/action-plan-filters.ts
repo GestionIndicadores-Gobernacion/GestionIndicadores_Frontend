@@ -20,11 +20,14 @@ export class ActionPlanFiltersComponent {
   @Input() filteredPlansCount = 0;
   @Input() selectedDayFilter: Date | null = null;
 
-  @Output() strategyChange  = new EventEmitter<number | null>();
+  @Output() strategyChange = new EventEmitter<number | null>();
   @Output() componentChange = new EventEmitter<number | null>();
-  @Output() statusChange    = new EventEmitter<'all' | ActionPlanStatus>();
-  @Output() bossChange      = new EventEmitter<boolean>();
-  @Output() clearDayFilter  = new EventEmitter<void>();
+  @Output() statusChange = new EventEmitter<'all' | ActionPlanStatus>();
+  @Output() bossChange = new EventEmitter<boolean>();
+  @Output() clearDayFilter = new EventEmitter<void>();
+
+  @Input() filterMyPlans = false;
+  @Output() myPlansChange = new EventEmitter<boolean>();
 
   onStrategyChange(event: Event): void {
     const val = (event.target as HTMLSelectElement).value;

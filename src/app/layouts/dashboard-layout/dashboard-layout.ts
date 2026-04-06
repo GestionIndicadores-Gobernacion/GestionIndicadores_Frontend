@@ -3,6 +3,7 @@ import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from './sidebar/sidebar';
 import { SidebarService } from '../../core/services/sidebar.service';
+import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell';
 
 @Component({
   selector: 'app-dashboard-layout',
@@ -11,6 +12,7 @@ import { SidebarService } from '../../core/services/sidebar.service';
     CommonModule,
     RouterOutlet,
     SidebarComponent,
+    NotificationBellComponent
   ],
   templateUrl: './dashboard-layout.html',
   styleUrl: './dashboard-layout.css',

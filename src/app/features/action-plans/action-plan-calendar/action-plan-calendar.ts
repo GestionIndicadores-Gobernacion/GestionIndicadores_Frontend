@@ -86,6 +86,9 @@ export class ActionPlanCalendarComponent implements OnInit {
   showEditPlanModal = false;
   planToEdit: ActionPlanModel | null = null;
 
+  filterMyPlans = false;
+  currentUserId: number | null = null;
+
   constructor(
     private actionPlanService: ActionPlanService,
     private strategiesService: StrategiesService,
@@ -99,6 +102,7 @@ export class ActionPlanCalendarComponent implements OnInit {
   ngOnInit(): void {
     const user = JSON.parse(localStorage.getItem('user') ?? 'null');
     this.canViewDashboard = user?.role?.name === 'admin' || user?.role?.name === 'monitor';
+    this.currentUserId = user?.id ?? null;
     this.loadStrategies();
     this.loadPlans();
   }
@@ -111,6 +115,11 @@ export class ActionPlanCalendarComponent implements OnInit {
     event.stopPropagation();
     this.planToEdit = plan;
     this.showEditPlanModal = true;
+  }
+
+  onMyPlansFilterChange(v: boolean): void {
+    this.filterMyPlans = v;
+    this.cdr.detectChanges();
   }
 
   closeEditPlanModal(): void {
@@ -204,9 +213,15 @@ export class ActionPlanCalendarComponent implements OnInit {
   onComponentChange(id: number | null): void { this.selectedComponentId = id; this.loadPlans(); }
   onStatusFilterChange(f: 'all' | ActionPlanStatus): void { this.activeStatusFilter = f; this.cdr.detectChanges(); }
   onBossFilterChange(v: boolean): void { this.filterByBoss = v; this.cdr.detectChanges(); }
-
+  
   get displayPlans(): ActionPlanModel[] {
     let result = this.plans;
+
+    // Filtro: solo mis planes
+    if (this.filterMyPlans && this.currentUserId) {
+      result = result.filter(p => p.responsible_user_id === this.currentUserId);
+    }
+
     if (this.activeStatusFilter !== 'all')
       result = result.map(p => ({ ...p, plan_objectives: (p.plan_objectives ?? []).map(o => ({ ...o, activities: (o.activities ?? []).filter(a => a.status === this.activeStatusFilter) })).filter(o => o.activities.length > 0) })).filter(p => p.plan_objectives.length > 0);
     if (this.filterByBoss)
@@ -217,7 +232,6 @@ export class ActionPlanCalendarComponent implements OnInit {
     }
     return result;
   }
-
   get filteredPlansCount(): number {
     return this.displayPlans.reduce((t, p) => t + (p.plan_objectives ?? []).reduce((t2, o) => t2 + (o.activities ?? []).length, 0), 0);
   }
