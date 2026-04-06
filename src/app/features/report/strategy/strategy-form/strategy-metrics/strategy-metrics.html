@@ -43,8 +43,8 @@
   <!-- metric cards -->
   <div *ngIf="metricGroups.length > 0" class="p-6 space-y-3">
 
-    <div *ngFor="let m of metricGroups; let i = index" [formGroup]="m" class="rounded-xl border border-[#D6E0F0] bg-[#F8FAFF] overflow-hidden
-             transition-all hover:border-[#B8CEED] hover:shadow-sm">
+    <div *ngFor="let m of metricGroups; let i = index" [formGroup]="m"
+      class="rounded-xl border border-[#D6E0F0] bg-[#F8FAFF] overflow-hidden transition-all hover:border-[#B8CEED] hover:shadow-sm">
 
       <!-- card header -->
       <div class="flex items-center gap-3 px-4 py-3 border-b border-[#EDF2FA]">
@@ -70,71 +70,108 @@
       </div>
 
       <!-- card body -->
-      <div class="grid gap-3 px-4 py-3" [ngClass]="{
-    'grid-cols-4': showFieldName(m) && showDataset(m),
-    'grid-cols-3': showFieldName(m) !== showDataset(m),
-    'grid-cols-2': !showFieldName(m) && !showDataset(m) && !showManualValue(m),
-    'grid-cols-1': showManualValue(m)
-  }">
+      <div class="px-4 py-3">
+        <div class="grid gap-3" [ngClass]="{
+  'grid-cols-5': showFieldName(m) && showDataset(m),
+  'grid-cols-4': (showFieldName(m) && !showDataset(m)) || (!showFieldName(m) && showDataset(m)),
+  'grid-cols-3': (!showFieldName(m) && !showDataset(m)) || showManualValue(m)
+}">
 
-        <!-- tipo -->
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#7C94BD]">Tipo de medición</label>
-          <select formControlName="metric_type" class="w-full text-[13px] rounded-xl px-3 py-2 bg-white border border-[#D6E0F0]
-                   focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20
-                   outline-none transition-all cursor-pointer">
-            <option *ngFor="let t of metricTypes" [value]="t[0]">{{ t[1].label }}</option>
-          </select>
-          <p class="text-[10.5px] text-[#8A9DC0]">{{ getTypeHint(m) }}</p>
+          <!-- tipo -->
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#7C94BD]">Tipo de medición</label>
+            <select formControlName="metric_type" class="w-full text-[13px] rounded-xl px-3 py-2 bg-white border border-[#D6E0F0]
+                     focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20
+                     outline-none transition-all cursor-pointer">
+              <option *ngFor="let t of metricTypes" [value]="t[0]">{{ t[1].label }}</option>
+            </select>
+            <p class="text-[10.5px] text-[#8A9DC0]">{{ getTypeHint(m) }}</p>
+          </div>
+
+          <!-- año (siempre visible para todos los tipos) -->
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#7C94BD]">Año al que aplica</label>
+            <select formControlName="year" class="w-full text-[13px] rounded-xl px-3 py-2 bg-white border border-[#D6E0F0]
+                     focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20
+                     outline-none transition-all cursor-pointer">
+              <option [ngValue]="null">— Todos los años —</option>
+              <option *ngFor="let y of availableYears" [ngValue]="y">{{ y }}</option>
+            </select>
+            <p class="text-[10.5px] text-[#8A9DC0]">El valor solo contará para ese año</p>
+          </div>
+
+          <!-- componente (no aplica en manual) -->
+          <div *ngIf="!showManualValue(m)" class="space-y-1">
+            <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#7C94BD]">Componente asociado</label>
+            <select formControlName="component_id" class="w-full text-[13px] rounded-xl px-3 py-2 bg-white border border-[#D6E0F0]
+                     focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20
+                     outline-none transition-all cursor-pointer">
+              <option [ngValue]="null">— Sin componente —</option>
+              <option *ngFor="let c of components" [ngValue]="c.id">{{ c.name }}</option>
+            </select>
+            <p class="text-[10.5px] text-[#8A9DC0]">Componente que genera los datos</p>
+          </div>
+
+          <!-- dataset (solo dataset_sum y dataset_count) -->
+          <div *ngIf="showDataset(m)" class="space-y-1">
+            <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#7C94BD]">Dataset</label>
+            <select formControlName="dataset_id" class="w-full text-[13px] rounded-xl px-3 py-2 bg-white border border-[#D6E0F0]
+                     focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20
+                     outline-none transition-all cursor-pointer">
+              <option [ngValue]="null">— Seleccionar dataset —</option>
+              <option *ngFor="let d of datasets" [ngValue]="d.id">{{ d.name }}</option>
+            </select>
+            <p class="text-[10.5px] text-[#8A9DC0]">Base de datos externa a consultar</p>
+          </div>
+
+          <!-- campo (solo report_sum, report_sum_nested y dataset_sum) -->
+          <div *ngIf="showFieldName(m)" class="space-y-1">
+            <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#7C94BD]">
+              {{ getFieldNameLabel(m) }}
+            </label>
+            <input formControlName="field_name" [placeholder]="getFieldNamePlaceholder(m)" class="w-full text-[13px] rounded-xl px-3 py-2 bg-white border border-[#D6E0F0]
+                     focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20
+                     outline-none transition-all" />
+            <p class="text-[10.5px] text-[#8A9DC0]">{{ getFieldNameHint(m) }}</p>
+          </div>
+
+          <!-- valor manual (solo tipo manual) -->
+          <div *ngIf="showManualValue(m)" class="space-y-1">
+            <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#7C94BD]">Valor registrado</label>
+            <input type="number" formControlName="manual_value" placeholder="ej: 150" class="w-full text-[13px] rounded-xl px-3 py-2 bg-white border border-[#D6E0F0]
+                     focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20
+                     outline-none transition-all" />
+            <p class="text-[10.5px] text-[#8A9DC0]">Valor acumulado para el año seleccionado</p>
+          </div>
+
         </div>
-
-        <!-- componente -->
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#7C94BD]">Componente asociado</label>
-          <select formControlName="component_id" class="w-full text-[13px] rounded-xl px-3 py-2 bg-white border border-[#D6E0F0]
-                   focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20
-                   outline-none transition-all cursor-pointer">
-            <option [ngValue]="null">— Sin componente —</option>
-            <option *ngFor="let c of components" [ngValue]="c.id">{{ c.name }}</option>
-          </select>
-          <p class="text-[10.5px] text-[#8A9DC0]">Componente que genera los datos</p>
-        </div>
-
-        <!-- dataset (solo dataset_sum y dataset_count) -->
-        <div *ngIf="showDataset(m)" class="space-y-1">
-          <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#7C94BD]">Dataset</label>
-          <select formControlName="dataset_id" class="w-full text-[13px] rounded-xl px-3 py-2 bg-white border border-[#D6E0F0]
-                   focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20
-                   outline-none transition-all cursor-pointer">
-            <option [ngValue]="null">— Seleccionar dataset —</option>
-            <option *ngFor="let d of datasets" [ngValue]="d.id">{{ d.name }}</option>
-          </select>
-          <p class="text-[10.5px] text-[#8A9DC0]">Base de datos externa a consultar</p>
-        </div>
-
-        <!-- campo (solo report_sum y dataset_sum) -->
-        <div *ngIf="showFieldName(m)" class="space-y-1">
-          <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#7C94BD]">
-            {{ getFieldNameLabel(m) }}
-          </label>
-          <input formControlName="field_name" [placeholder]="getFieldNamePlaceholder(m)" class="w-full text-[13px] rounded-xl px-3 py-2 bg-white border border-[#D6E0F0]
-                   focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20
-                   outline-none transition-all" />
-          <p class="text-[10.5px] text-[#8A9DC0]">{{ getFieldNameHint(m) }}</p>
-        </div>
-
-        <!-- valor manual (solo tipo manual) -->
-        <div *ngIf="showManualValue(m)" class="space-y-1">
-          <label class="text-[10px] font-bold uppercase tracking-[1px] text-[#7C94BD]">
-            Valor actual
-          </label>
-          <input type="number" formControlName="manual_value" placeholder="ej: 1" class="w-full text-[13px] rounded-xl px-3 py-2 bg-white border border-[#D6E0F0]
-           focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20
-           outline-none transition-all" />
-          <p class="text-[10.5px] text-[#8A9DC0]">Valor registrado para el período actual</p>
-        </div>
-
       </div>
+
+      <!-- hint panel -->
+      <div class="mx-4 mb-3 rounded-xl px-4 py-3 flex gap-3" style="background:#F0F7FF;border:1px solid #D6E8FF;">
+        <div class="shrink-0 mt-0.5">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="#2d5fa8" stroke-width="2.2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 110 20A10 10 0 0112 2z" />
+          </svg>
+        </div>
+        <div class="space-y-1">
+          <p class="text-[10px] font-bold uppercase tracking-[0.8px]" style="color:#2d5fa8;">
+            Cómo completar esta medición
+          </p>
+          <ol class="space-y-0.5 list-none">
+            <li *ngFor="let step of getSteps(m); let si = index" class="flex items-start gap-1.5 text-[10.5px]"
+              style="color:#3A6AAA;">
+              <span class="shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold mt-0.5"
+                style="background:#D6E8FF;color:#1B3A6B;">
+                {{ si + 1 }}
+              </span>
+              {{ step }}
+            </li>
+          </ol>
+        </div>
+      </div>
+      
     </div>
   </div>
 

@@ -34,6 +34,8 @@ export class StrategyFormComponent implements OnInit {
 
   components: any[] = []
 
+  private _loadedStrategy?: StrategyModel;
+
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -41,7 +43,7 @@ export class StrategyFormComponent implements OnInit {
     private strategiesService: StrategiesService,
     private componentService: ComponentsService,
     private toast: ToastService,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
   ) { }
 
   ngOnInit(): void {
@@ -64,6 +66,10 @@ export class StrategyFormComponent implements OnInit {
     if (this.isEdit) {
       this.loadStrategy();
     }
+  }
+
+  getCalendarYear(index: number): string {
+    return String(2024 + index);
   }
 
   // =========================
@@ -116,6 +122,8 @@ export class StrategyFormComponent implements OnInit {
     this.strategiesService.getById(this.id!).subscribe({
       next: (data: StrategyModel) => {
 
+        this._loadedStrategy = data;
+
         console.log("METRICS BACKEND", data.metrics);
 
         this.form.patchValue({
@@ -145,6 +153,7 @@ export class StrategyFormComponent implements OnInit {
               field_name: metric.field_name,
               dataset_id: metric.dataset_id,
               manual_value: metric.manual_value ?? null,
+              year: metric.year ?? null,
             })
           );
         });
@@ -201,6 +210,7 @@ export class StrategyFormComponent implements OnInit {
         field_name: m.get('field_name')?.value,
         dataset_id: m.get('dataset_id')?.value ?? null,
         manual_value: m.get('manual_value')?.value ?? null,
+        year: m.get('year')?.value ?? null,   // ← nuevo
       }))
     };
 

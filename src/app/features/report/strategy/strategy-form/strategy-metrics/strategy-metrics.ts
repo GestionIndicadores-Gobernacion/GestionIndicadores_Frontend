@@ -1,5 +1,3 @@
-// strategy-metrics/strategy-metrics.ts
-
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -31,6 +29,14 @@ export class StrategyMetricsComponent implements OnInit {
 
   readonly metricTypes = Object.entries(METRIC_TYPE_META) as [MetricType, MetricTypeMeta][];
 
+  // Años disponibles para métricas manuales (2024 en adelante hasta año actual)
+  readonly availableYears: number[] = (() => {
+    const years: number[] = [];
+    const current = new Date().getFullYear();
+    for (let y = 2024; y <= current; y++) years.push(y);
+    return years;
+  })();
+
   constructor(
     private fb: FormBuilder,
     private datasetService: DatasetService
@@ -41,8 +47,6 @@ export class StrategyMetricsComponent implements OnInit {
       next: (data) => this.datasets = data ?? []
     });
   }
-
-  // ─── Acceso ───────────────────────────────────────────────────────────────
 
   get metricGroups(): FormGroup[] {
     return this.metrics.controls as FormGroup[];
@@ -58,7 +62,9 @@ export class StrategyMetricsComponent implements OnInit {
     };
   }
 
-  // ─── CRUD ─────────────────────────────────────────────────────────────────
+  getSteps(metric: FormGroup): string[] {
+    return this.getMeta(metric).steps ?? [];
+  }
 
   addMetric(): void {
     this.metrics.push(
@@ -68,7 +74,8 @@ export class StrategyMetricsComponent implements OnInit {
         component_id: [null],
         field_name: [''],
         dataset_id: [null],
-        manual_value: [null],   // ← nuevo
+        manual_value: [null],
+        year: [null],   // ← nuevo
       })
     );
   }
@@ -76,8 +83,6 @@ export class StrategyMetricsComponent implements OnInit {
   removeMetric(index: number): void {
     this.metrics.removeAt(index);
   }
-
-  // ─── Condicionales ────────────────────────────────────────────────────────
 
   showFieldName(metric: FormGroup): boolean {
     return TYPES_WITH_FIELD_NAME.includes(this.getType(metric));
@@ -90,8 +95,6 @@ export class StrategyMetricsComponent implements OnInit {
   showManualValue(metric: FormGroup): boolean {
     return TYPES_WITH_MANUAL_VALUE.includes(this.getType(metric));
   }
-
-  // ─── Labels / hints ───────────────────────────────────────────────────────
 
   getTypeHint(metric: FormGroup): string { return this.getMeta(metric).hint; }
   getTypeLabel(metric: FormGroup): string { return this.getMeta(metric).shortLabel; }
@@ -120,8 +123,6 @@ export class StrategyMetricsComponent implements OnInit {
     if (t === 'report_sum_nested') return 'ID del indicador con estructura JSON anidada';
     return 'Nombre del atributo numérico en el modelo de reporte';
   }
-
-  // ─── Footer summary ───────────────────────────────────────────────────────
 
   getTypesSummary(): { label: string; count: number; class: string }[] {
     const counts: Partial<Record<MetricType, number>> = {};

@@ -27,7 +27,6 @@ export class StrategyListComponent implements OnInit {
 
   dashboardStrategies: StrategyModel[] = [];
   loadingDashboard = false;
-  dashboardLoaded = false;
 
   // ── Filtro de año ────────────────────────────────────────────────────────
   selectedYear: number = new Date().getFullYear();
@@ -46,8 +45,9 @@ export class StrategyListComponent implements OnInit {
 
   setView(mode: ViewMode): void {
     this.viewMode = mode;
-    if (mode === 'dashboard' && !this.dashboardLoaded) {
-      this.loadDashboard();
+    if (mode === 'dashboard') {
+      // Siempre recargar al entrar al dashboard
+      this.loadDashboard(this.selectedYear);
     }
     this.cd.detectChanges();
   }
@@ -73,36 +73,25 @@ export class StrategyListComponent implements OnInit {
 
   // Extrae los años únicos de las estrategias a partir de created_at
   private buildAvailableYears(): void {
-    const years = new Set<number>();
     const currentYear = new Date().getFullYear();
 
-    for (const s of this.strategies) {
-      const base = new Date(s.created_at).getFullYear();
-      const goalsCount = s.annual_goals?.length ?? 4;
-      for (let i = 0; i < goalsCount; i++) {
-        const year = base + i;
-        if (year <= currentYear) {  // ← solo años hasta el actual
-          years.add(year);
-        }
-      }
+    this.availableYears = [];
+    for (let y = 2024; y <= currentYear; y++) {
+      this.availableYears.push(y);
     }
 
-    this.availableYears = Array.from(years).sort((a, b) => a - b);
-
-    if (!this.availableYears.includes(this.selectedYear) && this.availableYears.length > 0) {
+    if (!this.availableYears.includes(this.selectedYear)) {
       this.selectedYear = this.availableYears[this.availableYears.length - 1];
     }
   }
 
   loadDashboard(year?: number): void {
     this.loadingDashboard = true;
-    this.dashboardLoaded = false;
     this.cd.detectChanges();
 
     this.strategiesService.getDashboard(year ?? this.selectedYear).subscribe({
       next: (data) => {
         this.dashboardStrategies = data ?? [];
-        this.dashboardLoaded = true;
         this.loadingDashboard = false;
         this.cd.detectChanges();
       },
@@ -135,7 +124,6 @@ export class StrategyListComponent implements OnInit {
         this.strategiesService.delete(id).subscribe({
           next: () => {
             this.toast.success('Estrategia eliminada correctamente');
-            this.dashboardLoaded = false;
             this.loadStrategies();
           },
           error: () => {

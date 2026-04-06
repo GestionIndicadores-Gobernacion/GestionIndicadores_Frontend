@@ -1,0 +1,146 @@
+<div class="max-w-7xl mx-auto px-6 py-8 space-y-6">
+
+    <!-- FILTRO MES -->
+    <div class="flex items-center gap-3 flex-wrap">
+        <span class="text-[12px] font-medium" style="color:#64748B;">Filtrar por mes:</span>
+
+        <button (click)="setMes('todos')"
+            class="px-4 py-1.5 rounded-full text-[12px] font-bold cursor-pointer transition-all border"
+            [style.background]="mesActivo() === 'todos' ? '#1B3A6B' : 'white'"
+            [style.color]="mesActivo() === 'todos' ? 'white' : '#64748B'"
+            [style.border-color]="mesActivo() === 'todos' ? '#1B3A6B' : '#E2E8F0'">
+            Todos
+        </button>
+
+        <button *ngFor="let mes of meses()" (click)="setMes(mes)"
+            class="px-4 py-1.5 rounded-full text-[12px] font-bold cursor-pointer transition-all border"
+            [style.background]="mesActivo() === mes ? '#1B3A6B' : 'white'"
+            [style.color]="mesActivo() === mes ? 'white' : '#64748B'"
+            [style.border-color]="mesActivo() === mes ? '#1B3A6B' : '#E2E8F0'">
+            {{ mes }}
+        </button>
+    </div>
+
+    <!-- KPIs -->
+    <div class="grid gap-4" style="grid-template-columns:repeat(4,minmax(0,1fr));">
+
+        <div class="rounded-xl p-5" style="background:white;border:1px solid #E2E8F0;">
+            <p class="text-[12px] font-medium mb-1" style="color:#64748B;">Total personas</p>
+            <p class="font-bold leading-none mb-1" style="font-size:2.2rem;color:#0F172A;letter-spacing:-0.04em;">
+                {{ kpis().total | number }}
+            </p>
+            <p class="text-[12px]" style="color:#94A3B8;">capacitadas</p>
+        </div>
+
+        <div class="rounded-xl p-5" style="background:white;border:1px solid #E2E8F0;">
+            <p class="text-[12px] font-medium mb-1" style="color:#64748B;">Mujeres</p>
+            <p class="font-bold leading-none mb-1" style="font-size:2.2rem;color:#0F172A;letter-spacing:-0.04em;">
+                {{ kpis().mujer | number }}
+            </p>
+            <p class="text-[12px]" style="color:#94A3B8;">
+                {{ kpis().total > 0 ? (kpis().mujer / kpis().total * 100 | number:'1.0-0') : 0 }}% del total
+            </p>
+        </div>
+
+        <div class="rounded-xl p-5" style="background:white;border:1px solid #E2E8F0;">
+            <p class="text-[12px] font-medium mb-1" style="color:#64748B;">Hombres</p>
+            <p class="font-bold leading-none mb-1" style="font-size:2.2rem;color:#0F172A;letter-spacing:-0.04em;">
+                {{ kpis().hombre | number }}
+            </p>
+            <p class="text-[12px]" style="color:#94A3B8;">
+                {{ kpis().total > 0 ? (kpis().hombre / kpis().total * 100 | number:'1.0-0') : 0 }}% del total
+            </p>
+        </div>
+
+        <div class="rounded-xl p-5" style="background:white;border:1px solid #E2E8F0;">
+            <p class="text-[12px] font-medium mb-1" style="color:#64748B;">Sin género</p>
+            <p class="font-bold leading-none mb-1" style="font-size:2.2rem;color:#0F172A;letter-spacing:-0.04em;">
+                {{ kpis().sinGenero | number }}
+            </p>
+            <p class="text-[12px]" style="color:#94A3B8;">no registrado</p>
+        </div>
+
+    </div>
+
+    <!-- FILA 1: municipio + género -->
+    <div class="grid gap-5" style="grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);">
+
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-5 py-3 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[11px] font-bold uppercase tracking-wider" style="color:#64748B;">Personas por municipio
+                </p>
+            </div>
+            <div class="p-4" style="position:relative;height:300px;">
+                <canvas id="cvMun"></canvas>
+            </div>
+        </div>
+
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-5 py-3 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[11px] font-bold uppercase tracking-wider" style="color:#64748B;">Género</p>
+            </div>
+            <div class="p-4">
+                <!-- LEGEND -->
+                <div class="flex flex-wrap gap-x-4 gap-y-1.5 mb-3">
+                    <span *ngFor="let seg of generoData()" class="flex items-center gap-1.5 text-[12px]"
+                        style="color:#475569;">
+                        <span style="width:10px;height:10px;border-radius:2px;display:inline-block;flex-shrink:0;"
+                            [style.background]="seg.color"></span>
+                        {{ seg.label }} {{ seg.value }}
+                        ({{ kpis().total > 0 ? (seg.value / kpis().total * 100 | number:'1.0-0') : 0 }}%)
+                    </span>
+                </div>
+                <div style="position:relative;height:240px;">
+                    <canvas id="cvGenero"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FILA 2: zona + guías -->
+    <div class="grid grid-cols-2 gap-5">
+
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-5 py-3 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[11px] font-bold uppercase tracking-wider" style="color:#64748B;">Zona de residencia</p>
+            </div>
+            <div class="p-4">
+                <div class="flex flex-wrap gap-x-4 gap-y-1.5 mb-3">
+                    <span *ngFor="let seg of zonaData()" class="flex items-center gap-1.5 text-[12px]"
+                        style="color:#475569;">
+                        <span style="width:10px;height:10px;border-radius:2px;display:inline-block;flex-shrink:0;"
+                            [style.background]="seg.color"></span>
+                        {{ seg.label }} {{ seg.value }}
+                    </span>
+                </div>
+                <div style="position:relative;height:220px;">
+                    <canvas id="cvZona"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-5 py-3 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[11px] font-bold uppercase tracking-wider" style="color:#64748B;">Participación por guía
+                </p>
+            </div>
+            <div class="p-4" style="position:relative;height:260px;">
+                <canvas id="cvGuias"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- CONTACTO -->
+    <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+        <div class="px-5 py-3 border-b" style="border-color:#F1F5F9;">
+            <p class="text-[11px] font-bold uppercase tracking-wider" style="color:#64748B;">Capacidad de contacto</p>
+            <p class="text-[11px] mt-0.5" style="color:#94A3B8;">% de registros con campo completado</p>
+        </div>
+        <div class="p-5">
+            <dashboard-completeness [bars]="contactData()" />
+        </div>
+    </div>
+
+</div>
