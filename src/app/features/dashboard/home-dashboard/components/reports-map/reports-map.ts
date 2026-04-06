@@ -9,7 +9,7 @@ import { MapDetailComponent } from './components/map-detail/map-detail';
 import { MapListComponent } from './components/map-list/map-list';
 import { MapToolbarComponent } from './components/map-toolbar/map-toolbar';
 import { buildMunicipioMap, buildMunicipioSummary } from './helpers/reports-map.helpers';
-import { KPI_OPTIONS, MAP_STYLES, MunicipioSummary } from './reports-map.types';
+import { KPI_OPTIONS, KpiOption, MAP_STYLES, MunicipioSummary } from './reports-map.types';
 
 @Component({
   selector: 'app-reports-map',
@@ -73,17 +73,29 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
       .sort((a, b) => this.getKpiValue(b) - this.getKpiValue(a));
   }
 
-  getActiveKpi() { return KPI_OPTIONS.find(k => k.id === this.selectedKpi) ?? KPI_OPTIONS[0]; }
+  getActiveKpi(): KpiOption | null {
+    if (!this.selectedKpi) return null;
+    return KPI_OPTIONS.find(k => k.id === this.selectedKpi) ?? null;
 
+  }
   getKpiValue(s: MunicipioSummary): number {
-    const m: Record<string, number> = { asistencias: s.indicators.find(i => i.id === -1)?.total ?? 0, denuncias: s.indicators.find(i => i.id === -2)?.total ?? 0, esterilizados: s.indicators.find(i => i.id === -3)?.total ?? 0, refugios: s.indicators.find(i => i.id === -4)?.total ?? 0, ninos: s.indicators.find(i => i.id === -5)?.total ?? 0, emprendedores: s.indicators.find(i => i.id === -6)?.total ?? 0 };
+    if (!this.selectedKpi) return s.totalReports;
+    const m: Record<string, number> = {
+      asistencias: s.indicators.find(i => i.id === -1)?.total ?? 0,
+      denuncias: s.indicators.find(i => i.id === -2)?.total ?? 0,
+      esterilizados: s.indicators.find(i => i.id === -3)?.total ?? 0,
+      refugios: s.indicators.find(i => i.id === -4)?.total ?? 0,
+      ninos: s.indicators.find(i => i.id === -5)?.total ?? 0,
+      emprendedores: s.indicators.find(i => i.id === -6)?.total ?? 0,
+    };
     return m[this.selectedKpi] ?? 0;
   }
 
   getMaxKpiValue(): number { return Math.max(...Array.from(this.municipioMap.values()).map(s => this.getKpiValue(s)), 1); }
 
   getKpiColor(value: number, maxValue: number): string {
-    const base = this.getActiveKpi().color;
+    const activeKpi = this.getActiveKpi();
+    const base = activeKpi ? activeKpi.color : '#2d5fa8';
     if (value === 0) return '#CBD5E1';
     const alpha = Math.round(Math.max(0.18, value / maxValue) * 255).toString(16).padStart(2, '0');
     return base + alpha;
@@ -93,8 +105,12 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
 
   onSearch(q: string): void { this.searchQuery = q; this.renderMarkers(); this.cdr.detectChanges(); }
   onYearChange(y: number): void { this.yearChange.emit(y); }
-  onKpiChange(id: string): void { this.selectedKpi = id; this.renderMarkers(); this.cdr.detectChanges(); }
 
+  onKpiChange(id: string): void {
+    this.selectedKpi = id === this.selectedKpi ? '' : id;
+    this.renderMarkers();
+    this.cdr.detectChanges();
+  }
   onStyleChange(styleId: string): void {
     this.selectedStyleId = styleId;
     if (!this.mapInitialized) return;
@@ -105,7 +121,6 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
 
   selectMunicipio(summary: MunicipioSummary): void {
     this.selectedMunicipio = summary;
-    this.map?.flyTo([summary.centroid.lat, summary.centroid.lng], 11, { duration: 0.8 });
     this.cdr.detectChanges();
   }
 
@@ -115,8 +130,22 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     const container = document.getElementById(this.MAP_ID);
     if (!container) return;
     const bounds = L.latLngBounds(L.latLng(2.8, -77.5), L.latLng(5.3, -75.5));
-    this.map = L.map(this.MAP_ID, { center: [3.8, -76.5], zoom: 8, minZoom: 7, maxZoom: 14, scrollWheelZoom: true, maxBounds: bounds, maxBoundsViscosity: 0.8, zoomControl: false });
-    L.control.zoom({ position: 'bottomright' }).addTo(this.map);
+    this.map = L.map(this.MAP_ID, {
+      center: [3.8, -76.5],
+      zoom: 8,
+      minZoom: 8,
+      maxZoom: 8,
+      scrollWheelZoom: false,
+      dragging: false,
+      touchZoom: false,
+      doubleClickZoom: false,
+      boxZoom: false,
+      keyboard: false,
+      zoomControl: false,
+      maxBounds: bounds,
+      maxBoundsViscosity: 1.0
+    });
+
     const style = MAP_STYLES.find(s => s.id === this.selectedStyleId)!;
     this.tileLayer = L.tileLayer(style.url, { attribution: style.attribution, maxZoom: 14 }).addTo(this.map);
     this.markersLayer = L.layerGroup().addTo(this.map);
@@ -129,6 +158,9 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     this.markersLayer.clearLayers();
     const maxKpi = this.getMaxKpiValue();
     const activeKpi = this.getActiveKpi();
+    const activeLabel = activeKpi ? activeKpi.label : 'Reportes';
+    const activeColor = activeKpi ? activeKpi.color : '#2d5fa8';
+
     const grouped = new Map<string, ReportModel[]>();
     for (const r of this.filteredReports) {
       const key = normalizeMunicipio(r.intervention_location);
@@ -143,7 +175,7 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
       const color = this.getKpiColor(kpiValue, maxKpi);
       const radius = kpiValue === 0 ? 7 : Math.max(11, Math.min(36, 10 + (kpiValue / maxKpi) * 26));
       const circle = L.circleMarker([lat, lng], { radius, fillColor: color, color: 'rgba(255,255,255,0.9)', weight: 2, opacity: 1, fillOpacity: 0.92 });
-      circle.bindTooltip(`<div style="font-family:system-ui;min-width:130px"><div style="font-size:12px;font-weight:700;color:#0f172a">${summary.name}</div><div style="font-size:10px;color:#94a3b8;margin-top:1px">${summary.totalReports} reporte${summary.totalReports !== 1 ? 's' : ''}</div><div style="display:flex;justify-content:space-between;gap:10px;margin-top:4px;padding-top:4px;border-top:1px solid #f1f5f9"><span style="color:#94a3b8;font-size:10px">${activeKpi.label}</span><span style="font-weight:700;color:${activeKpi.color};font-size:11px">${kpiValue.toLocaleString()}</span></div></div>`,
+      circle.bindTooltip(`<div style="font-family:system-ui;min-width:130px"><div style="font-size:12px;font-weight:700;color:#0f172a">${summary.name}</div><div style="font-size:10px;color:#94a3b8;margin-top:1px">${summary.totalReports} reporte${summary.totalReports !== 1 ? 's' : ''}</div><div style="display:flex;justify-content:space-between;gap:10px;margin-top:4px;padding-top:4px;border-top:1px solid #f1f5f9"><span style="color:#94a3b8;font-size:10px">${activeLabel}</span><span style="font-weight:700;color:${activeColor};font-size:11px">${kpiValue.toLocaleString()}</span></div></div>`,
         { direction: 'top', offset: [0, -radius - 2], className: 'pyba-tooltip' });
       circle.on('click', () => this.zone.run(() => { this.selectedMunicipio = summary; this.cdr.detectChanges(); }));
       this.markersLayer.addLayer(circle);
