@@ -1,0 +1,22 @@
+<div class="flex items-center gap-6">
+
+  <div style="position:relative;width:160px;height:160px;flex-shrink:0;">
+    <canvas #donutCanvas></canvas>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+    <div *ngFor="let seg of segments" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+      <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+        <span style="width:10px;height:10px;border-radius:2px;flex-shrink:0;" [style.background]="seg.color"></span>
+        <span style="font-size:12px;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+          {{ seg.label }}
+        </span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+        <span style="font-size:13px;font-weight:700;color:#0F172A;">{{ seg.value | number }}</span>
+        <span style="font-size:11px;color:#94A3B8;width:36px;text-align:right;">{{ seg.pct }}%</span>
+      </div>
+    </div>
+  </div>
+
+</div>

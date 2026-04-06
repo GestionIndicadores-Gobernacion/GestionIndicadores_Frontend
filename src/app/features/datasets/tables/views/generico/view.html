@@ -1,0 +1,45 @@
+<div class="max-w-7xl mx-auto px-6 py-8 space-y-6">
+
+    <!-- KPIs -->
+    <div class="grid gap-4" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">
+        <div *ngFor="let kpi of data.kpis; let i = index" class="rounded-xl p-4 relative overflow-hidden"
+            style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 rounded-t-xl" style="height:3px;"
+                [style.background]="['#2563EB','#0891B2','#059669','#7C3AED','#DB2777','#D97706'][i % 6]"></div>
+            <p class="text-[11px] font-bold uppercase tracking-wider mb-2" style="color:#94A3B8;">{{ kpi.label }}</p>
+            <p class="font-bold leading-none" style="font-size:1.9rem;color:#0F172A;letter-spacing:-0.04em;">{{
+                kpi.value }}</p>
+            <p *ngIf="kpi.sub" class="text-[11px] mt-1.5" style="color:#94A3B8;">{{ kpi.sub }}</p>
+        </div>
+    </div>
+
+    <!-- SECCIONES DINÁMICAS -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div *ngFor="let section of data.sections" [class]="sectionGridClass(section)"
+            class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+
+            <div class="flex items-center gap-3 px-5 py-3 border-b" style="border-color:#F1F5F9;">
+                <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                    [style.background]="sectionIconBg(section.type)">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6m4 0h6" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-[13px] font-bold" style="color:#0F172A;">{{ section.title }}</p>
+                    <p class="text-[11px]" style="color:#94A3B8;">{{ section.subtitle }}</p>
+                </div>
+            </div>
+
+            <div class="p-5">
+                <dashboard-bar *ngIf="section.type === 'bar'" [bars]="section.bars ?? []" />
+                <dashboard-histogram *ngIf="section.type === 'histogram'" [bars]="section.bars ?? []" />
+                <dashboard-donut *ngIf="section.type === 'donut'" [segments]="section.segments ?? []" />
+                <dashboard-completeness *ngIf="section.type === 'completeness'" [bars]="section.bars ?? []" />
+            </div>
+
+        </div>
+    </div>
+
+</div>
