@@ -12,11 +12,11 @@ export interface ActionPlanSupportStaffModel {
 export type RecurrenceFrequency = 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'yearly' | 'custom';
 
 export interface RecurrenceRule {
-  frequency:     RecurrenceFrequency;
-  until:         string;           // YYYY-MM-DD
+  frequency: RecurrenceFrequency;
+  until: string;           // YYYY-MM-DD
   day_of_month?: number | null;    // para monthly
-  day_of_week?:  number | null;    // 0=lun..6=dom
-  interval?:     number | null;    // para custom (cada N días)
+  day_of_week?: number | null;    // 0=lun..6=dom
+  interval?: number | null;    // para custom (cada N días)
 }
 
 /* =========================
@@ -30,6 +30,7 @@ export interface ActionPlanActivityModel {
   name: string;
   deliverable: string;
   delivery_date: string;
+  lugar?: string | null;
   requires_boss_assistance?: boolean;
   evidence_url?: string | null;
   description?: string | null;
@@ -72,9 +73,9 @@ export interface ActionPlanModel {
    Requests
 ========================= */
 export interface ActionPlanCreateRequest {
-  strategy_id:     number;
-  component_id:    number;
-  responsible?:    string | null;
+  strategy_id: number;
+  component_id: number;
+  responsible?: string | null;
   plan_objectives: ActionPlanObjectiveModel[];
 }
 
@@ -84,20 +85,21 @@ export interface ActionPlanReportRequest {
 }
 
 export interface ActionPlanActivityEditRequest {
-  name:                     string;
-  deliverable:              string;
-  delivery_date?:           string | null;
+  name: string;
+  deliverable: string;
+  delivery_date?: string | null;
+  lugar?: string | null;  
   requires_boss_assistance?: boolean;
-  support_staff?:           ActionPlanSupportStaffModel[];
-  edit_all?:                boolean;
+  support_staff?: ActionPlanSupportStaffModel[];
+  edit_all?: boolean;
 }
 
 /* =========================
    Filtros
 ========================= */
 export interface ActionPlanFilters {
-  strategy_id?:  number;
+  strategy_id?: number;
   component_id?: number;
-  month?:        number;
-  year?:         number;
+  month?: number;
+  year?: number;
 }

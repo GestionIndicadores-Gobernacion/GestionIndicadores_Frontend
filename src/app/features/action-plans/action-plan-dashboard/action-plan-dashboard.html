@@ -14,7 +14,7 @@
                 </div>
                 <div>
                     <h1 class="text-[20px] font-bold leading-none" style="color:#1B3A6B;">Dashboard de cumplimiento</h1>
-                    <p class="text-sm mt-1" style="color:#4A6A9B;">Calificaciones y seguimiento por persona</p>
+                    <p class="text-sm mt-1" style="color:#4A6A9B;">Seguimiento por persona responsable</p>
                 </div>
             </div>
             <a [routerLink]="['/action-plans/calendar']" class="text-[12px] font-semibold cursor-pointer transition"
@@ -52,7 +52,7 @@
                                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
                             </svg>
                             <input type="text" [(ngModel)]="search" (input)="applyFilters()"
-                                placeholder="Buscar por nombre o correo..."
+                                placeholder="Buscar por responsable o dueño del plan..."
                                 class="text-[12px] rounded-xl pl-9 pr-4 py-2 outline-none w-full"
                                 style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B"
                                 onfocus="this.style.borderColor='#1B3A6B';this.style.background='#fff'"
@@ -60,20 +60,8 @@
                         </div>
                     </div>
 
-                    <!-- Filtro rol -->
-                    <div class="flex flex-col gap-1 min-w-[160px]">
-                        <label class="text-[10.5px] font-bold uppercase tracking-[1px]"
-                            style="color:#1B3A6B;">Rol</label>
-                        <select [(ngModel)]="roleFilter" (change)="applyFilters()"
-                            class="text-[12px] rounded-xl px-3 py-2 outline-none"
-                            style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B">
-                            <option value="">Todos los roles</option>
-                            <option *ngFor="let r of availableRoles" [value]="r">{{ r }}</option>
-                        </select>
-                    </div>
-
                     <!-- Filtro estado -->
-                    <div class="flex flex-col gap-1 min-w-[160px]">
+                    <div class="flex flex-col gap-1 min-w-[180px]">
                         <label class="text-[10.5px] font-bold uppercase tracking-[1px]"
                             style="color:#1B3A6B;">Estado</label>
                         <select [(ngModel)]="statusFilter" (change)="applyFilters()"
@@ -89,7 +77,7 @@
                     <!-- Contador -->
                     <span class="text-[11px] font-semibold px-3 py-2 rounded-full self-end"
                         style="background:#D6E4F7;border:1px solid #B3CCE8;color:#1B3A6B;">
-                        {{ users.length }} {{ users.length === 1 ? 'persona' : 'personas' }}
+                        {{ users.length }} {{ users.length === 1 ? 'responsable' : 'responsables' }}
                     </span>
 
                 </div>
@@ -104,24 +92,83 @@
                     <table class="w-full">
                         <thead>
                             <tr style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);">
+
+                                <th (click)="sortBy('responsible')"
+                                    class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.8px] cursor-pointer select-none"
+                                    style="color:rgba(255,255,255,0.85)">
+                                    <div class="flex items-center gap-1">
+                                        Responsable
+                                        <span class="opacity-60">{{ sortCol === 'responsible' ? (sortDir === 'asc' ? '↑'
+                                            : '↓') : '↕' }}</span>
+                                    </div>
+                                </th>
+
                                 <th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.8px]"
-                                    style="color:rgba(255,255,255,0.85)">Persona</th>
-                                <th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.8px]"
-                                    style="color:rgba(255,255,255,0.85)">Rol</th>
-                                <th class="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
-                                    style="color:rgba(255,255,255,0.85)">Total</th>
-                                <th class="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
-                                    style="color:rgba(255,255,255,0.85)">Realizadas</th>
-                                <th class="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
-                                    style="color:rgba(255,255,255,0.85)">En ejecución</th>
-                                <th class="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
-                                    style="color:rgba(255,255,255,0.85)">Pendientes</th>
-                                <th class="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
-                                    style="color:rgba(255,255,255,0.85)">Cumplimiento</th>
-                                <th class="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
-                                    style="color:rgba(255,255,255,0.85)">Score ★</th>
+                                    style="color:rgba(255,255,255,0.85)">Dueño del plan</th>
+
+                                <th (click)="sortBy('total')"
+                                    class="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-[0.8px] cursor-pointer select-none"
+                                    style="color:rgba(255,255,255,0.85)">
+                                    <div class="flex items-center justify-center gap-1">
+                                        Total
+                                        <span class="opacity-60">{{ sortCol === 'total' ? (sortDir === 'asc' ? '↑' :
+                                            '↓') : '↕' }}</span>
+                                    </div>
+                                </th>
+
+                                <th (click)="sortBy('completed')"
+                                    class="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-[0.8px] cursor-pointer select-none"
+                                    style="color:rgba(255,255,255,0.85)">
+                                    <div class="flex items-center justify-center gap-1">
+                                        Realizadas
+                                        <span class="opacity-60">{{ sortCol === 'completed' ? (sortDir === 'asc' ? '↑' :
+                                            '↓') : '↕' }}</span>
+                                    </div>
+                                </th>
+
+                                <th (click)="sortBy('running')"
+                                    class="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-[0.8px] cursor-pointer select-none"
+                                    style="color:rgba(255,255,255,0.85)">
+                                    <div class="flex items-center justify-center gap-1">
+                                        En ejecución
+                                        <span class="opacity-60">{{ sortCol === 'running' ? (sortDir === 'asc' ? '↑' :
+                                            '↓') : '↕' }}</span>
+                                    </div>
+                                </th>
+
+                                <th (click)="sortBy('pending')"
+                                    class="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-[0.8px] cursor-pointer select-none"
+                                    style="color:rgba(255,255,255,0.85)">
+                                    <div class="flex items-center justify-center gap-1">
+                                        Pendientes
+                                        <span class="opacity-60">{{ sortCol === 'pending' ? (sortDir === 'asc' ? '↑' :
+                                            '↓') : '↕' }}</span>
+                                    </div>
+                                </th>
+
+                                <th (click)="sortBy('completion')"
+                                    class="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-[0.8px] cursor-pointer select-none"
+                                    style="color:rgba(255,255,255,0.85)">
+                                    <div class="flex items-center justify-center gap-1">
+                                        Cumplimiento
+                                        <span class="opacity-60">{{ sortCol === 'completion' ? (sortDir === 'asc' ? '↑'
+                                            : '↓') : '↕' }}</span>
+                                    </div>
+                                </th>
+
+                                <th (click)="sortBy('score')"
+                                    class="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-[0.8px] cursor-pointer select-none"
+                                    style="color:rgba(255,255,255,0.85)">
+                                    <div class="flex items-center justify-center gap-1">
+                                        Score ★
+                                        <span class="opacity-60">{{ sortCol === 'score' ? (sortDir === 'asc' ? '↑' :
+                                            '↓') : '↕' }}</span>
+                                    </div>
+                                </th>
+
                                 <th class="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
                                     style="color:rgba(255,255,255,0.85)">Detalle</th>
+
                             </tr>
                         </thead>
                         <tbody>
@@ -131,46 +178,57 @@
                                     style="border-bottom:1px solid #EEF2F9"
                                     [style.background]="i % 2 === 0 ? 'white' : '#FAFCFF'">
 
+                                    <!-- Responsable -->
                                     <td class="px-5 py-3">
                                         <div class="flex items-center gap-3">
                                             <div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
                                                 style="background:#D6E4F7;color:#1B3A6B;">
-                                                {{ user.first_name.charAt(0) }}{{ user.last_name.charAt(0) }}
+                                                {{ user.responsible.charAt(0).toUpperCase() }}
                                             </div>
-                                            <div>
-                                                <p class="text-[12px] font-semibold" style="color:#1B3A6B;">{{
-                                                    user.first_name }} {{ user.last_name }}</p>
-                                                <p class="text-[11px]" style="color:#8A9DC0;">{{ user.email }}</p>
-                                            </div>
+                                            <p class="text-[12px] font-semibold" style="color:#1B3A6B;">{{
+                                                user.responsible }}</p>
                                         </div>
                                     </td>
 
+                                    <!-- Dueño del plan -->
                                     <td class="px-5 py-3">
-                                        <span class="px-2.5 py-1 text-[11px] font-semibold rounded-full"
-                                            [ngClass]="roleClass(user.role)">
-                                            {{ user.role }}
-                                        </span>
+                                        <div class="flex flex-col gap-1.5">
+                                            <div *ngFor="let o of user.plans_owner">
+                                                <span class="text-[11px]" style="color:#4A6A9B;">
+                                                    {{ o.first_name }} {{ o.last_name }}
+                                                </span>
+                                            </div>
+                                            <span *ngIf="!user.plans_owner.length" class="text-[11px]"
+                                                style="color:#8A9DC0;">—</span>
+                                        </div>
                                     </td>
 
+                                    <!-- Total -->
                                     <td class="px-5 py-3 text-center text-[12px] font-semibold" style="color:#1B3A6B;">
-                                        {{ user.total_activities }}</td>
+                                        {{ user.total_activities }}
+                                    </td>
 
+                                    <!-- Realizadas -->
                                     <td class="px-5 py-3 text-center">
                                         <span class="text-[12px] font-semibold text-emerald-700">{{ user.completed
                                             }}</span>
                                     </td>
 
+                                    <!-- En ejecución -->
                                     <td class="px-5 py-3 text-center">
                                         <span class="text-[12px] font-semibold text-blue-700">
                                             {{ user.total_activities - user.completed - user.overdue - user.pending }}
                                         </span>
                                     </td>
 
+                                    <!-- Pendientes -->
                                     <td class="px-5 py-3 text-center">
-                                        <span class="text-[12px] font-semibold text-red-600">{{ user.pending +
-                                            user.overdue }}</span>
+                                        <span class="text-[12px] font-semibold text-red-600">
+                                            {{ user.pending + user.overdue }}
+                                        </span>
                                     </td>
 
+                                    <!-- Cumplimiento -->
                                     <td class="px-5 py-3">
                                         <div class="flex items-center gap-2">
                                             <div class="flex-1 h-2 rounded-full overflow-hidden"
@@ -180,17 +238,20 @@
                                                     [style.background]="completionRate(user) >= 80 ? '#10b981' : completionRate(user) >= 50 ? '#3b82f6' : '#ef4444'">
                                                 </div>
                                             </div>
-                                            <span class="text-[11px] font-bold shrink-0" style="color:#1B3A6B;">{{
-                                                completionRate(user) }}%</span>
+                                            <span class="text-[11px] font-bold shrink-0" style="color:#1B3A6B;">
+                                                {{ completionRate(user) }}%
+                                            </span>
                                         </div>
                                     </td>
 
+                                    <!-- Score -->
                                     <td class="px-5 py-3 text-center">
                                         <span class="text-[13px] font-bold" style="color:#F59E0B;">{{ user.total_score
                                             }}</span>
                                         <span class="text-[11px] ml-0.5" style="color:#8A9DC0;">pts</span>
                                     </td>
 
+                                    <!-- Detalle -->
                                     <td class="px-5 py-3 text-center">
                                         <button (click)="toggleUser(user)"
                                             class="px-2.5 py-1.5 text-[11px] font-bold rounded-lg border transition cursor-pointer"
@@ -201,7 +262,7 @@
 
                                 </tr>
 
-                                <!-- DETALLE -->
+                                <!-- DETALLE EXPANDIDO -->
                                 <tr *ngIf="user.expanded" style="background:#F8FAFD;">
                                     <td colspan="9" class="px-8 py-4">
                                         <div class="rounded-xl overflow-hidden border" style="border-color:#D6E0F0;">

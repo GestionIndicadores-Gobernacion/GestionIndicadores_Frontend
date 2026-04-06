@@ -66,10 +66,20 @@
 
                 <!-- RESPONSABLE -->
                 <div class="flex flex-col gap-1.5">
-                    <label class="text-xs font-semibold text-[#1B3A6B]">Responsable del plan</label>
-                    <input type="text" [(ngModel)]="form.responsible" name="responsible"
-                        placeholder="Nombre del responsable..." class="text-sm border border-[#d6e2f2] rounded-xl px-3 py-2.5 bg-[#F0F4FA] text-slate-800
-                   focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 focus:border-[#2d5fa8] transition" />
+                    <label class="text-xs font-semibold text-[#1B3A6B]">
+                        Responsable del plan <span class="text-red-500">*</span>
+                    </label>
+                    <select [(ngModel)]="form.responsible_user_id" name="responsible_user_id" class="text-sm border rounded-xl px-3 py-2.5 bg-[#F0F4FA] text-slate-800
+               focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 focus:border-[#2d5fa8] transition"
+                        [class.border-red-300]="errors['responsible_user_id']"
+                        [class.border-d6e2f2]="!errors['responsible_user_id']">
+                        <option [ngValue]="null" disabled>Seleccionar responsable...</option>
+                        <option *ngFor="let u of users" [ngValue]="u.id">
+                            {{ u.first_name }} {{ u.last_name }}
+                        </option>
+                    </select>
+                    <p *ngIf="errors['responsible_user_id']" class="text-xs text-red-500">{{
+                        errors['responsible_user_id'] }}</p>
                 </div>
 
                 <!-- OBJETIVOS -->
@@ -111,14 +121,12 @@
                             <span class="text-xs font-semibold text-[#1B3A6B] flex-shrink-0">Objetivo {{ oi + 1
                                 }}</span>
 
-                            <select *ngIf="!obj.isNew" [(ngModel)]="obj.objective_id" [name]="'obj_' + oi" class="flex-1 text-sm border border-[#d6e2f2] rounded-lg px-3 py-1.5 bg-white
-                       focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 transition">
-                                <option *ngFor="let o of objectives" [value]="o.id">{{ o.description }}</option>
-                            </select>
 
                             <input *ngIf="obj.isNew" type="text" [(ngModel)]="obj.objective_text"
-                                [name]="'obj_text_' + oi" placeholder="Descripción del nuevo objetivo..." class="flex-1 text-sm border border-[#d6e2f2] rounded-lg px-3 py-1.5 bg-white
-                       focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 transition" />
+                                [name]="'obj_text_' + oi" placeholder="Descripción del nuevo objetivo..." class="flex-1 text-sm border rounded-lg px-3 py-1.5 bg-white
+           focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 transition"
+                                [class.border-red-300]="errors['plan_objectives'] && !obj.objective_text.trim()"
+                                [class.border-d6e2f2]="!errors['plan_objectives'] || obj.objective_text.trim()" />
 
                             <span *ngIf="obj.isNew"
                                 class="text-xs px-2 py-0.5 bg-blue-50 text-[#2d5fa8] border border-blue-200 rounded-full">
@@ -140,8 +148,8 @@
                                 *ngFor="let activity of obj.activities; let ai = index; trackBy: trackByIndex"
                                 [activity]="activity" [index]="ai" [namePrefix]="'act_' + oi + '_' + ai"
                                 [canRemove]="obj.activities.length > 1" [showRecurrence]="true"
-                                (remove)="removeActivity(oi, ai)" (addStaff)="addStaff(oi, ai)"
-                                (removeStaff)="removeStaff(oi, ai, $event)">
+                                [showNameError]="!!errors['activities']" (remove)="removeActivity(oi, ai)"
+                                (addStaff)="addStaff(oi, ai)" (removeStaff)="removeStaff(oi, ai, $event)">
                             </app-action-plan-activity-form>
 
                             <button (click)="addActivity(oi)" type="button" class="flex items-center gap-1.5 text-xs font-medium text-[#2d5fa8] hover:text-[#1B3A6B]

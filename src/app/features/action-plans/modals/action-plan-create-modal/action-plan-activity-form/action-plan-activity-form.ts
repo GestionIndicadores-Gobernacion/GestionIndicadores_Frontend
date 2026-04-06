@@ -3,11 +3,13 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActionPlanRecurrencePanelComponent, RecurrenceForm } from '../action-plan-recurrence-panel/action-plan-recurrence-panel';
 import { RecurrenceFrequency } from '../../../../../core/models/action-plan.model';
+import { MUNICIPIOS_VALLE } from '../../../../../core/data/municipios';
 
 export interface ActivityFormData {
   name: string;
   deliverable: string;
   delivery_date: string;
+  lugar: string | null;
   requires_boss_assistance: boolean;
   support_staff: { name: string }[];
   recurrence: RecurrenceForm;
@@ -21,6 +23,8 @@ export interface ActivityFormData {
 })
 export class ActionPlanActivityFormComponent {
 
+  municipios = MUNICIPIOS_VALLE;
+
   @Input() activity!: ActivityFormData;
   @Input() index = 0;           // número de actividad (para mostrar)
   @Input() namePrefix = '';     // prefijo para names únicos
@@ -28,6 +32,7 @@ export class ActionPlanActivityFormComponent {
   @Input() showRecurrence = true;  // en edición puede desactivarse
   @Input() isEditMode = false;     // true = modal de edición
 
+  @Input() showNameError = false;  // ← AGREGA
   @Output() remove = new EventEmitter<void>();
   @Output() addStaff = new EventEmitter<void>();
   @Output() removeStaff = new EventEmitter<number>();
