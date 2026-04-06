@@ -28,6 +28,7 @@ export class ActionPlanActivityFormComponent {
   @Input() showRecurrence = true;  // en edición puede desactivarse
   @Input() isEditMode = false;     // true = modal de edición
 
+  @Input() showNameError = false;  // ← AGREGA
   @Output() remove = new EventEmitter<void>();
   @Output() addStaff = new EventEmitter<void>();
   @Output() removeStaff = new EventEmitter<number>();

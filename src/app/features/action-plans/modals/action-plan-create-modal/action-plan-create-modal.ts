@@ -5,10 +5,20 @@ import { forkJoin } from 'rxjs';
 import { ActionPlanCreateRequest, RecurrenceFrequency } from '../../../../core/models/action-plan.model';
 import { ComponentModel, ComponentObjectiveModel } from '../../../../core/models/component.model';
 import { StrategyModel } from '../../../../core/models/strategy.model';
+import { UserResponse } from '../../../../core/models/user.model';
 import { ActionPlanService } from '../../../../core/services/action-plan.service';
 import { ComponentsService } from '../../../../core/services/components.service';
 import { StrategiesService } from '../../../../core/services/strategies.service';
+import { UsersService } from '../../../../core/services/users.service';
 import { ActivityFormData, ActionPlanActivityFormComponent } from './action-plan-activity-form/action-plan-activity-form';
+
+const EXCLUDED_EMAILS = new Set([
+  'admin@gobernacion.gov.co',
+  'publico@indicadorespyba.cloud',
+  'editor@gobernacion.gov.co',
+  'viewer@gobernacion.gov.co',
+  'monitor@gmail.com',
+]);
 
 interface ObjectiveForm {
   objective_id: number | null;
@@ -33,6 +43,7 @@ export class ActionPlanCreateModalComponent implements OnInit {
   components: ComponentModel[] = [];
   filteredComponents: ComponentModel[] = [];
   objectives: ComponentObjectiveModel[] = [];
+  users: UserResponse[] = [];          // ← lista filtrada (sin admin)
 
   loading = true;
   saving = false;
@@ -41,30 +52,52 @@ export class ActionPlanCreateModalComponent implements OnInit {
   form: {
     strategy_id: number;
     component_id: number;
-    responsible: string;
+    responsible_user_id: number | null;   // ← ahora es id de usuario
     plan_objectives: ObjectiveForm[];
-  } = { strategy_id: 0, component_id: 0, responsible: '', plan_objectives: [] };
+  } = { strategy_id: 0, component_id: 0, responsible_user_id: null, plan_objectives: [] };
 
   constructor(
     private actionPlanService: ActionPlanService,
     private strategiesService: StrategiesService,
     private componentsService: ComponentsService,
+    private usersService: UsersService,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
     forkJoin({
       strategies: this.strategiesService.getAll(),
-      components: this.componentsService.getAll()
+      components: this.componentsService.getAll(),
+      users: this.usersService.getAll(),
     }).subscribe({
-      next: ({ strategies, components }) => {
+      next: ({ strategies, components, users }) => {
         this.strategies = strategies;
         this.components = components;
+        // Excluir emails excluidos
+          this.users = users.filter(u => !EXCLUDED_EMAILS.has(u.email));
         this.loading = false;
         this.cdr.detectChanges();
       },
       error: () => { this.loading = false; this.cdr.detectChanges(); }
     });
+  }
+
+  /** Nombre completo para mostrar en el select */
+  userDisplayName(user: UserResponse): string {
+    return `${user.first_name} ${user.last_name}`.trim();
+  }
+
+  /**
+   * Dado un nombre libre (planes ya creados con texto plano),
+   * intenta encontrar el usuario cuyo nombre completo coincida.
+   * Útil si en un futuro editas planes existentes.
+   */
+  matchUserByName(name: string): UserResponse | undefined {
+    if (!name) return undefined;
+    const normalized = name.trim().toLowerCase();
+    return this.users.find(u =>
+      this.userDisplayName(u).toLowerCase() === normalized
+    );
   }
 
   // ── Estrategia / Componente ──────────────────────────────────────
@@ -176,9 +209,15 @@ export class ActionPlanCreateModalComponent implements OnInit {
 
     if (!+this.form.strategy_id) this.errors['strategy_id'] = 'Debes seleccionar una estrategia.';
     if (!+this.form.component_id) this.errors['component_id'] = 'Debes seleccionar un componente.';
+    if (!this.form.responsible_user_id) this.errors['responsible_user_id'] = 'Debes asignar un responsable.';
     if (!this.form.plan_objectives.length) this.errors['plan_objectives'] = 'Debes tener al menos un objetivo.';
     if (this.form.plan_objectives.some(o => o.isNew && !o.objective_text.trim()))
       this.errors['plan_objectives'] = 'Los objetivos nuevos deben tener descripción.';
+    if (this.form.plan_objectives.some(o => !o.isNew && !o.objective_id))
+      this.errors['plan_objectives'] = 'Debes seleccionar un objetivo para cada entrada.';
+
+    if (this.form.plan_objectives.some(o => !o.isNew && !o.objective_id))
+      this.errors['plan_objectives'] = 'Todos los objetivos deben estar seleccionados.';
 
     for (const obj of this.form.plan_objectives) {
       if (obj.activities.some(a => !a.name.trim())) this.errors['activities'] = 'Todas las actividades deben tener nombre.';
@@ -190,10 +229,14 @@ export class ActionPlanCreateModalComponent implements OnInit {
 
     if (Object.keys(this.errors).length) return;
 
+    // Resolver nombre del responsable a partir del usuario seleccionado
+    const selectedUser = this.users.find(u => u.id === this.form.responsible_user_id) ?? null;
+
     const payload: ActionPlanCreateRequest = {
       strategy_id: +this.form.strategy_id,
       component_id: +this.form.component_id,
-      responsible: this.form.responsible.trim() || null,
+      // Se envía el nombre completo igual que antes (compatibilidad con backend)
+      responsible: selectedUser ? this.userDisplayName(selectedUser) : null,
       plan_objectives: this.form.plan_objectives.map(obj => ({
         objective_id: obj.isNew ? null : (obj.objective_id ? +obj.objective_id : null),
         objective_text: obj.isNew ? obj.objective_text.trim() : null,

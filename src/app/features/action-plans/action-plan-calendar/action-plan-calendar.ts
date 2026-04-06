@@ -20,6 +20,7 @@ import { ActionPlanEditModalComponent } from '../modals/action-plan-create-modal
 import { ActionPlanCalendarGridComponent } from './action-plan-calendar-grid/action-plan-calendar-grid';
 import { ActionPlanCalendarNavComponent } from './action-plan-calendar-nav/action-plan-calendar-nav';
 import { ActionPlanFiltersComponent } from './action-plan-filters/action-plan-filters';
+import { ActionPlanExportService } from '../../../core/services/action-plan-export.service';
 
 export interface CalendarDay {
   date: Date;
@@ -86,7 +87,8 @@ export class ActionPlanCalendarComponent implements OnInit {
     private componentsService: ComponentsService,
     private toast: ToastService,
     private ngZone: NgZone,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private exportService: ActionPlanExportService
   ) { }
 
   ngOnInit(): void {
@@ -94,6 +96,10 @@ export class ActionPlanCalendarComponent implements OnInit {
     this.canViewDashboard = user?.role?.name === 'admin' || user?.role?.name === 'monitor';
     this.loadStrategies();
     this.loadPlans();
+  }
+
+  exportPlans(): void {
+    this.exportService.export(this.displayPlans);
   }
 
   // ── Loaders ──────────────────────────────────────────────────────

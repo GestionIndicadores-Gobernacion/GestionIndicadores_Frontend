@@ -10,81 +10,50 @@
 
   <!-- HEADER -->
   <div class="px-6 pt-6 pb-4 flex items-center justify-between border-b" style="border-color: rgba(255,255,255,0.08);">
-
     <h3 class="text-[13px] font-semibold tracking-[1px] uppercase" style="color: rgba(255,255,255,0.85);"
       [class.hidden]="!isOpen">
       Navegación
     </h3>
-
-    <!-- Toggle -->
     <button (click)="toggleSidebar()" class="p-2 rounded-lg transition cursor-pointer hidden md:block"
       style="color: rgba(255,255,255,0.7);" onmouseover="this.style.background='rgba(255,255,255,0.08)'"
       onmouseout="this.style.background='transparent'">
-
       <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
           [attr.d]="isOpen ? 'M11 19l-7-7 7-7m8 14l-7-7 7-7' : 'M13 5l7 7-7 7M5 5l7 7-7 7'" />
-
       </svg>
     </button>
-
-    <!-- MOBILE CLOSE -->
     <button (click)="closeSidebar()" class="p-2 rounded-lg transition cursor-pointer md:hidden"
       style="color: rgba(255,255,255,0.7);" onmouseover="this.style.background='rgba(255,255,255,0.08)'"
       onmouseout="this.style.background='transparent'">
-
       <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-
       </svg>
     </button>
-
   </div>
 
   <!-- USER -->
   @if (userName && isOpen) {
-
   <div class="px-4 py-5 border-b" style="border-color: rgba(255,255,255,0.08);">
-
     <a [routerLink]="['/users/me']" class="flex items-center gap-3 rounded-xl p-3 transition-all cursor-pointer group"
       style="background: rgba(255,255,255,0.05);">
-
       <div
         class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold overflow-hidden shrink-0"
         style="background:#2d5fa8; color:white;">
-
         @if (profileImageUrl) {
         <img [src]="profileImageUrl" class="w-full h-full object-cover" />
         } @else {
         {{ userInitial }}
         }
-
       </div>
-
       <div class="leading-tight min-w-0 flex-1">
-
-        <p class="text-sm font-medium truncate" style="color: rgba(255,255,255,0.92);">
-          {{ userName }}
-        </p>
-
+        <p class="text-sm font-medium truncate" style="color: rgba(255,255,255,0.92);">{{ userName }}</p>
         @if (roleLabel) {
-        <p class="text-xs" style="color: rgba(255,255,255,0.65);">
-          {{ roleLabel }}
-        </p>
+        <p class="text-xs" style="color: rgba(255,255,255,0.65);">{{ roleLabel }}</p>
         }
-
-        <p class="text-xs truncate" style="color: rgba(255,255,255,0.5);">
-          {{ userEmail }}
-        </p>
-
+        <p class="text-xs truncate" style="color: rgba(255,255,255,0.5);">{{ userEmail }}</p>
       </div>
-
     </a>
-
   </div>
-
   }
 
   <!-- MENU -->
@@ -95,90 +64,100 @@
 
     <!-- SIMPLE LINK -->
     @if (item.route && !item.children && !item.disabled) {
-
-    <a [routerLink]="item.route" routerLinkActive="text-white" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm
-             transition-all cursor-pointer group" style="color: rgba(255,255,255,0.7);"
-      onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='transparent'"
-      [class.justify-center]="!isOpen" [title]="!isOpen ? item.label : ''">
-
+    <a [routerLink]="item.route" routerLinkActive="text-white"
+      class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all cursor-pointer group"
+      style="color: rgba(255,255,255,0.7);" onmouseover="this.style.background='rgba(255,255,255,0.08)'"
+      onmouseout="this.style.background='transparent'" [class.justify-center]="!isOpen"
+      [title]="!isOpen ? item.label : ''">
       @if (item.icon) {
       <span class="text-lg shrink-0">{{ item.icon }}</span>
       }
-
-      <span class="truncate" [class.hidden]="!isOpen">
-        {{ item.label }}
-      </span>
-
+      <span class="truncate" [class.hidden]="!isOpen">{{ item.label }}</span>
     </a>
-
     }
 
     <!-- DISABLED -->
     @if (item.disabled) {
-
-    <div class="flex items-center justify-between px-3 py-2 text-sm rounded-lg
-      cursor-not-allowed" style="color: rgba(255,255,255,0.4);" [class.justify-center]="!isOpen">
-
+    <div class="flex items-center justify-between px-3 py-2 text-sm rounded-lg cursor-not-allowed"
+      style="color: rgba(255,255,255,0.4);" [class.justify-center]="!isOpen">
       <span [class.hidden]="!isOpen">{{ item.label }}</span>
-
       <span class="text-[10px] px-2 py-0.5 rounded"
-        style="background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7);" [class.hidden]="!isOpen">
-        pronto
-      </span>
-
+        style="background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7);" [class.hidden]="!isOpen">pronto</span>
     </div>
-
     }
 
-    <!-- SECTION -->
+    <!-- SECTION (nivel 1) -->
     @if (item.children && hasVisibleChildren(item) && !item.disabled) {
-
     <div class="space-y-1">
 
-      <button type="button" (click)="toggleSection(item.label)" class="w-full flex items-center justify-between px-3 py-2 text-sm
-               rounded-lg transition-colors cursor-pointer" style="color: rgba(255,255,255,0.75);"
-        onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='transparent'"
-        [class.justify-center]="!isOpen">
-
-        <span class="truncate" [class.hidden]="!isOpen">
-          {{ item.label }}
-        </span>
-
+      <button type="button" (click)="toggleSection(item.label)"
+        class="w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors cursor-pointer"
+        style="color: rgba(255,255,255,0.75);" onmouseover="this.style.background='rgba(255,255,255,0.08)'"
+        onmouseout="this.style.background='transparent'" [class.justify-center]="!isOpen">
+        <span class="truncate" [class.hidden]="!isOpen">{{ item.label }}</span>
         <svg class="w-4 h-4 transition-transform shrink-0" [class.rotate-90]="isExpanded(item.label)"
           [class.hidden]="!isOpen" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,0.5)">
-
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-
         </svg>
-
       </button>
 
       @if (isExpanded(item.label) && isOpen) {
-
       <div class="ml-3 space-y-1 border-l pl-3" style="border-color: rgba(255,255,255,0.15);">
 
         @for (child of item.children; track child.label) {
         @if (canShow(child)) {
 
-        <a class="block px-3 py-2 rounded-lg text-sm
-                 transition-colors cursor-pointer" style="color: rgba(255,255,255,0.65);"
-          onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='transparent'"
-          [routerLink]="child.route" routerLinkActive="text-white"
+        <!-- hijo sin subhijos -->
+        @if (!child.children) {
+        <a class="block px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer"
+          style="color: rgba(255,255,255,0.65);" onmouseover="this.style.background='rgba(255,255,255,0.08)'"
+          onmouseout="this.style.background='transparent'" [routerLink]="child.route" routerLinkActive="text-white"
           [routerLinkActiveOptions]="{ exact: child.route === 'reports' }">
-
           {{ child.label }}
-
         </a>
+        }
 
+        <!-- hijo CON subhijos (nivel 2) -->
+        <!-- hijo CON subhijos (nivel 2) -->
+        @if (child.children) {
+        <div class="space-y-1">
+
+          <a [routerLink]="child.route" routerLinkActive="text-white" [routerLinkActiveOptions]="{ exact: true }"
+            (click)="toggleSection(child.label)"
+            class="w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors cursor-pointer"
+            style="color: rgba(255,255,255,0.65);" onmouseover="this.style.background='rgba(255,255,255,0.08)'"
+            onmouseout="this.style.background='transparent'">
+            <span class="truncate">{{ child.label }}</span>
+            <svg class="w-3.5 h-3.5 transition-transform shrink-0" [class.rotate-90]="isExpanded(child.label)"
+              fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,0.4)">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
+
+          @if (isExpanded(child.label)) {
+          <div class="ml-3 space-y-1 border-l pl-3" style="border-color: rgba(255,255,255,0.08);">
+            @for (grandchild of child.children; track grandchild.label) {
+            @if (canShow(grandchild)) {
+            <a class="block px-3 py-1.5 rounded-lg text-[12px] transition-colors cursor-pointer"
+              style="color: rgba(255,255,255,0.5);" onmouseover="this.style.background='rgba(255,255,255,0.06)'"
+              onmouseout="this.style.background='transparent'" [routerLink]="grandchild.route"
+              routerLinkActive="!text-white">
+              {{ grandchild.label }}
+            </a>
+            }
+            }
+          </div>
+          }
+
+        </div>
+        }
         }
         }
 
       </div>
-
       }
 
     </div>
-
     }
 
     }
@@ -188,23 +167,16 @@
 
   <!-- FOOTER -->
   <div class="p-4 border-t" style="border-color: rgba(255,255,255,0.08);">
-
     <button (click)="logout()" class="w-full flex items-center justify-center gap-2 text-sm font-medium
              py-2.5 rounded-lg transition-all cursor-pointer" style="background:#2d5fa8; color:white;"
       onmouseover="this.style.background='#3b6fc4'" onmouseout="this.style.background='#2d5fa8'"
       [title]="!isOpen ? 'Salir' : ''">
-
       <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
           d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-
       </svg>
-
       <span [class.hidden]="!isOpen">Salir</span>
-
     </button>
-
   </div>
 
 </aside>

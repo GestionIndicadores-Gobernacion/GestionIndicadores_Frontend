@@ -1,21 +1,89 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+
 import { StrategyModel } from '../../../../../core/models/strategy.model';
+import { StrategiesService } from '../../../../../core/services/strategies.service';
+import { ToastService } from '../../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-strategy-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './strategy-dashboard.html',
 })
-export class StrategyDashboardComponent implements OnChanges {
+export class StrategyDashboardComponent implements OnInit {
 
-  @Input() strategies: StrategyModel[] = [];
-  @Input() loading = false;
-  @Input() selectedYear: number = new Date().getFullYear();
+  strategies: StrategyModel[] = [];
+  loading = false;
 
-  @Output() edit = new EventEmitter<number>();
-  @Output() delete = new EventEmitter<number>();
+  selectedYear: number = new Date().getFullYear();
+  availableYears: number[] = [];
+
+  constructor(
+    private strategiesService: StrategiesService,
+    private router: Router,
+    private toast: ToastService,
+    private cd: ChangeDetectorRef
+  ) { }
+
+  ngOnInit(): void {
+    this.buildAvailableYears();
+    this.loadDashboard(this.selectedYear);
+  }
+
+  private buildAvailableYears(): void {
+    const currentYear = new Date().getFullYear();
+    this.availableYears = [];
+    for (let y = 2024; y <= currentYear; y++) {
+      this.availableYears.push(y);
+    }
+  }
+
+  loadDashboard(year: number): void {
+    this.loading = true;
+    this.cd.detectChanges();
+
+    this.strategiesService.getDashboard(year).subscribe({
+      next: (data) => {
+        this.strategies = data ?? [];
+        this.loading = false;
+        this.cd.detectChanges();
+      },
+      error: () => {
+        this.toast.error('No se pudo cargar el dashboard');
+        this.loading = false;
+        this.cd.detectChanges();
+      }
+    });
+  }
+
+  onYearChange(year: number): void {
+    this.selectedYear = year;
+    this.loadDashboard(year);
+  }
+
+  goToEdit(id: number): void {
+    this.router.navigate([`/reports/strategies/${id}/edit`]);
+  }
+
+  deleteStrategy(id: number): void {
+    this.toast
+      .confirm('¿Eliminar estrategia?', 'Esta acción no se puede deshacer.')
+      .then(result => {
+        if (!result.isConfirmed) return;
+        this.strategiesService.delete(id).subscribe({
+          next: () => {
+            this.toast.success('Estrategia eliminada correctamente');
+            this.loadDashboard(this.selectedYear);
+          },
+          error: () => this.toast.error('No se pudo eliminar la estrategia')
+        });
+      });
+  }
+
+  // ── Helpers (mismos que antes) ──────────────────────────────
 
   get visibleStrategies(): StrategyModel[] {
     return this.strategies.filter(s => (s.progress?.current_year_goal ?? 0) > 0);
@@ -24,8 +92,6 @@ export class StrategyDashboardComponent implements OnChanges {
   get hiddenCount(): number {
     return this.strategies.length - this.visibleStrategies.length;
   }
-
-  ngOnChanges(changes: SimpleChanges): void { }
 
   private getMaxValue(): number {
     return Math.max(
@@ -37,51 +103,40 @@ export class StrategyDashboardComponent implements OnChanges {
     );
   }
 
-  // Devuelve % del ancho relativo al máximo (0-100)
   getBarPercent(s: StrategyModel): number {
-    return Math.min(
-      ((s.progress?.current_year_actual ?? 0) / this.getMaxValue()) * 100,
-      100
-    );
+    return Math.min(((s.progress?.current_year_actual ?? 0) / this.getMaxValue()) * 100, 100);
   }
 
   getGoalPercent(s: StrategyModel): number {
-    return Math.min(
-      ((s.progress?.current_year_goal ?? 0) / this.getMaxValue()) * 100,
-      100
-    );
+    return Math.min(((s.progress?.current_year_goal ?? 0) / this.getMaxValue()) * 100, 100);
   }
 
   getPercent(s: StrategyModel): number { return s.progress?.percent ?? 0; }
 
-  getProgressColor(percent: number): string {
-    if (percent >= 80) return '#15803d';
-    if (percent >= 50) return '#b45309';
-    return '#b91c1c';
+  getProgressColor(p: number): string {
+    return p >= 80 ? '#15803d' : p >= 50 ? '#b45309' : '#b91c1c';
   }
 
-  getProgressBg(percent: number): string {
-    if (percent >= 80) return '#dcfce7';
-    if (percent >= 50) return '#fef3c7';
-    return '#fee2e2';
+  getProgressBg(p: number): string {
+    return p >= 80 ? '#dcfce7' : p >= 50 ? '#fef3c7' : '#fee2e2';
   }
 
-  getProgressTextColor(percent: number): string {
-    if (percent >= 80) return '#166534';
-    if (percent >= 50) return '#92400e';
-    return '#991b1b';
+  getProgressTextColor(p: number): string {
+    return p >= 80 ? '#166534' : p >= 50 ? '#92400e' : '#991b1b';
   }
 
-  getProgressBarColor(percent: number): string {
-    if (percent >= 80) return 'linear-gradient(90deg,#16a34a,#22c55e)';
-    if (percent >= 50) return 'linear-gradient(90deg,#d97706,#f59e0b)';
-    return 'linear-gradient(90deg,#dc2626,#ef4444)';
+  getProgressBarColor(p: number): string {
+    return p >= 80
+      ? 'linear-gradient(90deg,#16a34a,#22c55e)'
+      : p >= 50
+        ? 'linear-gradient(90deg,#d97706,#f59e0b)'
+        : 'linear-gradient(90deg,#dc2626,#ef4444)';
   }
 
-  getStatusLabel(percent: number): string {
-    if (percent >= 80) return 'En meta';
-    if (percent >= 50) return 'En progreso';
-    if (percent > 0) return 'Por debajo';
+  getStatusLabel(p: number): string {
+    if (p >= 80) return 'En meta';
+    if (p >= 50) return 'En progreso';
+    if (p > 0) return 'Por debajo';
     return 'Sin datos';
   }
 
