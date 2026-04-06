@@ -71,10 +71,11 @@
         <!-- FILTROS -->
         <app-action-plan-filters [strategies]="strategies" [filteredComponents]="filteredComponents"
             [selectedStrategyId]="selectedStrategyId" [activeStatusFilter]="activeStatusFilter"
-            [filterByBoss]="filterByBoss" [filteredPlansCount]="filteredPlansCount"
+            [filterByBoss]="filterByBoss" [filterMyPlans]="filterMyPlans" [filteredPlansCount]="filteredPlansCount"
             [selectedDayFilter]="selectedDayFilter" (strategyChange)="onStrategyChange($event)"
             (componentChange)="onComponentChange($event)" (statusChange)="onStatusFilterChange($event)"
-            (bossChange)="onBossFilterChange($event)" (clearDayFilter)="clearDayFilter()">
+            (bossChange)="onBossFilterChange($event)" (myPlansChange)="onMyPlansFilterChange($event)"
+            (clearDayFilter)="clearDayFilter()">
         </app-action-plan-filters>
 
         <!-- CALENDARIO -->

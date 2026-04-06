@@ -253,6 +253,7 @@ export class ActionPlanCreateModalComponent implements OnInit {
       component_id: +this.form.component_id,
       // Se envía el nombre completo igual que antes (compatibilidad con backend)
       responsible: selectedUser ? this.userDisplayName(selectedUser) : null,
+      responsible_user_id: this.form.responsible_user_id,
       plan_objectives: this.form.plan_objectives.map(obj => ({
         objective_id: obj.isNew ? null : (obj.objective_id ? +obj.objective_id : null),
         objective_text: obj.isNew ? obj.objective_text.trim() : null,

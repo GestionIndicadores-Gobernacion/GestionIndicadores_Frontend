@@ -182,6 +182,7 @@ export class ActionPlanEditPlanModalComponent implements OnInit {
 
     const payload = {
       responsible: selectedUser ? this.userDisplayName(selectedUser) : null,
+      responsible_user_id: this.form.responsible_user_id,
       plan_objectives: this.form.plan_objectives.map(obj => ({
         objective_id: obj.isNew ? null : obj.objective_id,
         objective_text: obj.isNew ? obj.objective_text.trim() : null,
