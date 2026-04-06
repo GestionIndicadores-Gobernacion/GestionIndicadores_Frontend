@@ -1,0 +1,261 @@
+<div class="flex gap-5 min-h-0" style="align-items:flex-start;">
+
+    <!-- MAIN PANEL -->
+    <div class="flex-1 min-w-0 space-y-4">
+
+        <!-- FILTER BAR -->
+        <div class="rounded-xl p-4 space-y-3" style="background:white;border:1px solid #E2E8F0;">
+
+            <!-- ROW 1: search + dropdowns + clear -->
+            <div class="flex items-center gap-3 flex-wrap">
+
+                <!-- SEARCH -->
+                <div class="relative" style="flex:1;min-width:200px;max-width:340px;">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" width="14" height="14"
+                        viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                    <input type="text" [placeholder]="searchPlaceholder" [value]="searchTerm()"
+                        (input)="searchTerm.set($any($event.target).value); currentPage.set(1)"
+                        class="w-full text-[13px] rounded-lg outline-none transition-all"
+                        style="background:#F8FAFC;border:1.5px solid #E2E8F0;color:#1E293B;padding:9px 14px 9px 38px;"
+                        onfocus="this.style.borderColor='#2563EB';this.style.boxShadow='0 0 0 3px rgba(37,99,235,0.08)'"
+                        onblur="this.style.borderColor='#E2E8F0';this.style.boxShadow='none'" />
+                </div>
+
+                <!-- DROPDOWNS -->
+                <div *ngFor="let cat of categoricalFields()" class="flex flex-col gap-1">
+                    <label class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">
+                        {{ cat.field.label }}
+                    </label>
+                    <select (change)="setDropdownFilter(cat.field.name, $any($event.target).value)"
+                        class="text-[12px] rounded-lg outline-none cursor-pointer"
+                        style="background:#F8FAFC;border:1.5px solid #E2E8F0;color:#1E293B;padding:7px 12px;">
+                        <option value="">Todos</option>
+                        <option *ngFor="let opt of cat.options" [value]="opt">{{ opt }}</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-2 ml-auto">
+                    <!-- COUNTER -->
+                    <span class="text-[12px]" style="color:#94A3B8;">
+                        <span class="font-bold" style="color:#1E293B;">{{ filteredRecords().length | number }}</span>
+                        de {{ viewerData()?.total | number }}
+                    </span>
+
+                    <!-- CLEAR -->
+                    <button *ngIf="hasActiveFilters()" (click)="clearAllFilters()"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-bold cursor-pointer"
+                        style="background:#FEF2F2;color:#EF4444;border:1px solid #FECACA;">
+                        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Limpiar
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- ROW 2: chips sí/no -->
+            <div *ngIf="yesnoFields().length > 0" class="flex flex-wrap items-center gap-2">
+                <span class="text-[11px] font-bold shrink-0" style="color:#94A3B8;">Filtrar por:</span>
+                <button *ngFor="let f of yesnoFields()" (click)="setFilter(f.name, 'Si')"
+                    class="px-3 py-1 rounded-full text-[11px] font-bold border cursor-pointer transition-all"
+                    [style.background]="isFilterActive(f.name, 'Si') ? '#1B3A6B' : '#F8FAFC'"
+                    [style.color]="isFilterActive(f.name, 'Si') ? 'white' : '#64748B'"
+                    [style.border-color]="isFilterActive(f.name, 'Si') ? '#1B3A6B' : '#E2E8F0'">
+                    {{ f.label }}
+                </button>
+            </div>
+
+        </div>
+
+        <!-- LOADING -->
+        <div *ngIf="loading()" class="flex justify-center py-20">
+            <div class="w-8 h-8 rounded-full animate-spin" style="border:3px solid #E2E8F0;border-top-color:#2563EB;">
+            </div>
+        </div>
+
+        <!-- TABLE -->
+        <div *ngIf="!loading() && viewerData()" class="rounded-xl overflow-hidden"
+            style="background:white;border:1px solid #E2E8F0;">
+
+            <div class="overflow-x-auto">
+                <table class="w-full" style="border-collapse:collapse;">
+
+                    <thead>
+                        <tr style="background:#F8FAFC;border-bottom:1.5px solid #E2E8F0;">
+
+                            <!-- AVATAR col -->
+                            <th class="w-10 px-4 py-3"></th>
+
+                            <th *ngFor="let f of tableFields()" (click)="setSort(f.name)"
+                                class="px-4 py-3 text-left cursor-pointer select-none group"
+                                style="white-space:nowrap;">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-[11px] font-bold uppercase tracking-wider"
+                                        style="color:#64748B;">{{ f.label }}</span>
+                                    <span class="text-[10px]" style="color:#CBD5E1;">
+                                        <ng-container
+                                            *ngIf="sortField() === f.name && sortDir() === 'asc'">↑</ng-container>
+                                        <ng-container
+                                            *ngIf="sortField() === f.name && sortDir() === 'desc'">↓</ng-container>
+                                        <ng-container *ngIf="sortField() !== f.name">↕</ng-container>
+                                    </span>
+                                </div>
+                            </th>
+
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr *ngFor="let rec of paginatedRecords(); let i = index" (click)="selectRecord(rec)"
+                            class="cursor-pointer transition-colors duration-100"
+                            [style.background]="selectedRecord()?.id === rec.id ? '#EFF6FF' : i % 2 === 0 ? 'white' : '#FAFCFF'"
+                            [style.border-left]="selectedRecord()?.id === rec.id ? '3px solid #2563EB' : '3px solid transparent'"
+                            style="border-bottom:1px solid #F1F5F9;"
+                            onmouseover="if(!this.style.borderLeftColor.includes('2563')) this.style.background='#F8FAFC'"
+                            onmouseout="if(!this.style.borderLeftColor.includes('2563')) this.style.background=''">
+
+                            <!-- AVATAR -->
+                            <td class="px-4 py-2.5">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0"
+                                    [style.background]="getAvatarColor(rec)">
+                                    {{ getInitials(rec) }}
+                                </div>
+                            </td>
+
+                            <td *ngFor="let f of tableFields()" class="px-4 py-2.5 text-[12px]"
+                                style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+
+                                <ng-container *ngIf="YESNO_FIELDS.includes(f.name.toLowerCase()); else plain">
+                                    <span *ngIf="isYesValue(getCellValue(rec, f.name))"
+                                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
+                                        style="background:#DCFCE7;color:#15803D;">
+                                        <span
+                                            style="width:4px;height:4px;background:#15803D;border-radius:50%;display:inline-block;"></span>
+                                        Sí
+                                    </span>
+                                    <span *ngIf="!isYesValue(getCellValue(rec, f.name))" style="color:#CBD5E1;">—</span>
+                                </ng-container>
+
+                                <ng-template #plain>
+                                    <span [style.color]="getCellValue(rec, f.name) === '—' ? '#CBD5E1' : '#1E293B'">
+                                        {{ getCellValue(rec, f.name) }}
+                                    </span>
+                                </ng-template>
+
+                            </td>
+
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+
+            <!-- EMPTY -->
+            <div *ngIf="filteredRecords().length === 0" class="py-16 text-center">
+                <p class="text-[13px]" style="color:#94A3B8;">Sin registros con los filtros aplicados</p>
+                <button (click)="clearAllFilters()"
+                    class="mt-3 px-4 py-2 rounded-lg text-[12px] font-bold cursor-pointer"
+                    style="background:#1B3A6B;color:white;">
+                    Limpiar filtros
+                </button>
+            </div>
+
+        </div>
+
+        <!-- PAGINACIÓN -->
+        <div *ngIf="totalPages() > 1" class="flex items-center justify-center gap-1.5">
+            <button (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-[13px] font-bold cursor-pointer disabled:opacity-30"
+                style="background:white;border:1.5px solid #E2E8F0;color:#1E293B;">‹</button>
+
+            <ng-container *ngFor="let p of pageNumbers()">
+                <button *ngIf="p !== '...'" (click)="goToPage(+p)"
+                    class="w-8 h-8 rounded-lg flex items-center justify-center text-[12px] font-bold cursor-pointer transition-all"
+                    [style.background]="currentPage() === +p ? '#1B3A6B' : 'white'"
+                    [style.color]="currentPage() === +p ? 'white' : '#64748B'" style="border:1.5px solid #E2E8F0;">{{ p
+                    }}</button>
+                <span *ngIf="p === '...'" class="w-8 h-8 flex items-center justify-center text-[12px]"
+                    style="color:#94A3B8;">…</span>
+            </ng-container>
+
+            <button (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-[13px] font-bold cursor-pointer disabled:opacity-30"
+                style="background:white;border:1.5px solid #E2E8F0;color:#1E293B;">›</button>
+        </div>
+
+    </div>
+
+    <!-- DETAIL PANEL -->
+    <div *ngIf="selectedRecord()" class="rounded-xl overflow-hidden shrink-0"
+        style="width:320px;background:white;border:1px solid #E2E8F0;position:sticky;top:80px;">
+
+        <!-- PANEL HEADER -->
+        <div class="px-5 py-4 border-b" style="border-color:#F1F5F9;">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-[11px] font-bold uppercase tracking-wider" style="color:#94A3B8;">
+                    Detalle
+                </span>
+                <button (click)="closeDetail()"
+                    class="w-7 h-7 rounded-lg flex items-center justify-center cursor-pointer"
+                    style="background:#F1F5F9;color:#64748B;" onmouseover="this.style.background='#E2E8F0'"
+                    onmouseout="this.style.background='#F1F5F9'">
+                    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- AVATAR + NAME -->
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center text-[14px] font-bold text-white shrink-0"
+                    [style.background]="getAvatarColor(selectedRecord())">
+                    {{ getInitials(selectedRecord()) }}
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[14px] font-bold truncate" style="color:#0F172A;">
+                        {{ detailHeader().title }}
+                    </p>
+                    <p class="text-[12px] truncate" style="color:#94A3B8;">
+                        {{ detailHeader().subtitle }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- FIELDS -->
+        <div class="overflow-y-auto" style="max-height:calc(100vh - 280px);">
+            <div class="p-5 space-y-3">
+
+                <ng-container *ngFor="let f of detailFields()">
+
+                    <!-- YESNO -->
+                    <div *ngIf="f.isYesno && isYesValue(f.value)"
+                        class="flex items-center justify-between py-2 border-b" style="border-color:#F8FAFC;">
+                        <span class="text-[12px]" style="color:#64748B;">{{ f.label }}</span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                            style="background:#DCFCE7;color:#15803D;">Sí</span>
+                    </div>
+
+                    <!-- NORMAL -->
+                    <div *ngIf="!f.isYesno && f.value !== '—'"
+                        class="flex items-start justify-between gap-3 py-2 border-b" style="border-color:#F8FAFC;">
+                        <span class="text-[12px] shrink-0" style="color:#94A3B8;">{{ f.label }}</span>
+                        <span class="text-[12px] font-medium text-right break-all" style="color:#1E293B;">
+                            {{ f.value }}
+                        </span>
+                    </div>
+
+                </ng-container>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>

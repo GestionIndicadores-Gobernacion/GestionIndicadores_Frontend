@@ -1,0 +1,23 @@
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+    <div *ngFor="let bar of bars" class="rounded-xl p-4" style="background:#F8FAFC;border:1px solid #E2E8F0;">
+
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-[12px] font-semibold" style="color:#1E293B;">{{ bar.label }}</span>
+            <span class="text-[18px] font-bold" [style.color]="colorFor(bar.pct)">
+                {{ bar.pct }}%
+            </span>
+        </div>
+
+        <div class="rounded-full overflow-hidden mb-2" style="height:8px;background:#E2E8F0;">
+            <div class="h-full rounded-full transition-all duration-700" [style.width.%]="bar.pct"
+                [style.background]="colorFor(bar.pct)">
+            </div>
+        </div>
+
+        <span class="text-[11px] font-bold px-2 py-0.5 rounded-full" [style.background]="bgFor(bar.pct)"
+            [style.color]="colorFor(bar.pct)">
+            {{ labelFor(bar.pct) }} completitud
+        </span>
+
+    </div>
+</div>
