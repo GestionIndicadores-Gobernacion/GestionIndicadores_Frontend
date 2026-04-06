@@ -11,6 +11,7 @@ import { ComponentsService } from '../../../../core/services/components.service'
 import { StrategiesService } from '../../../../core/services/strategies.service';
 import { UsersService } from '../../../../core/services/users.service';
 import { ActivityFormData, ActionPlanActivityFormComponent } from './action-plan-activity-form/action-plan-activity-form';
+import { MUNICIPIOS_VALLE } from '../../../../core/data/municipios';
 
 const EXCLUDED_EMAILS = new Set([
   'admin@gobernacion.gov.co',
@@ -49,12 +50,19 @@ export class ActionPlanCreateModalComponent implements OnInit {
   saving = false;
   errors: Record<string, string> = {};
 
+  municipios = MUNICIPIOS_VALLE;
+
   form: {
     strategy_id: number;
     component_id: number;
-    responsible_user_id: number | null;   // ← ahora es id de usuario
+    responsible_user_id: number | null;
     plan_objectives: ObjectiveForm[];
-  } = { strategy_id: 0, component_id: 0, responsible_user_id: null, plan_objectives: [] };
+  } = {
+      strategy_id: 0,
+      component_id: 0,
+      responsible_user_id: null,
+      plan_objectives: []
+    };
 
   constructor(
     private actionPlanService: ActionPlanService,
@@ -74,7 +82,7 @@ export class ActionPlanCreateModalComponent implements OnInit {
         this.strategies = strategies;
         this.components = components;
         // Excluir emails excluidos
-          this.users = users.filter(u => !EXCLUDED_EMAILS.has(u.email));
+        this.users = users.filter(u => !EXCLUDED_EMAILS.has(u.email));
         this.loading = false;
         this.cdr.detectChanges();
       },
@@ -163,11 +171,19 @@ export class ActionPlanCreateModalComponent implements OnInit {
 
   private newActivity(): ActivityFormData {
     return {
-      name: '', deliverable: '', delivery_date: '',
-      requires_boss_assistance: false, support_staff: [],
+      name: '',
+      deliverable: '',
+      delivery_date: '',
+      lugar: null,   // ← FALTABA
+      requires_boss_assistance: false,
+      support_staff: [],
       recurrence: {
-        enabled: false, frequency: 'monthly' as RecurrenceFrequency,
-        until: this.defaultUntil(), day_of_month: null, day_of_week: null, interval: 7,
+        enabled: false,
+        frequency: 'monthly' as RecurrenceFrequency,
+        until: this.defaultUntil(),
+        day_of_month: null,
+        day_of_week: null,
+        interval: 7,
       },
     };
   }
@@ -243,6 +259,7 @@ export class ActionPlanCreateModalComponent implements OnInit {
         activities: obj.activities.map(a => ({
           name: a.name.trim(), deliverable: a.deliverable.trim(),
           delivery_date: a.delivery_date,
+          lugar: a.lugar,   
           requires_boss_assistance: a.requires_boss_assistance,
           support_staff: a.support_staff.filter(s => s.name.trim()).map(s => ({ name: s.name.trim() })),
           recurrence: a.recurrence.enabled ? {

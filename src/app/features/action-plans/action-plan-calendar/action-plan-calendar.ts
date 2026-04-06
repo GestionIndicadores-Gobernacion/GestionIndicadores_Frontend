@@ -21,6 +21,7 @@ import { ActionPlanCalendarGridComponent } from './action-plan-calendar-grid/act
 import { ActionPlanCalendarNavComponent } from './action-plan-calendar-nav/action-plan-calendar-nav';
 import { ActionPlanFiltersComponent } from './action-plan-filters/action-plan-filters';
 import { ActionPlanExportService } from '../../../core/services/action-plan-export.service';
+import { ActionPlanEditPlanModalComponent } from '../modals/action-plan-create-modal/action-plan-edit-modal/action-plan-edit-plan-modal/action-plan-edit-plan-modal';
 
 export interface CalendarDay {
   date: Date;
@@ -49,6 +50,7 @@ interface ModalState {
     ActionPlanCreateModalComponent,
     ActionPlanReportModalComponent,
     ActionPlanEditModalComponent,
+    ActionPlanEditPlanModalComponent,
     ActionPlanListComponent,
     ActionPlanCalendarGridComponent,
     ActionPlanFiltersComponent,
@@ -81,6 +83,9 @@ export class ActionPlanCalendarComponent implements OnInit {
   modal: ModalState = { plan: null, objective: null, activity: null };
   hoveredFlat: (FlatActivity & { x: number; y: number }) | null = null;
 
+  showEditPlanModal = false;
+  planToEdit: ActionPlanModel | null = null;
+
   constructor(
     private actionPlanService: ActionPlanService,
     private strategiesService: StrategiesService,
@@ -100,6 +105,23 @@ export class ActionPlanCalendarComponent implements OnInit {
 
   exportPlans(): void {
     this.exportService.export(this.displayPlans);
+  }
+
+  openEditPlanModal(plan: ActionPlanModel, event: Event): void {
+    event.stopPropagation();
+    this.planToEdit = plan;
+    this.showEditPlanModal = true;
+  }
+
+  closeEditPlanModal(): void {
+    this.showEditPlanModal = false;
+    this.planToEdit = null;
+  }
+
+  onPlanEdited(): void {
+    this.closeEditPlanModal();
+    this.loadPlans();
+    this.toast.success('Plan actualizado correctamente');
   }
 
   // ── Loaders ──────────────────────────────────────────────────────

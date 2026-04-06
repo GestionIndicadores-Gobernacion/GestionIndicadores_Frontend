@@ -1,0 +1,130 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4" (click)="onClose()">
+    <div class="absolute inset-0 bg-[#0f172a]/40 backdrop-blur-sm"></div>
+
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden border border-[#e6edf7]"
+        (click)="$event.stopPropagation()">
+
+        <!-- HEADER -->
+        <div class="flex items-center justify-between px-6 py-5 border-b border-[#e6edf7]
+                bg-gradient-to-r from-[#1B3A6B] to-[#2d5fa8] text-white">
+            <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-sm font-semibold tracking-wide">Editar Plan de Acción</h2>
+                    <p class="text-xs text-blue-100 mt-0.5">Solo actividades pendientes o en ejecución</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div *ngIf="loading" class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin">
+                </div>
+                <button (click)="onClose()" class="p-2 rounded-xl hover:bg-white/10 transition-colors">
+                    <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- BODY -->
+        <div class="overflow-y-auto flex-1 px-6 py-6 space-y-6 bg-[#f7f9fc]">
+            <ng-container *ngIf="!loading">
+
+                <!-- RESPONSABLE -->
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-semibold text-[#1B3A6B]">Responsable del plan <span
+                            class="text-red-500">*</span></label>
+                    <select [(ngModel)]="form.responsible_user_id" class="text-sm border rounded-xl px-3 py-2.5 bg-[#F0F4FA] text-slate-800
+                     focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 focus:border-[#2d5fa8] transition"
+                        [class.border-red-300]="errors['responsible']" [class.border-d6e2f2]="!errors['responsible']">
+                        <option *ngIf="legacyResponsible" [ngValue]="null">
+                            {{ legacyResponsible }} (responsable anterior)
+                        </option>
+                        <option [ngValue]="null" disabled>Seleccionar responsable...</option>
+                        <option *ngFor="let u of users" [ngValue]="u.id">{{ userDisplayName(u) }}</option>
+                    </select>
+                    <p *ngIf="errors['responsible']" class="text-xs text-red-500">{{ errors['responsible'] }}</p>
+                </div>
+
+                <!-- OBJETIVOS -->
+                <div class="flex flex-col gap-3">
+                    <div>
+                        <label class="text-xs font-semibold text-[#1B3A6B]">Actividades por objetivo <span
+                                class="text-red-500">*</span></label>
+                        <p class="text-xs text-slate-400 mt-0.5">Las actividades ya realizadas no se muestran.</p>
+                    </div>
+
+                    <p *ngIf="errors['objectives']" class="text-xs text-red-500">{{ errors['objectives'] }}</p>
+                    <p *ngIf="errors['activities']" class="text-xs text-red-500">{{ errors['activities'] }}</p>
+
+                    <div *ngIf="form.plan_objectives.length === 0"
+                        class="border border-dashed border-[#d6e2f2] rounded-xl p-6 text-center bg-white">
+                        <p class="text-sm text-slate-400">No hay actividades pendientes o en ejecución para editar.</p>
+                    </div>
+
+                    <div *ngFor="let obj of form.plan_objectives; let oi = index; trackBy: trackByIndex"
+                        class="border border-[#e6edf7] rounded-xl overflow-hidden bg-white shadow-sm">
+
+                        <!-- Header objetivo -->
+                        <div
+                            class="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-[#eef3fb] to-[#f6f9ff] border-b border-[#e6edf7]">
+                            <span class="text-xs font-semibold text-[#1B3A6B] flex-shrink-0">Objetivo {{ oi + 1
+                                }}</span>
+                            <span *ngIf="!obj.isNew" class="flex-1 text-xs text-slate-600 truncate">
+                                {{ objectiveLabel(obj.objective_id) }}
+                            </span>
+                            <span *ngIf="obj.isNew" class="flex-1 text-xs text-slate-600 truncate italic">{{
+                                obj.objective_text }}</span>
+                        </div>
+
+                        <!-- Actividades -->
+                        <div class="p-4 space-y-3">
+                            <app-action-plan-activity-form
+                                *ngFor="let activity of obj.activities; let ai = index; trackBy: trackByIndex"
+                                [activity]="activity" [index]="ai" [namePrefix]="'edit_' + oi + '_' + ai"
+                                [canRemove]="obj.activities.length > 1" [showRecurrence]="false" [isEditMode]="true"
+                                [showNameError]="!!errors['activities']" (remove)="removeActivity(oi, ai)"
+                                (addStaff)="addStaff(oi, ai)" (removeStaff)="removeStaff(oi, ai, $event)">
+                            </app-action-plan-activity-form>
+
+                            <button (click)="addActivity(oi)" type="button"
+                                class="flex items-center gap-1.5 text-xs font-medium text-[#2d5fa8] hover:text-[#1B3A6B]
+                         w-full justify-center border border-dashed border-[#cdd9ee] rounded-lg py-2 hover:border-[#2d5fa8]">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                Agregar actividad
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </ng-container>
+
+            <!-- Skeleton -->
+            <div *ngIf="loading" class="space-y-4 animate-pulse">
+                <div class="h-10 bg-slate-200 rounded-xl"></div>
+                <div class="h-32 bg-slate-200 rounded-xl"></div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#e6edf7] bg-white">
+            <p *ngIf="errors['general']" class="text-xs text-red-500 mr-auto">{{ errors['general'] }}</p>
+            <button (click)="onClose()" type="button"
+                class="px-4 py-2 text-sm font-medium text-slate-600 border border-[#d6e2f2] rounded-xl hover:bg-slate-50 transition">
+                Cancelar
+            </button>
+            <button (click)="submit()" type="button" [disabled]="saving || loading" class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#1B3A6B] to-[#2d5fa8]
+                 rounded-xl hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed">
+                {{ saving ? 'Guardando...' : 'Guardar cambios' }}
+            </button>
+        </div>
+    </div>
+</div>

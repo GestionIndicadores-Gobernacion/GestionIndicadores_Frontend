@@ -3,11 +3,13 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActionPlanRecurrencePanelComponent, RecurrenceForm } from '../action-plan-recurrence-panel/action-plan-recurrence-panel';
 import { RecurrenceFrequency } from '../../../../../core/models/action-plan.model';
+import { MUNICIPIOS_VALLE } from '../../../../../core/data/municipios';
 
 export interface ActivityFormData {
   name: string;
   deliverable: string;
   delivery_date: string;
+  lugar: string | null;
   requires_boss_assistance: boolean;
   support_staff: { name: string }[];
   recurrence: RecurrenceForm;
@@ -20,6 +22,8 @@ export interface ActivityFormData {
   templateUrl: './action-plan-activity-form.html',
 })
 export class ActionPlanActivityFormComponent {
+
+  municipios = MUNICIPIOS_VALLE;
 
   @Input() activity!: ActivityFormData;
   @Input() index = 0;           // número de actividad (para mostrar)

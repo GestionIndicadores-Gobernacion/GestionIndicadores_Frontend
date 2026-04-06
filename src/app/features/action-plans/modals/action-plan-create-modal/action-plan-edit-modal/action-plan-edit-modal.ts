@@ -39,6 +39,7 @@ export class ActionPlanEditModalComponent implements OnInit {
       name: this.activity.name,
       deliverable: this.activity.deliverable,
       delivery_date: this.activity.delivery_date,
+      lugar: this.activity.lugar ?? null,
       requires_boss_assistance: this.activity.requires_boss_assistance ?? false,
       support_staff: (this.activity.support_staff ?? []).map(s => ({ name: s.name })),
       recurrence: {
@@ -65,6 +66,7 @@ export class ActionPlanEditModalComponent implements OnInit {
       name: this.form.name.trim(),
       deliverable: this.form.deliverable.trim(),
       delivery_date: editAll ? undefined : this.form.delivery_date,
+      lugar: this.form.lugar,
       requires_boss_assistance: this.form.requires_boss_assistance,
       support_staff: this.form.support_staff.filter(s => s.name.trim()),
       edit_all: editAll,

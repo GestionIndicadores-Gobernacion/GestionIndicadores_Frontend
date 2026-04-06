@@ -16,7 +16,7 @@ export class ActionPlanService {
 
   private api = `${environment.apiUrl}/action-plans`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getAll(filters?: ActionPlanFilters): Observable<ActionPlanModel[]> {
     let params = new HttpParams();
@@ -64,5 +64,9 @@ export class ActionPlanService {
 
   getAllForDashboard(): Observable<any[]> {
     return this.http.get<any[]>(`${environment.apiUrl}/reports/all`);
+  }
+
+  updatePlan(id: number, payload: any): Observable<ActionPlanModel> {
+    return this.http.put<ActionPlanModel>(`${this.api}/${id}`, payload);
   }
 }

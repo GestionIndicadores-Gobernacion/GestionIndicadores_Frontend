@@ -90,7 +90,7 @@
             <app-action-plan-calendar-grid *ngIf="viewMode === 'calendar'" [calendarDays]="calendarDays"
                 [displayPlans]="displayPlans" [currentDate]="currentDate"
                 (report)="openReportModal($event.plan, $event.objective, $event.activity, $event.event)"
-                (edit)="openEditModal($event.plan, $event.objective, $event.activity, $event.event)"
+                (edit)="openEditPlanModal($event.plan, $event.event)"
                 (delete)="deleteActivity($event.activityId, $event.event)" (openAgenda)="openDayAgenda($event)"
                 (hover)="hoveredFlat = $event">
             </app-action-plan-calendar-grid>
@@ -98,7 +98,7 @@
             <!-- AGENDA -->
             <app-action-plan-list *ngIf="viewMode === 'agenda'" [plans]="displayPlans"
                 (report)="openReportModal($event.plan, $event.objective, $event.activity, $event.event)"
-                (edit)="openEditModal($event.plan, $event.objective, $event.activity, $event.event)"
+                (edit)="openEditPlanModal($event.plan, $event.event)"
                 (delete)="deleteActivity($event.activityId, $event.event)">
             </app-action-plan-list>
 
@@ -175,3 +175,7 @@
 <app-action-plan-edit-modal *ngIf="showEditModal && modal.activity && modal.objective" [plan]="modal.plan!"
     [objective]="modal.objective!" [activity]="modal.activity" (close)="closeEditModal()" (edited)="onActivityEdited()">
 </app-action-plan-edit-modal>
+
+<app-action-plan-edit-plan-modal *ngIf="showEditPlanModal && planToEdit" [plan]="planToEdit"
+    (close)="closeEditPlanModal()" (edited)="onPlanEdited()">
+</app-action-plan-edit-plan-modal>
