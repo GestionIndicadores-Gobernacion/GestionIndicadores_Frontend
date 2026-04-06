@@ -19,13 +19,16 @@ export class MapDetailComponent {
   }
 
   @Input() municipio!: MunicipioSummary;
-  @Input() activeKpi!: KpiOption;
   @Output() close = new EventEmitter<void>();
+
+  @Input() activeKpi: KpiOption | null = null;
+  @Input() selectedKpiId = '';
 
   activeTab: 'indicators' | 'overview' | 'reports' = 'indicators';
   expandedReportId: number | null = null;
 
   getKpiValue(): number {
+    if (!this.selectedKpiId) return this.municipio.totalReports;
     const map: Record<string, number> = {
       asistencias: this.municipio.indicators.find(i => i.id === -1)?.total ?? 0,
       denuncias: this.municipio.indicators.find(i => i.id === -2)?.total ?? 0,
@@ -34,7 +37,7 @@ export class MapDetailComponent {
       ninos: this.municipio.indicators.find(i => i.id === -5)?.total ?? 0,
       emprendedores: this.municipio.indicators.find(i => i.id === -6)?.total ?? 0,
     };
-    return map[this.activeKpi.id] ?? 0;
+    return map[this.selectedKpiId] ?? 0;
   }
 
   toggleReport(id: number): void {

@@ -4,17 +4,16 @@
     <div [id]="MAP_ID" class="absolute inset-0 w-full h-full"
         style="min-height:580px;z-index:0;border-radius:0 0 12px 12px;"></div>
 
-    <app-map-toolbar [searchQuery]="searchQuery" [selectedYear]="selectedYear" [availableYears]="availableYears"
-        [selectedKpi]="selectedKpi" [selectedStyleId]="selectedStyleId" (searchChange)="onSearch($event)"
-        (yearChange)="onYearChange($event)" (kpiChange)="onKpiChange($event)" (styleChange)="onStyleChange($event)">
+    <app-map-toolbar [selectedKpi]="selectedKpi" [selectedYear]="selectedYear" [availableYears]="availableYears"
+        (kpiChange)="onKpiChange($event)" (yearChange)="onYearChange($event)">
     </app-map-toolbar>
-
+    
     <app-map-list [municipios]="filteredMunicipios" [selectedMunicipio]="selectedMunicipio" [activeKpi]="getActiveKpi()"
-        (municipioSelect)="selectMunicipio($event)">
+        [selectedKpiId]="selectedKpi" (municipioSelect)="selectMunicipio($event)">
     </app-map-list>
 
     <app-map-detail *ngIf="selectedMunicipio" [municipio]="selectedMunicipio" [activeKpi]="getActiveKpi()"
-        (close)="closeSidePanel()">
+        [selectedKpiId]="selectedKpi" (close)="closeSidePanel()">
     </app-map-detail>
 
     <div *ngIf="reports.length === 0" class="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10"

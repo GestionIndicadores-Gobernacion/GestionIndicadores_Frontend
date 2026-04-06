@@ -6,12 +6,17 @@ import { ActionPlanService } from '../../../core/services/action-plan.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Pagination } from '../../../shared/components/pagination/pagination';
 
-export interface UserDashboard {
+export interface PlanOwner {
   user_id: number;
   first_name: string;
   last_name: string;
   email: string;
   role: string;
+}
+
+export interface UserDashboard {
+  responsible: string;
+  plans_owner: PlanOwner[];
   total_activities: number;
   completed: number;
   pending: number;
@@ -43,20 +48,20 @@ export class ActionPlanDashboardComponent implements OnInit {
   users: UserDashboard[] = [];
   loading = true;
 
-  // Filtros
   search = '';
-  roleFilter = '';
   statusFilter = '';
 
-  // Paginación
   currentPage = 1;
   pageSize = 10;
+
+  sortCol: string = '';
+  sortDir: 'asc' | 'desc' = 'asc'
 
   constructor(
     private actionPlanService: ActionPlanService,
     private toast: ToastService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.actionPlanService.getDashboard().subscribe({
@@ -78,17 +83,49 @@ export class ActionPlanDashboardComponent implements OnInit {
     const term = this.search.toLowerCase().trim();
     this.users = this.allUsers.filter(u => {
       const matchSearch = !term ||
-        `${u.first_name} ${u.last_name}`.toLowerCase().includes(term) ||
-        u.email.toLowerCase().includes(term);
-      const matchRole = !this.roleFilter || u.role === this.roleFilter;
+        u.responsible.toLowerCase().includes(term) ||
+        u.plans_owner.some(o =>
+          `${o.first_name} ${o.last_name}`.toLowerCase().includes(term) ||
+          o.email.toLowerCase().includes(term)
+        );
       const matchStatus = !this.statusFilter ||
         (this.statusFilter === 'completed' && u.completed > 0) ||
         (this.statusFilter === 'overdue' && u.overdue > 0) ||
         (this.statusFilter === 'pending' && u.pending > 0);
-      return matchSearch && matchRole && matchStatus;
+      return matchSearch && matchStatus;
     });
+
+    if (this.sortCol) {
+      this.users.sort((a, b) => {
+        let valA: any;
+        let valB: any;
+        switch (this.sortCol) {
+          case 'responsible': valA = a.responsible.toLowerCase(); valB = b.responsible.toLowerCase(); break;
+          case 'total': valA = a.total_activities; valB = b.total_activities; break;
+          case 'completed': valA = a.completed; valB = b.completed; break;
+          case 'running': valA = a.total_activities - a.completed - a.overdue - a.pending;
+            valB = b.total_activities - b.completed - b.overdue - b.pending; break;
+          case 'pending': valA = a.pending + a.overdue; valB = b.pending + b.overdue; break;
+          case 'completion': valA = this.completionRate(a); valB = this.completionRate(b); break;
+          case 'score': valA = a.total_score; valB = b.total_score; break;
+          default: return 0;
+        }
+        return this.sortDir === 'asc' ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
+      });
+    }
+
     this.currentPage = 1;
     this.cdr.detectChanges();
+  }
+
+  sortBy(col: string): void {
+    if (this.sortCol === col) {
+      this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortCol = col;
+      this.sortDir = 'asc';
+    }
+    this.applyFilters();
   }
 
   get paginatedUsers(): UserDashboard[] {
@@ -113,10 +150,6 @@ export class ActionPlanDashboardComponent implements OnInit {
   completionRate(user: UserDashboard): number {
     if (!user.total_activities) return 0;
     return Math.round((user.completed / user.total_activities) * 100);
-  }
-
-  get availableRoles(): string[] {
-    return [...new Set(this.allUsers.map(u => u.role))].sort();
   }
 
   statusClass(status: string): string {

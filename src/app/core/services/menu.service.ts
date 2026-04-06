@@ -17,10 +17,17 @@ export class MenuService {
 
       {
         label: 'Reportes PYBA',
-        roles: [1, 2, 3, 4],  // viewer puede ver, editor, admin, monitor
+        roles: [1, 2, 3, 4],
         children: [
           { label: 'Reportes', route: 'reports' },
-          { label: 'Estrategias', route: 'reports/strategies', roles: [3] },
+          {
+            label: 'Estrategias',
+            route: 'reports/strategies',
+            roles: [3],
+            children: [
+              { label: 'Plan de Desarrollo', route: 'reports/strategies/dashboard', roles: [3] },
+            ],
+          },
           { label: 'Componentes Estratégicos', route: 'reports/components', roles: [3] },
         ],
       },
