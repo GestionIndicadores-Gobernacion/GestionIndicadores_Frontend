@@ -169,8 +169,8 @@
     (created)="onPlanCreated()"></app-action-plan-create-modal>
 
 <app-action-plan-report-modal *ngIf="showReportModal && modal.activity && modal.objective" [plan]="modal.plan!"
-    [objective]="modal.objective!" [activity]="modal.activity" (close)="closeReportModal()"
-    (reported)="onPlanReported()">
+    [objective]="modal.objective!" [activity]="modal.activity" [prefillEvidenceUrl]="prefillEvidenceUrl"
+    (close)="closeReportModal()" (reported)="onPlanReported()">
 </app-action-plan-report-modal>
 
 <app-action-plan-edit-modal *ngIf="showEditModal && modal.activity && modal.objective" [plan]="modal.plan!"

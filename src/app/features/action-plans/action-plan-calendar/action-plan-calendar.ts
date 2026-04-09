@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';  // ← agregar ActivatedRoute, Router
 import {
   ActionPlanActivityModel, ActionPlanFilters, ActionPlanModel,
   ActionPlanObjectiveModel, ActionPlanStatus
@@ -89,6 +89,9 @@ export class ActionPlanCalendarComponent implements OnInit {
   filterMyPlans = false;
   currentUserId: number | null = null;
 
+  // ← NUEVO: para prefill del modal al regresar desde reporte
+  prefillEvidenceUrl = '';
+
   constructor(
     private actionPlanService: ActionPlanService,
     private strategiesService: StrategiesService,
@@ -96,7 +99,9 @@ export class ActionPlanCalendarComponent implements OnInit {
     private toast: ToastService,
     private ngZone: NgZone,
     private cdr: ChangeDetectorRef,
-    private exportService: ActionPlanExportService
+    private exportService: ActionPlanExportService,
+    private route: ActivatedRoute,   // ← NUEVO
+    private router: Router           // ← NUEVO
   ) { }
 
   ngOnInit(): void {
@@ -163,8 +168,46 @@ export class ActionPlanCalendarComponent implements OnInit {
     this.actionPlanService.getAll(filters).pipe(catchError(() => of([]))).subscribe(plans => {
       this.plans = [...(plans ?? [])];
       this.buildCalendar();
+      this.checkReturnParams();   // ← NUEVO: verificar después de cargar planes
     });
   }
+
+  // ── NUEVO: leer query params de retorno desde reporte ────────────
+
+  private checkReturnParams(): void {
+    const reportActivityId = this.route.snapshot.queryParamMap.get('reportActivity');
+    const evidenceUrl      = this.route.snapshot.queryParamMap.get('evidenceUrl');
+
+    if (!reportActivityId) return;
+
+    // Limpiar params de la URL sin recargar
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true
+    });
+
+    this.openReportModalForActivity(+reportActivityId, evidenceUrl ?? '');
+  }
+
+  private openReportModalForActivity(activityId: number, evidenceUrl: string): void {
+    for (const plan of this.plans) {
+      for (const obj of plan.plan_objectives ?? []) {
+        const activity = obj.activities.find(a => a.id === activityId);
+        if (activity) {
+          this.prefillEvidenceUrl = evidenceUrl;
+          this.setModal(plan, obj, activity);
+          this.showReportModal = true;
+          this.cdr.detectChanges();
+          return;
+        }
+      }
+    }
+    // Si no se encontró (porque el mes no coincide), mostrar advertencia
+    this.toast.error('No se pudo encontrar la actividad. Verifica el mes del calendario.');
+  }
+
+  // ─────────────────────────────────────────────────────────────────
 
   private buildCalendar(): void {
     const year = this.currentDate.getFullYear();
@@ -213,15 +256,11 @@ export class ActionPlanCalendarComponent implements OnInit {
   onComponentChange(id: number | null): void { this.selectedComponentId = id; this.loadPlans(); }
   onStatusFilterChange(f: 'all' | ActionPlanStatus): void { this.activeStatusFilter = f; this.cdr.detectChanges(); }
   onBossFilterChange(v: boolean): void { this.filterByBoss = v; this.cdr.detectChanges(); }
-  
+
   get displayPlans(): ActionPlanModel[] {
     let result = this.plans;
-
-    // Filtro: solo mis planes
-    if (this.filterMyPlans && this.currentUserId) {
+    if (this.filterMyPlans && this.currentUserId)
       result = result.filter(p => p.responsible_user_id === this.currentUserId);
-    }
-
     if (this.activeStatusFilter !== 'all')
       result = result.map(p => ({ ...p, plan_objectives: (p.plan_objectives ?? []).map(o => ({ ...o, activities: (o.activities ?? []).filter(a => a.status === this.activeStatusFilter) })).filter(o => o.activities.length > 0) })).filter(p => p.plan_objectives.length > 0);
     if (this.filterByBoss)
@@ -232,6 +271,7 @@ export class ActionPlanCalendarComponent implements OnInit {
     }
     return result;
   }
+
   get filteredPlansCount(): number {
     return this.displayPlans.reduce((t, p) => t + (p.plan_objectives ?? []).reduce((t2, o) => t2 + (o.activities ?? []).length, 0), 0);
   }
@@ -251,8 +291,19 @@ export class ActionPlanCalendarComponent implements OnInit {
   closeCreateModal(): void { this.showCreateModal = false; }
   onPlanCreated(): void { this.closeCreateModal(); this.loadPlans(); this.toast.success('Plan creado correctamente'); }
 
-  openReportModal(p: ActionPlanModel, o: ActionPlanObjectiveModel, a: ActionPlanActivityModel, event: Event): void { event.stopPropagation(); this.setModal(p, o, a); this.showReportModal = true; }
-  closeReportModal(): void { this.showReportModal = false; this.clearModal(); }
+  openReportModal(p: ActionPlanModel, o: ActionPlanObjectiveModel, a: ActionPlanActivityModel, event: Event): void {
+    event.stopPropagation();
+    this.prefillEvidenceUrl = '';   // ← limpiar prefill al abrir manualmente
+    this.setModal(p, o, a);
+    this.showReportModal = true;
+  }
+
+  closeReportModal(): void {
+    this.showReportModal = false;
+    this.prefillEvidenceUrl = '';   // ← limpiar al cerrar
+    this.clearModal();
+  }
+
   onPlanReported(): void { this.closeReportModal(); this.loadPlans(); this.toast.success('Actividad reportada correctamente'); }
 
   openEditModal(p: ActionPlanModel, o: ActionPlanObjectiveModel, a: ActionPlanActivityModel, event: Event): void { event.stopPropagation(); this.setModal(p, o, a); this.showEditModal = true; }
@@ -274,7 +325,7 @@ export class ActionPlanCalendarComponent implements OnInit {
   }
 
   clampTooltipX(x: number): number {
-    const tooltipWidth = 224; // w-56 = 224px
+    const tooltipWidth = 224;
     const margin = 8;
     const maxX = window.innerWidth - tooltipWidth - margin;
     return Math.max(margin, Math.min(x, maxX));

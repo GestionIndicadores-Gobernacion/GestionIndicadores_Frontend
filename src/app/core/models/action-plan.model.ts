@@ -32,6 +32,9 @@ export interface ActionPlanActivityModel {
   delivery_date: string;
   lugar?: string | null;
   requires_boss_assistance?: boolean;
+  generates_report?: boolean;
+  linked_report_id?: number | null;
+  linked_report_evidence?: string | null;
   evidence_url?: string | null;
   description?: string | null;
   reported_at?: string | null;
@@ -92,6 +95,7 @@ export interface ActionPlanActivityEditRequest {
   delivery_date?: string | null;
   lugar?: string | null;
   requires_boss_assistance?: boolean;
+  generates_report?: boolean;
   support_staff?: ActionPlanSupportStaffModel[];
   edit_all?: boolean;
 }
@@ -104,4 +108,20 @@ export interface ActionPlanFilters {
   component_id?: number;
   month?: number;
   year?: number;
+}
+
+export interface ActivityReportPrefill {
+  activity_id: number;
+  activity_name: string;
+  generates_report: boolean;
+  prefill: {
+    strategy_id: number;
+    component_id: number;
+    evidence_link: string | null;
+  };
+  linked_report: any | null;           // ReportModel si ya existe
+  report_by_evidence_link: {
+    id: number;
+    created_at: string;
+  } | null;
 }

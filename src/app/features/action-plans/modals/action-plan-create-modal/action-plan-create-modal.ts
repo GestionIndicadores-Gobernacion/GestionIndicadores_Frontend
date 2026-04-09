@@ -176,6 +176,7 @@ export class ActionPlanCreateModalComponent implements OnInit {
       delivery_date: '',
       lugar: null,   // ← FALTABA
       requires_boss_assistance: false,
+      generates_report: false,
       support_staff: [],
       recurrence: {
         enabled: false,
@@ -260,8 +261,9 @@ export class ActionPlanCreateModalComponent implements OnInit {
         activities: obj.activities.map(a => ({
           name: a.name.trim(), deliverable: a.deliverable.trim(),
           delivery_date: a.delivery_date,
-          lugar: a.lugar,   
+          lugar: a.lugar,
           requires_boss_assistance: a.requires_boss_assistance,
+          generates_report: a.generates_report,
           support_staff: a.support_staff.filter(s => s.name.trim()).map(s => ({ name: s.name.trim() })),
           recurrence: a.recurrence.enabled ? {
             frequency: a.recurrence.frequency,

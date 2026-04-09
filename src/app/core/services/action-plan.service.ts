@@ -9,6 +9,7 @@ import {
   ActionPlanFilters,
   ActionPlanModel,
   ActionPlanReportRequest,
+  ActivityReportPrefill,
 } from '../models/action-plan.model';
 
 @Injectable({ providedIn: 'root' })
@@ -68,5 +69,11 @@ export class ActionPlanService {
 
   updatePlan(id: number, payload: any): Observable<ActionPlanModel> {
     return this.http.put<ActionPlanModel>(`${this.api}/${id}`, payload);
+  }
+
+  getPrefillForReport(activityId: number): Observable<ActivityReportPrefill> {
+    return this.http.get<ActivityReportPrefill>(
+      `${environment.apiUrl}/reports/prefill/activity/${activityId}`
+    );
   }
 }

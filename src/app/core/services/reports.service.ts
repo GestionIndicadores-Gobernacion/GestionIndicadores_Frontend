@@ -67,4 +67,10 @@ export class ReportsService {
       `${this.api}/aggregate/component/${componentId}/indicators${params}`
     );
   }
+
+  linkActivity(reportId: number, activityId: number): Observable<ReportModel> {
+    return this.http.post<ReportModel>(
+      `${this.api}/${reportId}/link-activity/${activityId}`, {}
+    );
+  }
 }

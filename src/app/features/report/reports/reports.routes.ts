@@ -4,7 +4,7 @@ import { viewerGuard } from '../../../core/guards/viewer-guard-guard';
 
 export const REPORTS_ROUTES: Routes = [
 
-  // 📄 LISTADO — todos pueden ver
+  // 📄 LISTADO
   {
     path: '',
     loadComponent: () =>
@@ -12,9 +12,18 @@ export const REPORTS_ROUTES: Routes = [
         .then(m => m.ReportsListComponent),
   },
 
-  // ➕ CREAR — sin viewer
+  // ➕ CREAR (ruta fija /create)
   {
     path: 'create',
+    canActivate: [viewerGuard],
+    loadComponent: () =>
+      import('./report-form/report-form')
+        .then(m => m.ReportFormComponent),
+  },
+
+  // ➕ CREAR DESDE ACTIVIDAD (ruta /new?activityId=xxx) ← NUEVO
+  {
+    path: 'new',
     canActivate: [viewerGuard],
     loadComponent: () =>
       import('./report-form/report-form')
@@ -41,7 +50,7 @@ export const REPORTS_ROUTES: Routes = [
     ],
   },
 
-  // ✏️ EDITAR — sin viewer
+  // ✏️ EDITAR
   {
     path: ':id/edit',
     canActivate: [viewerGuard],
@@ -50,7 +59,7 @@ export const REPORTS_ROUTES: Routes = [
         .then(m => m.ReportFormComponent),
   },
 
-  // 🔍 DETALLE — todos pueden ver
+  // 🔍 DETALLE
   {
     path: ':id',
     loadComponent: () =>
