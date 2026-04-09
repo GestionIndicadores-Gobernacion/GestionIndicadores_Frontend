@@ -43,7 +43,8 @@ export interface ActionPlanActivityModel {
   support_staff?: ActionPlanSupportStaffModel[];
   recurrence_group_id?: string | null;
   recurrence_rule?: RecurrenceRule | null;
-  recurrence?: RecurrenceRule | null;  // solo al crear/editar
+  recurrence?: RecurrenceRule | null;
+  computed_score?: number | null;
 }
 
 /* =========================

@@ -57,7 +57,19 @@ export class ActionPlanReportModalComponent implements OnInit {
   }
 
   get expectedScore(): number {
-    return this.isLate ? 1 : 5;
+    // Si ya está realizada, usar el score calculado
+    if (this.isReadOnly) {
+      return this.activity.computed_score ?? 5;
+    }
+
+    // Proyectar qué puntaje tendrá al reportar
+    let base = 5;
+    if (this.activity.generates_report && this.activity.linked_report_id) {
+      base += 2; // ya tiene reporte → 7
+    }
+    return base;
+    // Nota: -1 solo aplica cuando NO se reporta, no es un estado al que llega
+    // el usuario desde este modal (aquí siempre va a reportar)
   }
 
   get objectiveLabel(): string {
