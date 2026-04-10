@@ -32,27 +32,28 @@ export interface ReportIndicatorValue {
 // 📌 MODELO PRINCIPAL
 // =======================================================
 
+export interface ComponentSummary { id: number; name: string; }
+export interface StrategySummary { id: number; name: string; }
+export interface UserSummary { id: number; name: string; }
+
 export interface ReportModel {
   id: number;
-  user_id?: number | null;        // ← NUEVO
-
+  user_id?: number | null;
   strategy_id: number;
   component_id: number;
-
   report_date: string;
-
   executive_summary: string;
-
   intervention_location: string;
   zone_type: ZoneType;
-
   evidence_link?: string | null;
-
   action_plan_activity_id?: number | null;
-
   indicator_values: ReportIndicatorValue[];
-
   created_at: string;
+
+  // Relaciones enriquecidas
+  component?: ComponentSummary;
+  strategy?: StrategySummary;
+  user?: UserSummary;
 }
 
 // =======================================================
