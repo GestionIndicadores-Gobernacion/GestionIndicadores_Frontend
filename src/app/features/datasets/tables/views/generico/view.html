@@ -1,23 +1,36 @@
 <div class="max-w-7xl mx-auto px-6 py-8 space-y-6">
 
+    <!-- BADGE PROYECTO (solo si existe project_label) -->
+    <div *ngIf="data.project_label" class="flex items-center gap-2 px-4 py-2.5 rounded-xl"
+        style="background:#EFF6FF;border:1px solid #BFDBFE;">
+        <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="#2563EB" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <span class="text-[11px] font-bold uppercase tracking-wider" style="color:#1D4ED8;">Proyecto analizado</span>
+        <span class="text-[12px] font-medium truncate" style="color:#1E40AF;">{{ data.project_label }}</span>
+    </div>
+
     <!-- KPIs -->
-    <div class="grid gap-4" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">
+    <div class="grid gap-3" [style]="kpiGridStyle()">
         <div *ngFor="let kpi of data.kpis; let i = index" class="rounded-xl p-4 relative overflow-hidden"
             style="background:white;border:1px solid #E2E8F0;">
             <div class="absolute top-0 left-0 right-0 rounded-t-xl" style="height:3px;"
-                [style.background]="['#2563EB','#0891B2','#059669','#7C3AED','#DB2777','#D97706'][i % 6]"></div>
-            <p class="text-[11px] font-bold uppercase tracking-wider mb-2" style="color:#94A3B8;">{{ kpi.label }}</p>
-            <p class="font-bold leading-none" style="font-size:1.9rem;color:#0F172A;letter-spacing:-0.04em;">{{
-                kpi.value }}</p>
+                [style.background]="['#1B3A6B','#2563EB','#0891B2','#059669','#D97706','#DC2626'][i % 6]"></div>
+            <p class="text-[10px] font-bold uppercase tracking-wider mb-2" style="color:#94A3B8;">{{ kpi.label }}</p>
+            <p class="font-bold leading-none" style="font-size:1.6rem;color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpi.value }}
+            </p>
             <p *ngIf="kpi.sub" class="text-[11px] mt-1.5" style="color:#94A3B8;">{{ kpi.sub }}</p>
         </div>
     </div>
 
-    <!-- SECCIONES DINÁMICAS -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <div *ngFor="let section of data.sections" [class]="sectionGridClass(section)"
-            class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+    <!-- SECCIONES -->
+    <div [class]="gridClass()">
+        <div *ngFor="let section of data.sections" [class]="sectionSpan(section)" class="rounded-xl overflow-hidden"
+            style="background:white;border:1px solid #E2E8F0;">
 
+            <!-- Header sección -->
             <div class="flex items-center gap-3 px-5 py-3 border-b" style="border-color:#F1F5F9;">
                 <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
                     [style.background]="sectionIconBg(section.type)">
@@ -26,19 +39,61 @@
                             d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6m4 0h6" />
                     </svg>
                 </div>
-                <div>
-                    <p class="text-[13px] font-bold" style="color:#0F172A;">{{ section.title }}</p>
-                    <p class="text-[11px]" style="color:#94A3B8;">{{ section.subtitle }}</p>
+                <div class="min-w-0">
+                    <p class="text-[13px] font-bold truncate" style="color:#0F172A;">{{ section.title }}</p>
+                    <p class="text-[11px] truncate" style="color:#94A3B8;">{{ section.subtitle }}</p>
                 </div>
             </div>
 
+            <!-- Body sección -->
             <div class="p-5">
-                <dashboard-bar *ngIf="section.type === 'bar'" [bars]="section.bars ?? []" />
-                <dashboard-histogram *ngIf="section.type === 'histogram'" [bars]="section.bars ?? []" />
-                <dashboard-donut *ngIf="section.type === 'donut'" [segments]="section.segments ?? []" />
-                <dashboard-completeness *ngIf="section.type === 'completeness'" [bars]="section.bars ?? []" />
-            </div>
 
+                <dashboard-bar *ngIf="section.type === 'bar'" [bars]="section.bars ?? []" />
+
+                <dashboard-histogram *ngIf="section.type === 'histogram'" [bars]="section.bars ?? []" />
+
+                <dashboard-donut *ngIf="section.type === 'donut'" [segments]="section.segments ?? []" />
+
+                <dashboard-completeness *ngIf="section.type === 'completeness'"
+                    [bars]="truncateBars(section.bars ?? [])" />
+
+                <dashboard-table *ngIf="section.type === 'table'" [columns]="section.columns ?? []"
+                    [rows]="section.rows ?? []" />
+
+                <!-- Progress financiero -->
+                <div *ngIf="section.type === 'progress'" class="space-y-5">
+                    <div *ngFor="let bar of section.bars ?? []; let first = first" class="space-y-2">
+                        <div class="flex items-center justify-between gap-4">
+                            <span class="text-[12px] font-semibold truncate" style="color:#475569;max-width:55%;">
+                                {{ bar.label }}
+                            </span>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <span class="text-[13px] font-bold" style="color:#0F172A;">
+                                    {{ formatPesos(bar.value) }}
+                                </span>
+                                <span *ngIf="!first" class="text-[11px] px-2 py-0.5 rounded-full font-bold shrink-0"
+                                    [style.background]="bar.pct >= 80 ? '#DCFCE7' : bar.pct >= 50 ? '#FEF3C7' : '#FEE2E2'"
+                                    [style.color]="bar.pct >= 80 ? '#15803D' : bar.pct >= 50 ? '#92400E' : '#B91C1C'">
+                                    {{ bar.pct }}%
+                                </span>
+                                <span *ngIf="first" class="text-[11px] px-2 py-0.5 rounded-full font-bold shrink-0"
+                                    style="background:#EFF6FF;color:#1D4ED8;">
+                                    100%
+                                </span>
+                            </div>
+                        </div>
+                        <div class="w-full rounded-full" style="background:#F1F5F9;height:10px;">
+                            <div class="rounded-full h-full transition-all duration-500"
+                                [style.width]="(first ? 100 : bar.pct) + '%'" [style.background]="bar.color">
+                            </div>
+                        </div>
+                        <p *ngIf="!first" class="text-[10px]" style="color:#CBD5E1;">
+                            sobre apropiación total
+                        </p>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
 
