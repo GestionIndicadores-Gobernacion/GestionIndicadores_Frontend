@@ -1,9 +1,11 @@
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+<div class="space-y-3">
     <div *ngFor="let bar of bars" class="rounded-xl p-4" style="background:#F8FAFC;border:1px solid #E2E8F0;">
 
-        <div class="flex items-center justify-between mb-3">
-            <span class="text-[12px] font-semibold" style="color:#1E293B;">{{ bar.label }}</span>
-            <span class="text-[18px] font-bold" [style.color]="colorFor(bar.pct)">
+        <div class="flex items-start justify-between gap-3 mb-2">
+            <span class="text-[12px] font-semibold leading-snug" style="color:#1E293B;max-width:70%;">
+                {{ bar.label.length > 42 ? bar.label.slice(0,40) + '…' : bar.label }}
+            </span>
+            <span class="text-[18px] font-bold shrink-0" [style.color]="colorFor(bar.pct)">
                 {{ bar.pct }}%
             </span>
         </div>
@@ -14,7 +16,7 @@
             </div>
         </div>
 
-        <span class="text-[11px] font-bold px-2 py-0.5 rounded-full" [style.background]="bgFor(bar.pct)"
+        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" [style.background]="bgFor(bar.pct)"
             [style.color]="colorFor(bar.pct)">
             {{ labelFor(bar.pct) }} completitud
         </span>

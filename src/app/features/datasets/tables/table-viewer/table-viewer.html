@@ -45,7 +45,12 @@
                             {{ (datasetName() || data()?.table?.name || 'Dashboard') | uppercase }}
                         </h1>
                         <p class="text-[12px] mt-0.5 truncate" style="color:#8A9DC0;" *ngIf="data()">
-                            {{ data()!.total | number }} registros
+                            <ng-container *ngIf="data()!.dataset_type === 'presupuesto'">
+                                {{ data()!.total }} rubros del proyecto
+                            </ng-container>
+                            <ng-container *ngIf="data()!.dataset_type !== 'presupuesto'">
+                                {{ data()!.total | number }} registros
+                            </ng-container>
                         </p>
                     </div>
 
@@ -59,7 +64,7 @@
                         [style.color]="activeTab() === 'dashboard' ? 'white' : '#4A6A9B'">
                         Dashboard
                     </button>
-                    <button (click)="setTab('records')"
+                    <button *ngIf="data()?.dataset_type !== 'presupuesto'" (click)="setTab('records')"
                         class="px-4 py-1.5 rounded-lg text-[13px] font-bold cursor-pointer transition-all whitespace-nowrap"
                         [style.background]="activeTab() === 'records' ? '#1B3A6B' : 'transparent'"
                         [style.color]="activeTab() === 'records' ? 'white' : '#4A6A9B'">
@@ -89,22 +94,14 @@
 
         <!-- TAB: DASHBOARD -->
         <ng-container *ngIf="activeTab() === 'dashboard'">
-            <app-personas-capacitadas-view
-                *ngIf="data()!.dataset_type === 'personas_capacitadas'"
-                [data]="data()!" />
-            <app-presupuesto-view
-                *ngIf="data()!.dataset_type === 'presupuesto'"
-                [data]="data()!" />
-            <app-generico-view
-                *ngIf="data()!.dataset_type !== 'personas_capacitadas' && data()!.dataset_type !== 'presupuesto'"
-                [data]="data()!" />
+            <app-personas-capacitadas-view *ngIf="data()!.dataset_type === 'personas_capacitadas'" [data]="data()!" />
+            <app-generico-view *ngIf="data()!.dataset_type !== 'personas_capacitadas'" [data]="data()!" />
         </ng-container>
 
         <!-- TAB: REGISTROS -->
-        <div *ngIf="activeTab() === 'records'" class="px-4 sm:px-6 py-8">
+        <div *ngIf="activeTab() === 'records' && data()?.dataset_type !== 'presupuesto'" class="px-4 sm:px-6 py-8">
             <dashboard-records [tableId]="tableId" [datasetType]="data()!.dataset_type" />
         </div>
-
     </ng-container>
 
 </div>
