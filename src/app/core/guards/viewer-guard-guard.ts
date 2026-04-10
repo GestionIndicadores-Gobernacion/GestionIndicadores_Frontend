@@ -1,3 +1,4 @@
+
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -11,7 +12,7 @@ export const viewerGuard: CanActivateFn = () => {
     return false;
   }
 
-  // viewer (id=1) no puede acceder
+  // Bloquea solo el rol viewer (id=1) — admin(3), editor(2), monitor(4) pasan
   if (auth.hasRole(1)) {
     router.navigate(['/dashboard']);
     return false;

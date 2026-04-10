@@ -50,6 +50,17 @@ export const routes: Routes = [
             .then(m => m.DASHBOARD_LAYOUT_ROUTES),
       },
 
+      // ✅ RUTA INDEPENDIENTE — antes de 'users' para tener precedencia
+      {
+        path: 'users/me',
+        loadComponent: () =>
+          import('./features/user/my-profile/my-profile')
+            .then(m => m.MyProfileComponent),
+        // authGuard ya cubre toda esta sección via canActivateChild
+        // viewerGuard bloquea solo rol 4
+        canActivate: [viewerGuard],
+      },
+
       // INFORMES
       {
         path: 'reports',
@@ -59,19 +70,20 @@ export const routes: Routes = [
       },
       {
         path: 'datasets',
-        canActivate: [adminGuard],  // ya estaba, confirmar
+        canActivate: [adminGuard],
         loadChildren: () =>
           import('./features/datasets/datasets.routes')
             .then(m => m.DATASETS_ROUTES),
       },
       {
         path: 'action-plans',
-        canActivate: [viewerGuard],  // ← agregar
+        canActivate: [viewerGuard],
         loadChildren: () =>
           import('./features/action-plans/action-plans.routes')
             .then(m => m.ACTION_PLANS_ROUTES),
       },
-      // USUARIOS (SOLO ADMIN)
+
+      // USUARIOS (SOLO ADMIN) — sigue igual
       {
         path: 'users',
         canActivate: [adminGuard],

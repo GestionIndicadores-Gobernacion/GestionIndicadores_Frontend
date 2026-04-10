@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -10,7 +10,8 @@ import { UserModel, UserUpdateRequest } from '../../../core/models/user.model';
   selector: 'app-my-profile',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './my-profile.html'
+  templateUrl: './my-profile.html',
+  changeDetection: ChangeDetectionStrategy.OnPush   // ← único cambio de decorator
 })
 export class MyProfileComponent implements OnInit {
 
@@ -40,7 +41,8 @@ export class MyProfileComponent implements OnInit {
 
   constructor(
     private usersService: UsersService,
-    private toast: ToastService
+    private toast: ToastService,
+    private cdr: ChangeDetectorRef    // ← inyectar CDR
   ) { }
 
   ngOnInit() {
@@ -57,10 +59,12 @@ export class MyProfileComponent implements OnInit {
       next: (user) => {
         this.user = user;
         this.loading = false;
+        this.cdr.markForCheck();      // ← vista no sabe del dato hasta acá
       },
       error: () => {
         this.toast.error('Error cargando perfil');
         this.loading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -72,25 +76,24 @@ export class MyProfileComponent implements OnInit {
   toggleEdit() {
     this.isEditing = true;
     this.attemptedSubmit = false;
-
-    // Copiar datos actuales al form de edición
     this.editForm = {
       first_name: this.user.first_name,
       last_name: this.user.last_name,
       email: this.user.email,
       profile_image_url: this.user.profile_image_url || ''
     };
+    // no necesita markForCheck — lo dispara el evento click del template
   }
 
   cancelEdit() {
     this.isEditing = false;
     this.attemptedSubmit = false;
+    // ídem — evento del template dispara la detección
   }
 
   saveProfile() {
     this.attemptedSubmit = true;
 
-    // Validaciones
     if (
       !this.editForm.first_name.trim() ||
       !this.editForm.last_name.trim() ||
@@ -119,9 +122,11 @@ export class MyProfileComponent implements OnInit {
         this.isEditing = false;
         this.saving = false;
         this.toast.success('Perfil actualizado correctamente');
+        this.cdr.markForCheck();      // ← user y saving cambiaron desde async
       },
       error: () => {
         this.saving = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -133,7 +138,6 @@ export class MyProfileComponent implements OnInit {
   changePassword() {
     this.attemptedPasswordChange = true;
 
-    // Validaciones
     if (
       !this.passwordForm.newPassword ||
       this.passwordForm.newPassword.length < 6 ||
@@ -154,9 +158,11 @@ export class MyProfileComponent implements OnInit {
         this.toast.success('Contraseña actualizada correctamente');
         this.cancelPasswordChange();
         this.savingPassword = false;
+        this.cdr.markForCheck();      // ← savingPassword y estado del form cambiaron
       },
       error: () => {
         this.savingPassword = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -168,6 +174,7 @@ export class MyProfileComponent implements OnInit {
       newPassword: '',
       confirmPassword: ''
     };
+    // no necesita markForCheck — lo dispara el evento click
   }
 
   // =========================================
