@@ -50,6 +50,8 @@ export class ActionPlanCreateModalComponent implements OnInit {
   saving = false;
   errors: Record<string, string> = {};
 
+  private currentUser: any = null;
+
   municipios = MUNICIPIOS_VALLE;
 
   form: {
@@ -73,16 +75,35 @@ export class ActionPlanCreateModalComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.currentUser = JSON.parse(localStorage.getItem('user') ?? 'null');
+
     forkJoin({
       strategies: this.strategiesService.getAll(),
       components: this.componentsService.getAll(),
       users: this.usersService.getAll(),
     }).subscribe({
       next: ({ strategies, components, users }) => {
-        this.strategies = strategies;
-        this.components = components;
-        // Excluir emails excluidos
         this.users = users.filter(u => !EXCLUDED_EMAILS.has(u.email));
+
+        const role = this.currentUser?.role?.name;
+
+        if (role === 'editor') {
+          const assigned: number[] = (this.currentUser?.component_assignments ?? [])
+            .map((c: any) => c.component_id);
+
+          // Solo componentes asignados
+          const allowedComponents = components.filter(c => assigned.includes(c.id));
+
+          // Solo estrategias que tengan al menos un componente asignado
+          const allowedStrategyIds = new Set(allowedComponents.map(c => c.strategy_id));
+          this.strategies = strategies.filter(s => allowedStrategyIds.has(s.id));
+          this.components = allowedComponents;
+        } else {
+          // Admin/monitor ven todo
+          this.strategies = strategies;
+          this.components = components;
+        }
+
         this.loading = false;
         this.cdr.detectChanges();
       },
@@ -118,7 +139,7 @@ export class ActionPlanCreateModalComponent implements OnInit {
       ? this.components.filter(c => c.strategy_id === +this.form.strategy_id)
       : [];
   }
-
+  
   onComponentChange(): void {
     this.objectives = [];
     this.form.plan_objectives = [];

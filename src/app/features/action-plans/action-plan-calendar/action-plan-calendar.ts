@@ -89,6 +89,21 @@ export class ActionPlanCalendarComponent implements OnInit {
   filterMyPlans = false;
   currentUserId: number | null = null;
 
+  currentUser: any = null;
+  canInteractWithPlan = (plan: ActionPlanModel): boolean => {
+    if (!this.currentUser) return false;
+    const role = this.currentUser.role?.name;
+    if (role === 'admin' || role === 'monitor') return true;
+    if (role === 'viewer') return false;
+    if (role === 'editor') {
+      const assigned = (this.currentUser.component_assignments ?? []).map((c: any) => c.component_id);
+      if (assigned.includes(plan.component_id)) return true;
+      if (plan.responsible_user_id && plan.responsible_user_id === this.currentUser.id) return true;
+      return false;
+    }
+    return false;
+  };
+
   // ← NUEVO: para prefill del modal al regresar desde reporte
   prefillEvidenceUrl = '';
 
@@ -106,6 +121,7 @@ export class ActionPlanCalendarComponent implements OnInit {
 
   ngOnInit(): void {
     const user = JSON.parse(localStorage.getItem('user') ?? 'null');
+    this.currentUser = user;                    // ← esta línea
     this.canViewDashboard = user?.role?.name === 'admin' || user?.role?.name === 'monitor';
     this.currentUserId = user?.id ?? null;
     this.loadStrategies();
@@ -176,7 +192,7 @@ export class ActionPlanCalendarComponent implements OnInit {
 
   private checkReturnParams(): void {
     const reportActivityId = this.route.snapshot.queryParamMap.get('reportActivity');
-    const evidenceUrl      = this.route.snapshot.queryParamMap.get('evidenceUrl');
+    const evidenceUrl = this.route.snapshot.queryParamMap.get('evidenceUrl');
 
     if (!reportActivityId) return;
 
@@ -324,7 +340,7 @@ export class ActionPlanCalendarComponent implements OnInit {
       });
   }
 
-  
+
 
   clampTooltipX(x: number): number {
     const tooltipWidth = 224;

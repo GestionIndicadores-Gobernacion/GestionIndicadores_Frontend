@@ -210,12 +210,12 @@
                             </label>
 
                             <select [(ngModel)]="form.strategy_id" name="strategy_id" (change)="onStrategyChange()"
-                                [disabled]="!form.strategy_id || isFromActivity" required class="w-full text-[13px] rounded-xl px-3 py-2.5
-               bg-[#F0F4FA] border border-[#D6E0F0]
-               focus:bg-white focus:border-[#2d5fa8]
-               focus:ring-2 focus:ring-[#2d5fa8]/20
-               disabled:opacity-60 disabled:cursor-not-allowed
-               outline-none transition-all">
+                                [disabled]="isFromActivity" required class="w-full text-[13px] rounded-xl px-3 py-2.5
+           bg-[#F0F4FA] border border-[#D6E0F0]
+           focus:bg-white focus:border-[#2d5fa8]
+           focus:ring-2 focus:ring-[#2d5fa8]/20
+           disabled:opacity-60 disabled:cursor-not-allowed
+           outline-none transition-all">
                                 <option [ngValue]="null" disabled>Seleccione una estrategia...</option>
                                 <option *ngFor="let s of strategies" [ngValue]="s.id">{{ s.name }}</option>
                             </select>
@@ -236,11 +236,11 @@
                             <select [(ngModel)]="form.component_id" name="component_id"
                                 [disabled]="!form.strategy_id || isFromActivity" (change)="onComponentChange()" required
                                 class="w-full text-[13px] rounded-xl px-3 py-2.5
-               bg-[#F0F4FA] border border-[#D6E0F0]
-               focus:bg-white focus:border-[#2d5fa8]
-               focus:ring-2 focus:ring-[#2d5fa8]/20
-               disabled:opacity-60 disabled:cursor-not-allowed
-               outline-none transition-all">
+           bg-[#F0F4FA] border border-[#D6E0F0]
+           focus:bg-white focus:border-[#2d5fa8]
+           focus:ring-2 focus:ring-[#2d5fa8]/20
+           disabled:opacity-60 disabled:cursor-not-allowed
+           outline-none transition-all">
                                 <option [ngValue]="null" disabled>Seleccione un componente...</option>
                                 <option *ngFor="let c of components" [ngValue]="c.id">{{ c.name }}</option>
                             </select>

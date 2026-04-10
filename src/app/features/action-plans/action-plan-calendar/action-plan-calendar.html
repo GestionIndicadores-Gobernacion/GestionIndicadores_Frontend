@@ -89,7 +89,7 @@
 
             <!-- GRID -->
             <app-action-plan-calendar-grid *ngIf="viewMode === 'calendar'" [calendarDays]="calendarDays"
-                [displayPlans]="displayPlans" [currentDate]="currentDate"
+                [displayPlans]="displayPlans" [currentDate]="currentDate" [canInteract]="canInteractWithPlan.bind(this)"
                 (report)="openReportModal($event.plan, $event.objective, $event.activity, $event.event)"
                 (edit)="openEditPlanModal($event.plan, $event.event)"
                 (delete)="deleteActivity($event.activityId, $event.event)" (openAgenda)="openDayAgenda($event)"
@@ -97,7 +97,7 @@
             </app-action-plan-calendar-grid>
 
             <!-- AGENDA -->
-            <app-action-plan-list *ngIf="viewMode === 'agenda'" [plans]="displayPlans"
+            <app-action-plan-list *ngIf="viewMode === 'agenda'" [plans]="displayPlans" [currentUser]="currentUser"
                 (report)="openReportModal($event.plan, $event.objective, $event.activity, $event.event)"
                 (edit)="openEditPlanModal($event.plan, $event.event)"
                 (delete)="deleteActivity($event.activityId, $event.event)">

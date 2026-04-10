@@ -52,6 +52,8 @@ export class ReportFormComponent implements OnInit {
   municipios = MUNICIPIOS_VALLE;
   todayDate: string;
 
+  private currentUser: any = null;
+
   form = {
     strategy_id: null as number | null,
     component_id: null as number | null,
@@ -87,14 +89,14 @@ export class ReportFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.currentUser = JSON.parse(localStorage.getItem('user') ?? 'null');
     this.id = Number(this.route.snapshot.paramMap.get('id')) || undefined;
     this.isEdit = !!this.id;
-
     const activityId = this.route.snapshot.queryParamMap.get('activityId');
-    this.isFromActivity = !!activityId;   // ← NUEVO
-
+    this.isFromActivity = !!activityId;
     this.loadBaseData(activityId ? +activityId : null);
   }
+
 
   // ================= BASE DATA =================
 
@@ -106,18 +108,47 @@ export class ReportFormComponent implements OnInit {
     return [];
   }
 
+  private filterComponentsByRole(components: ComponentModel[]): ComponentModel[] {
+    const role = this.currentUser?.role?.name;
+    if (role === 'admin' || role === 'monitor') return components;
+    if (role === 'editor') {
+      const assigned = (this.currentUser?.component_assignments ?? []).map((c: any) => c.component_id);
+      return components.filter(c => assigned.includes(c.id));
+    }
+    return components;
+  }
+
+  private filterStrategiesByRole(strategies: StrategyModel[]): StrategyModel[] {
+    const role = this.currentUser?.role?.name;
+    if (role === 'admin' || role === 'monitor') return strategies;
+    if (role === 'editor') {
+      const assigned = (this.currentUser?.component_assignments ?? []).map((c: any) => c.component_id);
+      // Solo estrategias que tengan al menos un componente asignado al usuario
+      const allowedStrategyIds = new Set(
+        this.allComponents
+          .filter(c => assigned.includes(c.id))
+          .map(c => c.strategy_id)
+      );
+      return strategies.filter(s => allowedStrategyIds.has(s.id));
+    }
+    return strategies;
+  }
+
   loadBaseData(activityId: number | null = null): void {
     this.strategiesService.getAll().subscribe({
       next: (strategiesResp: any) => {
-        this.strategies = this.extractArray<StrategyModel>(strategiesResp);
+        const allStrategies = this.extractArray<StrategyModel>(strategiesResp);
         this.componentsService.getAll().subscribe({
           next: (componentsResp: any) => {
             this.allComponents = this.extractArray<ComponentModel>(componentsResp);
 
+            // ← aplicar filtro de estrategias DESPUÉS de tener allComponents
+            this.strategies = this.filterStrategiesByRole(allStrategies);
+
             if (this.isEdit) {
               this.loadReport();
             } else if (activityId) {
-              this.loadPrefill(activityId);   // ← NUEVO
+              this.loadPrefill(activityId);
             }
           },
           error: () => this.toast.error('Error cargando componentes')
@@ -126,7 +157,7 @@ export class ReportFormComponent implements OnInit {
       error: () => this.toast.error('Error cargando estrategias')
     });
   }
-
+  
   loadPrefill(activityId: number): void {
     this.prefillLoading = true;
     this.actionPlanService.getPrefillForReport(activityId).subscribe({
@@ -151,7 +182,10 @@ export class ReportFormComponent implements OnInit {
         this.form.action_plan_activity_id = activityId;
 
         // Cargar componentes del filtrado por estrategia
-        this.components = this.allComponents.filter(c => c.strategy_id === p.strategy_id);
+        this.components = this.filterComponentsByRole(
+          this.allComponents.filter(c => c.strategy_id === p.strategy_id)
+        );
+
         this.form.component_id = p.component_id;
 
         // Cargar indicadores del componente
@@ -187,9 +221,10 @@ export class ReportFormComponent implements OnInit {
           action_plan_activity_id: report.action_plan_activity_id ?? null,
         };
 
-        this.components = this.allComponents.filter(
-          c => c.strategy_id === report.strategy_id
+        this.components = this.filterComponentsByRole(
+          this.allComponents.filter(c => c.strategy_id === report.strategy_id)
         );
+
 
         const component = this.allComponents.find(c => c.id === report.component_id) as any;
         this.indicators = component?.indicators || [];
@@ -215,9 +250,11 @@ export class ReportFormComponent implements OnInit {
   // ================= EVENTS =================
 
   onStrategyChange(): void {
-    this.components = this.allComponents.filter(
+    const allForStrategy = this.allComponents.filter(
       c => c.strategy_id === this.form.strategy_id
     );
+    // ← aplicar filtro por rol
+    this.components = this.filterComponentsByRole(allForStrategy);
     this.form.component_id = null;
     this.indicators = [];
     this.indicatorValues = {};

@@ -167,37 +167,29 @@
 
                 </span>
 
-                <!-- REPORT -->
-
-                <button (click)="onReport(item.plan,item.objective,item.activity,$event)" class="text-xs font-medium px-3 py-1.5 rounded-lg
-                           border border-slate-200 text-slate-600
-                           hover:border-slate-300 hover:bg-slate-50 transition">
-
+                <!-- REPORT: siempre visible para ver, deshabilitado si no puede reportar -->
+                <button (click)="onReport(item.plan, item.objective, item.activity, $event)"
+                    [disabled]="item.activity.status !== 'Realizado' && !canModify(item.plan)"
+                    class="text-xs font-medium px-3 py-1.5 rounded-lg border transition" [ngClass]="item.activity.status !== 'Realizado' && !canModify(item.plan)
+      ? 'border-slate-100 text-slate-300 cursor-not-allowed'
+      : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'">
                     {{ item.activity.status === 'Realizado' ? 'Ver' : 'Reportar' }}
-
                 </button>
-                
-                <!-- EDIT -->
-                <button *ngIf="item.activity.status !== 'Realizado'"
-                    (click)="onEdit(item.plan, item.objective, item.activity, $event)" class="text-xs font-medium px-3 py-1.5 rounded-lg
-         border border-slate-200 text-[#2d5fa8]
-         hover:border-[#2d5fa8] hover:bg-blue-50 transition">
+
+                <!-- EDIT: oculto si no puede -->
+                <button *ngIf="item.activity.status !== 'Realizado' && canModify(item.plan)"
+                    (click)="onEdit(item.plan, item.objective, item.activity, $event)" class="text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-200
+           text-[#2d5fa8] hover:border-[#2d5fa8] hover:bg-blue-50 transition">
                     Editar
                 </button>
 
-                <!-- DELETE -->
-
-                <button (click)="onDelete(item.activity.id!, $event)" class="p-1.5 rounded-lg text-slate-400
-                           hover:text-red-500 hover:bg-red-50 transition">
-
+                <!-- DELETE: oculto si no puede -->
+                <button *ngIf="canModify(item.plan)" (click)="onDelete(item.activity.id!, $event)"
+                    class="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862
-                               a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
-                               m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
-
                 </button>
 
             </div>
