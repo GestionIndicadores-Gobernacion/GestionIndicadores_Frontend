@@ -18,6 +18,7 @@ export class ActionPlanCalendarGridComponent {
   @Input() calendarDays: CalendarDay[] = [];
   @Input() displayPlans: ActionPlanModel[] = [];
   @Input() currentDate = new Date();
+  @Input() canInteract: (plan: ActionPlanModel) => boolean = () => true;
 
   @Output() report = new EventEmitter<{ plan: ActionPlanModel; objective: ActionPlanObjectiveModel; activity: ActionPlanActivityModel; event: Event }>();
   @Output() edit = new EventEmitter<{ plan: ActionPlanModel; objective: ActionPlanObjectiveModel; activity: ActionPlanActivityModel; event: Event }>();

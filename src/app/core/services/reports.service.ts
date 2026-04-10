@@ -54,17 +54,43 @@ export class ReportsService {
     );
   }
 
-  aggregateByComponent(componentId: number, year?: number): Observable<ComponentAggregate> {
-    const params = year ? `?year=${year}` : '';
+  aggregateByComponent(
+    componentId: number,
+    year?: number,
+    dateFrom?: string,
+    dateTo?: string
+  ): Observable<ComponentAggregate> {
+    let params = '';
+    if (dateFrom && dateTo) {
+      params = `?date_from=${dateFrom}&date_to=${dateTo}`;
+    } else if (year) {
+      params = `?year=${year}`;
+    }
     return this.http.get<ComponentAggregate>(
       `${this.api}/aggregate/component/${componentId}${params}`
     );
   }
 
-  aggregateIndicatorsByComponent(componentId: number, year?: number): Observable<ComponentIndicatorsAggregate> {
-    const params = year ? `?year=${year}` : '';
+  aggregateIndicatorsByComponent(
+    componentId: number,
+    year?: number,
+    dateFrom?: string,
+    dateTo?: string
+  ): Observable<ComponentIndicatorsAggregate> {
+    let params = '';
+    if (dateFrom && dateTo) {
+      params = `?date_from=${dateFrom}&date_to=${dateTo}`;
+    } else if (year) {
+      params = `?year=${year}`;
+    }
     return this.http.get<ComponentIndicatorsAggregate>(
       `${this.api}/aggregate/component/${componentId}/indicators${params}`
+    );
+  }
+
+  linkActivity(reportId: number, activityId: number): Observable<ReportModel> {
+    return this.http.post<ReportModel>(
+      `${this.api}/${reportId}/link-activity/${activityId}`, {}
     );
   }
 }

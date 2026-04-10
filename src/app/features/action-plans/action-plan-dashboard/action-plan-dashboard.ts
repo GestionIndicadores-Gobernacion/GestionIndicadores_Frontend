@@ -19,6 +19,7 @@ export interface UserDashboard {
   plans_owner: PlanOwner[];
   total_activities: number;
   completed: number;
+  running: number;
   pending: number;
   overdue: number;
   total_score: number;
@@ -32,6 +33,7 @@ export interface ActivityDetail {
   delivery_date: string;
   status: string;
   score: number | null;
+  computed_score: number | null;
   reported_at: string | null;
   evidence_url: string | null;
 }

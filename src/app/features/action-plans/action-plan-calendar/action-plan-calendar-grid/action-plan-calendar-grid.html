@@ -64,13 +64,9 @@
                 <span class="w-1.5 h-1.5 rounded-full mt-1 flex-shrink-0"
                     [ngClass]="statusDot(flat.activity.status!)"></span>
 
-                <div class="flex-1 min-w-0">
-                    <p class="text-xs font-semibold truncate leading-tight">{{ flat.activity.name }}</p>
-                    <p *ngIf="flat.activity.score !== null && flat.activity.score !== undefined"
-                        class="text-[10px] opacity-70 mt-0.5">★ {{ flat.activity.score }} pts</p>
-                </div>
-
-                <button *ngIf="flat.activity.status !== 'Realizado'"
+                <p class="text-xs font-semibold truncate leading-tight">{{ flat.activity.name }}</p>
+                
+                <button *ngIf="flat.activity.status !== 'Realizado' && canInteract(flat.plan)" 
                     (click)="edit.emit({ plan: flat.plan, objective: flat.obj, activity: flat.activity, event: $event }); $event.stopPropagation()"
                     class="opacity-0 group-hover:opacity-100 transition text-[#2d5fa8]">
                     <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -79,7 +75,7 @@
                     </svg>
                 </button>
 
-                <button *ngIf="flat.activity.status !== 'Realizado'"
+                <button *ngIf="flat.activity.status !== 'Realizado' && canInteract(flat.plan)"
                     (click)="delete.emit({ activityId: flat.activity.id!, event: $event }); $event.stopPropagation()"
                     class="opacity-0 group-hover:opacity-100 transition text-red-600">
                     <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">

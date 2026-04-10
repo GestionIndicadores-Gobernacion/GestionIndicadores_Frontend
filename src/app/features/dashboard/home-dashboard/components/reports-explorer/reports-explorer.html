@@ -149,8 +149,8 @@
         <div class="px-5 py-5">
             <app-reports-explorer-chart [componentAggregate]="componentAggregate"
                 [selectedIndicator]="selectedIndicator" [indicatorDetail]="selectedIndicatorDetail"
-                [selectedYear]="selectedYear" [componentId]="selectedComponentId" (yearChange)="onYearChange($event)"
-                (barClick)="onChartBarClick($event)">
+                [selectedYear]="selectedYear" [componentId]="selectedComponentId" [allReports]="allReports"
+                (yearChange)="onYearChange($event)" (barClick)="onChartBarClick($event)">
             </app-reports-explorer-chart>
         </div>
 

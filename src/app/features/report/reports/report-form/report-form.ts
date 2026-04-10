@@ -22,6 +22,7 @@ import { ReportsService } from '../../../../core/services/reports.service';
 import { StrategiesService } from '../../../../core/services/strategies.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { ReportIndicatorsFormComponent } from './report-indicators-form/report-indicators-form';
+import { ActionPlanService } from '../../../../core/services/action-plan.service';
 
 @Component({
   selector: 'app-report-form',
@@ -37,6 +38,8 @@ export class ReportFormComponent implements OnInit {
 
   saving = false;
   isEdit = false;
+  isFromActivity = false;
+
   id?: number;
 
   strategies: StrategyModel[] = [];
@@ -49,6 +52,8 @@ export class ReportFormComponent implements OnInit {
   municipios = MUNICIPIOS_VALLE;
   todayDate: string;
 
+  private currentUser: any = null;
+
   form = {
     strategy_id: null as number | null,
     component_id: null as number | null,
@@ -56,8 +61,18 @@ export class ReportFormComponent implements OnInit {
     executive_summary: '',
     intervention_location: null as string | null,
     zone_type: null as ZoneType | null,
-    evidence_link: ''
+    evidence_link: '',
+    action_plan_activity_id: null as number | null,
   };
+
+  activityPrefill: {
+    activity_id: number;
+    activity_name: string;
+    linked_report: any | null;
+    report_by_evidence_link: { id: number } | null;
+  } | null = null;
+
+  prefillLoading = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -65,6 +80,7 @@ export class ReportFormComponent implements OnInit {
     private strategiesService: StrategiesService,
     private componentsService: ComponentsService,
     private reportsService: ReportsService,
+    private actionPlanService: ActionPlanService,
     private toast: ToastService,
     private cdr: ChangeDetectorRef
   ) {
@@ -73,10 +89,14 @@ export class ReportFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.id = Number(this.route.snapshot.paramMap.get('id'));
+    this.currentUser = JSON.parse(localStorage.getItem('user') ?? 'null');
+    this.id = Number(this.route.snapshot.paramMap.get('id')) || undefined;
     this.isEdit = !!this.id;
-    this.loadBaseData();
+    const activityId = this.route.snapshot.queryParamMap.get('activityId');
+    this.isFromActivity = !!activityId;
+    this.loadBaseData(activityId ? +activityId : null);
   }
+
 
   // ================= BASE DATA =================
 
@@ -88,29 +108,99 @@ export class ReportFormComponent implements OnInit {
     return [];
   }
 
-  loadBaseData(): void {
+  private filterComponentsByRole(components: ComponentModel[]): ComponentModel[] {
+    const role = this.currentUser?.role?.name;
+    if (role === 'admin' || role === 'monitor') return components;
+    if (role === 'editor') {
+      const assigned = (this.currentUser?.component_assignments ?? []).map((c: any) => c.component_id);
+      return components.filter(c => assigned.includes(c.id));
+    }
+    return components;
+  }
+
+  private filterStrategiesByRole(strategies: StrategyModel[]): StrategyModel[] {
+    const role = this.currentUser?.role?.name;
+    if (role === 'admin' || role === 'monitor') return strategies;
+    if (role === 'editor') {
+      const assigned = (this.currentUser?.component_assignments ?? []).map((c: any) => c.component_id);
+      // Solo estrategias que tengan al menos un componente asignado al usuario
+      const allowedStrategyIds = new Set(
+        this.allComponents
+          .filter(c => assigned.includes(c.id))
+          .map(c => c.strategy_id)
+      );
+      return strategies.filter(s => allowedStrategyIds.has(s.id));
+    }
+    return strategies;
+  }
+
+  loadBaseData(activityId: number | null = null): void {
     this.strategiesService.getAll().subscribe({
       next: (strategiesResp: any) => {
-
-        this.strategies = this.extractArray<StrategyModel>(strategiesResp);
-
+        const allStrategies = this.extractArray<StrategyModel>(strategiesResp);
         this.componentsService.getAll().subscribe({
           next: (componentsResp: any) => {
-
             this.allComponents = this.extractArray<ComponentModel>(componentsResp);
+
+            // ← aplicar filtro de estrategias DESPUÉS de tener allComponents
+            this.strategies = this.filterStrategiesByRole(allStrategies);
 
             if (this.isEdit) {
               this.loadReport();
+            } else if (activityId) {
+              this.loadPrefill(activityId);
             }
-
           },
           error: () => this.toast.error('Error cargando componentes')
         });
-
       },
       error: () => this.toast.error('Error cargando estrategias')
     });
   }
+  
+  loadPrefill(activityId: number): void {
+    this.prefillLoading = true;
+    this.actionPlanService.getPrefillForReport(activityId).subscribe({
+      next: (prefill) => {
+        this.prefillLoading = false;
+        this.activityPrefill = prefill;
+
+        // Si ya existe un reporte vinculado, redirigir a editar ese reporte
+        if (prefill.linked_report) {
+          this.toast.info(`Esta actividad ya tiene un reporte asociado (# ${prefill.linked_report.id})`);
+          this.router.navigate(['reports', prefill.linked_report.id, 'edit']);
+          return;
+        }
+
+        // Si existe un reporte por evidence_link, advertir pero no bloquear
+        // El usuario puede elegir vincularlo o ignorarlo
+
+        // Precargar campos
+        const p = prefill.prefill;
+        this.form.strategy_id = p.strategy_id;
+        this.form.evidence_link = p.evidence_link ?? '';
+        this.form.action_plan_activity_id = activityId;
+
+        // Cargar componentes del filtrado por estrategia
+        this.components = this.filterComponentsByRole(
+          this.allComponents.filter(c => c.strategy_id === p.strategy_id)
+        );
+
+        this.form.component_id = p.component_id;
+
+        // Cargar indicadores del componente
+        const component = this.allComponents.find(c => c.id === p.component_id) as any;
+        this.indicators = component?.indicators || [];
+
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.prefillLoading = false;
+        this.toast.error('Error cargando datos de la actividad');
+      }
+    });
+  }
+
 
   // ================= EDIT =================
 
@@ -127,12 +217,14 @@ export class ReportFormComponent implements OnInit {
           executive_summary: report.executive_summary,
           intervention_location: report.intervention_location ?? null,
           zone_type: this.normalizeZoneType(report.zone_type),
-          evidence_link: report.evidence_link || ''
+          evidence_link: report.evidence_link || '',
+          action_plan_activity_id: report.action_plan_activity_id ?? null,
         };
 
-        this.components = this.allComponents.filter(
-          c => c.strategy_id === report.strategy_id
+        this.components = this.filterComponentsByRole(
+          this.allComponents.filter(c => c.strategy_id === report.strategy_id)
         );
+
 
         const component = this.allComponents.find(c => c.id === report.component_id) as any;
         this.indicators = component?.indicators || [];
@@ -158,9 +250,11 @@ export class ReportFormComponent implements OnInit {
   // ================= EVENTS =================
 
   onStrategyChange(): void {
-    this.components = this.allComponents.filter(
+    const allForStrategy = this.allComponents.filter(
       c => c.strategy_id === this.form.strategy_id
     );
+    // ← aplicar filtro por rol
+    this.components = this.filterComponentsByRole(allForStrategy);
     this.form.component_id = null;
     this.indicators = [];
     this.indicatorValues = {};
@@ -279,7 +373,6 @@ export class ReportFormComponent implements OnInit {
   }
 
   save(formDirective: NgForm): void {
-
     if (formDirective.invalid) {
       formDirective.control.markAllAsTouched();
       return;
@@ -295,6 +388,7 @@ export class ReportFormComponent implements OnInit {
       intervention_location: this.form.intervention_location!,
       zone_type: this.form.zone_type!,
       evidence_link: this.form.evidence_link || null,
+      action_plan_activity_id: this.form.action_plan_activity_id ?? null,
       indicator_values: this.buildIndicatorValues()
     };
 
@@ -303,9 +397,20 @@ export class ReportFormComponent implements OnInit {
       : this.reportsService.create(payload);
 
     request.subscribe({
-      next: () => {
+      next: (savedReport) => {                          // ← recibir el reporte guardado
         this.toast.success(this.isEdit ? 'Reporte actualizado' : 'Reporte creado');
-        this.router.navigate(['reports']);
+
+        // ── Si vino desde una actividad, regresar al plan de acción ──
+        if (this.form.action_plan_activity_id && !this.isEdit) {
+          this.router.navigate(['/action-plans'], {
+            queryParams: {
+              reportActivity: this.form.action_plan_activity_id,
+              evidenceUrl: savedReport.evidence_link ?? ''
+            }
+          });
+        } else {
+          this.router.navigate(['reports']);
+        }
       },
       error: () => {
         this.toast.error('Error al guardar');

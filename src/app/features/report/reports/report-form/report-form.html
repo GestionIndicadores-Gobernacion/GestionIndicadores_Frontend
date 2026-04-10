@@ -45,6 +45,40 @@
 
         </div>
 
+        <!-- BANNER: vinculado desde actividad del plan de acción -->
+        <div *ngIf="activityPrefill && !activityPrefill.linked_report"
+            class="flex items-start gap-3 px-4 py-3 rounded-xl border border-[#BBD6FB] bg-[#EEF5FF] mb-2">
+            <svg class="w-5 h-5 text-[#2d5fa8] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div class="flex-1">
+                <p class="text-[12px] font-semibold text-[#1B3A6B]">
+                    Reporte vinculado a actividad del plan de acción
+                </p>
+                <p class="text-[11px] text-[#4A6A9B] mt-0.5">
+                    <strong>{{ activityPrefill.activity_name }}</strong> —
+                    La estrategia, componente y link de evidencia se han precargado automáticamente.
+                </p>
+
+                <!-- Advertencia si el link ya tiene reporte -->
+                <div *ngIf="activityPrefill.report_by_evidence_link"
+                    class="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg border border-[#FED7AA] bg-[#FFF7ED]">
+                    <svg class="w-4 h-4 text-orange-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p class="text-[11px] text-orange-700">
+                        El link de evidencia ya está asociado al reporte
+                        <strong>#{{ activityPrefill.report_by_evidence_link.id }}</strong>.
+                        Al guardar, la actividad se vinculará automáticamente a ese reporte.
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <!-- FORM -->
         <form (ngSubmit)="save(f)" #f="ngForm" novalidate class="space-y-6">
 
@@ -176,15 +210,14 @@
                             </label>
 
                             <select [(ngModel)]="form.strategy_id" name="strategy_id" (change)="onStrategyChange()"
-                                required class="w-full text-[13px] rounded-xl px-3 py-2.5
-                bg-[#F0F4FA] border border-[#D6E0F0]
-                focus:bg-white focus:border-[#2d5fa8]
-                focus:ring-2 focus:ring-[#2d5fa8]/20
-                outline-none transition-all">
-
+                                [disabled]="isFromActivity" required class="w-full text-[13px] rounded-xl px-3 py-2.5
+           bg-[#F0F4FA] border border-[#D6E0F0]
+           focus:bg-white focus:border-[#2d5fa8]
+           focus:ring-2 focus:ring-[#2d5fa8]/20
+           disabled:opacity-60 disabled:cursor-not-allowed
+           outline-none transition-all">
                                 <option [ngValue]="null" disabled>Seleccione una estrategia...</option>
                                 <option *ngFor="let s of strategies" [ngValue]="s.id">{{ s.name }}</option>
-
                             </select>
 
                             <p class="text-[10.5px] text-[#8A9DC0]">
@@ -200,17 +233,16 @@
                                 Componente <span class="text-red-600">*</span>
                             </label>
 
-                            <select [(ngModel)]="form.component_id" name="component_id" [disabled]="!form.strategy_id"
-                                (change)="onComponentChange()" required class="w-full text-[13px] rounded-xl px-3 py-2.5
-                bg-[#F0F4FA] border border-[#D6E0F0]
-                focus:bg-white focus:border-[#2d5fa8]
-                focus:ring-2 focus:ring-[#2d5fa8]/20
-                disabled:opacity-40
-                outline-none transition-all">
-
+                            <select [(ngModel)]="form.component_id" name="component_id"
+                                [disabled]="!form.strategy_id || isFromActivity" (change)="onComponentChange()" required
+                                class="w-full text-[13px] rounded-xl px-3 py-2.5
+           bg-[#F0F4FA] border border-[#D6E0F0]
+           focus:bg-white focus:border-[#2d5fa8]
+           focus:ring-2 focus:ring-[#2d5fa8]/20
+           disabled:opacity-60 disabled:cursor-not-allowed
+           outline-none transition-all">
                                 <option [ngValue]="null" disabled>Seleccione un componente...</option>
                                 <option *ngFor="let c of components" [ngValue]="c.id">{{ c.name }}</option>
-
                             </select>
 
                             <p class="text-[10.5px] text-[#8A9DC0]">

@@ -217,14 +217,14 @@
                                     <!-- En ejecución -->
                                     <td class="px-5 py-3 text-center">
                                         <span class="text-[12px] font-semibold text-blue-700">
-                                            {{ user.total_activities - user.completed - user.overdue - user.pending }}
+                                            {{ user.running }}
                                         </span>
                                     </td>
 
                                     <!-- Pendientes -->
                                     <td class="px-5 py-3 text-center">
                                         <span class="text-[12px] font-semibold text-red-600">
-                                            {{ user.pending + user.overdue }}
+                                            {{ user.overdue }}
                                         </span>
                                     </td>
 
@@ -308,8 +308,10 @@
                                                             '—' }}
                                                         </td>
                                                         <td class="px-4 py-2.5 text-center text-[13px]"
-                                                            style="color:#F59E0B;">
-                                                            {{ act.score !== null ? act.score + ' ★' : '—' }}
+                                                            [style.color]="act.computed_score !== null && act.computed_score !== undefined && act.computed_score > 0 ? '#F59E0B' : '#ef4444'">
+                                                            {{ act.computed_score !== null && act.computed_score !==
+                                                            undefined
+                                                            ? act.computed_score + ' ★' : '—' }}
                                                         </td>
                                                         <td class="px-4 py-2.5 text-center">
                                                             <a *ngIf="act.evidence_url" [href]="act.evidence_url"

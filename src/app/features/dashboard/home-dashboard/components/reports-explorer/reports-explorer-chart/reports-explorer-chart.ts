@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
 
 import { BarClickEvent, ChartBuildersService } from './chart-builder.service';
 import { ComponentAggregate, IndicatorDetail } from '../../../../../../core/models/report-aggregate.model';
+import { ReportModel } from '../../../../../../core/models/report.model';
 
 const MONTHS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
@@ -27,6 +28,7 @@ export class ReportsExplorerChartComponent implements OnChanges {
   @Input() indicatorDetail: IndicatorDetail | null = null;
   @Input() selectedYear: number = new Date().getFullYear();
   @Input() componentId: number | null = null;
+  @Input() allReports: ReportModel[] = [];
 
   @Output() yearChange = new EventEmitter<number>();
   @Output() barClick = new EventEmitter<BarClickEvent>();
@@ -108,9 +110,22 @@ export class ReportsExplorerChartComponent implements OnChanges {
   }
 
   private computeYears(): void {
-    const years = [...new Set((this.componentAggregate?.by_month ?? []).map(e => Number(e.month.split('-')[0])))];
-    years.push(new Date().getFullYear());
-    this.availableYears = [...new Set(years)].sort((a, b) => b - a);
-    if (!this.availableYears.includes(this.currentYear)) this.currentYear = this.availableYears[0];
+    // Años del componente actual (para saber cuáles tienen datos)
+    const fromAggregate = [...new Set(
+      (this.componentAggregate?.by_month ?? []).map(e => Number(e.month.split('-')[0]))
+    )];
+
+    // Años de todos los reportes (para mostrar el selector completo)
+    const fromAll = [...new Set(
+      this.allReports.map(r => new Date(r.report_date).getFullYear())
+    )];
+
+    // Unión de ambos, ordenados descendente
+    this.availableYears = [...new Set([...fromAggregate, ...fromAll, new Date().getFullYear()])]
+      .sort((a, b) => b - a);
+
+    if (!this.availableYears.includes(this.currentYear)) {
+      this.currentYear = this.availableYears[0];
+    }
   }
 }

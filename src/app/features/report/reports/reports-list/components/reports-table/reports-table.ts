@@ -74,11 +74,16 @@ export class ReportsTableComponent implements OnChanges {
     if (report.user_id === null || report.user_id === undefined) return false;
     return report.user_id === this.currentUserId;
   }
-  
+
   applyAll(): void {
     this.applyFilter();
     this.applySort();
     this.applyPagination();
+  }
+
+  openActivityInNewTab(activityId: number): void {
+    const url = `/action-plans?reportActivity=${activityId}`;
+    window.open(url, '_blank');
   }
 
   clearChartFilter(): void {

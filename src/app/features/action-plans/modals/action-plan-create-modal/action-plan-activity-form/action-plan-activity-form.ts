@@ -11,6 +11,7 @@ export interface ActivityFormData {
   delivery_date: string;
   lugar: string | null;
   requires_boss_assistance: boolean;
+  generates_report: boolean;
   support_staff: { name: string }[];
   recurrence: RecurrenceForm;
 }

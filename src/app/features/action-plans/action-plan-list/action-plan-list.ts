@@ -30,6 +30,7 @@ export class ActionPlanListComponent {
   @Input() currentUserId?: number | null;
   @Input() isAdmin = false;
   @Input() plans: ActionPlanModel[] = [];
+  @Input() currentUser: any = null;
 
   @Output() report = new EventEmitter<{ plan: ActionPlanModel; objective: ActionPlanObjectiveModel; activity: ActionPlanActivityModel; event: Event }>();
   @Output() delete = new EventEmitter<{ activityId: number; event: Event }>();
@@ -183,9 +184,19 @@ export class ActionPlanListComponent {
   }
 
   canModify(plan: ActionPlanModel): boolean {
-    return true;
+    if (!this.currentUser) return false;
+    const role = this.currentUser.role?.name;
+    if (role === 'admin' || role === 'monitor') return true;
+    if (role === 'viewer') return false;
+    if (role === 'editor') {
+      const assigned = (this.currentUser.component_assignments ?? []).map((c: any) => c.component_id);
+      if (assigned.includes(plan.component_id)) return true;
+      if (plan.responsible_user_id && plan.responsible_user_id === this.currentUser.id) return true;
+      return false;
+    }
+    return false;
   }
-
+  
   onEdit(plan: ActionPlanModel, objective: ActionPlanObjectiveModel, activity: ActionPlanActivityModel, event: Event): void {
     event.stopPropagation();
     this.edit.emit({ plan, objective, activity, event });
