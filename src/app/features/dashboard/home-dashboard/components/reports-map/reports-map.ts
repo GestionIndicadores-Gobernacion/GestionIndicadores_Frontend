@@ -21,6 +21,7 @@ import { KPI_OPTIONS, KpiOption, MAP_STYLES, MunicipioSummary } from './reports-
 export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   @Input() reports: ReportModel[] = [];
+  @Input() allReports: ReportModel[] = [];
   @Input() strategyMap: Record<number, string> = {};
   @Input() componentMap: Record<number, string> = {};
   @Input() selectedYear: number = new Date().getFullYear();
@@ -55,9 +56,13 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   }
 
   get availableYears(): number[] {
-    return [...new Set(this.reports.map(r => new Date(r.report_date).getFullYear()))].sort((a, b) => b - a);
+    // Usar allReports para mostrar todos los años disponibles,
+    // independientemente del rango activo
+    const source = this.allReports.length ? this.allReports : this.reports;
+    return [...new Set(source.map(r => new Date(r.report_date).getFullYear()))]
+      .sort((a, b) => b - a);
   }
-
+  
   get filteredMunicipios(): MunicipioSummary[] {
     const q = this.searchQuery.toLowerCase();
     const source = q ? this.filteredReports.filter(r => r.intervention_location.toLowerCase().includes(q)) : this.filteredReports;

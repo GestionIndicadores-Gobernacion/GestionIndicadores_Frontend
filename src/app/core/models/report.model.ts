@@ -42,11 +42,13 @@ export interface ReportModel {
   report_date: string;
 
   executive_summary: string;
-  
+
   intervention_location: string;
   zone_type: ZoneType;
 
   evidence_link?: string | null;
+
+  action_plan_activity_id?: number | null;
 
   indicator_values: ReportIndicatorValue[];
 
@@ -64,17 +66,18 @@ export interface ReportCreateRequest {
   report_date: string;
 
   executive_summary: string;
-  
+
   intervention_location: string;
   zone_type: ZoneType;
 
   evidence_link?: string | null;
 
   indicator_values: ReportIndicatorValue[];
+  action_plan_activity_id?: number | null;
 }
 
 // =======================================================
 // ✏ UPDATE
 // =======================================================
 
-export interface ReportUpdateRequest extends ReportCreateRequest {}
+export interface ReportUpdateRequest extends ReportCreateRequest { }

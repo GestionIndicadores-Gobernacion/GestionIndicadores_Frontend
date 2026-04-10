@@ -41,6 +41,7 @@ export class ActionPlanEditModalComponent implements OnInit {
       delivery_date: this.activity.delivery_date,
       lugar: this.activity.lugar ?? null,
       requires_boss_assistance: this.activity.requires_boss_assistance ?? false,
+      generates_report: this.activity.generates_report ?? false,
       support_staff: (this.activity.support_staff ?? []).map(s => ({ name: s.name })),
       recurrence: {
         enabled: false,
@@ -68,6 +69,7 @@ export class ActionPlanEditModalComponent implements OnInit {
       delivery_date: editAll ? undefined : this.form.delivery_date,
       lugar: this.form.lugar,
       requires_boss_assistance: this.form.requires_boss_assistance,
+      generates_report: this.form.generates_report,
       support_staff: this.form.support_staff.filter(s => s.name.trim()),
       edit_all: editAll,
     };

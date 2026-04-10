@@ -1,23 +1,49 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { KpiOption, MunicipioSummary } from '../../reports-map.types';
 
-import { MapList } from './map-list';
+@Component({
+  selector: 'app-map-list',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './map-list.html',
+})
+export class MapListComponent {
 
-describe('MapList', () => {
-  let component: MapList;
-  let fixture: ComponentFixture<MapList>;
+  @Input() municipios: MunicipioSummary[] = [];
+  @Input() selectedMunicipio: MunicipioSummary | null = null;
+  @Input() activeKpi: KpiOption | null = null;
+  @Input() selectedKpiId = '';
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [MapList]
-    })
-    .compileComponents();
+  @Output() municipioSelect = new EventEmitter<MunicipioSummary>();
 
-    fixture = TestBed.createComponent(MapList);
-    component = fixture.componentInstance;
-    await fixture.whenStable();
-  });
+  searchQuery = '';   // ← NUEVO
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
+  get filteredMunicipios(): MunicipioSummary[] {   // ← NUEVO
+    if (!this.searchQuery.trim()) return this.municipios;
+    const q = this.searchQuery.toLowerCase().trim();
+    return this.municipios.filter(m => m.name.toLowerCase().includes(q));
+  }
+
+  getKpiValue(m: MunicipioSummary): number {
+    if (!this.selectedKpiId) return m.totalReports;
+    const map: Record<string, number> = {
+      asistencias: m.indicators.find(i => i.id === -1)?.total ?? 0,
+      denuncias: m.indicators.find(i => i.id === -2)?.total ?? 0,
+      esterilizados: m.indicators.find(i => i.id === -3)?.total ?? 0,
+      refugios: m.indicators.find(i => i.id === -4)?.total ?? 0,
+      ninos: m.indicators.find(i => i.id === -5)?.total ?? 0,
+      emprendedores: m.indicators.find(i => i.id === -6)?.total ?? 0,
+    };
+    return map[this.selectedKpiId] ?? 0;
+  }
+
+  getMaxKpiValue(): number {
+    return Math.max(...this.municipios.map(m => this.getKpiValue(m)), 1);
+  }
+
+  getTotalKpiValue(): number {
+    return this.municipios.reduce((s, m) => s + this.getKpiValue(m), 0);
+  }
+}

@@ -89,7 +89,7 @@
 
             <!-- GRID -->
             <app-action-plan-calendar-grid *ngIf="viewMode === 'calendar'" [calendarDays]="calendarDays"
-                [displayPlans]="displayPlans" [currentDate]="currentDate"
+                [displayPlans]="displayPlans" [currentDate]="currentDate" [canInteract]="canInteractWithPlan.bind(this)"
                 (report)="openReportModal($event.plan, $event.objective, $event.activity, $event.event)"
                 (edit)="openEditPlanModal($event.plan, $event.event)"
                 (delete)="deleteActivity($event.activityId, $event.event)" (openAgenda)="openDayAgenda($event)"
@@ -97,7 +97,7 @@
             </app-action-plan-calendar-grid>
 
             <!-- AGENDA -->
-            <app-action-plan-list *ngIf="viewMode === 'agenda'" [plans]="displayPlans"
+            <app-action-plan-list *ngIf="viewMode === 'agenda'" [plans]="displayPlans" [currentUser]="currentUser"
                 (report)="openReportModal($event.plan, $event.objective, $event.activity, $event.event)"
                 (edit)="openEditPlanModal($event.plan, $event.event)"
                 (delete)="deleteActivity($event.activityId, $event.event)">
@@ -155,9 +155,10 @@
                     [class.bg-red-400]="hoveredFlat.activity.status === 'Pendiente'"></span>
                 {{ hoveredFlat.activity.status }}
             </span>
-            <span *ngIf="hoveredFlat.activity.score !== null && hoveredFlat.activity.score !== undefined"
+            <span
+                *ngIf="hoveredFlat.activity.computed_score !== null && hoveredFlat.activity.computed_score !== undefined"
                 class="text-xs font-semibold text-yellow-300">
-                ★ {{ hoveredFlat.activity.score }} pts
+                ★ {{ hoveredFlat.activity.computed_score }} pts
             </span>
         </div>
     </div>
@@ -169,8 +170,8 @@
     (created)="onPlanCreated()"></app-action-plan-create-modal>
 
 <app-action-plan-report-modal *ngIf="showReportModal && modal.activity && modal.objective" [plan]="modal.plan!"
-    [objective]="modal.objective!" [activity]="modal.activity" (close)="closeReportModal()"
-    (reported)="onPlanReported()">
+    [objective]="modal.objective!" [activity]="modal.activity" [prefillEvidenceUrl]="prefillEvidenceUrl"
+    (close)="closeReportModal()" (reported)="onPlanReported()">
 </app-action-plan-report-modal>
 
 <app-action-plan-edit-modal *ngIf="showEditModal && modal.activity && modal.objective" [plan]="modal.plan!"

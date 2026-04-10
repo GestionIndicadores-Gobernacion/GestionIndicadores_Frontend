@@ -52,7 +52,7 @@ export class ActionPlanExportService {
             act.delivery_date,
             act.requires_boss_assistance ? 'Sí' : 'No',
             act.status ?? '',
-            act.score ?? '',
+            act.computed_score ?? act.score ?? '',
             (act.support_staff ?? []).map(s => s.name).join(', '),
           ]);
         }

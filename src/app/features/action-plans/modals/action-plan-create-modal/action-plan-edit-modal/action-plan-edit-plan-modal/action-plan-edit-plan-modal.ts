@@ -100,6 +100,7 @@ export class ActionPlanEditPlanModalComponent implements OnInit {
               delivery_date: a.delivery_date,
               lugar: a.lugar ?? null,   // ← FALTABA
               requires_boss_assistance: a.requires_boss_assistance ?? false,
+              generates_report: a.generates_report ?? false,
               support_staff: (a.support_staff ?? []).map(s => ({ name: s.name })),
               recurrence: {
                 enabled: false,
@@ -130,6 +131,7 @@ export class ActionPlanEditPlanModalComponent implements OnInit {
       name: '', deliverable: '', delivery_date: '',
       lugar: null,                    // ← agregar
       requires_boss_assistance: false, support_staff: [],
+      generates_report: false,
       recurrence: {
         enabled: false, frequency: 'monthly' as RecurrenceFrequency,
         until: this.defaultUntil(), day_of_month: null, day_of_week: null, interval: 7,
