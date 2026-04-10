@@ -324,6 +324,8 @@ export class ActionPlanCalendarComponent implements OnInit {
       });
   }
 
+  
+
   clampTooltipX(x: number): number {
     const tooltipWidth = 224;
     const margin = 8;

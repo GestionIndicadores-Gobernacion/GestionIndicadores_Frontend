@@ -23,7 +23,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     private notifService: NotificationService,
     private elRef: ElementRef,
     private router: Router,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.notifService.startPolling();
@@ -47,7 +47,10 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     if (!notif.is_read) {
       this.notifService.markAsRead(notif.id).subscribe();
     }
-    if (notif.category === 'action_plan' && notif.entity_id) {
+    if (
+      (notif.category === 'action_plan' || notif.category === 'action_plan_reminder')
+      && notif.entity_id
+    ) {
       this.isOpen = false;
       this.router.navigate(['/action-plans']);
     }

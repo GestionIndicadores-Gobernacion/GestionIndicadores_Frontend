@@ -1,53 +1,46 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { MenuService, MenuItem } from '../../../core/services/menu.service';
 import { ReportsService } from '../../../core/services/reports.service';
 import { StrategiesService } from '../../../core/services/strategies.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 import { ReportModel } from '../../../core/models/report.model';
-import {
-  StrategyAggregate,
-  AggregateByComponent,
-} from '../../../core/models/report-aggregate.model';
-
+import { StrategyAggregate, AggregateByComponent } from '../../../core/models/report-aggregate.model';
 
 import { catchError, forkJoin, of } from 'rxjs';
 import { ReportsExplorerComponent } from './components/reports-explorer/reports-explorer';
 import { ReportsKpiCardsComponent } from './components/reports-kpi-cards/reports-kpi-cards';
 import { ReportsMapComponent } from './components/reports-map/reports-map';
+import { StrategyDashboardComponent } from '../../report/strategy/strategy-list/strategy-dashboard/strategy-dashboard';
+
+type RangePreset = 'year' | 'month' | '3months' | '6months' | 'custom';
 
 @Component({
   selector: 'app-home-dashboard',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     ReportsKpiCardsComponent,
     ReportsExplorerComponent,
-    ReportsMapComponent
+    ReportsMapComponent,
+    StrategyDashboardComponent,
   ],
   templateUrl: './home-dashboard.html',
 })
 export class HomeDashboardComponent implements OnInit {
-
-  private readonly MAP_KPI_COMPONENT_PERSONAS = 22;
-  private readonly MAP_KPI_INDICATOR_PERSONAS = 76;
-  private readonly MAP_KPI_INDICATOR_NINOS = 163;
-  private readonly MAP_KPI_COMPONENT_ASISTENCIAS = 2;
-  private readonly MAP_KPI_COMPONENT_JUNTAS = 21;
-  private readonly MAP_KPI_INDICATOR_ASISTENCIAS_JUNTAS = 160;
-  private readonly MAP_KPI_INDICATOR_DENUNCIAS = 137;
-  private readonly MAP_KPI_COMPONENT_EMPRENDEDORES = 14;
-  private readonly MAP_KPI_INDICATOR_NINOS_SENSIBILIZADOS = 114;
 
   // ── Navigation sections ──────────────────────────────────
   roleId: number | null = null;
   sections: DashboardSectionVM[] = [];
 
   // ── Analytics panel ──────────────────────────────────────
-  reports: ReportModel[] = [];
+  allReports: ReportModel[] = [];     // todos sin filtrar
+  reports: ReportModel[] = [];        // filtrados (van a los componentes)
   strategyMap: Record<number, string> = {};
   componentMap: Record<number, string> = {};
   strategyIds: number[] = [];
@@ -58,14 +51,29 @@ export class HomeDashboardComponent implements OnInit {
 
   loading = true;
   showDashboard = true;
-
   selectedYear: number = new Date().getFullYear();
+
+  // ── Filtro de rango ──────────────────────────────────────
+  selectedPreset: RangePreset = 'year';
+  customDateFrom = '';
+  customDateTo = '';
+  activeDateFrom: string | null = null;
+  activeDateTo: string | null = null;
+
+  readonly PRESETS: { key: RangePreset; label: string }[] = [
+    { key: 'month', label: 'Mes actual' },
+    { key: '3months', label: 'Últimos 3 meses' },
+    { key: '6months', label: 'Últimos 6 meses' },
+    { key: 'year', label: 'Año actual' },
+    { key: 'custom', label: 'Personalizado' },
+  ];
 
   constructor(
     private authService: AuthService,
     private menuService: MenuService,
     private reportsService: ReportsService,
     private strategiesService: StrategiesService,
+    private toast: ToastService,
     private cd: ChangeDetectorRef,
   ) {
     const user = this.authService.getUser();
@@ -73,22 +81,103 @@ export class HomeDashboardComponent implements OnInit {
     this.sections = this.buildDashboardSections();
   }
 
-  get reportsForMap(): ReportModel[] {
-    return this.reports.filter(r =>
-      new Date(r.report_date).getFullYear() === this.selectedYear
-    );
-  }
-  
   ngOnInit(): void {
     this.loadData();
   }
 
   // =========================================================
+  // FILTRO
+  // =========================================================
+
+  private getRangeForPreset(preset: RangePreset): { from: string; to: string } | null {
+    const today = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const fmt = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+    switch (preset) {
+      case 'month': {
+        const from = new Date(today.getFullYear(), today.getMonth(), 1);
+        const to = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        return { from: fmt(from), to: fmt(to) };
+      }
+      case '3months': {
+        const from = new Date(today);
+        from.setMonth(from.getMonth() - 3);
+        return { from: fmt(from), to: fmt(today) };
+      }
+      case '6months': {
+        const from = new Date(today);
+        from.setMonth(from.getMonth() - 6);
+        return { from: fmt(from), to: fmt(today) };
+      }
+      case 'year':
+        return null;
+      case 'custom':
+        if (this.customDateFrom && this.customDateTo)
+          return { from: this.customDateFrom, to: this.customDateTo };
+        return null;
+    }
+  }
+
+  applyPreset(preset: RangePreset): void {
+    this.selectedPreset = preset;
+    if (preset !== 'custom') this.applyFilter();
+  }
+
+  applyCustomRange(): void {
+    if (!this.customDateFrom || !this.customDateTo) {
+      this.toast.error('Selecciona ambas fechas.');
+      return;
+    }
+    if (this.customDateFrom > this.customDateTo) {
+      this.toast.error('La fecha de inicio debe ser anterior al fin.');
+      return;
+    }
+    this.applyFilter();
+  }
+
+  private applyFilter(): void {
+    const range = this.getRangeForPreset(this.selectedPreset);
+
+    if (range) {
+      this.activeDateFrom = range.from;
+      this.activeDateTo = range.to;
+      this.reports = this.allReports.filter(r => {
+        const d = r.report_date.substring(0, 10);
+        return d >= range.from && d <= range.to;
+      });
+
+      // Actualizar selectedYear al año más reciente del rango
+      const yearsInRange = [...new Set(this.reports.map(r =>
+        new Date(r.report_date).getFullYear()
+      ))];
+      if (yearsInRange.length > 0) {
+        this.selectedYear = Math.max(...yearsInRange);
+      }
+
+    } else {
+      // Preset = year
+      this.activeDateFrom = null;
+      this.activeDateTo = null;
+      this.reports = this.allReports.filter(r =>
+        new Date(r.report_date).getFullYear() === this.selectedYear
+      );
+    }
+
+    this.cd.detectChanges();
+  }
+
+  get rangeLabel(): string {
+    if (this.activeDateFrom && this.activeDateTo)
+      return `${this.activeDateFrom} → ${this.activeDateTo}`;
+    return `Año ${this.selectedYear}`;
+  }
+
+  // =========================================================
   // UI ACTIONS
   // =========================================================
-  toggleDashboard(): void {
-    this.showDashboard = !this.showDashboard;
-  }
+
+  toggleDashboard(): void { this.showDashboard = !this.showDashboard; }
 
   onStrategyChange(strategyId: number): void {
     this.selectedStrategyId = strategyId;
@@ -97,12 +186,24 @@ export class HomeDashboardComponent implements OnInit {
 
   onYearChange(year: number): void {
     this.selectedYear = year;
+
+    // Si el preset activo es 'year', recalcular los reportes filtrados por ese año
+    if (this.selectedPreset === 'year') {
+      this.reports = this.allReports.filter(r =>
+        new Date(r.report_date).getFullYear() === year
+      );
+    }
+    // Si hay un rango activo (month, 3months, 6months, custom),
+    // el año solo afecta la visualización interna de los componentes,
+    // no el array de reports — no hacer nada más
+
     this.cd.detectChanges();
   }
 
   // =========================================================
   // DATA LOADING
   // =========================================================
+
   private loadData(): void {
     this.strategiesService.getAll().subscribe({
       next: strategies => {
@@ -121,18 +222,18 @@ export class HomeDashboardComponent implements OnInit {
     });
   }
 
-
   private loadReports(): void {
     this.reportsService.getAllForDashboard().subscribe({
       next: reports => {
-        this.reports = reports ?? [];
+        this.allReports = reports ?? [];
 
-        const years = [...new Set(this.reports.map(r => new Date(r.report_date).getFullYear()))];
-        if (years.length > 0) {
-          this.selectedYear = Math.max(...years);
-        }
+        const years = [...new Set(this.allReports.map(r => new Date(r.report_date).getFullYear()))];
+        if (years.length > 0) this.selectedYear = Math.max(...years);
 
-        if (this.reports.length === 0) {
+        // Aplicar filtro inicial
+        this.applyFilter();
+
+        if (this.allReports.length === 0) {
           this.strategyAggregate = null;
           this.components = [];
           this.componentMap = {};
@@ -141,35 +242,29 @@ export class HomeDashboardComponent implements OnInit {
           return;
         }
 
-        this.selectedStrategyId = this.reports[0].strategy_id;
-        const uniqueStrategyIds = [...new Set(this.reports.map(r => r.strategy_id))];
+        this.selectedStrategyId = this.allReports[0].strategy_id;
+        const uniqueStrategyIds = [...new Set(this.allReports.map(r => r.strategy_id))];
 
         const requests = uniqueStrategyIds.map(id =>
-          this.reportsService.aggregateByStrategy(id).pipe(
-            catchError(() => of(this.emptyAggregate(id)))
-          )
+          this.reportsService.aggregateByStrategy(id).pipe(catchError(() => of(this.emptyAggregate(id))))
         );
 
         forkJoin(requests).subscribe(aggregates => {
           const fullComponentMap: Record<number, string> = {};
-
           aggregates.forEach((agg, index) => {
-            const strategyId = uniqueStrategyIds[index];
-            agg.by_component.forEach(c => {
-              fullComponentMap[c.component_id] = c.component_name;
-            });
-            if (strategyId === this.selectedStrategyId) {
+            agg.by_component.forEach(c => { fullComponentMap[c.component_id] = c.component_name; });
+            if (uniqueStrategyIds[index] === this.selectedStrategyId) {
               this.strategyAggregate = agg;
               this.components = agg.by_component;
             }
           });
-
           this.componentMap = fullComponentMap;
           this.loading = false;
           this.cd.detectChanges();
         });
       },
       error: () => {
+        this.allReports = [];
         this.reports = [];
         this.strategyAggregate = null;
         this.components = [];
@@ -185,27 +280,36 @@ export class HomeDashboardComponent implements OnInit {
     ).subscribe(agg => {
       this.strategyAggregate = agg;
       this.components = agg.by_component;
-      const newEntries = Object.fromEntries(
-        agg.by_component.map(c => [c.component_id, c.component_name])
-      );
-      this.componentMap = { ...this.componentMap, ...newEntries };
+      this.componentMap = {
+        ...this.componentMap,
+        ...Object.fromEntries(agg.by_component.map(c => [c.component_id, c.component_name]))
+      };
       this.cd.detectChanges();
     });
   }
 
   private emptyAggregate(strategyId: number): StrategyAggregate {
-    return {
-      strategy_id: strategyId,
-      total_reports: 0,
-      by_component: [],
-      by_month: [],
-      by_zone: { Urbana: 0, Rural: 0 }
-    };
+    return { strategy_id: strategyId, total_reports: 0, by_component: [], by_month: [], by_zone: { Urbana: 0, Rural: 0 } };
+  }
+
+  onCustomDateFromChange(): void {
+    // Si "Hasta" es anterior a "Desde", resetearla
+    if (this.customDateTo && this.customDateFrom > this.customDateTo) {
+      this.customDateTo = '';
+    }
+  }
+
+  onCustomDateToChange(): void {
+    // Si "Desde" es posterior a "Hasta", resetearla
+    if (this.customDateFrom && this.customDateTo < this.customDateFrom) {
+      this.customDateFrom = '';
+    }
   }
 
   // =========================================================
   // NAVIGATION SECTIONS
   // =========================================================
+
   private canShow(item: MenuItem): boolean {
     if (item.disabled) return false;
     if (!item.roles) return true;
@@ -220,7 +324,6 @@ export class HomeDashboardComponent implements OnInit {
         if (!section.children) return null;
         const visibleChildren = section.children.filter(c => this.canShow(c));
         if (!visibleChildren.length) return null;
-
         return {
           title: section.label,
           description: this.getSectionDescription(section.label),
@@ -256,22 +359,10 @@ export class HomeDashboardComponent implements OnInit {
   }
 
   get availableYears(): number[] {
-    const years = new Set(this.reports.map(r => new Date(r.report_date).getFullYear()));
+    const years = new Set(this.allReports.map(r => new Date(r.report_date).getFullYear()));
     return Array.from(years).sort((a, b) => b - a);
   }
-
 }
 
-/* ===================================================== */
-
-interface DashboardSectionVM {
-  title: string;
-  description: string;
-  items: DashboardItemVM[];
-}
-
-interface DashboardItemVM {
-  label: string;
-  route: string;
-  description: string;
-}
+interface DashboardSectionVM { title: string; description: string; items: DashboardItemVM[]; }
+interface DashboardItemVM { label: string; route: string; description: string; }

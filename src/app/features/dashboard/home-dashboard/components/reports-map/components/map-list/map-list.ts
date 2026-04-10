@@ -1,15 +1,16 @@
-// components/map-list/map-list.ts
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { KpiOption, MunicipioSummary } from '../../reports-map.types';
 
 @Component({
   selector: 'app-map-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './map-list.html',
 })
 export class MapListComponent {
+
   @Input() municipios: MunicipioSummary[] = [];
   @Input() selectedMunicipio: MunicipioSummary | null = null;
   @Input() activeKpi: KpiOption | null = null;
@@ -17,14 +18,22 @@ export class MapListComponent {
 
   @Output() municipioSelect = new EventEmitter<MunicipioSummary>();
 
+  searchQuery = '';   // ← NUEVO
+
+  get filteredMunicipios(): MunicipioSummary[] {   // ← NUEVO
+    if (!this.searchQuery.trim()) return this.municipios;
+    const q = this.searchQuery.toLowerCase().trim();
+    return this.municipios.filter(m => m.name.toLowerCase().includes(q));
+  }
+
   getKpiValue(m: MunicipioSummary): number {
     if (!this.selectedKpiId) return m.totalReports;
     const map: Record<string, number> = {
-      asistencias: m.indicators.find(i => i.id === -1)?.total ?? 0,
-      denuncias: m.indicators.find(i => i.id === -2)?.total ?? 0,
+      asistencias:   m.indicators.find(i => i.id === -1)?.total ?? 0,
+      denuncias:     m.indicators.find(i => i.id === -2)?.total ?? 0,
       esterilizados: m.indicators.find(i => i.id === -3)?.total ?? 0,
-      refugios: m.indicators.find(i => i.id === -4)?.total ?? 0,
-      ninos: m.indicators.find(i => i.id === -5)?.total ?? 0,
+      refugios:      m.indicators.find(i => i.id === -4)?.total ?? 0,
+      ninos:         m.indicators.find(i => i.id === -5)?.total ?? 0,
       emprendedores: m.indicators.find(i => i.id === -6)?.total ?? 0,
     };
     return map[this.selectedKpiId] ?? 0;

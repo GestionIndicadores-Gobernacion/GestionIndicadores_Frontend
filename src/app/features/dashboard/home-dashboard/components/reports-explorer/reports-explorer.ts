@@ -10,6 +10,7 @@ import { ReportsService } from "../../../../../core/services/reports.service";
 import { BarClickEvent } from "./reports-explorer-chart/chart-builder.service";
 import { ReportsExplorerChartComponent } from "./reports-explorer-chart/reports-explorer-chart";
 import { getCbaVirtuals, getUnidadMovilVirtuals, getAtencionVeterinariaVirtuals, getDejandoHuellaVirtuals, getAlianzasAcademicasVirtuals, getExperienciasCulturalesVirtuals, getMesaPybaVirtuals, getGenericVirtuals, getEscuadronBenjiVirtuals, getAutosostenibilidadVirtuals, getAlianzasEstrategicasVirtuals, getRedAnimaliaAcompanamientoVirtuals, getJuntasDefensorasVirtuals, getPromotoresVirtuals } from "./virtual-indicators";
+import { ReportModel } from "../../../../../core/models/report.model";
 const PILLS_VISIBLE = 6;
 
 const COMPONENT_VIRTUAL_MAP: Record<number, (agg: ComponentIndicatorsAggregate | null) => IndicatorDetail[]> = {
@@ -41,6 +42,11 @@ export class ReportsExplorerComponent implements OnChanges {
   @Input() selectedStrategyId: number | null = null;
   @Input() components: AggregateByComponent[] = [];
   @Input() selectedYear: number = new Date().getFullYear();
+
+  @Input() dateFrom: string | null = null;
+  @Input() dateTo: string | null = null;
+
+  @Input() allReports: ReportModel[] = [];
 
   @Output() yearChange = new EventEmitter<number>();
   @Output() strategyChange = new EventEmitter<number>();
@@ -104,11 +110,23 @@ export class ReportsExplorerComponent implements OnChanges {
         this.componentAggregate = null;
         this.selectedIndicator = null;
       }
-
       if (this.components.length > 0) {
-        const firstComponent = this.components[0];
-        this.selectedComponentId = firstComponent.component_id;
-        this.loadComponentData(firstComponent.component_id);
+        this.selectedComponentId = this.components[0].component_id;
+        this.loadComponentData(this.components[0].component_id);
+      }
+    }
+
+    // Recargar si cambia el rango de fechas
+    if ((changes['dateFrom'] || changes['dateTo']) && !changes['dateFrom']?.firstChange) {
+      if (this.selectedComponentId) {
+        this.loadComponentData(this.selectedComponentId);
+      }
+    }
+
+    // ← NUEVO: recargar si cambia el año desde el dashboard
+    if (changes['selectedYear'] && !changes['selectedYear'].firstChange) {
+      if (this.selectedComponentId) {
+        this.loadComponentData(this.selectedComponentId);
       }
     }
   }
@@ -128,8 +146,16 @@ export class ReportsExplorerComponent implements OnChanges {
     this.indicatorsAggregate = null;
 
     forkJoin({
-      aggregate: this.reportsService.aggregateByComponent(id, this.selectedYear), // ← agregar año
-      indicators: this.reportsService.aggregateIndicatorsByComponent(id, this.selectedYear)
+      aggregate: this.reportsService.aggregateByComponent(
+        id, this.selectedYear,
+        this.dateFrom ?? undefined,
+        this.dateTo ?? undefined
+      ),
+      indicators: this.reportsService.aggregateIndicatorsByComponent(
+        id, this.selectedYear,
+        this.dateFrom ?? undefined,
+        this.dateTo ?? undefined
+      )
     }).subscribe({
       next: ({ aggregate, indicators }) => {
         this.componentAggregate = aggregate;
@@ -154,12 +180,20 @@ export class ReportsExplorerComponent implements OnChanges {
 
     if (this.selectedComponentId) {
       forkJoin({
-        aggregate: this.reportsService.aggregateByComponent(this.selectedComponentId, year), // ← agregar año
-        indicators: this.reportsService.aggregateIndicatorsByComponent(this.selectedComponentId, year)
+        aggregate: this.reportsService.aggregateByComponent(
+          this.selectedComponentId, year,
+          this.dateFrom ?? undefined,
+          this.dateTo ?? undefined
+        ),
+        indicators: this.reportsService.aggregateIndicatorsByComponent(
+          this.selectedComponentId, year,
+          this.dateFrom ?? undefined,
+          this.dateTo ?? undefined
+        )
       }).subscribe({
         next: ({ aggregate, indicators }) => {
           const currentId = this.selectedIndicator?.indicator_id ?? null;
-          this.componentAggregate = aggregate;  // ← actualizar también
+          this.componentAggregate = aggregate;
           this.indicatorsAggregate = indicators;
           if (currentId !== null) {
             const same = this.indicators.find(i => i.indicator_id === currentId);
