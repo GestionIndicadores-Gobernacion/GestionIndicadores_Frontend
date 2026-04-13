@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import { ComponentIndicatorModel } from '../../../../../core/models/component.model';
+import { ComponentIndicatorModel } from '../../../../../features/report/models/component.model';
 import { initializeCategorizedGroup, sanitizeEmit } from './helpers/report-indicators.helpers';
 import { DatasetMultiSelectFieldComponent } from './dataset-fields/dataset-multi-select-field/dataset-multi-select-field';
 import { DatasetSelectFieldComponent } from './dataset-fields/dataset-select-field/dataset-select-field';

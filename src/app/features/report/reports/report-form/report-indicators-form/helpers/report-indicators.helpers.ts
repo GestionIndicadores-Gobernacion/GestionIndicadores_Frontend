@@ -1,4 +1,4 @@
-import { ComponentIndicatorModel } from '../../../../../../core/models/component.model';
+import { ComponentIndicatorModel } from '../../../../../../features/report/models/component.model';
 
 export function toNumber(value: any): number {
     if (value === null || value === undefined || value === '') return 0;

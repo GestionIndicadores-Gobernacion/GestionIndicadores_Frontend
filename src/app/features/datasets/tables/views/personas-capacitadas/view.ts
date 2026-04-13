@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ViewerData, DatasetService } from '../../../../../core/services/datasets.service';
+import { ViewerData, DatasetService } from '../../../../../features/datasets/services/datasets.service';
 import { DashboardData } from '../../table-viewer/table-viewer';
 import { DashboardCompletenessComponent } from '../../visualizations/dashboard-completeness/dashboard-completeness';
 

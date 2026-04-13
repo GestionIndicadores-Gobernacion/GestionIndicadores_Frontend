@@ -6,23 +6,23 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
   ComponentIndicatorModel,
   ComponentModel
-} from '../../../../core/models/component.model';
-import { StrategyModel } from '../../../../core/models/strategy.model';
+} from '../../../../features/report/models/component.model';
+import { StrategyModel } from '../../../../features/report/models/strategy.model';
 
 import {
   ReportCreateRequest,
   ReportIndicatorValue,
   ReportModel,
   ZoneType
-} from '../../../../core/models/report.model';
+} from '../../../../features/report/models/report.model';
 
 import { MUNICIPIOS_VALLE } from '../../../../core/data/municipios';
-import { ComponentsService } from '../../../../core/services/components.service';
-import { ReportsService } from '../../../../core/services/reports.service';
-import { StrategiesService } from '../../../../core/services/strategies.service';
+import { ComponentsService } from '../../../../features/report/services/components.service';
+import { ReportsService } from '../../../../features/report/services/reports.service';
+import { StrategiesService } from '../../../../features/report/services/strategies.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { ReportIndicatorsFormComponent } from './report-indicators-form/report-indicators-form';
-import { ActionPlanService } from '../../../../core/services/action-plan.service';
+import { ActionPlanService } from '../../../../features/action-plans/services/action-plan.service';
 
 @Component({
   selector: 'app-report-form',

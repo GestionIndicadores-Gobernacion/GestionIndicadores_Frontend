@@ -2,8 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import { ActionPlanModel, ActionPlanObjectiveModel, ActionPlanActivityModel, RecurrenceFrequency, ActionPlanActivityEditRequest } from '../../../../../core/models/action-plan.model';
-import { ActionPlanService } from '../../../../../core/services/action-plan.service';
+import { ActionPlanModel, ActionPlanObjectiveModel, ActionPlanActivityModel, RecurrenceFrequency, ActionPlanActivityEditRequest } from '../../../../../features/action-plans/models/action-plan.model';
+import { ActionPlanService } from '../../../../../features/action-plans/services/action-plan.service';
 import { ActionPlanActivityFormComponent, ActivityFormData } from '../action-plan-activity-form/action-plan-activity-form';
 
 @Component({

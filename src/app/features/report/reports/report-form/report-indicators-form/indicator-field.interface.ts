@@ -1,5 +1,5 @@
 import { EventEmitter } from '@angular/core';
-import { ComponentIndicatorModel } from '../../../../../core/models/component.model';
+import { ComponentIndicatorModel } from '../../../../../features/report/models/component.model';
 
 export interface IndicatorFieldInputs {
     indicator: ComponentIndicatorModel;

@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RedAnimaliaModalComponent, RedAnimaliaResult } from '../../red-animalia-modal/red-animalia-modal';
-import { ComponentIndicatorModel } from '../../../../../../../core/models/component.model';
+import { ComponentIndicatorModel } from '../../../../../../../features/report/models/component.model';
 import { toNumber, getCategoryMetricTotal, getCategorizedGrandTotal } from '../../helpers/report-indicators.helpers';
 
 @Component({

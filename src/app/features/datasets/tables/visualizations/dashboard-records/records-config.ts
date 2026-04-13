@@ -22,6 +22,12 @@ export const RECORDS_CONFIG: Record<string, RecordsConfig> = {
   animales: {
     tableFields: [
       'nombres_y_apellidos',
+      // Nuevo formato (BASE DE DATOS RED ANIMALIA simple)
+      'municipio',
+      'telefono',
+      'otro_telefono',
+      'correo_electronico',
+      // Formato anterior (base protectores completa)
       'municipio_de_residencia',
       'tipo_de_vinculacion_dentro_de_la_red_animalia_valle',
       'perros_cantidad',
@@ -39,33 +45,61 @@ export const RECORDS_CONFIG: Record<string, RecordsConfig> = {
       'estaria_dispuestoa_a_recibir_en_su_espacio_fisico_a_un_animal_que_ha_sido_victima_de_violencia',
     ],
     categoricalFields: [
+      'municipio',
       'municipio_de_residencia',
       'tipo_de_vinculacion_dentro_de_la_red_animalia_valle',
       'nivel_de_escolaridad',
       'sexo',
     ],
-    searchPlaceholder: 'Buscar protector, municipio, fundación...',
+    searchPlaceholder: 'Buscar persona, municipio, fundación...',
     detailTitle: 'nombres_y_apellidos',
-    detailSubtitle: ['municipio_de_residencia', 'tipo_de_vinculacion_dentro_de_la_red_animalia_valle'],
+    detailSubtitle: ['municipio', 'municipio_de_residencia', 'tipo_de_vinculacion_dentro_de_la_red_animalia_valle'],
   },
 
   presupuesto: {
     tableFields: [
-      'nombre_cgestor',
-      'desc_grupo',
-      'desc_subgrupo',
+      // Nuevo formato (C.Gestor / Fondo / Descripcion PEP / ...)
+      'descripcion_pep',
       'descripcion_proyecto',
+      'cgestor',
+      'fondo',
+      'pres_inicial',
       'apropiacion_definitiva',
-      'cdp_ejecutado',
+      'total_ejecutado',
+      'total_obligaciones',
       'total_pagos',
       'presup_disponible',
       'ejecutado',
+      // Formato anterior (compatibilidad)
+      'nombre_cgestor',
+      'desc_grupo',
+      'cdp_ejecutado',
     ],
     yesnoFields: [],
-    categoricalFields: ['desc_grupo', 'desc_subgrupo', 'desc_sector'],
-    searchPlaceholder: 'Buscar rubro, proyecto, sector...',
-    detailTitle: 'descripcion_aprobacionrubro',
-    detailSubtitle: ['desc_grupo', 'desc_sector'],
+    categoricalFields: ['fondo', 'proyecto', 'cgestor', 'desc_grupo', 'desc_subgrupo', 'desc_sector'],
+    searchPlaceholder: 'Buscar rubro, proyecto, fondo...',
+    detailTitle: 'descripcion_pep',
+    detailSubtitle: ['fondo', 'descripcion_proyecto', 'desc_grupo'],
+  },
+
+  censo_animal: {
+    tableFields: [
+      'municipio',
+      'poblacion_perros_2026',
+      'poblacion_gatos_2026',
+      'no_viviendas_encuestadas',
+      'no_perros_reportados',
+      'no_gatos_reportados',
+      'vta',
+      'pob_ajustada',
+      'estimado_de_perros',
+      'estimado_de_gatos',
+    ],
+    yesnoFields: [],
+    categoricalFields: ['municipio'],
+    searchPlaceholder: 'Buscar municipio...',
+    detailTitle: 'municipio',
+    detailSubtitle: ['poblacion_perros_2026', 'poblacion_gatos_2026'],
   },
 
   generico: {

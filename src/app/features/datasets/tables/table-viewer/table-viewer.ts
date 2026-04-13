@@ -1,7 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DatasetService } from '../../../../core/services/datasets.service';
+import { DatasetService } from '../../../../features/datasets/services/datasets.service';
 import { GenericoViewComponent } from '../views/generico/view';
 import { PersonasCapacitadasViewComponent } from '../views/personas-capacitadas/view';
 import { DashboardRecordsComponent } from '../visualizations/dashboard-records/dashboard-records';

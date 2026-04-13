@@ -3,10 +3,10 @@ import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { UsersService } from '../../../core/services/users.service';
-import { RolesService } from '../../../core/services/roles.service';
-import { ComponentsService } from '../../../core/services/components.service';
-import { UserCreateRequest, UserUpdateRequest } from '../../../core/models/user.model';
+import { UsersService } from '../../../features/user/services/users.service';
+import { RolesService } from '../../../features/user/services/roles.service';
+import { ComponentsService } from '../../../features/report/services/components.service';
+import { UserCreateRequest, UserUpdateRequest } from '../../../features/user/models/user.model';
 import { ToastService } from '../../../core/services/toast.service';
 
 @Component({

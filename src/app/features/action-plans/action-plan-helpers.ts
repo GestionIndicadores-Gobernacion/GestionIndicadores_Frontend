@@ -1,6 +1,6 @@
 // action-plan-helpers.ts
 
-import { ActionPlanActivityModel, ActionPlanStatus } from "../../core/models/action-plan.model";
+import { ActionPlanActivityModel, ActionPlanStatus } from "../../features/action-plans/models/action-plan.model";
 
 export function parseDateOnly(dateStr: string): { y: number; m: number; d: number } {
     const [y, m, d] = dateStr.split('-').map(Number);

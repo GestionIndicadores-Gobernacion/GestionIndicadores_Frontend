@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import {
+  ChangeDetectionStrategy,
   Component,
   EventEmitter,
   Input,
@@ -10,7 +11,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { ChartConfiguration } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
-import { AggregateByComponent, AggregateByMonth, ComponentAggregate, IndicatorSummary } from '../../../../../core/models/report-aggregate.model';
+import { AggregateByComponent, AggregateByMonth, ComponentAggregate, IndicatorSummary } from '../../../../../features/report/models/report-aggregate.model';
 
 // Nombre del componente especial que habilita el filtro de tema tratado
 // Ajusta este string para que coincida exactamente con el nombre en tu BD
@@ -22,6 +23,7 @@ const ASISTENCIAS_TECNICAS = 'Asistencias técnicas';
   imports: [CommonModule, FormsModule, NgChartsModule],
   templateUrl: './reports-timeline.html',
   styleUrl: './reports-timeline.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ReportsTimelineComponent implements OnChanges {
 

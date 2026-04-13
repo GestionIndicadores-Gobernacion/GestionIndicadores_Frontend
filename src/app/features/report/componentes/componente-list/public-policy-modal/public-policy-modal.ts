@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { PublicPolicyModel } from '../../../../../core/models/component.model';
-import { PublicPoliciesService } from '../../../../../core/services/public-policies.service';
+import { PublicPolicyModel } from '../../../../../features/report/models/component.model';
+import { PublicPoliciesService } from '../../../../../features/report/services/public-policies.service';
 import { ToastService } from '../../../../../core/services/toast.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

@@ -2,16 +2,16 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
-import { ReportModel } from '../../../../core/models/report.model';
+import { ReportModel } from '../../../../features/report/models/report.model';
 
-import { ReportsService } from '../../../../core/services/reports.service';
-import { StrategiesService } from '../../../../core/services/strategies.service';
+import { ReportsService } from '../../../../features/report/services/reports.service';
+import { StrategiesService } from '../../../../features/report/services/strategies.service';
 import { ToastService } from '../../../../core/services/toast.service';
-import { UsersService } from '../../../../core/services/users.service';
+import { UsersService } from '../../../../features/user/services/users.service';
 
 import { ReportsTableComponent } from './components/reports-table/reports-table';
 import { ReportsAuditLogComponent } from './components/reports-audit-log/reports-audit-log';
-import { ComponentsService } from '../../../../core/services/components.service';
+import { ComponentsService } from '../../../../features/report/services/components.service';
 
 @Component({
   selector: 'app-reports-list',

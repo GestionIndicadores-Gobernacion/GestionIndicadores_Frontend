@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { ReportModel } from '../../../../../../core/models/report.model';
+import { ReportModel } from '../../../../../../features/report/models/report.model';
 import { Pagination } from '../../../../../../shared/components/pagination/pagination';
 
 
@@ -17,6 +17,7 @@ const MONTH_ABBR_TO_NUM: Record<string, number> = {
   imports: [CommonModule, RouterModule, Pagination, FormsModule],
   templateUrl: './reports-table.html',
   styleUrl: './reports-table.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ReportsTableComponent implements OnChanges {
 

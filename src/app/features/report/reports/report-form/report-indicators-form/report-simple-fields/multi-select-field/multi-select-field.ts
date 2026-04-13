@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { ComponentIndicatorModel } from '../../../../../../../core/models/component.model';
+import { ComponentIndicatorModel } from '../../../../../../../features/report/models/component.model';
 
 @Component({
   selector: 'app-multi-select-field',

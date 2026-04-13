@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ComponentIndicatorModel } from '../../../../../../../core/models/component.model';
+import { ComponentIndicatorModel } from '../../../../../../../features/report/models/component.model';
 import { toNumber } from '../../helpers/report-indicators.helpers';
 
 @Component({
