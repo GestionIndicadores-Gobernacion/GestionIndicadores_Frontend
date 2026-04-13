@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ChartConfiguration, ChartType } from 'chart.js';
 import { getCategoryDisplayName, getMetricDisplayName } from '../../../../../../core/data/indicator-display-names';
-import { ComponentAggregate, IndicatorDetail } from '../../../../../../core/models/report-aggregate.model';
+import { ComponentAggregate, IndicatorDetail } from '../../../../../../features/report/models/report-aggregate.model';
 
 export interface ChartResult {
     type: ChartType;

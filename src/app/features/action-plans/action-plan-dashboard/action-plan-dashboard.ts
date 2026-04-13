@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ActionPlanService } from '../../../core/services/action-plan.service';
+import { ActionPlanService } from '../../../features/action-plans/services/action-plan.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Pagination } from '../../../shared/components/pagination/pagination';
 

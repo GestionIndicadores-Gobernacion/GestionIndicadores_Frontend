@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ReportModel } from '../models/report.model';
-import { DatasetService } from './datasets.service';
 import { BehaviorSubject } from 'rxjs';
+import { DatasetService } from '../../datasets/services/datasets.service';
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 export const COMPONENT_ID_ASISTENCIAS = 2;

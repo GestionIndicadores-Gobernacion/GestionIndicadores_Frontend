@@ -2,8 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { Dataset } from '../../../../../core/models/dataset.model';
-import { DatasetService } from '../../../../../core/services/datasets.service';
+import { Dataset } from '../../../../../features/datasets/models/dataset.model';
+import { DatasetService } from '../../../../../features/datasets/services/datasets.service';
 import {
   MetricType,
   MetricTypeMeta,

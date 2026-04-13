@@ -1,5 +1,5 @@
 // getDejandoHuellaVirtuals.ts
-import { ComponentIndicatorsAggregate, IndicatorDetail } from "../../../../../../core/models/report-aggregate.model";
+import { ComponentIndicatorsAggregate, IndicatorDetail } from "../../../../../../features/report/models/report-aggregate.model";
 
 export function getDejandoHuellaVirtuals(
     indicatorsAggregate: ComponentIndicatorsAggregate | null

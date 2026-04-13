@@ -4,8 +4,8 @@ import { adminGuard } from './core/guards/admin-guard';
 import { authGuard } from './core/guards/auth-guard';
 import { guestGuard } from './core/guards/guest-guard';
 
-import { AuthLayoutComponent } from './layouts/auth-layout/auth-layout';
-import { DashboardLayoutComponent } from './layouts/dashboard-layout/dashboard-layout';
+import { AuthLayoutComponent } from './layout/auth-layout/auth-layout';
+import { DashboardLayoutComponent } from './layout/dashboard-layout/dashboard-layout';
 import { viewerGuard } from './core/guards/viewer-guard-guard';
 
 export const routes: Routes = [
@@ -46,7 +46,7 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         loadChildren: () =>
-          import('./layouts/dashboard-layout/dashboard-layout.routes')
+          import('./layout/dashboard-layout/dashboard-layout.routes')
             .then(m => m.DASHBOARD_LAYOUT_ROUTES),
       },
 

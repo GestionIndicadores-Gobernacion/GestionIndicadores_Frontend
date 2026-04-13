@@ -1,4 +1,4 @@
-import { UserModel } from "./user.model";
+import { UserModel } from "../../features/user/models/user.model";
 
 export interface LoginRequest {
   email: string;

@@ -1,6 +1,6 @@
 // getGenericVirtuals.ts
 import { ExplorerVirtualConfig } from '../../../../../../core/data/component-explorer-config';
-import { IndicatorDetail, ComponentIndicatorsAggregate } from '../../../../../../core/models/report-aggregate.model';
+import { IndicatorDetail, ComponentIndicatorsAggregate } from '../../../../../../features/report/models/report-aggregate.model';
 
 export function getGenericVirtuals(
     config: ExplorerVirtualConfig,

@@ -2,10 +2,10 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../../environments/environment';
 import { Dataset, DatasetImportPreview, DatasetImportResult } from '../models/dataset.model';
 import { Field } from '../models/field.model';
-import { DashboardData } from '../../features/datasets/tables/table-viewer/table-viewer';
+import { DashboardData } from '../tables/table-viewer/table-viewer';
 
 export interface ViewerData {
   table: {

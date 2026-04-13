@@ -2,9 +2,9 @@ import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { UsersService } from '../../../core/services/users.service';
+import { UsersService } from '../../../features/user/services/users.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { UserModel, UserUpdateRequest } from '../../../core/models/user.model';
+import { UserModel, UserUpdateRequest } from '../../../features/user/models/user.model';
 
 @Component({
   selector: 'app-my-profile',

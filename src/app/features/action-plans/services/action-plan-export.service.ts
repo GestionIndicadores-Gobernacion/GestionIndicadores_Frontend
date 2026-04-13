@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import * as XLSX from 'xlsx';
 import { ActionPlanModel } from '../models/action-plan.model';
-import { ComponentModel } from '../models/component.model';
-import { StrategyModel } from '../models/strategy.model';
+import { ComponentModel } from '../../report/models/component.model';
+import { StrategyModel } from '../../report/models/strategy.model';
 
 @Injectable({ providedIn: 'root' })
 export class ActionPlanExportService {

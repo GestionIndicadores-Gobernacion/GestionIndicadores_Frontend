@@ -1,8 +1,8 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { ComponentIndicatorModel } from '../../../../../../core/models/component.model';
+import { ComponentIndicatorModel } from '../../../../../../features/report/models/component.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DatasetService } from '../../../../../../core/services/datasets.service';
+import { DatasetService } from '../../../../../../features/datasets/services/datasets.service';
 
 export interface RedAnimaliaActorEntry {
   actor_id: number;

@@ -1,5 +1,5 @@
 // reports-map/reports-map.types.ts
-import { ReportModel } from '../../../../../core/models/report.model';
+import { ReportModel } from '../../../../../features/report/models/report.model';
 
 export interface IndicatorDetail {
   indicator_id: number;

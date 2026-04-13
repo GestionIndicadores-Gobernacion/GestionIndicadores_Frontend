@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActionPlanRecurrencePanelComponent, RecurrenceForm } from '../action-plan-recurrence-panel/action-plan-recurrence-panel';
-import { RecurrenceFrequency } from '../../../../../core/models/action-plan.model';
+import { RecurrenceFrequency } from '../../../../../features/action-plans/models/action-plan.model';
 import { MUNICIPIOS_VALLE } from '../../../../../core/data/municipios';
 
 export interface ActivityFormData {

@@ -2,13 +2,13 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, OnChanges, OnInit, SimpleChanges, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { Dataset } from '../../../../core/models/dataset.model';
-import { Field } from '../../../../core/models/field.model';
-import { Table } from '../../../../core/models/table.model';
-import { DatasetService } from '../../../../core/services/datasets.service';
-import { FieldService } from '../../../../core/services/field.service';
-import { RecordService } from '../../../../core/services/record.service';
-import { TableService } from '../../../../core/services/table.service';
+import { Dataset } from '../../../../features/datasets/models/dataset.model';
+import { Field } from '../../../../features/datasets/models/field.model';
+import { Table } from '../../../../features/datasets/models/table.model';
+import { DatasetService } from '../../../../features/datasets/services/datasets.service';
+import { FieldService } from '../../../../features/datasets/services/field.service';
+import { RecordService } from '../../../../features/datasets/services/record.service';
+import { TableService } from '../../../../features/datasets/services/table.service';
 
 
 interface TableStats {

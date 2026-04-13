@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { Subject, takeUntil, filter } from 'rxjs';
-import { ReportModel } from '../../../../../core/models/report.model';
+import { ReportModel } from '../../../../../features/report/models/report.model';
 import { DashboardCardComponent } from './dashboard-card/dashboard-card';
-import { KpiSnapshot, ReportsKpiService } from '../../../../../core/services/reports-kpi.service';
+import { KpiSnapshot, ReportsKpiService } from '../../../../../features/report/services/reports-kpi.service';
 
 @Component({
   selector: 'app-reports-kpi-cards',
@@ -11,6 +11,7 @@ import { KpiSnapshot, ReportsKpiService } from '../../../../../core/services/rep
   imports: [CommonModule, DashboardCardComponent],
   templateUrl: './reports-kpi-cards.html',
   styleUrl: './reports-kpi-cards.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ReportsKpiCardsComponent implements OnInit, OnChanges, OnDestroy {
 

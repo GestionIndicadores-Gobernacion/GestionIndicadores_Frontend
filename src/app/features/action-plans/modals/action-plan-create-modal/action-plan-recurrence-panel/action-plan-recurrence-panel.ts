@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RecurrenceFrequency } from '../../../../../core/models/action-plan.model';
+import { RecurrenceFrequency } from '../../../../../features/action-plans/models/action-plan.model';
 
 export interface RecurrenceForm {
   enabled:      boolean;

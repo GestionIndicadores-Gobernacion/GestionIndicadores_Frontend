@@ -3,11 +3,11 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { ComponentModel } from '../../../../core/models/component.model';
-import { StrategyModel } from '../../../../core/models/strategy.model';
+import { ComponentModel } from '../../../../features/report/models/component.model';
+import { StrategyModel } from '../../../../features/report/models/strategy.model';
 
-import { ComponentsService } from '../../../../core/services/components.service';
-import { StrategiesService } from '../../../../core/services/strategies.service';
+import { ComponentsService } from '../../../../features/report/services/components.service';
+import { StrategiesService } from '../../../../features/report/services/strategies.service';
 import { ToastService } from '../../../../core/services/toast.service';
 
 import { Pagination } from '../../../../shared/components/pagination/pagination';

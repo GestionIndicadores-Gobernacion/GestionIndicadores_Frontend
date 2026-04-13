@@ -4,12 +4,12 @@ import { FormsModule } from '@angular/forms';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { MenuService, MenuItem } from '../../../core/services/menu.service';
-import { ReportsService } from '../../../core/services/reports.service';
-import { StrategiesService } from '../../../core/services/strategies.service';
+import { ReportsService } from '../../../features/report/services/reports.service';
+import { StrategiesService } from '../../../features/report/services/strategies.service';
 import { ToastService } from '../../../core/services/toast.service';
 
-import { ReportModel } from '../../../core/models/report.model';
-import { StrategyAggregate, AggregateByComponent } from '../../../core/models/report-aggregate.model';
+import { ReportModel } from '../../../features/report/models/report.model';
+import { StrategyAggregate, AggregateByComponent } from '../../../features/report/models/report-aggregate.model';
 
 import { catchError, forkJoin, of } from 'rxjs';
 import { ReportsExplorerComponent } from './components/reports-explorer/reports-explorer';

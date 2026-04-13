@@ -4,12 +4,12 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';  // ← 
 import {
   ActionPlanActivityModel, ActionPlanFilters, ActionPlanModel,
   ActionPlanObjectiveModel, ActionPlanStatus
-} from '../../../core/models/action-plan.model';
-import { ComponentModel } from '../../../core/models/component.model';
-import { StrategyModel } from '../../../core/models/strategy.model';
-import { ActionPlanService } from '../../../core/services/action-plan.service';
-import { ComponentsService } from '../../../core/services/components.service';
-import { StrategiesService } from '../../../core/services/strategies.service';
+} from '../../../features/action-plans/models/action-plan.model';
+import { ComponentModel } from '../../../features/report/models/component.model';
+import { StrategyModel } from '../../../features/report/models/strategy.model';
+import { ActionPlanService } from '../../../features/action-plans/services/action-plan.service';
+import { ComponentsService } from '../../../features/report/services/components.service';
+import { StrategiesService } from '../../../features/report/services/strategies.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { catchError, of } from 'rxjs';
 
@@ -20,7 +20,7 @@ import { ActionPlanEditModalComponent } from '../modals/action-plan-create-modal
 import { ActionPlanCalendarGridComponent } from './action-plan-calendar-grid/action-plan-calendar-grid';
 import { ActionPlanCalendarNavComponent } from './action-plan-calendar-nav/action-plan-calendar-nav';
 import { ActionPlanFiltersComponent } from './action-plan-filters/action-plan-filters';
-import { ActionPlanExportService } from '../../../core/services/action-plan-export.service';
+import { ActionPlanExportService } from '../../../features/action-plans/services/action-plan-export.service';
 import { ActionPlanEditPlanModalComponent } from '../modals/action-plan-create-modal/action-plan-edit-modal/action-plan-edit-plan-modal/action-plan-edit-plan-modal';
 
 export interface CalendarDay {

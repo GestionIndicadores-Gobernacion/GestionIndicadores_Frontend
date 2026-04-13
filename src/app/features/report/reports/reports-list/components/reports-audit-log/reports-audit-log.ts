@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AuditLogModel } from '../../../../../../core/models/audit-log.model';
-import { AuditLogService } from '../../../../../../core/services/audit-log.service';
-import { UsersService } from '../../../../../../core/services/users.service';
+import { AuditLogModel } from '../../../../../../features/action-plans/models/audit-log.model';
+import { AuditLogService } from '../../../../../../features/action-plans/services/audit-log.service';
+import { UsersService } from '../../../../../../features/user/services/users.service';
 import { Pagination } from '../../../../../../shared/components/pagination/pagination';
 
 @Component({

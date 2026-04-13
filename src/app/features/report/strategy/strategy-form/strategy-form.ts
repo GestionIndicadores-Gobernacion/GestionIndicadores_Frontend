@@ -10,11 +10,11 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
-import { StrategyModel } from '../../../../core/models/strategy.model';
-import { StrategiesService } from '../../../../core/services/strategies.service';
+import { StrategyModel } from '../../../../features/report/models/strategy.model';
+import { StrategiesService } from '../../../../features/report/services/strategies.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { StrategyMetricsComponent } from './strategy-metrics/strategy-metrics';
-import { ComponentsService } from '../../../../core/services/components.service';
+import { ComponentsService } from '../../../../features/report/services/components.service';
 
 @Component({
   selector: 'app-strategy-form',

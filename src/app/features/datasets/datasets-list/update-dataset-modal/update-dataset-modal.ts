@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import Swal from 'sweetalert2';
-import { Dataset } from '../../../../core/models/dataset.model';
-import { DatasetService } from '../../../../core/services/datasets.service';
+import { Dataset } from '../../../../features/datasets/models/dataset.model';
+import { DatasetService } from '../../../../features/datasets/services/datasets.service';
 
 @Component({
   selector: 'app-update-dataset-modal',

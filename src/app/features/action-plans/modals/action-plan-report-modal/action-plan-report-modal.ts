@@ -6,8 +6,8 @@ import {
   ActionPlanActivityModel,
   ActionPlanModel,
   ActionPlanObjectiveModel
-} from '../../../../core/models/action-plan.model';
-import { ActionPlanService } from '../../../../core/services/action-plan.service';
+} from '../../../../features/action-plans/models/action-plan.model';
+import { ActionPlanService } from '../../../../features/action-plans/services/action-plan.service';
 
 @Component({
   selector: 'app-action-plan-report-modal',
