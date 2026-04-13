@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { DatasetService } from '../../../../../../../core/services/datasets.service';
+import { DatasetService } from '../../../../../../../features/datasets/services/datasets.service';
 
 @Component({
   selector: 'app-config-dataset',

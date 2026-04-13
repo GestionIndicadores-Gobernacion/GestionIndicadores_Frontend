@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import {
   ActionPlanActivityModel,
   ActionPlanModel,
   ActionPlanObjectiveModel,
   ActionPlanStatus
-} from '../../../core/models/action-plan.model';
+} from '../../../features/action-plans/models/action-plan.model';
 import { FormsModule } from '@angular/forms';
 import { Pagination } from '../../../shared/components/pagination/pagination';
 
@@ -24,6 +24,7 @@ type SortField = 'date' | 'status' | 'name';
   imports: [CommonModule, FormsModule, Pagination],
   templateUrl: './action-plan-list.html',
   styleUrl: './action-plan-list.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ActionPlanListComponent {
 

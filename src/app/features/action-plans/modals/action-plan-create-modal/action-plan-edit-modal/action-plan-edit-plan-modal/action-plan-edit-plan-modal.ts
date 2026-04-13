@@ -2,12 +2,12 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
-import { ActionPlanModel, RecurrenceFrequency } from '../../../../../../core/models/action-plan.model';
-import { ComponentObjectiveModel } from '../../../../../../core/models/component.model';
-import { UserResponse } from '../../../../../../core/models/user.model';
-import { ActionPlanService } from '../../../../../../core/services/action-plan.service';
-import { ComponentsService } from '../../../../../../core/services/components.service';
-import { UsersService } from '../../../../../../core/services/users.service';
+import { ActionPlanModel, RecurrenceFrequency } from '../../../../../../features/action-plans/models/action-plan.model';
+import { ComponentObjectiveModel } from '../../../../../../features/report/models/component.model';
+import { UserResponse } from '../../../../../../features/user/models/user.model';
+import { ActionPlanService } from '../../../../../../features/action-plans/services/action-plan.service';
+import { ComponentsService } from '../../../../../../features/report/services/components.service';
+import { UsersService } from '../../../../../../features/user/services/users.service';
 import { ActivityFormData, ActionPlanActivityFormComponent } from '../../action-plan-activity-form/action-plan-activity-form';
 import { MUNICIPIOS_VALLE } from '../../../../../../core/data/municipios';
 

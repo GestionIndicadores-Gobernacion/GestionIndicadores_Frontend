@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { DatasetService } from '../../../../../../../core/services/datasets.service';
+import { DatasetService } from '../../../../../../../features/datasets/services/datasets.service';
 
 @Component({
   selector: 'app-config-categorized-group',

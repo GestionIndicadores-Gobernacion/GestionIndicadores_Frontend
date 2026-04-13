@@ -2,8 +2,8 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { getIndicatorDisplayName } from '../../../../core/data/indicator-display-names';
-import { ReportModel } from '../../../../core/models/report.model';
-import { ReportsService } from '../../../../core/services/reports.service';
+import { ReportModel } from '../../../../features/report/models/report.model';
+import { ReportsService } from '../../../../features/report/services/reports.service';
 
 @Component({
   selector: 'app-report-detail',

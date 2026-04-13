@@ -1,6 +1,6 @@
 import { Injectable, ChangeDetectorRef } from '@angular/core';
-import { ComponentIndicatorModel } from '../../../../../core/models/component.model';
-import { DatasetService } from '../../../../../core/services/datasets.service';
+import { ComponentIndicatorModel } from '../../../../../features/report/models/component.model';
+import { DatasetService } from '../../../../../features/datasets/services/datasets.service';
 
 @Injectable({ providedIn: 'root' })
 export class IndicatorDatasetService {

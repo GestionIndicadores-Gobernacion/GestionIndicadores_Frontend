@@ -5,12 +5,12 @@ import { Router } from "@angular/router";
 import { forkJoin } from "rxjs";
 import { COMPONENT_EXPLORER_CONFIG, DEFAULT_EXPLORER_CONFIG } from "../../../../../core/data/component-explorer-config";
 import { getIndicatorDisplayName } from "../../../../../core/data/indicator-display-names";
-import { AggregateByComponent, ComponentAggregate, ComponentIndicatorsAggregate, IndicatorDetail } from "../../../../../core/models/report-aggregate.model";
-import { ReportsService } from "../../../../../core/services/reports.service";
+import { AggregateByComponent, ComponentAggregate, ComponentIndicatorsAggregate, IndicatorDetail } from "../../../../../features/report/models/report-aggregate.model";
+import { ReportsService } from "../../../../../features/report/services/reports.service";
 import { BarClickEvent } from "./reports-explorer-chart/chart-builder.service";
 import { ReportsExplorerChartComponent } from "./reports-explorer-chart/reports-explorer-chart";
 import { getCbaVirtuals, getUnidadMovilVirtuals, getAtencionVeterinariaVirtuals, getDejandoHuellaVirtuals, getAlianzasAcademicasVirtuals, getExperienciasCulturalesVirtuals, getMesaPybaVirtuals, getGenericVirtuals, getEscuadronBenjiVirtuals, getAutosostenibilidadVirtuals, getAlianzasEstrategicasVirtuals, getRedAnimaliaAcompanamientoVirtuals, getJuntasDefensorasVirtuals, getPromotoresVirtuals } from "./virtual-indicators";
-import { ReportModel } from "../../../../../core/models/report.model";
+import { ReportModel } from "../../../../../features/report/models/report.model";
 const PILLS_VISIBLE = 6;
 
 const COMPONENT_VIRTUAL_MAP: Record<number, (agg: ComponentIndicatorsAggregate | null) => IndicatorDetail[]> = {

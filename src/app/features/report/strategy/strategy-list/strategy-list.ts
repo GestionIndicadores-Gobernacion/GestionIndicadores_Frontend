@@ -2,8 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { StrategyModel } from '../../../../core/models/strategy.model';
-import { StrategiesService } from '../../../../core/services/strategies.service';
+import { StrategyModel } from '../../../../features/report/models/strategy.model';
+import { StrategiesService } from '../../../../features/report/services/strategies.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { StrategyTableComponent } from './strategy-table/strategy-table';
 

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ComponentIndicatorModel } from '../../../../../core/models/component.model';
+import { ComponentIndicatorModel } from '../../../../../features/report/models/component.model';
 
 @Injectable({ providedIn: 'root' })
 export class IndicatorGroupService {

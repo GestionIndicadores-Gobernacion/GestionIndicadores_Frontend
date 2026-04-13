@@ -3,8 +3,8 @@ import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { UserModel } from '../../../core/models/user.model';
-import { UsersService } from '../../../core/services/users.service';
+import { UserModel } from '../../../features/user/models/user.model';
+import { UsersService } from '../../../features/user/services/users.service';
 import { ToastService } from '../../../core/services/toast.service';
 
 @Component({

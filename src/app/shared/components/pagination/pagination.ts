@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   selector: 'app-pagination',
   imports: [CommonModule],
   templateUrl: './pagination.html',
   styleUrl: './pagination.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Pagination {
   @Input() currentPage = 1;

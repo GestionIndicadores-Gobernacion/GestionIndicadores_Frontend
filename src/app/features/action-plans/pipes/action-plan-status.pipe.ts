@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { ActionPlanModel, ActionPlanStatus } from '../../../core/models/action-plan.model';
+import { ActionPlanModel, ActionPlanStatus } from '../../../features/action-plans/models/action-plan.model';
 
 @Pipe({ name: 'plansCountByStatus', standalone: true })
 export class PlansCountByStatusPipe implements PipeTransform {

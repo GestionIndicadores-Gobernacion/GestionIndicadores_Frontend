@@ -1,5 +1,5 @@
 // getAlianzasEstrategicasVirtuals.ts
-import { IndicatorDetail, ComponentIndicatorsAggregate } from '../../../../../../core/models/report-aggregate.model';
+import { IndicatorDetail, ComponentIndicatorsAggregate } from '../../../../../../features/report/models/report-aggregate.model';
 
 export function getAlianzasEstrategicasVirtuals(
     indicatorsAggregate: ComponentIndicatorsAggregate | null

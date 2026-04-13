@@ -3,7 +3,7 @@ import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from 
 import {
   ActionPlanActivityModel, ActionPlanModel,
   ActionPlanObjectiveModel, ActionPlanStatus
-} from '../../../../core/models/action-plan.model';
+} from '../../../../features/action-plans/models/action-plan.model';
 import { CalendarDay, FlatActivity } from '../action-plan-calendar';
 
 @Component({

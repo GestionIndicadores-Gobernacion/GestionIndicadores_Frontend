@@ -1,6 +1,6 @@
-import { ReportsKpiService } from '../../../../../../core/services/reports-kpi.service';
+import { ReportsKpiService } from '../../../../../../features/report/services/reports-kpi.service';
 import { findCentroid, normalizeMunicipio } from '../../../../../../core/data/valle-geo.data';
-import { ReportModel } from '../../../../../../core/models/report.model';
+import { ReportModel } from '../../../../../../features/report/models/report.model';
 import { MunicipioSummary, ReportDetail } from '../reports-map.types';
 
 export function formatIndicatorValue(

@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import { StrategyModel } from '../../../../../core/models/strategy.model';
+import { StrategyModel } from '../../../../../features/report/models/strategy.model';
 import { Pagination } from '../../../../../shared/components/pagination/pagination';
 
 @Component({

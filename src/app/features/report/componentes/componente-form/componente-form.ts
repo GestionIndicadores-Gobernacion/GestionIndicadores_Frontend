@@ -7,12 +7,12 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
-import { ComponentsService } from '../../../../core/services/components.service';
-import { StrategiesService } from '../../../../core/services/strategies.service';
-import { PublicPoliciesService } from '../../../../core/services/public-policies.service';
+import { ComponentsService } from '../../../../features/report/services/components.service';
+import { StrategiesService } from '../../../../features/report/services/strategies.service';
+import { PublicPoliciesService } from '../../../../features/report/services/public-policies.service';
 import { ToastService } from '../../../../core/services/toast.service';
-import { StrategyModel } from '../../../../core/models/strategy.model';
-import { PublicPolicyModel } from '../../../../core/models/component.model';
+import { StrategyModel } from '../../../../features/report/models/strategy.model';
+import { PublicPolicyModel } from '../../../../features/report/models/component.model';
 import { ComponenteIndicatorsFormComponent } from './componente-indicators-form/componente-indicators-form';
 
 @Component({
