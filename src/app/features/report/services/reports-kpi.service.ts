@@ -18,6 +18,7 @@ export const ID_ANIMALES_ESTERILIZADOS = 99;
 export const ID_REFUGIOS = 102;
 export const ID_NINOS_CANTIDAD_IMPACTADA = 114;
 export const ID_PERSONAS_CAPACITADAS_PROMOTORES = 76;
+export const ID_NINOS_CAPACITADOS_PROMOTORES = 163;
 
 const DATASET_ID_PERSONAS_CAPACITADAS = 8;
 const ESPACIOS_ACOGIDA = ['albergue/refugio', 'fundacion', 'hogar de paso'];
@@ -106,8 +107,33 @@ export class ReportsKpiService {
     }, 0);
   }
 
+  private sumSumGroup(value: any): number {
+    if (!value || typeof value !== 'object') return 0;
+    return Object.values(value).reduce((sum: number, v) => {
+      const n = Number(v);
+      return sum + (isNaN(n) ? 0 : n);
+    }, 0);
+  }
+
   calcularPersonasCapacitadas(reports: ReportModel[], selectedYear: number): number {
-    // Siempre suma los reportes del componente Promotores (indicador 76)
+    if (selectedYear === 2026) {
+      // Para 2026: dataset PERSONAS CAPACITADAS + indicador 163 (niños capacitados, sum_group) de PROMOTORES
+      const fromReports = reports
+        .filter(r => r.component_id === COMPONENT_ID_PROMOTORES)
+        .reduce((sum, r) => {
+          const iv = r.indicator_values?.find(i => i.indicator_id === ID_NINOS_CAPACITADOS_PROMOTORES);
+          if (iv?.value == null) return sum;
+          return sum + this.sumSumGroup(iv.value);
+        }, 0);
+
+      const fromDataset = this._datasetLoaded
+        ? this._datasetRecords.filter(r => r.data?.['mes'] != null && r.data?.['mes'] !== '').length
+        : 0;
+
+      return fromDataset + fromReports;
+    }
+
+    // Otros años: suma los reportes del componente Promotores (indicador 76)
     const fromReports = reports
       .filter(r => r.component_id === COMPONENT_ID_PROMOTORES)
       .reduce((sum, r) => {
