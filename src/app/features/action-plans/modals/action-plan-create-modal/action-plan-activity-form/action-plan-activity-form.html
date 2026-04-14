@@ -17,7 +17,7 @@
     </div>
 
     <!-- Entregable + Fecha -->
-    <div class="grid grid-cols-3 gap-3 pl-7">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pl-0 sm:pl-7">
         <div class="flex flex-col gap-1">
             <label class="text-xs font-semibold text-[#1B3A6B]">Entregable <span class="text-red-500">*</span></label>
             <input type="text" [(ngModel)]="activity.deliverable" [name]="namePrefix + '_deliverable'"
@@ -53,7 +53,7 @@
     </div>
 
     <!-- Requiere jefe -->
-    <div class="pl-7 flex items-center gap-4">
+    <div class="pl-0 sm:pl-7 flex flex-wrap items-center gap-4">
         <label class="text-xs font-semibold text-[#1B3A6B]">¿Requiere asistencia del jefe?</label>
         <label class="flex items-center gap-2 cursor-pointer">
             <input type="radio" [(ngModel)]="activity.requires_boss_assistance" [value]="true"
@@ -68,7 +68,7 @@
     </div>
 
     <!-- Genera reporte -->
-    <div class="pl-7 flex items-center gap-4">
+    <div class="pl-0 sm:pl-7 flex flex-wrap items-center gap-4">
         <label class="text-xs font-semibold text-[#1B3A6B]">¿Esta actividad genera reporte?</label>
         <label class="flex items-center gap-2 cursor-pointer">
             <input type="radio" [(ngModel)]="activity.generates_report" [value]="true"
@@ -83,22 +83,37 @@
     </div>
 
     <!-- Recurrencia -->
-    <div *ngIf="showRecurrence" class="pl-7">
+    <div *ngIf="showRecurrence" class="pl-0 sm:pl-7">
         <app-action-plan-recurrence-panel [recurrence]="activity.recurrence" [delivery_date]="activity.delivery_date"
             [namePrefix]="namePrefix + '_rec'">
         </app-action-plan-recurrence-panel>
     </div>
 
     <!-- Personal de apoyo -->
-    <div class="pl-7 space-y-2">
+    <div class="pl-0 sm:pl-7 space-y-2">
         <p class="text-xs font-semibold text-[#1B3A6B]">Personal de apoyo</p>
 
-        <div *ngFor="let staff of activity.support_staff; let si = index" class="flex items-center gap-2">
+        <div *ngFor="let staff of activity.support_staff; let si = index" class="flex flex-wrap items-center gap-2">
+            <!-- Selector de usuario existente -->
+            <select *ngIf="availableUsers.length > 0"
+                [(ngModel)]="staff.user_id" [name]="namePrefix + '_staff_user_' + si"
+                (ngModelChange)="onSupportStaffUserChange(staff)"
+                class="text-sm border border-[#d6e2f2] rounded-lg px-2 py-2 bg-white w-full sm:w-44 shrink-0
+                   focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 transition">
+                <option [ngValue]="null">Externo / libre</option>
+                <option *ngFor="let u of availableUsers" [ngValue]="u.id">
+                    {{ u.first_name }} {{ u.last_name }}
+                </option>
+            </select>
+            <!-- Nombre (editable si es externo, readonly si viene del selector) -->
             <input type="text" [(ngModel)]="staff.name" [name]="namePrefix + '_staff_' + si"
-                placeholder="Nombre completo..." class="flex-1 text-sm border border-[#d6e2f2] rounded-lg px-3 py-2 bg-white
-               focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 transition" />
+                placeholder="Nombre completo..."
+                [readonly]="!!staff.user_id"
+                class="flex-1 min-w-0 text-sm border border-[#d6e2f2] rounded-lg px-3 py-2 bg-white
+               focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 transition"
+                [class.opacity-60]="!!staff.user_id" />
             <button (click)="removeStaff.emit(si)" type="button"
-                class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition">
+                class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition shrink-0">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>

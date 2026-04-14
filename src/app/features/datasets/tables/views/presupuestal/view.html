@@ -1,0 +1,266 @@
+<div class="px-4 sm:px-6 py-6 space-y-6 max-w-7xl mx-auto">
+
+    <!-- PROJECT LABEL -->
+    <div *ngIf="data.project_label"
+        class="flex items-center gap-3 px-4 py-3 rounded-xl border"
+        style="background:linear-gradient(135deg,#F0F6FF,#EEF4FF);border-color:#BAD0F7;">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
+            style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);">
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+            </svg>
+        </div>
+        <p class="text-[12.5px] font-bold leading-snug" style="color:#1B3A6B;">
+            {{ data.project_label }}
+        </p>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="grid gap-4" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr));">
+        <div *ngFor="let kpi of data.kpis; let i = index"
+            class="rounded-2xl border overflow-hidden flex flex-col"
+            style="background:white;border-color:#E2EAF7;">
+            <div class="h-1 w-full" [style.background]="kpiAccent(i)"></div>
+            <div class="px-5 py-4 flex flex-col gap-1.5">
+                <span class="text-[10px] font-bold uppercase tracking-[0.9px]" style="color:#4A6A9B;">
+                    {{ kpi.label }}
+                </span>
+                <span class="text-[20px] font-extrabold leading-none" [style.color]="kpiAccent(i)">
+                    {{ kpi.value }}
+                </span>
+                <span *ngIf="kpi.sub" class="text-[10.5px]" style="color:#8A9DC0;">{{ kpi.sub }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLA AGRUPADA -->
+    <div *ngIf="groups.length > 0"
+        class="rounded-2xl border overflow-hidden shadow-sm"
+        style="border-color:#D6E0F0;">
+
+        <!-- Cabecera columnas (solo desktop) -->
+        <div class="hidden lg:grid px-5 py-2.5 border-b text-[10px] font-bold uppercase tracking-[0.8px]"
+            style="grid-template-columns:minmax(0,2.5fr) repeat(4,minmax(0,1fr)) 110px minmax(0,1fr);background:#F0F4FA;border-color:#D6E0F0;color:#4A6A9B;">
+            <span class="pl-7">Descripción</span>
+            <span class="text-right">Apropiación</span>
+            <span class="text-right">Ejecutado</span>
+            <span class="text-right">Obligaciones</span>
+            <span class="text-right">Pagos</span>
+            <span class="text-center">% Ejecución</span>
+            <span class="text-right">Disponible</span>
+        </div>
+
+        <!-- Grupos -->
+        <div *ngFor="let g of groups; let last = last; trackBy: trackByCode"
+            [class.border-b]="!last"
+            style="border-color:#D6E0F0;">
+
+            <!-- Fila cabecera del proyecto -->
+            <button (click)="toggle(g.code)" class="w-full text-left transition-colors"
+                style="background:#F8FAFD;"
+                onmouseover="this.style.background='#EEF4FF'"
+                onmouseout="this.style.background='#F8FAFD'">
+
+                <!-- Desktop -->
+                <div class="hidden lg:grid items-center px-5 py-3.5"
+                    style="grid-template-columns:minmax(0,2.5fr) repeat(4,minmax(0,1fr)) 110px minmax(0,1fr);">
+
+                    <div class="flex items-center gap-2.5 min-w-0 pr-3">
+                        <svg class="w-4 h-4 shrink-0 transition-transform duration-200"
+                            [style.transform]="isExpanded(g.code) ? 'rotate(90deg)' : 'rotate(0)'"
+                            fill="none" viewBox="0 0 24 24" stroke="#4A6A9B" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                        </svg>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="text-[9.5px] font-bold px-2 py-0.5 rounded-full shrink-0"
+                                    style="background:#E8EDF5;color:#1B3A6B;">{{ g.code }}</span>
+                                <span class="text-[12px] font-bold truncate" style="color:#1B3A6B;"
+                                    [title]="g.label">{{ g.label }}</span>
+                            </div>
+                            <span class="text-[10px]" style="color:#8A9DC0;">
+                                {{ g.activities.length }} actividad{{ g.activities.length !== 1 ? 'es' : '' }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <span class="text-right text-[12px] font-bold" style="color:#1B3A6B;"
+                        [title]="formatFull(g.aprop)">{{ formatPesos(g.aprop) }}</span>
+                    <span class="text-right text-[12px] font-bold" style="color:#2563EB;"
+                        [title]="formatFull(g.ejecutado)">{{ formatPesos(g.ejecutado) }}</span>
+                    <span class="text-right text-[12px] font-bold" style="color:#0891B2;"
+                        [title]="formatFull(g.obligaciones)">{{ formatPesos(g.obligaciones) }}</span>
+                    <span class="text-right text-[12px] font-bold" style="color:#059669;"
+                        [title]="formatFull(g.pagos)">{{ formatPesos(g.pagos) }}</span>
+
+                    <div class="flex flex-col items-center gap-1.5 px-2">
+                        <span class="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full"
+                            [style.background]="pctBg(g.pct_ejec)"
+                            [style.color]="pctColor(g.pct_ejec)">
+                            {{ g.pct_ejec | number:'1.0-1' }}%
+                        </span>
+                        <div class="w-full h-2 rounded-full overflow-hidden" style="background:#E2E8F0;">
+                            <div class="h-full rounded-full transition-all duration-700"
+                                [style.width.%]="g.pct_ejec"
+                                [style.background]="pctColor(g.pct_ejec)"></div>
+                        </div>
+                        <span class="text-[9px] font-semibold uppercase tracking-[0.5px]"
+                            [style.color]="pctColor(g.pct_ejec)">{{ pctLabel(g.pct_ejec) }}</span>
+                    </div>
+
+                    <span class="text-right text-[12px] font-semibold" style="color:#8A9DC0;"
+                        [title]="formatFull(g.disponible)">{{ formatPesos(g.disponible) }}</span>
+                </div>
+
+                <!-- Mobile -->
+                <div class="lg:hidden px-4 py-3">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-start gap-2.5 min-w-0">
+                            <svg class="w-4 h-4 shrink-0 mt-0.5 transition-transform duration-200"
+                                [style.transform]="isExpanded(g.code) ? 'rotate(90deg)' : 'rotate(0)'"
+                                fill="none" viewBox="0 0 24 24" stroke="#4A6A9B" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                            </svg>
+                            <div class="min-w-0">
+                                <span class="text-[9.5px] font-bold px-2 py-0.5 rounded-full inline-block mb-1"
+                                    style="background:#E8EDF5;color:#1B3A6B;">{{ g.code }}</span>
+                                <p class="text-[12.5px] font-bold leading-snug" style="color:#1B3A6B;">{{ g.label }}</p>
+                                <p class="text-[10px] mt-0.5" style="color:#8A9DC0;">
+                                    {{ g.activities.length }} actividad{{ g.activities.length !== 1 ? 'es' : '' }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end shrink-0 gap-1">
+                            <span class="text-[13px] font-extrabold px-2.5 py-0.5 rounded-full"
+                                [style.background]="pctBg(g.pct_ejec)"
+                                [style.color]="pctColor(g.pct_ejec)">
+                                {{ g.pct_ejec | number:'1.0-1' }}%
+                            </span>
+                            <span class="text-[9px] font-semibold uppercase"
+                                [style.color]="pctColor(g.pct_ejec)">{{ pctLabel(g.pct_ejec) }}</span>
+                        </div>
+                    </div>
+                    <div class="mt-2.5 mx-6">
+                        <div class="w-full h-2 rounded-full overflow-hidden" style="background:#E2E8F0;">
+                            <div class="h-full rounded-full transition-all duration-700"
+                                [style.width.%]="g.pct_ejec"
+                                [style.background]="pctColor(g.pct_ejec)"></div>
+                        </div>
+                    </div>
+                    <div class="mt-2.5 mx-6 flex flex-wrap gap-2">
+                        <span class="text-[10.5px] px-2 py-0.5 rounded-lg font-semibold"
+                            style="background:#EEF2F9;color:#1B3A6B;">
+                            Aprop: {{ formatPesos(g.aprop) }}
+                        </span>
+                        <span class="text-[10.5px] px-2 py-0.5 rounded-lg font-semibold"
+                            style="background:#DBEAFE;color:#2563EB;">
+                            Ejec: {{ formatPesos(g.ejecutado) }}
+                        </span>
+                        <span class="text-[10.5px] px-2 py-0.5 rounded-lg font-semibold"
+                            style="background:#D1FAE5;color:#059669;">
+                            Pagos: {{ formatPesos(g.pagos) }}
+                        </span>
+                    </div>
+                </div>
+            </button>
+
+            <!-- Actividades PEP -->
+            <div *ngIf="isExpanded(g.code)" class="divide-y" style="border-color:#EEF2FA;">
+
+                <div *ngFor="let act of g.activities"
+                    class="transition-colors"
+                    style="background:white;"
+                    onmouseover="this.style.background='#FAFBFF'"
+                    onmouseout="this.style.background='white'">
+
+                    <!-- Desktop -->
+                    <div class="hidden lg:grid items-center px-5 py-3 pl-14"
+                        style="grid-template-columns:minmax(0,2.5fr) repeat(4,minmax(0,1fr)) 110px minmax(0,1fr);">
+
+                        <div class="flex items-center gap-2 min-w-0 pr-3">
+                            <div class="w-2 h-2 rounded-full shrink-0"
+                                [style.background]="pctColor(act.pct_ejec)"></div>
+                            <span class="text-[11.5px] font-medium leading-snug" style="color:#374151;"
+                                [title]="act.label">
+                                {{ act.label.length > 55 ? act.label.slice(0,53)+'…' : act.label }}
+                            </span>
+                        </div>
+
+                        <span class="text-right text-[11px] font-semibold" style="color:#1B3A6B;"
+                            [title]="formatFull(act.aprop)">{{ formatPesos(act.aprop) }}</span>
+                        <span class="text-right text-[11px] font-semibold" style="color:#2563EB;"
+                            [title]="formatFull(act.ejecutado)">{{ formatPesos(act.ejecutado) }}</span>
+                        <span class="text-right text-[11px] font-semibold" style="color:#0891B2;"
+                            [title]="formatFull(act.obligaciones)">{{ formatPesos(act.obligaciones) }}</span>
+                        <span class="text-right text-[11px] font-semibold" style="color:#059669;"
+                            [title]="formatFull(act.pagos)">{{ formatPesos(act.pagos) }}</span>
+
+                        <div class="flex flex-col items-center gap-1 px-2">
+                            <span class="text-[10.5px] font-extrabold px-2 py-0.5 rounded-full"
+                                [style.background]="pctBg(act.pct_ejec)"
+                                [style.color]="pctColor(act.pct_ejec)">
+                                {{ act.pct_ejec | number:'1.0-1' }}%
+                            </span>
+                            <div class="w-full h-2 rounded-full overflow-hidden" style="background:#E2E8F0;">
+                                <div class="h-full rounded-full"
+                                    [style.width.%]="act.pct_ejec"
+                                    [style.background]="pctColor(act.pct_ejec)"></div>
+                            </div>
+                        </div>
+
+                        <span class="text-right text-[11px] font-semibold" style="color:#8A9DC0;"
+                            [title]="formatFull(act.disponible)">{{ formatPesos(act.disponible) }}</span>
+                    </div>
+
+                    <!-- Mobile -->
+                    <div class="lg:hidden px-4 py-3 pl-10">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <div class="w-2 h-2 rounded-full shrink-0 mt-1"
+                                    [style.background]="pctColor(act.pct_ejec)"></div>
+                                <p class="text-[11.5px] font-medium leading-snug" style="color:#374151;">
+                                    {{ act.label }}
+                                </p>
+                            </div>
+                            <span class="text-[11px] font-extrabold px-2 py-0.5 rounded-full shrink-0"
+                                [style.background]="pctBg(act.pct_ejec)"
+                                [style.color]="pctColor(act.pct_ejec)">
+                                {{ act.pct_ejec | number:'1.0-1' }}%
+                            </span>
+                        </div>
+                        <div class="mt-2 ml-4">
+                            <div class="w-full h-2 rounded-full overflow-hidden" style="background:#E2E8F0;">
+                                <div class="h-full rounded-full"
+                                    [style.width.%]="act.pct_ejec"
+                                    [style.background]="pctColor(act.pct_ejec)"></div>
+                            </div>
+                        </div>
+                        <div class="mt-2 ml-4 flex flex-wrap gap-2">
+                            <span class="text-[10px] px-2 py-0.5 rounded-lg font-semibold"
+                                style="background:#EEF2F9;color:#1B3A6B;">{{ formatPesos(act.aprop) }}</span>
+                            <span class="text-[10px] px-2 py-0.5 rounded-lg font-semibold"
+                                style="background:#DBEAFE;color:#2563EB;">Ejec {{ formatPesos(act.ejecutado) }}</span>
+                            <span class="text-[10px] px-2 py-0.5 rounded-lg font-semibold"
+                                style="background:#D1FAE5;color:#059669;">Pagos {{ formatPesos(act.pagos) }}</span>
+                            <span *ngIf="act.obligaciones > 0"
+                                class="text-[10px] px-2 py-0.5 rounded-lg font-semibold"
+                                style="background:#E0F2FE;color:#0891B2;">Oblig {{ formatPesos(act.obligaciones) }}</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Empty -->
+    <div *ngIf="groups.length === 0"
+        class="py-16 text-center rounded-2xl border"
+        style="border-color:#E2EAF7;background:white;">
+        <p class="text-sm font-bold" style="color:#1B3A6B;">Sin datos de proyectos</p>
+        <p class="text-xs mt-1" style="color:#8A9DC0;">No se encontraron actividades PEP en el dataset</p>
+    </div>
+
+</div>

@@ -19,6 +19,7 @@ export class ActionPlanCalendarGridComponent {
   @Input() displayPlans: ActionPlanModel[] = [];
   @Input() currentDate = new Date();
   @Input() canInteract: (plan: ActionPlanModel) => boolean = () => true;
+  @Input() canEditPlan: (plan: ActionPlanModel) => boolean = () => false;
 
   @Output() report = new EventEmitter<{ plan: ActionPlanModel; objective: ActionPlanObjectiveModel; activity: ActionPlanActivityModel; event: Event }>();
   @Output() edit = new EventEmitter<{ plan: ActionPlanModel; objective: ActionPlanObjectiveModel; activity: ActionPlanActivityModel; event: Event }>();
@@ -59,20 +60,23 @@ export class ActionPlanCalendarGridComponent {
     return { y, m: m - 1, d };
   }
 
-  statusClass(status: ActionPlanStatus): string {
+  statusClass(status: ActionPlanStatus, generatesReport?: boolean): string {
+    if (status === 'En Ejecución' && generatesReport)
+      return 'bg-purple-50 text-purple-700 border-purple-200';
     const map: Record<ActionPlanStatus, string> = {
-      'Realizado': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      'Realizado':    'bg-emerald-50 text-emerald-700 border-emerald-200',
       'En Ejecución': 'bg-blue-50 text-blue-700 border-blue-200',
-      'Pendiente': 'bg-red-50 text-red-700 border-red-200',
+      'Pendiente':    'bg-red-50 text-red-700 border-red-200',
     };
     return map[status];
   }
 
-  statusDot(status: ActionPlanStatus): string {
+  statusDot(status: ActionPlanStatus, generatesReport?: boolean): string {
+    if (status === 'En Ejecución' && generatesReport) return 'bg-purple-500';
     const map: Record<ActionPlanStatus, string> = {
-      'Realizado': 'bg-emerald-500',
+      'Realizado':    'bg-emerald-500',
       'En Ejecución': 'bg-blue-500',
-      'Pendiente': 'bg-red-500',
+      'Pendiente':    'bg-red-500',
     };
     return map[status];
   }

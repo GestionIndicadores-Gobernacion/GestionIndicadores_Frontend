@@ -42,7 +42,7 @@ export class ActionPlanEditModalComponent implements OnInit {
       lugar: this.activity.lugar ?? null,
       requires_boss_assistance: this.activity.requires_boss_assistance ?? false,
       generates_report: this.activity.generates_report ?? false,
-      support_staff: (this.activity.support_staff ?? []).map(s => ({ name: s.name })),
+      support_staff: (this.activity.support_staff ?? []).map(s => ({ name: s.name, user_id: s.user_id ?? null })),
       recurrence: {
         enabled: false,
         frequency: (this.activity.recurrence_rule?.frequency ?? 'monthly') as RecurrenceFrequency,
@@ -54,7 +54,7 @@ export class ActionPlanEditModalComponent implements OnInit {
     };
   }
 
-  addStaff(): void { this.form.support_staff.push({ name: '' }); }
+  addStaff(): void { this.form.support_staff.push({ name: '', user_id: null }); }
   removeStaff(i: number): void { this.form.support_staff.splice(i, 1); }
 
   submit(editAll: boolean): void {

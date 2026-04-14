@@ -10,7 +10,7 @@ import { ActionPlanService } from '../../../../features/action-plans/services/ac
 import { ComponentsService } from '../../../../features/report/services/components.service';
 import { StrategiesService } from '../../../../features/report/services/strategies.service';
 import { UsersService } from '../../../../features/user/services/users.service';
-import { ActivityFormData, ActionPlanActivityFormComponent } from './action-plan-activity-form/action-plan-activity-form';
+import { ActivityFormData, ActionPlanActivityFormComponent, SupportStaffEntry } from './action-plan-activity-form/action-plan-activity-form';
 import { MUNICIPIOS_VALLE } from '../../../../core/data/municipios';
 
 const EXCLUDED_EMAILS = new Set([
@@ -57,12 +57,12 @@ export class ActionPlanCreateModalComponent implements OnInit {
   form: {
     strategy_id: number;
     component_id: number;
-    responsible_user_id: number | null;
+    responsible_user_ids: number[];
     plan_objectives: ObjectiveForm[];
   } = {
       strategy_id: 0,
       component_id: 0,
-      responsible_user_id: null,
+      responsible_user_ids: [],
       plan_objectives: []
     };
 
@@ -114,6 +114,25 @@ export class ActionPlanCreateModalComponent implements OnInit {
   /** Nombre completo para mostrar en el select */
   userDisplayName(user: UserResponse): string {
     return `${user.first_name} ${user.last_name}`.trim();
+  }
+
+  /** Alterna la selección de un responsable */
+  toggleResponsible(userId: number): void {
+    const idx = this.form.responsible_user_ids.indexOf(userId);
+    if (idx === -1) {
+      this.form.responsible_user_ids.push(userId);
+    } else {
+      this.form.responsible_user_ids.splice(idx, 1);
+    }
+  }
+
+  isResponsibleSelected(userId: number): boolean {
+    return this.form.responsible_user_ids.includes(userId);
+  }
+
+  getUserName(userId: number): string {
+    const u = this.users.find(x => x.id === userId);
+    return u ? this.userDisplayName(u) : String(userId);
   }
 
   /**
@@ -220,7 +239,7 @@ export class ActionPlanCreateModalComponent implements OnInit {
   }
 
   addStaff(oi: number, ai: number): void {
-    this.form.plan_objectives[oi].activities[ai].support_staff.push({ name: '' });
+    this.form.plan_objectives[oi].activities[ai].support_staff.push({ name: '', user_id: null });
   }
 
   removeStaff(oi: number, ai: number, si: number): void {
@@ -247,7 +266,7 @@ export class ActionPlanCreateModalComponent implements OnInit {
 
     if (!+this.form.strategy_id) this.errors['strategy_id'] = 'Debes seleccionar una estrategia.';
     if (!+this.form.component_id) this.errors['component_id'] = 'Debes seleccionar un componente.';
-    if (!this.form.responsible_user_id) this.errors['responsible_user_id'] = 'Debes asignar un responsable.';
+    if (!this.form.responsible_user_ids.length) this.errors['responsible_user_ids'] = 'Debes asignar al menos un responsable.';
     if (!this.form.plan_objectives.length) this.errors['plan_objectives'] = 'Debes tener al menos un objetivo.';
     if (this.form.plan_objectives.some(o => o.isNew && !o.objective_text.trim()))
       this.errors['plan_objectives'] = 'Los objetivos nuevos deben tener descripción.';
@@ -267,15 +286,15 @@ export class ActionPlanCreateModalComponent implements OnInit {
 
     if (Object.keys(this.errors).length) return;
 
-    // Resolver nombre del responsable a partir del usuario seleccionado
-    const selectedUser = this.users.find(u => u.id === this.form.responsible_user_id) ?? null;
+    // Construir display name a partir de los responsables seleccionados
+    const selectedUsers = this.users.filter(u => this.form.responsible_user_ids.includes(u.id));
+    const responsibleText = selectedUsers.map(u => this.userDisplayName(u)).join(', ') || null;
 
     const payload: ActionPlanCreateRequest = {
       strategy_id: +this.form.strategy_id,
       component_id: +this.form.component_id,
-      // Se envía el nombre completo igual que antes (compatibilidad con backend)
-      responsible: selectedUser ? this.userDisplayName(selectedUser) : null,
-      responsible_user_id: this.form.responsible_user_id,
+      responsible: responsibleText,
+      responsible_user_ids: this.form.responsible_user_ids,
       plan_objectives: this.form.plan_objectives.map(obj => ({
         objective_id: obj.isNew ? null : (obj.objective_id ? +obj.objective_id : null),
         objective_text: obj.isNew ? obj.objective_text.trim() : null,
@@ -285,7 +304,7 @@ export class ActionPlanCreateModalComponent implements OnInit {
           lugar: a.lugar,
           requires_boss_assistance: a.requires_boss_assistance,
           generates_report: a.generates_report,
-          support_staff: a.support_staff.filter(s => s.name.trim()).map(s => ({ name: s.name.trim() })),
+          support_staff: a.support_staff.filter(s => s.name.trim()).map(s => ({ name: s.name.trim(), user_id: s.user_id ?? null })),
           recurrence: a.recurrence.enabled ? {
             frequency: a.recurrence.frequency,
             until: a.recurrence.until,

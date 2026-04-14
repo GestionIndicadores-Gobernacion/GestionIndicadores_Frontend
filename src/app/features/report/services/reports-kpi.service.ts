@@ -107,14 +107,8 @@ export class ReportsKpiService {
   }
 
   calcularPersonasCapacitadas(reports: ReportModel[], selectedYear: number): number {
-    // Año con dataset externo cargado → usar dataset
-    if (this._datasetLoaded && this._datasetYear === selectedYear) {
-      return this._datasetRecords.filter(r =>
-        r.data?.['mes'] != null && r.data?.['mes'] !== ''
-      ).length;
-    }
-    // Resto de años → componente 22 / indicator 76
-    return reports
+    // Siempre suma los reportes del componente Promotores (indicador 76)
+    const fromReports = reports
       .filter(r => r.component_id === COMPONENT_ID_PROMOTORES)
       .reduce((sum, r) => {
         const iv = r.indicator_values?.find(i => i.indicator_id === ID_PERSONAS_CAPACITADAS_PROMOTORES);
@@ -122,6 +116,16 @@ export class ReportsKpiService {
         const n = Number(iv.value);
         return sum + (isNaN(n) ? 0 : n);
       }, 0);
+
+    // Si el año coincide con el dataset externo, suma también esos registros
+    if (this._datasetLoaded && this._datasetYear === selectedYear) {
+      const fromDataset = this._datasetRecords.filter(r =>
+        r.data?.['mes'] != null && r.data?.['mes'] !== ''
+      ).length;
+      return fromDataset + fromReports;
+    }
+
+    return fromReports;
   }
 
   animalesEsterilizados(reports: ReportModel[]): number {
