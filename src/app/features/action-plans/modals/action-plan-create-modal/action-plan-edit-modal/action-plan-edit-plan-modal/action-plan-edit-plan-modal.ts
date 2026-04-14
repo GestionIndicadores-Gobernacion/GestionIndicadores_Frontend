@@ -101,7 +101,7 @@ export class ActionPlanEditPlanModalComponent implements OnInit {
               lugar: a.lugar ?? null,   // ← FALTABA
               requires_boss_assistance: a.requires_boss_assistance ?? false,
               generates_report: a.generates_report ?? false,
-              support_staff: (a.support_staff ?? []).map(s => ({ name: s.name })),
+              support_staff: (a.support_staff ?? []).map(s => ({ name: s.name, user_id: s.user_id ?? null })),
               recurrence: {
                 enabled: false,
                 frequency: (a.recurrence_rule?.frequency ?? 'monthly') as RecurrenceFrequency,
@@ -149,7 +149,7 @@ export class ActionPlanEditPlanModalComponent implements OnInit {
   }
 
   addStaff(oi: number, ai: number): void {
-    this.form.plan_objectives[oi].activities[ai].support_staff.push({ name: '' });
+    this.form.plan_objectives[oi].activities[ai].support_staff.push({ name: '', user_id: null });
   }
 
   removeStaff(oi: number, ai: number, si: number): void {

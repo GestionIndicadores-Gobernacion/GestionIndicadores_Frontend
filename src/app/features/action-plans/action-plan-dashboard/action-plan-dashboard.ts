@@ -23,6 +23,7 @@ export interface UserDashboard {
   pending: number;
   overdue: number;
   total_score: number;
+  activities_without_report: number;
   activities: ActivityDetail[];
   expanded?: boolean;
 }
@@ -36,6 +37,8 @@ export interface ActivityDetail {
   computed_score: number | null;
   reported_at: string | null;
   evidence_url: string | null;
+  generates_report?: boolean;
+  has_linked_report?: boolean;
 }
 
 @Component({
@@ -110,6 +113,7 @@ export class ActionPlanDashboardComponent implements OnInit {
           case 'pending': valA = a.pending + a.overdue; valB = b.pending + b.overdue; break;
           case 'completion': valA = this.completionRate(a); valB = this.completionRate(b); break;
           case 'score': valA = a.total_score; valB = b.total_score; break;
+          case 'without_report': valA = a.activities_without_report; valB = b.activities_without_report; break;
           default: return 0;
         }
         return this.sortDir === 'asc' ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);

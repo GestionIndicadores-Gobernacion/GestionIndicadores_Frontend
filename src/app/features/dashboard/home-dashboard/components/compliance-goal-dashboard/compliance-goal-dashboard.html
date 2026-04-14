@@ -1,0 +1,246 @@
+<div class="space-y-5">
+
+    <!-- HEADER -->
+    <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
+                style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+            </div>
+            <div>
+                <h2 class="text-[15px] font-bold leading-none" style="color:#1B3A6B;">
+                    Cumplimiento por meta anual
+                </h2>
+                <p class="text-xs mt-0.5" style="color:#4A6A9B;">
+                    Avance real vs meta programada por indicador · {{ selectedYear }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Promedio general -->
+        <div *ngIf="!loading && filteredItems.length > 0"
+            class="flex items-center gap-2 px-4 py-2 rounded-xl border"
+            style="background:#F0F9FF;border-color:#BAE6FD;">
+            <span class="text-[11px] font-semibold" style="color:#0369A1;">Promedio general</span>
+            <span class="text-[15px] font-bold" style="color:#0C4A6E;">{{ averagePercent }}%</span>
+        </div>
+    </div>
+
+    <!-- PANEL DE FILTROS -->
+    <div class="rounded-xl border px-4 py-3 space-y-3" style="background:#F8FAFD;border-color:#D6E0F0;">
+
+        <!-- Selector de año -->
+        <div class="flex flex-wrap items-center gap-2">
+            <span class="text-[10px] font-bold uppercase tracking-[1px] shrink-0 w-12" style="color:#4A6A9B;">Año</span>
+            <ng-container *ngIf="availableYears.length > 0; else noYears">
+                <button *ngFor="let y of availableYears" (click)="onYearChange(y)"
+                    class="px-3 py-1 rounded-lg text-[11px] font-bold border transition-all"
+                    [style.background]="y === selectedYear ? '#1B3A6B' : 'white'"
+                    [style.color]="y === selectedYear ? 'white' : '#4A6A9B'"
+                    [style.borderColor]="y === selectedYear ? '#1B3A6B' : '#D6E0F0'">
+                    {{ y }}
+                </button>
+            </ng-container>
+            <ng-template #noYears>
+                <span class="text-[11px]" style="color:#8A9DC0;">Sin metas configuradas</span>
+            </ng-template>
+        </div>
+
+        <!-- Divisor -->
+        <div class="border-t" style="border-color:#E8EEF8;"></div>
+
+        <!-- Selector de estrategia -->
+        <div class="flex flex-wrap items-center gap-3">
+            <span class="text-[10px] font-bold uppercase tracking-[1px] shrink-0 w-12" style="color:#4A6A9B;">
+                Estrategia
+            </span>
+            <div class="relative" style="min-width:200px;max-width:380px;flex:1;">
+                <select [(ngModel)]="selectedStrategyId" (ngModelChange)="onStrategyChange()"
+                    class="text-[12px] rounded-xl pl-3 pr-8 py-2 outline-none w-full appearance-none"
+                    style="background:white;border:1.5px solid #D6E0F0;color:#1B3A6B;"
+                    onfocus="this.style.borderColor='#1B3A6B'"
+                    onblur="this.style.borderColor='#D6E0F0'">
+                    <option [ngValue]="null">Todas las estrategias</option>
+                    <option *ngFor="let s of strategies" [ngValue]="s.id">{{ s.name }}</option>
+                </select>
+                <svg class="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                    width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8A9DC0" stroke-width="2.5">
+                    <polyline points="6 9 12 15 18 9" />
+                </svg>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- LOADING -->
+    <div *ngIf="loading" class="flex items-center gap-3 py-10">
+        <div class="w-4 h-4 rounded-full animate-spin" style="border:2px solid #D6E0F0;border-top-color:#1B3A6B;"></div>
+        <span class="text-[13px]" style="color:#8A9DC0;">Cargando datos de cumplimiento...</span>
+    </div>
+
+    <ng-container *ngIf="!loading">
+
+        <!-- AVISO: componentes sin meta configurada -->
+        <div *ngIf="unconfiguredCount > 0"
+            class="flex items-start gap-3 px-4 py-3 rounded-xl border"
+            style="background:#FFFBEB;border-color:#FDE68A;">
+            <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="#D97706" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+            </svg>
+            <p class="text-[12px]" style="color:#92400E;">
+                <strong>{{ unconfiguredCount }} componente{{ unconfiguredCount !== 1 ? 's' : '' }}</strong>
+                {{ unconfiguredCount !== 1 ? 'no tienen' : 'no tiene' }} metas anuales configuradas
+                para {{ selectedYear }} y {{ unconfiguredCount !== 1 ? 'fueron excluidos' : 'fue excluido' }}
+                de esta vista. Configura sus indicadores en el módulo de componentes.
+            </p>
+        </div>
+
+        <!-- Barra de búsqueda + ordenamiento + contador -->
+        <div class="flex flex-wrap items-center gap-3">
+
+            <!-- Búsqueda -->
+            <div class="relative" style="min-width:180px;flex:1;max-width:320px;">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" width="13" height="13"
+                    viewBox="0 0 24 24" fill="none" stroke="#8A9DC0" stroke-width="2">
+                    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input type="text" [(ngModel)]="search" (input)="applyFilters()"
+                    placeholder="Buscar componente o indicador..."
+                    class="text-[12px] rounded-xl pl-9 pr-4 py-2 outline-none w-full"
+                    style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B;"
+                    onfocus="this.style.borderColor='#1B3A6B';this.style.background='#fff'"
+                    onblur="this.style.borderColor='#D6E0F0';this.style.background='#F0F4FA'" />
+            </div>
+
+            <!-- Ordenamiento -->
+            <div class="flex items-center gap-2">
+                <span class="text-[10.5px] font-bold uppercase tracking-[0.8px]" style="color:#4A6A9B;">Ordenar:</span>
+                <button (click)="sortBy('avg_percent')"
+                    class="px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all"
+                    [style.background]="sortCol === 'avg_percent' ? '#1B3A6B' : '#F0F4FA'"
+                    [style.color]="sortCol === 'avg_percent' ? 'white' : '#4A6A9B'"
+                    [style.borderColor]="sortCol === 'avg_percent' ? '#1B3A6B' : '#D6E0F0'">
+                    % Cumplimiento
+                    <span *ngIf="sortCol === 'avg_percent'">{{ sortDir === 'asc' ? '↑' : '↓' }}</span>
+                </button>
+                <button (click)="sortBy('name')"
+                    class="px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all"
+                    [style.background]="sortCol === 'name' ? '#1B3A6B' : '#F0F4FA'"
+                    [style.color]="sortCol === 'name' ? 'white' : '#4A6A9B'"
+                    [style.borderColor]="sortCol === 'name' ? '#1B3A6B' : '#D6E0F0'">
+                    Nombre
+                    <span *ngIf="sortCol === 'name'">{{ sortDir === 'asc' ? '↑' : '↓' }}</span>
+                </button>
+            </div>
+
+            <!-- Contador -->
+            <span *ngIf="filteredItems.length > 0" class="ml-auto text-[11px] font-semibold px-3 py-1 rounded-full"
+                style="background:#EEF5FF;color:#1B3A6B;border:1px solid #D6E0F0;">
+                {{ filteredItems.length }} componente{{ filteredItems.length !== 1 ? 's' : '' }}
+            </span>
+
+        </div>
+
+        <!-- EMPTY -->
+        <div *ngIf="filteredItems.length === 0"
+            class="py-16 text-center rounded-2xl border"
+            style="border-color:#D6E0F0;background:white;">
+            <p class="text-sm font-bold" style="color:#1B3A6B;">Sin metas anuales configuradas</p>
+            <p class="text-xs mt-1" style="color:#8A9DC0;">
+                Agrega metas anuales a los indicadores de los componentes para ver el cumplimiento aquí.
+            </p>
+        </div>
+
+        <!-- TARJETAS DE COMPONENTES -->
+        <div *ngIf="filteredItems.length > 0" class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+
+            <div *ngFor="let comp of filteredItems"
+                class="rounded-2xl border overflow-hidden transition-shadow hover:shadow-md"
+                style="background:white;border-color:#E2EAF7;">
+
+                <!-- Cabecera del componente -->
+                <div class="flex items-center gap-3 px-4 py-3 border-b" style="border-color:#EEF2FA;background:#F8FAFD;">
+                    <div class="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center text-[11px] font-bold"
+                        [style.background]="progressBg(comp.avg_percent)"
+                        [style.color]="progressColor(comp.avg_percent)">
+                        {{ comp.avg_percent | number:'1.0-0' }}%
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[13px] font-bold leading-tight truncate" style="color:#1B3A6B;"
+                            [title]="comp.component_name">
+                            {{ comp.component_name }}
+                        </p>
+                        <p class="text-[10.5px] mt-0.5 truncate" style="color:#8A9DC0;">
+                            {{ comp.strategy_name }}
+                        </p>
+                    </div>
+                    <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                        [style.background]="progressBg(comp.avg_percent)"
+                        [style.color]="progressColor(comp.avg_percent)">
+                        {{ comp.indicators.length }} indicador{{ comp.indicators.length !== 1 ? 'es' : '' }}
+                    </span>
+                </div>
+
+                <!-- Lista de indicadores -->
+                <div class="divide-y" style="border-color:#F0F4FA;">
+                    <div *ngFor="let ind of comp.indicators" class="px-4 py-3 space-y-2">
+
+                        <!-- Nombre del indicador + % -->
+                        <div class="flex items-center justify-between gap-2">
+                            <p class="text-[12px] font-semibold leading-tight" style="color:#1B3A6B;">
+                                {{ ind.indicator_name }}
+                            </p>
+                            <span class="text-[11px] font-bold shrink-0"
+                                [style.color]="progressColor(ind.percent)">
+                                {{ ind.percent | number:'1.0-1' }}%
+                            </span>
+                        </div>
+
+                        <!-- Barra de progreso -->
+                        <div class="h-1.5 rounded-full overflow-hidden" style="background:#EEF2F9;">
+                            <div class="h-full rounded-full transition-all duration-500"
+                                [style.width.%]="ind.percent"
+                                [style.background]="progressColor(ind.percent)">
+                            </div>
+                        </div>
+
+                        <!-- Cifras: Meta / Avance / Restante -->
+                        <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-1">
+                                <span class="text-[10px] font-semibold uppercase tracking-[0.5px]"
+                                    style="color:#8A9DC0;">Meta</span>
+                                <span class="text-[12px] font-bold" style="color:#1B3A6B;">
+                                    {{ ind.goal | number:'1.0-0' }}
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span class="text-[10px] font-semibold uppercase tracking-[0.5px]"
+                                    style="color:#8A9DC0;">Avance</span>
+                                <span class="text-[12px] font-bold"
+                                    [style.color]="progressColor(ind.percent)">
+                                    {{ ind.actual | number:'1.0-0' }}
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span class="text-[10px] font-semibold uppercase tracking-[0.5px]"
+                                    style="color:#8A9DC0;">Restante</span>
+                                <span class="text-[12px] font-bold" style="color:#4A6A9B;">
+                                    {{ (ind.goal - ind.actual) | number:'1.0-0' }}
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </ng-container>
+
+</div>

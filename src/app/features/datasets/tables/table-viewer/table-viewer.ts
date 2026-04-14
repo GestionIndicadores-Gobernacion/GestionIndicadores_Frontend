@@ -4,17 +4,19 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DatasetService } from '../../../../features/datasets/services/datasets.service';
 import { GenericoViewComponent } from '../views/generico/view';
 import { PersonasCapacitadasViewComponent } from '../views/personas-capacitadas/view';
+import { PresupuestalViewComponent } from '../views/presupuestal/view';
 import { DashboardRecordsComponent } from '../visualizations/dashboard-records/dashboard-records';
 
 export interface DashBar { label: string; value: number; pct: number; color: string; }
 export interface DashSegment { label: string; value: number; pct: number; color: string; }
-export type DashSectionType = 'bar' | 'histogram' | 'donut' | 'completeness' | 'table' | 'cards' | 'text_list' | 'progress';
+export type DashSectionType = 'bar' | 'histogram' | 'donut' | 'completeness' | 'table' | 'cards' | 'text_list' | 'progress' | 'grouped_rows';
 export interface DashSection {
     id: string; title: string; subtitle: string; type: DashSectionType;
     bars?: DashBar[]; segments?: DashSegment[];
     columns?: string[]; rows?: any[][];
     cards?: any[]; texts?: string[];
     span?: 'full' | 'half';
+    groups?: any[];
 }
 export interface DashKpi { label: string; value: string; sub?: string; icon?: string; }
 export interface DashboardData {
@@ -33,6 +35,7 @@ export interface DashboardData {
         CommonModule,
         PersonasCapacitadasViewComponent,
         GenericoViewComponent,
+        PresupuestalViewComponent,
         DashboardRecordsComponent,
     ],
     templateUrl: './table-viewer.html',

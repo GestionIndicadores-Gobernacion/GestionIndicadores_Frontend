@@ -90,6 +90,10 @@ export class ActionPlanCalendarComponent implements OnInit {
   currentUserId: number | null = null;
 
   currentUser: any = null;
+  canEditPlanBound = (plan: ActionPlanModel): boolean => {
+    const role = this.currentUser?.role?.name;
+    return role === 'admin' || role === 'monitor';
+  };
   canInteractWithPlan = (plan: ActionPlanModel): boolean => {
     if (!this.currentUser) return false;
     const role = this.currentUser.role?.name;
@@ -99,6 +103,7 @@ export class ActionPlanCalendarComponent implements OnInit {
       const assigned = (this.currentUser.component_assignments ?? []).map((c: any) => c.component_id);
       if (assigned.includes(plan.component_id)) return true;
       if (plan.responsible_user_id && plan.responsible_user_id === this.currentUser.id) return true;
+      if ((plan.responsible_user_ids ?? []).includes(this.currentUser.id)) return true;
       return false;
     }
     return false;
@@ -193,8 +198,9 @@ export class ActionPlanCalendarComponent implements OnInit {
   private checkReturnParams(): void {
     const reportActivityId = this.route.snapshot.queryParamMap.get('reportActivity');
     const evidenceUrl = this.route.snapshot.queryParamMap.get('evidenceUrl');
+    const planId = this.route.snapshot.queryParamMap.get('planId');
 
-    if (!reportActivityId) return;
+    if (!reportActivityId && !planId) return;
 
     // Limpiar params de la URL sin recargar
     this.router.navigate([], {
@@ -203,7 +209,28 @@ export class ActionPlanCalendarComponent implements OnInit {
       replaceUrl: true
     });
 
-    this.openReportModalForActivity(+reportActivityId, evidenceUrl ?? '');
+    if (reportActivityId) {
+      this.openReportModalForActivity(+reportActivityId, evidenceUrl ?? '');
+    } else if (planId) {
+      this.openPlanFromNotification(+planId);
+    }
+  }
+
+  private openPlanFromNotification(planId: number): void {
+    const plan = this.plans.find(p => p.id === planId);
+    if (!plan) return;
+    // Navegar al mes de la primera actividad pendiente del plan
+    const firstActivity = (plan.plan_objectives ?? [])
+      .flatMap(o => o.activities ?? [])
+      .find(a => a.status !== 'Realizado');
+    if (firstActivity?.delivery_date) {
+      const d = new Date(firstActivity.delivery_date + 'T00:00:00');
+      this.currentDate = new Date(d.getFullYear(), d.getMonth(), 1);
+      this.buildCalendar();
+    }
+    // Activar filtro "mis planes" para que el plan sea visible
+    this.filterMyPlans = true;
+    this.cdr.detectChanges();
   }
 
   private openReportModalForActivity(activityId: number, evidenceUrl: string): void {
@@ -276,7 +303,10 @@ export class ActionPlanCalendarComponent implements OnInit {
   get displayPlans(): ActionPlanModel[] {
     let result = this.plans;
     if (this.filterMyPlans && this.currentUserId)
-      result = result.filter(p => p.responsible_user_id === this.currentUserId);
+      result = result.filter(p =>
+        p.responsible_user_id === this.currentUserId ||
+        (p.responsible_user_ids ?? []).includes(this.currentUserId!)
+      );
     if (this.activeStatusFilter !== 'all')
       result = result.map(p => ({ ...p, plan_objectives: (p.plan_objectives ?? []).map(o => ({ ...o, activities: (o.activities ?? []).filter(a => a.status === this.activeStatusFilter) })).filter(o => o.activities.length > 0) })).filter(p => p.plan_objectives.length > 0);
     if (this.filterByBoss)

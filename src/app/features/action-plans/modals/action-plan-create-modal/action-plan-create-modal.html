@@ -37,7 +37,7 @@
             <ng-container *ngIf="!loading">
 
                 <!-- ESTRATEGIA + COMPONENTE -->
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="flex flex-col gap-1.5">
                         <label class="text-xs font-semibold text-[#1B3A6B]">Estrategia <span
                                 class="text-red-500">*</span></label>
@@ -64,22 +64,50 @@
                     </div>
                 </div>
 
-                <!-- RESPONSABLE -->
+                <!-- RESPONSABLE(S) -->
                 <div class="flex flex-col gap-1.5">
                     <label class="text-xs font-semibold text-[#1B3A6B]">
-                        Responsable del plan <span class="text-red-500">*</span>
+                        Persona(s) responsable(s) <span class="text-red-500">*</span>
                     </label>
-                    <select [(ngModel)]="form.responsible_user_id" name="responsible_user_id" class="text-sm border rounded-xl px-3 py-2.5 bg-[#F0F4FA] text-slate-800
-               focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 focus:border-[#2d5fa8] transition"
-                        [class.border-red-300]="errors['responsible_user_id']"
-                        [class.border-d6e2f2]="!errors['responsible_user_id']">
-                        <option [ngValue]="null" disabled>Seleccionar responsable...</option>
-                        <option *ngFor="let u of users" [ngValue]="u.id">
-                            {{ u.first_name }} {{ u.last_name }}
-                        </option>
-                    </select>
-                    <p *ngIf="errors['responsible_user_id']" class="text-xs text-red-500">{{
-                        errors['responsible_user_id'] }}</p>
+                    <p class="text-xs text-slate-400 -mt-1">Puedes seleccionar uno o varios responsables.</p>
+
+                    <!-- Chips de seleccionados -->
+                    <div *ngIf="form.responsible_user_ids.length > 0" class="flex flex-wrap gap-1.5">
+                        <span *ngFor="let uid of form.responsible_user_ids"
+                            class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full"
+                            style="background:#D6E4F7;color:#1B3A6B;border:1px solid #B3CCE8;">
+                            {{ getUserName(uid) }}
+                            <button type="button" (click)="toggleResponsible(uid)"
+                                class="ml-0.5 rounded-full hover:bg-[#1B3A6B]/10 transition">
+                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </span>
+                    </div>
+
+                    <!-- Lista de usuarios seleccionables -->
+                    <div class="border rounded-xl overflow-hidden max-h-40 overflow-y-auto"
+                        [class.border-red-300]="errors['responsible_user_ids']"
+                        style="border-color:#D6E0F0;">
+                        <div *ngFor="let u of users"
+                            (click)="toggleResponsible(u.id)"
+                            class="flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors"
+                            [class.bg-blue-50]="isResponsibleSelected(u.id)"
+                            [style.background]="isResponsibleSelected(u.id) ? '#EEF5FF' : 'white'"
+                            style="border-bottom:1px solid #F0F4FA;">
+                            <div class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold"
+                                [style.background]="isResponsibleSelected(u.id) ? '#1B3A6B' : '#D6E4F7'"
+                                [style.color]="isResponsibleSelected(u.id) ? 'white' : '#1B3A6B'">
+                                {{ (u.first_name || '?').charAt(0).toUpperCase() }}
+                            </div>
+                            <span class="text-sm flex-1" style="color:#1B3A6B;">{{ u.first_name }} {{ u.last_name }}</span>
+                            <svg *ngIf="isResponsibleSelected(u.id)" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="#059669" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p *ngIf="errors['responsible_user_ids']" class="text-xs text-red-500">{{ errors['responsible_user_ids'] }}</p>
                 </div>
 
                 <!-- OBJETIVOS -->
@@ -148,7 +176,9 @@
                                 *ngFor="let activity of obj.activities; let ai = index; trackBy: trackByIndex"
                                 [activity]="activity" [index]="ai" [namePrefix]="'act_' + oi + '_' + ai"
                                 [canRemove]="obj.activities.length > 1" [showRecurrence]="true"
-                                [showNameError]="!!errors['activities']" (remove)="removeActivity(oi, ai)"
+                                [showNameError]="!!errors['activities']"
+                                [availableUsers]="users"
+                                (remove)="removeActivity(oi, ai)"
                                 (addStaff)="addStaff(oi, ai)" (removeStaff)="removeStaff(oi, ai, $event)">
                             </app-action-plan-activity-form>
 
@@ -190,7 +220,7 @@
 
             <!-- Skeleton -->
             <div *ngIf="loading" class="space-y-4 animate-pulse">
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="h-10 bg-slate-200 rounded-xl"></div>
                     <div class="h-10 bg-slate-200 rounded-xl"></div>
                 </div>
