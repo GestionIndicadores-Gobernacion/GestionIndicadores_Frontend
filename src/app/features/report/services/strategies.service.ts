@@ -33,6 +33,13 @@ export class StrategiesService {
     return this.http.get<StrategyModel[]>(`${this.api}/dashboard`, { params });
   }
 
+  getComponentGoals(year?: number, strategyId?: number | null): Observable<any> {
+    let params = new HttpParams();
+    if (year) params = params.set('year', year.toString());
+    if (strategyId) params = params.set('strategy_id', strategyId.toString());
+    return this.http.get<any>(`${this.api}/component-goals`, { params });
+  }
+
   getById(id: number) {
     return this.http.get<StrategyModel>(`${this.api}/${id}`);
   }

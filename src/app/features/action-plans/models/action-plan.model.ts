@@ -4,6 +4,7 @@
 export interface ActionPlanSupportStaffModel {
   id?: number;
   name: string;
+  user_id?: number | null;
 }
 
 /* =========================
@@ -61,6 +62,13 @@ export interface ActionPlanObjectiveModel {
 /* =========================
    Plan de Acción
 ========================= */
+export interface ResponsibleUserInfo {
+  user_id: number;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+}
+
 export interface ActionPlanModel {
   id: number;
   user_id?: number | null;
@@ -68,6 +76,9 @@ export interface ActionPlanModel {
   component_id: number;
   responsible?: string | null;
   responsible_user_id?: number | null;
+  responsible_user_ids?: number[];
+  responsible_users?: ResponsibleUserInfo[];
+  responsible_display?: string;
   total_score: number;
   plan_objectives: ActionPlanObjectiveModel[];
   created_at: string;
@@ -82,6 +93,7 @@ export interface ActionPlanCreateRequest {
   component_id: number;
   responsible?: string | null;
   responsible_user_id?: number | null;
+  responsible_user_ids?: number[];
   plan_objectives: ActionPlanObjectiveModel[];
 }
 

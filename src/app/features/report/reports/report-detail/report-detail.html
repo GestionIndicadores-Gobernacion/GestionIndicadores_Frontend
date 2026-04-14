@@ -2,7 +2,7 @@
 
     <!-- HEADER -->
     <div class="sticky top-0 z-20" style="background:#F8FAFC;border-bottom:1px solid #E2E8F0;">
-        <div class="px-6 py-3 flex items-center gap-3">
+        <div class="px-4 sm:px-6 py-3 flex items-center gap-3">
             <a routerLink="/reports" class="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer shrink-0"
                 style="background:#E8EDF5;" onmouseover="this.style.background='#D6E0F0'"
                 onmouseout="this.style.background='#E8EDF5'">
@@ -50,7 +50,7 @@
     </div>
 
     <!-- CONTENT -->
-    <div *ngIf="report && !loading" class="max-w-4xl mx-auto px-6 py-6 space-y-5">
+    <div *ngIf="report && !loading" class="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-5">
 
         <!-- ── FICHA DEL REPORTE ──────────────────────────────────────────────── -->
         <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">

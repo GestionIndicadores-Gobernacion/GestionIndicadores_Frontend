@@ -1,6 +1,6 @@
 <div class="min-h-screen">
 
-  <div class="max-w-7xl mx-auto px-6 py-8 space-y-8 relative z-[1]">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8 relative z-[1]">
 
     <section class="space-y-6">
 
@@ -210,6 +210,16 @@
             </div>
             <app-strategy-dashboard [showStrategyButtons]="false" [dateFrom]="activeDateFrom" [dateTo]="activeDateTo">
             </app-strategy-dashboard>
+          </div>
+        </div>
+
+        <!-- DASHBOARD CUMPLIMIENTO POR META ANUAL -->
+        <div class="space-y-0 mt-6">
+          <div class="h-[3px] w-full rounded-t-xl"
+            style="background: linear-gradient(90deg, #1B3A6B 0%, #059669 50%, #1B3A6B 100%);"></div>
+          <div class="rounded-b-xl border p-5" style="border-color:#D6E0F0;background:white;">
+            <app-compliance-goal-dashboard>
+            </app-compliance-goal-dashboard>
           </div>
         </div>
 

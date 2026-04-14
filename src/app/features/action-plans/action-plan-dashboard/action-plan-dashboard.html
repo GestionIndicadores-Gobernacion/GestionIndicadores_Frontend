@@ -1,8 +1,8 @@
 <div class="min-h-screen" style="background:#F0F4FA;">
 
     <!-- HEADER -->
-    <div class="px-6 pt-7 pb-6">
-        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+    <div class="px-4 sm:px-6 pt-7 pb-6">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-4">
                 <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-md"
                     style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);">
@@ -24,7 +24,7 @@
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-6 py-6 space-y-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-4">
 
         <!-- LOADING -->
         <div *ngIf="loading" class="flex items-center gap-3 py-8">
@@ -103,9 +103,6 @@
                                     </div>
                                 </th>
 
-                                <th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.8px]"
-                                    style="color:rgba(255,255,255,0.85)">Dueño del plan</th>
-
                                 <th (click)="sortBy('total')"
                                     class="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-[0.8px] cursor-pointer select-none"
                                     style="color:rgba(255,255,255,0.85)">
@@ -166,6 +163,15 @@
                                     </div>
                                 </th>
 
+                                <th (click)="sortBy('without_report')"
+                                    class="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-[0.8px] cursor-pointer select-none"
+                                    style="color:rgba(255,255,255,0.85)">
+                                    <div class="flex items-center justify-center gap-1">
+                                        Sin reporte
+                                        <span class="opacity-60">{{ sortCol === 'without_report' ? (sortDir === 'asc' ? '↑' : '↓') : '↕' }}</span>
+                                    </div>
+                                </th>
+
                                 <th class="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
                                     style="color:rgba(255,255,255,0.85)">Detalle</th>
 
@@ -187,19 +193,6 @@
                                             </div>
                                             <p class="text-[12px] font-semibold" style="color:#1B3A6B;">{{
                                                 user.responsible }}</p>
-                                        </div>
-                                    </td>
-
-                                    <!-- Dueño del plan -->
-                                    <td class="px-5 py-3">
-                                        <div class="flex flex-col gap-1.5">
-                                            <div *ngFor="let o of user.plans_owner">
-                                                <span class="text-[11px]" style="color:#4A6A9B;">
-                                                    {{ o.first_name }} {{ o.last_name }}
-                                                </span>
-                                            </div>
-                                            <span *ngIf="!user.plans_owner.length" class="text-[11px]"
-                                                style="color:#8A9DC0;">—</span>
                                         </div>
                                     </td>
 
@@ -251,6 +244,15 @@
                                         <span class="text-[11px] ml-0.5" style="color:#8A9DC0;">pts</span>
                                     </td>
 
+                                    <!-- Sin reporte -->
+                                    <td class="px-5 py-3 text-center">
+                                        <span *ngIf="user.activities_without_report > 0"
+                                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-700 border border-amber-200">
+                                            {{ user.activities_without_report }}
+                                        </span>
+                                        <span *ngIf="!user.activities_without_report" class="text-[11px]" style="color:#8A9DC0;">—</span>
+                                    </td>
+
                                     <!-- Detalle -->
                                     <td class="px-5 py-3 text-center">
                                         <button (click)="toggleUser(user)"
@@ -281,6 +283,8 @@
                                                             style="color:#4A6A9B;">Score</th>
                                                         <th class="px-4 py-2 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
                                                             style="color:#4A6A9B;">Evidencia</th>
+                                                        <th class="px-4 py-2 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
+                                                            style="color:#4A6A9B;">Reporte</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -319,6 +323,22 @@
                                                                 class="text-[11px] font-semibold text-blue-600 hover:underline">Ver</a>
                                                             <span *ngIf="!act.evidence_url" class="text-[11px]"
                                                                 style="color:#8A9DC0;">—</span>
+                                                        </td>
+                                                        <!-- Columna reporte vinculado -->
+                                                        <td class="px-4 py-2.5 text-center">
+                                                            <ng-container *ngIf="act.generates_report; else noReport">
+                                                                <span *ngIf="act.has_linked_report"
+                                                                    class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-100 text-emerald-700">
+                                                                    Vinculado ✓
+                                                                </span>
+                                                                <span *ngIf="!act.has_linked_report"
+                                                                    class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-amber-100 text-amber-700">
+                                                                    Pendiente
+                                                                </span>
+                                                            </ng-container>
+                                                            <ng-template #noReport>
+                                                                <span class="text-[11px]" style="color:#8A9DC0;">—</span>
+                                                            </ng-template>
                                                         </td>
                                                     </tr>
                                                 </tbody>

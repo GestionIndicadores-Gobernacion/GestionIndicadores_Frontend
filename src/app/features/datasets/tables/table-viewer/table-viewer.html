@@ -95,7 +95,8 @@
         <!-- TAB: DASHBOARD -->
         <ng-container *ngIf="activeTab() === 'dashboard'">
             <app-personas-capacitadas-view *ngIf="data()!.dataset_type === 'personas_capacitadas'" [data]="data()!" />
-            <app-generico-view *ngIf="data()!.dataset_type !== 'personas_capacitadas'" [data]="data()!" />
+            <app-presupuestal-view *ngIf="data()!.dataset_type === 'presupuesto'" [data]="data()!" />
+            <app-generico-view *ngIf="data()!.dataset_type !== 'personas_capacitadas' && data()!.dataset_type !== 'presupuesto'" [data]="data()!" />
         </ng-container>
 
         <!-- TAB: REGISTROS -->
