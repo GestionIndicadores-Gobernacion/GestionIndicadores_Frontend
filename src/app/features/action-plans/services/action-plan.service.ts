@@ -5,6 +5,7 @@ import { environment } from '../../../../environments/environment';
 import {
   ActionPlanActivityModel,
   ActionPlanActivityEditRequest,
+  ActionPlanAddEvidenceRequest,
   ActionPlanCreateRequest,
   ActionPlanFilters,
   ActionPlanModel,
@@ -39,6 +40,13 @@ export class ActionPlanService {
   report(activityId: number, body: ActionPlanReportRequest): Observable<ActionPlanActivityModel> {
     return this.http.put<ActionPlanActivityModel>(
       `${this.api}/activities/${activityId}/report`, body
+    );
+  }
+
+  /** Agrega o edita la evidencia de una actividad ya reportada (dentro de 8 días) */
+  addEvidence(activityId: number, body: ActionPlanAddEvidenceRequest): Observable<ActionPlanActivityModel> {
+    return this.http.put<ActionPlanActivityModel>(
+      `${this.api}/activities/${activityId}/evidence`, body
     );
   }
 

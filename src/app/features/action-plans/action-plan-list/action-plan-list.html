@@ -20,6 +20,7 @@
             <option value="Pendiente">Pendiente</option>
             <option value="En Ejecución">En ejecución</option>
             <option value="Realizado">Realizado</option>
+            <option value="Pendiente de Evidencia">Pendiente de evidencia</option>
 
         </select>
 
@@ -169,22 +170,25 @@
 
                 <!-- REPORT: siempre visible para ver, deshabilitado si no puede reportar -->
                 <button (click)="onReport(item.plan, item.objective, item.activity, $event)"
-                    [disabled]="item.activity.status !== 'Realizado' && !canModify(item.plan)"
-                    class="text-xs font-medium px-3 py-1.5 rounded-lg border transition" [ngClass]="item.activity.status !== 'Realizado' && !canModify(item.plan)
-      ? 'border-slate-100 text-slate-300 cursor-not-allowed'
-      : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'">
-                    {{ item.activity.status === 'Realizado' ? 'Ver' : 'Reportar' }}
+                    [disabled]="!canClickAction(item.activity, item.plan)"
+                    class="text-xs font-medium px-3 py-1.5 rounded-lg border transition"
+                    [ngClass]="!canClickAction(item.activity, item.plan)
+                      ? 'border-slate-100 text-slate-300 cursor-not-allowed'
+                      : item.activity.status === 'Pendiente de Evidencia'
+                        ? 'border-amber-300 text-amber-700 hover:border-amber-400 hover:bg-amber-50'
+                        : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'">
+                    {{ actionLabel(item.activity.status!) }}
                 </button>
 
-                <!-- EDIT: oculto si no puede editar la estructura del plan -->
-                <button *ngIf="item.activity.status !== 'Realizado' && canEditPlan(item.plan)"
+                <!-- EDIT: oculto si no puede editar la estructura del plan, ni si ya fue reportada -->
+                <button *ngIf="item.activity.status !== 'Realizado' && item.activity.status !== 'Pendiente de Evidencia' && canEditPlan(item.plan)"
                     (click)="onEdit(item.plan, item.objective, item.activity, $event)" class="text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-200
            text-[#2d5fa8] hover:border-[#2d5fa8] hover:bg-blue-50 transition">
                     Editar
                 </button>
 
-                <!-- DELETE: oculto si no puede -->
-                <button *ngIf="canModify(item.plan)" (click)="onDelete(item.activity.id!, $event)"
+                <!-- DELETE: oculto si no puede o si ya fue reportada -->
+                <button *ngIf="canModify(item.plan) && item.activity.status !== 'Realizado' && item.activity.status !== 'Pendiente de Evidencia'" (click)="onDelete(item.activity.id!, $event)"
                     class="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

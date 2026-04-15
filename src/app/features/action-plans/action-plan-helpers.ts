@@ -20,18 +20,20 @@ export function activityFallsOnDay(
 
 export function statusClass(status: ActionPlanStatus): string {
     const map: Record<ActionPlanStatus, string> = {
-        'Realizado': 'bg-emerald-50 text-emerald-700 border-emerald-200',
-        'En Ejecución': 'bg-blue-50 text-blue-700 border-blue-200',
-        'Pendiente': 'bg-red-50 text-red-700 border-red-200',
+        'Realizado':             'bg-emerald-50 text-emerald-700 border-emerald-200',
+        'En Ejecución':          'bg-blue-50 text-blue-700 border-blue-200',
+        'Pendiente':             'bg-red-50 text-red-700 border-red-200',
+        'Pendiente de Evidencia':'bg-amber-50 text-amber-700 border-amber-200',
     };
-    return map[status];
+    return map[status] ?? 'bg-slate-50 text-slate-600 border-slate-200';
 }
 
 export function statusDot(status: ActionPlanStatus): string {
     const map: Record<ActionPlanStatus, string> = {
-        'Realizado': 'bg-emerald-500',
-        'En Ejecución': 'bg-blue-500',
-        'Pendiente': 'bg-red-500',
+        'Realizado':             'bg-emerald-500',
+        'En Ejecución':          'bg-blue-500',
+        'Pendiente':             'bg-red-500',
+        'Pendiente de Evidencia':'bg-amber-500',
     };
-    return map[status];
+    return map[status] ?? 'bg-slate-400';
 }

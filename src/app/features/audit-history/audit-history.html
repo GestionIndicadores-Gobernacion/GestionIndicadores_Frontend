@@ -1,0 +1,227 @@
+<div class="min-h-screen">
+
+    <!-- PAGE HEADER -->
+    <div class="px-4 sm:px-6 pt-7 pb-6">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"
+                    style="background: linear-gradient(135deg, #1B3A6B, #2d5fa8);">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="1.8"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+                        <rect x="9" y="3" width="6" height="4" rx="1" />
+                        <path d="M9 12h6M9 16h4" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-[20px] font-bold leading-none" style="color: #1B3A6B;">
+                        Historial de acciones
+                    </h1>
+                    <p class="text-sm mt-1" style="color: #4A6A9B;">
+                        Registro completo · Creaciones, ediciones y eliminaciones
+                    </p>
+                </div>
+            </div>
+
+            <!-- Contador total -->
+            <span class="text-[12px] font-semibold px-3 py-1.5 rounded-full"
+                style="background: #D6E4F7; border: 1px solid #B3CCE8; color: #1B3A6B;">
+                {{ logs.length }} {{ logs.length === 1 ? 'acción total' : 'acciones totales' }}
+            </span>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 pb-10 space-y-5">
+
+        <!-- LOADING -->
+        <div *ngIf="loading" class="flex items-center gap-3 py-8">
+            <div class="w-4 h-4 rounded-full animate-spin"
+                style="border: 2px solid #D6E0F0; border-top-color: #1B3A6B;"></div>
+            <span class="text-[13px]" style="color: #8A9DC0;">Cargando historial...</span>
+        </div>
+
+        <ng-container *ngIf="!loading">
+
+            <!-- FILTROS -->
+            <div class="rounded-2xl border bg-white shadow-sm overflow-hidden" style="border-color: #D6E0F0;">
+                <div class="h-[3px]"
+                    style="background: linear-gradient(90deg, #1B3A6B 0%, #2d5fa8 50%, #1B3A6B 100%);"></div>
+                <div class="px-5 py-4">
+                    <div class="flex flex-wrap items-end gap-3">
+
+                        <!-- Buscar -->
+                        <div class="relative flex-1 min-w-52">
+                            <label class="text-[10.5px] font-bold uppercase tracking-[1px] text-[#1B3A6B] block mb-1">Buscar</label>
+                            <input type="text" placeholder="Usuario, detalle, ID..."
+                                [(ngModel)]="filters.search" (ngModelChange)="applyFilters()"
+                                class="w-full pl-9 pr-4 py-2 text-[12px] rounded-xl outline-none transition-all"
+                                style="background:#F0F4FA; border:1.5px solid #D6E0F0; color:#1B3A6B;"
+                                onfocus="this.style.borderColor='#1B3A6B'" onblur="this.style.borderColor='#D6E0F0'" />
+                            <svg class="absolute left-3 top-[calc(50%+9px)] -translate-y-1/2 pointer-events-none"
+                                width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4A6A9B"
+                                stroke-width="2" stroke-linecap="round">
+                                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                            </svg>
+                        </div>
+
+                        <!-- Módulo -->
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[10.5px] font-bold uppercase tracking-[1px] text-[#1B3A6B]">Módulo</label>
+                            <select [(ngModel)]="filters.entity" (ngModelChange)="applyFilters()"
+                                class="text-[12px] rounded-xl px-3 py-2 outline-none transition-all"
+                                style="background:#F0F4FA; border:1.5px solid #D6E0F0; color:#1B3A6B;"
+                                onfocus="this.style.borderColor='#1B3A6B'" onblur="this.style.borderColor='#D6E0F0'">
+                                <option value="">Todos los módulos</option>
+                                <option *ngFor="let e of availableEntities" [value]="e">{{ entityLabel(e) }}</option>
+                            </select>
+                        </div>
+
+                        <!-- Acción -->
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[10.5px] font-bold uppercase tracking-[1px] text-[#1B3A6B]">Acción</label>
+                            <select [(ngModel)]="filters.action" (ngModelChange)="applyFilters()"
+                                class="text-[12px] rounded-xl px-3 py-2 outline-none transition-all"
+                                style="background:#F0F4FA; border:1.5px solid #D6E0F0; color:#1B3A6B;"
+                                onfocus="this.style.borderColor='#1B3A6B'" onblur="this.style.borderColor='#D6E0F0'">
+                                <option value="">Todas las acciones</option>
+                                <option value="created">Creaciones</option>
+                                <option value="updated">Ediciones</option>
+                                <option value="deleted">Eliminaciones</option>
+                            </select>
+                        </div>
+
+                        <!-- Fecha desde -->
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[10.5px] font-bold uppercase tracking-[1px] text-[#1B3A6B]">Desde</label>
+                            <input type="date" [(ngModel)]="filters.dateFrom" (ngModelChange)="applyFilters()"
+                                class="text-[12px] rounded-xl px-3 py-2 outline-none transition-all"
+                                style="background:#F0F4FA; border:1.5px solid #D6E0F0; color:#1B3A6B;"
+                                onfocus="this.style.borderColor='#1B3A6B'" onblur="this.style.borderColor='#D6E0F0'" />
+                        </div>
+
+                        <!-- Fecha hasta -->
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[10.5px] font-bold uppercase tracking-[1px] text-[#1B3A6B]">Hasta</label>
+                            <input type="date" [(ngModel)]="filters.dateTo" (ngModelChange)="applyFilters()"
+                                class="text-[12px] rounded-xl px-3 py-2 outline-none transition-all"
+                                style="background:#F0F4FA; border:1.5px solid #D6E0F0; color:#1B3A6B;"
+                                onfocus="this.style.borderColor='#1B3A6B'" onblur="this.style.borderColor='#D6E0F0'" />
+                        </div>
+
+                        <!-- Limpiar filtros -->
+                        <button *ngIf="hasActiveFilters" (click)="clearFilters()" type="button"
+                            class="flex items-center gap-1.5 px-3 py-2 text-[12px] font-semibold rounded-xl border transition"
+                            style="border-color:#D6E0F0; color:#4A6A9B; background:white;"
+                            onmouseover="this.style.background='#F0F4FA'" onmouseout="this.style.background='white'">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Limpiar
+                        </button>
+
+                        <!-- Contador filtrado -->
+                        <div class="ml-auto flex items-center gap-2 text-[11px] font-semibold px-3 py-1.5 rounded-xl"
+                            style="background:#EDF3FC; color:#1B3A6B; border:1px solid #C4D6EE;">
+                            {{ filtered.length }} {{ filtered.length === 1 ? 'registro' : 'registros' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EMPTY -->
+            <div *ngIf="filtered.length === 0"
+                class="rounded-2xl border py-16 text-center bg-white" style="border-color:#D6E0F0;">
+                <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                    style="background:#F0F4FA;">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="#4A6A9B" stroke-width="1.8">
+                        <circle cx="12" cy="12" r="9" /><path d="M9 12h6" />
+                    </svg>
+                </div>
+                <p class="text-[13px] font-bold" style="color:#1B3A6B;">Sin registros</p>
+                <p class="text-[12px] mt-1" style="color:#8A9DC0;">No hay acciones que coincidan con los filtros</p>
+            </div>
+
+            <!-- TABLA -->
+            <ng-container *ngIf="filtered.length > 0">
+
+                <div class="rounded-2xl border bg-white shadow-sm overflow-hidden" style="border-color:#D6E0F0;">
+                    <div class="h-[3px]"
+                        style="background: linear-gradient(90deg, #1B3A6B 0%, #2d5fa8 50%, #1B3A6B 100%);"></div>
+
+                    <!-- Cabecera de columnas -->
+                    <div class="hidden sm:grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 px-5 py-3 border-b text-[10.5px] font-bold uppercase tracking-[1px]"
+                        style="border-color:#EEF2F9; background:#F8FAFD; color:#8A9DC0;">
+                        <span>Usuario</span>
+                        <span>Módulo</span>
+                        <span>Acción</span>
+                        <span>Registro</span>
+                        <span>Fecha</span>
+                    </div>
+
+                    <div *ngFor="let log of paginated; let i = index"
+                        class="flex flex-col sm:grid sm:grid-cols-[2fr_1fr_1fr_1fr_auto] sm:items-center gap-2 sm:gap-4 px-5 py-3.5 transition-colors hover:bg-[#F8FAFD]"
+                        [style.background]="i % 2 === 0 ? 'white' : '#FAFCFF'"
+                        style="border-bottom:1px solid #EEF2F9;">
+
+                        <!-- Usuario + ícono de acción -->
+                        <div class="flex items-center gap-2.5">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center border"
+                                [ngClass]="actionBadgeClass(log.action)">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        [attr.d]="actionIconPath(log.action)" />
+                                </svg>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-[12px] font-bold truncate" style="color:#1B3A6B;">
+                                    {{ userName(log.user_id) }}
+                                </p>
+                                <p *ngIf="log.detail" class="text-[11px] italic truncate" style="color:#8A9DC0;"
+                                    [title]="log.detail">
+                                    {{ log.detail }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Módulo -->
+                        <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md border self-start sm:self-auto"
+                            [ngClass]="entityBadgeClass(log.entity)">
+                            {{ entityLabel(log.entity) }}
+                        </span>
+
+                        <!-- Acción -->
+                        <span class="text-[11px] font-bold px-2 py-0.5 rounded-md border self-start sm:self-auto"
+                            [ngClass]="actionBadgeClass(log.action)">
+                            {{ actionLabel(log.action) }}
+                        </span>
+
+                        <!-- ID del registro -->
+                        <span class="text-[12px] font-medium" style="color:#4A6A9B;">
+                            #{{ log.entity_id }}
+                        </span>
+
+                        <!-- Fecha -->
+                        <span class="text-[11px] whitespace-nowrap" style="color:#8A9DC0;">
+                            {{ log.created_at | date:'dd/MM/yyyy HH:mm' : timezone }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <!-- PAGINACIÓN -->
+                <div *ngIf="filtered.length > pageSize" class="flex justify-end">
+                    <app-pagination [currentPage]="currentPage" [totalPages]="totalPages"
+                        (pageChange)="onPageChange($event)">
+                    </app-pagination>
+                </div>
+
+            </ng-container>
+
+        </ng-container>
+
+    </div>
+
+</div>
