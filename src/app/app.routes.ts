@@ -83,13 +83,22 @@ export const routes: Routes = [
             .then(m => m.ACTION_PLANS_ROUTES),
       },
 
-      // USUARIOS (SOLO ADMIN) — sigue igual
+      // USUARIOS (SOLO ADMIN)
       {
         path: 'users',
         canActivate: [adminGuard],
         loadChildren: () =>
           import('./features/user/users.routes')
             .then(m => m.USERS_ROUTES),
+      },
+
+      // HISTORIAL (SOLO ADMIN)
+      {
+        path: 'audit-history',
+        canActivate: [adminGuard],
+        loadChildren: () =>
+          import('./features/audit-history/audit-history.routes')
+            .then(m => m.AUDIT_HISTORY_ROUTES),
       },
 
       {

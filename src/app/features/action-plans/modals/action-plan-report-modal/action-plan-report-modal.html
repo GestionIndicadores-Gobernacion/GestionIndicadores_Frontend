@@ -19,10 +19,10 @@
                 </div>
                 <div>
                     <h2 class="text-sm font-semibold tracking-wide">
-                        {{ isReadOnly ? 'Detalle de Actividad' : 'Reportar Actividad' }}
+                        {{ isReadOnly ? 'Detalle de Actividad' : isPendingEvidence ? 'Pendiente de Evidencia' : 'Reportar Actividad' }}
                     </h2>
                     <p class="text-xs text-blue-100 mt-0.5">
-                        {{ isReadOnly ? 'Actividad ya reportada' : 'Carga el link de evidencia para finalizar' }}
+                        {{ isReadOnly ? 'Actividad completada' : isPendingEvidence ? 'Agrega el link de evidencia' : 'Registra lo realizado' }}
                     </p>
                 </div>
             </div>
@@ -62,7 +62,7 @@
                         <span class="text-xs font-medium text-slate-700">
                             {{ activity.delivery_date | date:'dd MMM yyyy' }}
                         </span>
-                        <span *ngIf="!isReadOnly" class="text-xs font-semibold"
+                        <span *ngIf="!isReadOnly && !isPendingEvidence" class="text-xs font-semibold"
                             [class.text-emerald-600]="expectedScore > 0" [class.text-red-500]="expectedScore <= 0">
                             ★ {{ expectedScore }} pt{{ expectedScore !== 1 ? 's' : '' }}
                         </span>
@@ -98,8 +98,75 @@
 
             </div>
 
+            <!-- ══ MODO: Pendiente de Evidencia ══ -->
+            <ng-container *ngIf="isPendingEvidence">
+
+                <!-- Alerta de ventana de evidencia -->
+                <div *ngIf="withinEvidenceWindow"
+                    class="flex items-start gap-3 px-4 py-3 rounded-xl border border-amber-200 bg-amber-50">
+                    <svg class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div class="flex-1">
+                        <p class="text-[11px] font-semibold text-amber-800">Evidencia pendiente</p>
+                        <p class="text-[11px] text-amber-700 mt-0.5">
+                            Tienes
+                            <strong>{{ evidenceDaysRemaining }} día{{ evidenceDaysRemaining !== 1 ? 's' : '' }}</strong>
+                            para agregar la evidencia.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Alerta de plazo expirado -->
+                <div *ngIf="!withinEvidenceWindow"
+                    class="flex items-start gap-3 px-4 py-3 rounded-xl border border-red-200 bg-red-50">
+                    <svg class="w-4 h-4 text-red-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <div>
+                        <p class="text-[11px] font-semibold text-red-800">Plazo de evidencia expirado</p>
+                        <p class="text-[11px] text-red-700 mt-0.5">
+                            Venció el plazo de 8 días para agregar evidencia.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Descripción si existe -->
+                <div *ngIf="activity.description" class="flex flex-col gap-1">
+                    <label class="text-xs font-semibold text-[#1B3A6B]">Lo realizado</label>
+                    <p class="text-xs text-slate-600 bg-white border border-[#e6edf7] rounded-xl px-3 py-2">
+                        {{ activity.description }}
+                    </p>
+                </div>
+
+                <!-- Formulario para agregar evidencia (solo dentro del plazo y si es responsable) -->
+                <ng-container *ngIf="withinEvidenceWindow && canManageEvidence">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-semibold text-[#1B3A6B]">
+                            Link de evidencia <span class="text-red-500">*</span>
+                        </label>
+                        <input type="url" [(ngModel)]="evidenceUrl" placeholder="https://drive.google.com/..."
+                            class="text-sm border rounded-xl px-3 py-2 bg-[#F0F4FA] border-[#d6e2f2] text-slate-800
+                                   focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 focus:border-[#2d5fa8] transition"
+                            [class.border-red-300]="error" />
+                        <p *ngIf="error" class="text-xs text-red-500">{{ error }}</p>
+                        <p class="text-xs text-slate-400">Google Drive, SharePoint u otro repositorio.</p>
+                    </div>
+                </ng-container>
+
+                <!-- Mensaje si no es el responsable -->
+                <div *ngIf="!canManageEvidence"
+                    class="text-xs text-slate-500 bg-white border border-[#e6edf7] rounded-xl px-3 py-2">
+                    Solo el responsable de la actividad puede agregar la evidencia.
+                </div>
+
+            </ng-container>
+
             <!-- ══ CASO 1: pendiente + reporte ya vinculado ══ -->
-            <div *ngIf="!isReadOnly && hasLinkedReport"
+            <div *ngIf="!isReadOnly && !isPendingEvidence && hasLinkedReport"
                 class="flex items-start gap-3 px-4 py-3 rounded-xl border border-[#BBD6FB] bg-[#EEF5FF]">
                 <svg class="w-4 h-4 text-[#2d5fa8] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor" stroke-width="2">
@@ -125,7 +192,7 @@
             </div>
 
             <!-- ══ CASO 2: pendiente + genera reporte + sin reporte aún ══ -->
-            <div *ngIf="!isReadOnly && !hasLinkedReport && activity.generates_report"
+            <div *ngIf="!isReadOnly && !isPendingEvidence && !hasLinkedReport && activity.generates_report"
                 class="flex items-start gap-3 px-4 py-3 rounded-xl border border-[#BBD6FB] bg-[#EEF5FF]">
                 <svg class="w-4 h-4 text-[#2d5fa8] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor" stroke-width="2">
@@ -133,14 +200,14 @@
                 </svg>
                 <div class="flex-1">
                     <p class="text-[11px] font-semibold text-[#1B3A6B]">
-                        Esta actividad requiere un reporte
+                        Esta actividad genera un reporte
                     </p>
                     <p class="text-[11px] text-[#4A6A9B] mt-0.5">
-                        El reporte se creará con la estrategia y componente precargados.
+                        Puedes reportar ahora y crear el reporte más tarde, o crearlo primero.
                     </p>
                     <button (click)="goToCreateReport()" type="button" class="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold
-                               text-white rounded-lg bg-gradient-to-r from-[#1B3A6B] to-[#2d5fa8]
-                               hover:opacity-90 transition">
+                               text-[#2d5fa8] rounded-lg border border-[#BBD6FB] bg-white
+                               hover:bg-[#EEF5FF] transition">
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -168,8 +235,8 @@
                 </div>
             </div>
 
-            <!-- ALERTA tardío: solo si puede confirmar -->
-            <div *ngIf="!isReadOnly && (!activity.generates_report || hasLinkedReport)"
+            <!-- ALERTA de puntos: solo en modo reporte inicial -->
+            <div *ngIf="!isReadOnly && !isPendingEvidence"
                 class="flex items-center gap-2 rounded-xl px-3 py-2 border" [ngClass]="expectedScore > 0
         ? 'bg-emerald-50 border-emerald-200'
         : 'bg-red-50 border-red-200'">
@@ -184,7 +251,7 @@
                         Actividad con reporte vinculado — se asignarán <strong>7 puntos</strong> (5 + 2 por reporte).
                     </ng-container>
                     <ng-container *ngIf="expectedScore === 5">
-                        Al reportar esta actividad se asignarán <strong>5 puntos</strong>.
+                        Al confirmar se asignarán <strong>5 puntos</strong> al agregar la evidencia.
                     </ng-container>
                     <ng-container *ngIf="expectedScore === -1">
                         Esta actividad quedará como <strong>pendiente</strong> hasta ser reportada (−1 punto).
@@ -192,7 +259,7 @@
                 </p>
             </div>
 
-            <!-- READ MODE -->
+            <!-- READ MODE (Realizado) -->
             <ng-container *ngIf="isReadOnly">
 
                 <div class="flex flex-col gap-1">
@@ -214,18 +281,20 @@
 
             </ng-container>
 
-            <!-- EDIT MODE: solo si no requiere reporte pendiente de crear -->
-            <ng-container *ngIf="!isReadOnly && (!activity.generates_report || hasLinkedReport)">
+            <!-- EDIT MODE: formulario de reporte inicial -->
+            <ng-container *ngIf="!isReadOnly && !isPendingEvidence">
 
                 <div class="flex flex-col gap-1">
                     <label class="text-xs font-semibold text-[#1B3A6B]">
-                        Link de evidencia <span class="text-red-500">*</span>
+                        Link de evidencia
+                        <span class="text-slate-400 font-normal">(opcional)</span>
                     </label>
                     <input type="url" [(ngModel)]="evidenceUrl" placeholder="https://drive.google.com/..."
                         class="text-sm border rounded-xl px-3 py-2 bg-[#F0F4FA] border-[#d6e2f2] text-slate-800
-                               focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 focus:border-[#2d5fa8] transition" [class.border-red-300]="error" />
+                               focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 focus:border-[#2d5fa8] transition"
+                        [class.border-red-300]="error" />
                     <p *ngIf="error" class="text-xs text-red-500">{{ error }}</p>
-                    <p class="text-xs text-slate-400">Google Drive, SharePoint u otro repositorio.</p>
+                    <p class="text-xs text-slate-400">Google Drive, SharePoint u otro repositorio. Puede agregarse después.</p>
                 </div>
 
                 <div class="flex flex-col gap-1">
@@ -251,11 +320,24 @@
                 {{ isReadOnly ? 'Cerrar' : 'Cancelar' }}
             </button>
 
-            <button *ngIf="!isReadOnly && (!activity.generates_report || hasLinkedReport)"
-                (click)="submit()" type="button" class="px-3 py-1.5 text-sm font-medium text-white
+            <!-- Botón para modo "Pendiente de Evidencia" -->
+            <button *ngIf="isPendingEvidence && withinEvidenceWindow && canManageEvidence"
+                (click)="submitEvidence()" type="button"
+                [disabled]="saving"
+                class="px-3 py-1.5 text-sm font-medium text-white
+                       bg-gradient-to-r from-amber-500 to-amber-600
+                       rounded-lg hover:opacity-90 transition disabled:opacity-60">
+                {{ saving ? 'Guardando...' : 'Guardar evidencia' }}
+            </button>
+
+            <!-- Botón para reporte inicial -->
+            <button *ngIf="!isReadOnly && !isPendingEvidence"
+                (click)="submit()" type="button"
+                [disabled]="saving"
+                class="px-3 py-1.5 text-sm font-medium text-white
                        bg-gradient-to-r from-[#1B3A6B] to-[#2d5fa8]
-                       rounded-lg hover:opacity-90 transition">
-                Confirmar reporte
+                       rounded-lg hover:opacity-90 transition disabled:opacity-60">
+                {{ saving ? 'Guardando...' : 'Confirmar reporte' }}
             </button>
 
         </div>

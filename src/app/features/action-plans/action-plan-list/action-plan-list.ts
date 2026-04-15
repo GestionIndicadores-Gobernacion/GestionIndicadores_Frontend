@@ -161,21 +161,37 @@ export class ActionPlanListComponent {
     if (status === 'En Ejecución' && generatesReport)
       return 'bg-purple-50 text-purple-700 border-purple-200';
     const map: Record<ActionPlanStatus, string> = {
-      'Realizado':    'bg-emerald-50 text-emerald-700 border-emerald-200',
-      'En Ejecución': 'bg-blue-50 text-blue-700 border-blue-200',
-      'Pendiente':    'bg-red-50 text-red-700 border-red-200',
+      'Realizado':              'bg-emerald-50 text-emerald-700 border-emerald-200',
+      'En Ejecución':           'bg-blue-50 text-blue-700 border-blue-200',
+      'Pendiente':              'bg-red-50 text-red-700 border-red-200',
+      'Pendiente de Evidencia': 'bg-amber-50 text-amber-700 border-amber-200',
     };
-    return map[status];
+    return map[status] ?? 'bg-slate-50 text-slate-600 border-slate-200';
   }
 
   statusDot(status: ActionPlanStatus, generatesReport?: boolean): string {
     if (status === 'En Ejecución' && generatesReport) return 'bg-purple-500';
     const map: Record<ActionPlanStatus, string> = {
-      'Realizado':    'bg-emerald-500',
-      'En Ejecución': 'bg-blue-500',
-      'Pendiente':    'bg-red-500',
+      'Realizado':              'bg-emerald-500',
+      'En Ejecución':           'bg-blue-500',
+      'Pendiente':              'bg-red-500',
+      'Pendiente de Evidencia': 'bg-amber-500',
     };
-    return map[status];
+    return map[status] ?? 'bg-slate-400';
+  }
+
+  /** Etiqueta del botón de acción según el estado */
+  actionLabel(status: ActionPlanStatus): string {
+    if (status === 'Realizado') return 'Ver';
+    if (status === 'Pendiente de Evidencia') return 'Agregar evidencia';
+    return 'Reportar';
+  }
+
+  /** True si el botón de acción debe mostrarse activo */
+  canClickAction(activity: ActionPlanActivityModel, plan: ActionPlanModel): boolean {
+    if (activity.status === 'Realizado') return true;
+    if (activity.status === 'Pendiente de Evidencia') return this.canModify(plan);
+    return this.canModify(plan);
   }
 
   onReport(plan: ActionPlanModel, objective: ActionPlanObjectiveModel, activity: ActionPlanActivityModel, event: Event): void {

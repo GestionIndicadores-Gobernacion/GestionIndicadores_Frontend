@@ -10,7 +10,6 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { UsersService } from '../../../../features/user/services/users.service';
 
 import { ReportsTableComponent } from './components/reports-table/reports-table';
-import { ReportsAuditLogComponent } from './components/reports-audit-log/reports-audit-log';
 import { ComponentsService } from '../../../../features/report/services/components.service';
 
 @Component({
@@ -20,7 +19,6 @@ import { ComponentsService } from '../../../../features/report/services/componen
     CommonModule,
     RouterModule,
     ReportsTableComponent,
-    ReportsAuditLogComponent,
   ],
   templateUrl: './reports-list.html',
   styleUrl: './reports-list.css',

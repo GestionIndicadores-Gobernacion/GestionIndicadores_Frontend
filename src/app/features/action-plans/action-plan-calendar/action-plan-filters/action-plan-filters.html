@@ -67,6 +67,17 @@
                 Pendientes
             </button>
 
+            <button (click)="statusChange.emit('Pendiente de Evidencia')"
+                class="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs font-semibold rounded-lg border transition shrink-0"
+                [ngClass]="activeStatusFilter === 'Pendiente de Evidencia'
+          ? 'bg-amber-500 text-white border-transparent'
+          : 'bg-white text-amber-600 border-amber-200 hover:bg-amber-50'">
+                <span class="w-1.5 h-1.5 rounded-full shrink-0"
+                    [class.bg-white]="activeStatusFilter === 'Pendiente de Evidencia'"
+                    [class.bg-amber-500]="activeStatusFilter !== 'Pendiente de Evidencia'"></span>
+                Sin evidencia
+            </button>
+
             <div class="w-px h-4 sm:h-5 bg-[#D6E0F0] mx-0.5 sm:mx-1 shrink-0"></div>
 
             <button (click)="bossChange.emit(!filterByBoss)"
@@ -109,6 +120,36 @@
                     class="text-xs font-bold w-4 h-4 rounded-full bg-amber-500 text-white hover:brightness-110 flex items-center justify-center">
                     ×
                 </button>
+            </span>
+        </div>
+
+        <!-- Leyenda de colores -->
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-2 border-t border-[#EBF0FA]">
+            <span class="text-[10px] font-bold uppercase tracking-[1px] text-[#8A9DC0] shrink-0">Referencia</span>
+
+            <span class="flex items-center gap-1.5 text-[11px] text-slate-600 shrink-0">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
+                Realizado
+            </span>
+
+            <span class="flex items-center gap-1.5 text-[11px] text-slate-600 shrink-0">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0"></span>
+                Sin evidencia (reportado)
+            </span>
+
+            <span class="flex items-center gap-1.5 text-[11px] text-slate-600 shrink-0">
+                <span class="w-2.5 h-2.5 rounded-full bg-purple-500 shrink-0"></span>
+                En ejecución (genera reporte)
+            </span>
+
+            <span class="flex items-center gap-1.5 text-[11px] text-slate-600 shrink-0">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0"></span>
+                En ejecución
+            </span>
+
+            <span class="flex items-center gap-1.5 text-[11px] text-slate-600 shrink-0">
+                <span class="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0"></span>
+                Pendiente vencida
             </span>
         </div>
 

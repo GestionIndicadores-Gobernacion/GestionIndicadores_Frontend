@@ -116,40 +116,6 @@
                     </div>
                 </div>
 
-                <!-- AUDIT LOG (admin only) -->
-                <div *ngIf="isAdmin" class="space-y-0 mt-6">
-                    <div class="h-[3px] w-full rounded-t-xl"
-                        style="background: linear-gradient(90deg, #1B3A6B 0%, #2d5fa8 50%, #1B3A6B 100%);"></div>
-
-                    <div class="rounded-b-xl overflow-hidden border" style="border-color: #D6E0F0; background: white;">
-
-                        <div class="flex items-center gap-3 px-5 py-4 border-b"
-                            style="border-color: #D6E0F0; background: #F8FAFD;">
-                            <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                                style="background: #D6E4F7;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B"
-                                    stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M12 20h9" />
-                                    <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <span class="text-[11px] font-bold uppercase tracking-[1px]" style="color: #1B3A6B;">
-                                    Historial de acciones
-                                </span>
-                                <p class="text-[10.5px] mt-0.5" style="color: #8A9DC0;">
-                                    Creación, edición y eliminación de registros
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="p-5">
-                            <app-reports-audit-log></app-reports-audit-log>
-                        </div>
-
-                    </div>
-                </div>
-
             </ng-container>
 
         </ng-container>
