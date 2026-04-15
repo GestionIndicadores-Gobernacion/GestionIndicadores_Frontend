@@ -173,6 +173,7 @@
 
 <app-action-plan-report-modal *ngIf="showReportModal && modal.activity && modal.objective" [plan]="modal.plan!"
     [objective]="modal.objective!" [activity]="modal.activity" [prefillEvidenceUrl]="prefillEvidenceUrl"
+    [currentUserId]="currentUserId"
     (close)="closeReportModal()" (reported)="onPlanReported()">
 </app-action-plan-report-modal>
 

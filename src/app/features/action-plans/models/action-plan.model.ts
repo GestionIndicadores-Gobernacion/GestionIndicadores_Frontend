@@ -23,7 +23,7 @@ export interface RecurrenceRule {
 /* =========================
    Actividad
 ========================= */
-export type ActionPlanStatus = 'Pendiente' | 'En Ejecución' | 'Realizado';
+export type ActionPlanStatus = 'Pendiente' | 'En Ejecución' | 'Realizado' | 'Pendiente de Evidencia';
 
 export interface ActionPlanActivityModel {
   id?: number;
@@ -98,8 +98,12 @@ export interface ActionPlanCreateRequest {
 }
 
 export interface ActionPlanReportRequest {
-  evidence_url: string;
+  evidence_url?: string | null;
   description?: string | null;
+}
+
+export interface ActionPlanAddEvidenceRequest {
+  evidence_url: string;
 }
 
 export interface ActionPlanActivityEditRequest {

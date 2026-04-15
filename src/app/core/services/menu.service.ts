@@ -54,6 +54,12 @@ export class MenuService {
         route: 'users',
         roles: [3],
       },
+
+      {
+        label: 'Historial',
+        route: 'audit-history',
+        roles: [3],
+      },
     ];
   }
 
