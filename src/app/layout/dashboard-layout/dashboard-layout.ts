@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { LucideAngularModule } from 'lucide-angular';
 import { SidebarComponent } from './sidebar/sidebar';
 import { SidebarService } from '../../core/services/sidebar.service';
 import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell';
@@ -12,7 +13,8 @@ import { NotificationBellComponent } from '../../shared/components/notification-
     CommonModule,
     RouterOutlet,
     SidebarComponent,
-    NotificationBellComponent
+    NotificationBellComponent,
+    LucideAngularModule,
   ],
   templateUrl: './dashboard-layout.html',
   styleUrl: './dashboard-layout.css',

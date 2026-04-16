@@ -7,11 +7,7 @@
             style="background:linear-gradient(135deg,#1B3A6B 0%,#2d5fa8 100%)">
             <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5V4H2v16h5" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 9h6v11H9z" />
-                    </svg>
+                    <lucide-icon name="table" [size]="20" [strokeWidth]="2" color="currentColor"></lucide-icon>
                 </div>
                 <div>
                     <h2 class="text-sm font-semibold tracking-wide">Red Animalia</h2>
@@ -28,9 +24,7 @@
             </div>
             <button type="button" (click)="onClose()"
                 class="p-2 rounded-lg hover:bg-white/20 transition cursor-pointer">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <lucide-icon name="x" [size]="20" [strokeWidth]="2" color="currentColor"></lucide-icon>
             </button>
         </div>
 
@@ -95,10 +89,7 @@
                 <!-- SEARCH -->
                 <div class="relative">
                     <div class="absolute left-3 top-1/2 -translate-y-1/2 text-[#2d5fa8]">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.3-4.3" />
-                            <circle cx="11" cy="11" r="7" />
-                        </svg>
+                        <lucide-icon name="search" [size]="16" [strokeWidth]="2" color="currentColor"></lucide-icon>
                     </div>
                     <input type="text" [(ngModel)]="search" (ngModelChange)="filterActors()"
                         placeholder="Buscar actor por nombre..." class="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-zinc-200 bg-[#F0F4FA]

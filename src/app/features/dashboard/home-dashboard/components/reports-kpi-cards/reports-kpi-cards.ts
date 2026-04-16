@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { LucideAngularModule } from 'lucide-angular';
 import { Subject, takeUntil, filter } from 'rxjs';
 import { ReportModel } from '../../../../../features/report/models/report.model';
 import { DashboardCardComponent } from './dashboard-card/dashboard-card';
@@ -8,7 +9,7 @@ import { KpiSnapshot, ReportsKpiService } from '../../../../../features/report/s
 @Component({
   selector: 'app-reports-kpi-cards',
   standalone: true,
-  imports: [CommonModule, DashboardCardComponent],
+  imports: [CommonModule, DashboardCardComponent, LucideAngularModule],
   templateUrl: './reports-kpi-cards.html',
   styleUrl: './reports-kpi-cards.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

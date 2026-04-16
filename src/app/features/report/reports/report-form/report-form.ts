@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { LucideAngularModule } from 'lucide-angular';
 
 import {
   ComponentIndicatorModel,
@@ -27,7 +28,7 @@ import { ActionPlanService } from '../../../../features/action-plans/services/ac
 @Component({
   selector: 'app-report-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ReportIndicatorsFormComponent],
+  imports: [CommonModule, FormsModule, RouterModule, LucideAngularModule, ReportIndicatorsFormComponent],
   templateUrl: './report-form.html',
   styleUrl: './report-form.css',
 })

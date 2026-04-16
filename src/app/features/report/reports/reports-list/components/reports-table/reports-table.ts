@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { LucideAngularModule } from 'lucide-angular';
 import { ReportModel } from '../../../../../../features/report/models/report.model';
 import { Pagination } from '../../../../../../shared/components/pagination/pagination';
 
@@ -14,7 +15,7 @@ const MONTH_ABBR_TO_NUM: Record<string, number> = {
 @Component({
   selector: 'app-reports-table',
   standalone: true,
-  imports: [CommonModule, RouterModule, Pagination, FormsModule],
+  imports: [CommonModule, RouterModule, Pagination, FormsModule, LucideAngularModule],
   templateUrl: './reports-table.html',
   styleUrl: './reports-table.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

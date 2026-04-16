@@ -12,11 +12,12 @@ import { ToastService } from '../../../../core/services/toast.service';
 
 import { Pagination } from '../../../../shared/components/pagination/pagination';
 import { PublicPolicyModalComponent } from './public-policy-modal/public-policy-modal';
+import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-component-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, Pagination, PublicPolicyModalComponent],
+  imports: [CommonModule, FormsModule, Pagination, PublicPolicyModalComponent, LucideAngularModule],
   templateUrl: './componente-list.html',
   styleUrl: './componente-list.css',
 })

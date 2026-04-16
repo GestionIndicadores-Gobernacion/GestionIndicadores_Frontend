@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
 import Swal from 'sweetalert2';
 import { DatasetService } from '../../../../features/datasets/services/datasets.service';
 
@@ -22,7 +23,7 @@ interface PreviewSheet {
 @Component({
   selector: 'app-import-dataset-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule],
   templateUrl: './import-dataset-modal.html',
   styleUrls: ['./import-dataset-modal.css']
 })

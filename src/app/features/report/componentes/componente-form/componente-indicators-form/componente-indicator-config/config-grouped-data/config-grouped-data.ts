@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { AbstractControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-config-grouped-data',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
   templateUrl: './config-grouped-data.html'
 })
 export class ConfigGroupedDataComponent implements OnInit {

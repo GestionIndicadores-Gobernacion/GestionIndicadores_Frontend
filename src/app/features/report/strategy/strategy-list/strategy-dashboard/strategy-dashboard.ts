@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
 import { Router } from '@angular/router';
 import { StrategyModel } from '../../../../../features/report/models/strategy.model';
 import { StrategiesService } from '../../../../../features/report/services/strategies.service';
@@ -9,7 +10,7 @@ import { ToastService } from '../../../../../core/services/toast.service';
 @Component({
   selector: 'app-strategy-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule],
   templateUrl: './strategy-dashboard.html',
 })
 export class StrategyDashboardComponent implements OnInit {

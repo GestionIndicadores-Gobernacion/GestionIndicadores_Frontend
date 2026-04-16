@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { LucideAngularModule } from 'lucide-angular';
 import { getIndicatorDisplayName } from '../../../../core/data/indicator-display-names';
 import { ReportModel } from '../../../../features/report/models/report.model';
 import { ReportsService } from '../../../../features/report/services/reports.service';
@@ -8,7 +9,7 @@ import { ReportsService } from '../../../../features/report/services/reports.ser
 @Component({
   selector: 'app-report-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, LucideAngularModule],
   templateUrl: './report-detail.html',
   styleUrl: './report-detail.css',
 })

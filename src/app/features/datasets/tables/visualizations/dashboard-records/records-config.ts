@@ -82,6 +82,40 @@ export const RECORDS_CONFIG: Record<string, RecordsConfig> = {
     detailSubtitle: ['fondo', 'descripcion_proyecto', 'desc_grupo'],
   },
 
+  red_animalia: {
+    tableFields: [
+      'nombres_y_apellidos',
+      'municipio_de_residencia',
+      'tipo_de_vinculacion_dentro_de_la_red_animalia_valle',
+      'nombre_hogar_de_paso_albergue_o_refugio_fundacion',
+      'perros_cantidad',
+      'gatos_cantidad',
+      'caballos_cantidad',
+      'telefono_celular',
+      'correo_electronico',
+      'sexo',
+      'edad',
+    ],
+    yesnoFields: [
+      'esta_dispuesto_a_recibir_una_visita_de_la_gobernacion_del_valle_del_cauca',
+      'esta_dispuesto_en_dar_en_adopcion_los_animales_que_tiene_a_cargo',
+      'tienes_algun_emprendimiento',
+      'tiene_alguna_fuente_de_ingreso',
+      'actualmente_recibe_donaciones_de_alguna_entidad',
+      'tiene_capacidad_operativa_para_apoyar_rescates_cual',
+      'estaria_dispuestoa_a_recibir_en_su_espacio_fisico_a_un_animal_que_ha_sido_victima_de_violencia',
+    ],
+    categoricalFields: [
+      'municipio_de_residencia',
+      'tipo_de_vinculacion_dentro_de_la_red_animalia_valle',
+      'sexo',
+      'nivel_de_escolaridad',
+    ],
+    searchPlaceholder: 'Buscar persona, municipio, organizacion...',
+    detailTitle: 'nombres_y_apellidos',
+    detailSubtitle: ['municipio_de_residencia', 'tipo_de_vinculacion_dentro_de_la_red_animalia_valle'],
+  },
+
   censo_animal: {
     tableFields: [
       'municipio',

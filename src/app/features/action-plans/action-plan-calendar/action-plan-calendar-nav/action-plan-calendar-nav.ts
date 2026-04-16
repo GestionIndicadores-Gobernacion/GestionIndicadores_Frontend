@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-action-plan-calendar-nav',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LucideAngularModule],
   templateUrl: './action-plan-calendar-nav.html',
 })
 export class ActionPlanCalendarNavComponent {

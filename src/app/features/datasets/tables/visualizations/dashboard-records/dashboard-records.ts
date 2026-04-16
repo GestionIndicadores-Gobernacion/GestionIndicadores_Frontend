@@ -1,6 +1,7 @@
 import { Component, Input, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
 import { ViewerData, DatasetService } from '../../../../../features/datasets/services/datasets.service';
 
 type SortDir = 'asc' | 'desc' | null;
@@ -128,7 +129,7 @@ const DEFAULT_CONFIG: RecordsConfig = RECORDS_CONFIG['generico'];
 @Component({
   selector: 'dashboard-records',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule],
   templateUrl: './dashboard-records.html'
 })
 export class DashboardRecordsComponent implements OnInit {

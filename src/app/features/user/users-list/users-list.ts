@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
 
 import { UserModel } from '../../../features/user/models/user.model';
 import { UsersService } from '../../../features/user/services/users.service';
@@ -10,7 +11,7 @@ import { ToastService } from '../../../core/services/toast.service';
 @Component({
   selector: 'app-users-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, LucideAngularModule],
   templateUrl: './users-list.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })

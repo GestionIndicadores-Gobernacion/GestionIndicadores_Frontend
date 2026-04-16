@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { LucideAngularModule } from 'lucide-angular';
 import {
   ActionPlanActivityModel,
   ActionPlanModel,
@@ -12,7 +13,7 @@ import { ActionPlanService } from '../../../../features/action-plans/services/ac
 @Component({
   selector: 'app-action-plan-report-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, LucideAngularModule],
   templateUrl: './action-plan-report-modal.html',
   styleUrl: './action-plan-report-modal.css',
 })

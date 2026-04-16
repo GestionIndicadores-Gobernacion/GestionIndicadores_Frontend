@@ -15,11 +15,12 @@ import { StrategiesService } from '../../../../features/report/services/strategi
 import { ToastService } from '../../../../core/services/toast.service';
 import { StrategyMetricsComponent } from './strategy-metrics/strategy-metrics';
 import { ComponentsService } from '../../../../features/report/services/components.service';
+import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-strategy-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, StrategyMetricsComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, StrategyMetricsComponent, LucideAngularModule],
   templateUrl: './strategy-form.html',
   styleUrl: './strategy-form.css',
 })

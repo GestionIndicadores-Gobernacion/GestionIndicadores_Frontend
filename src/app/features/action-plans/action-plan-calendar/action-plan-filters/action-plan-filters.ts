@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { LucideAngularModule } from 'lucide-angular';
 import { ActionPlanStatus } from '../../../../features/action-plans/models/action-plan.model';
 import { StrategyModel } from '../../../../features/report/models/strategy.model';
 import { ComponentModel } from '../../../../features/report/models/component.model';
@@ -7,7 +8,7 @@ import { ComponentModel } from '../../../../features/report/models/component.mod
 @Component({
   selector: 'app-action-plan-filters',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LucideAngularModule],
   templateUrl: './action-plan-filters.html',
 })
 export class ActionPlanFiltersComponent {

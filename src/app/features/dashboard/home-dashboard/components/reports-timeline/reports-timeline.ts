@@ -9,6 +9,7 @@ import {
   SimpleChanges
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
 import { ChartConfiguration } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
 import { AggregateByComponent, AggregateByMonth, ComponentAggregate, IndicatorSummary } from '../../../../../features/report/models/report-aggregate.model';
@@ -20,7 +21,7 @@ const ASISTENCIAS_TECNICAS = 'Asistencias técnicas';
 @Component({
   selector: 'app-reports-timeline',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgChartsModule],
+  imports: [CommonModule, FormsModule, NgChartsModule, LucideAngularModule],
   templateUrl: './reports-timeline.html',
   styleUrl: './reports-timeline.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -19,11 +19,7 @@
     <div *ngIf="reports.length === 0" class="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10"
         style="background:rgba(255,255,255,0.88);backdrop-filter:blur(4px);">
         <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:#F0F4FA;">
-            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="#4A6A9B" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
-                <circle cx="12" cy="9" r="2.5" />
-            </svg>
+            <lucide-icon name="map-pin" [size]="24" color="#4A6A9B" [strokeWidth]="1.5"></lucide-icon>
         </div>
         <p class="text-[12px] font-medium" style="color:#4A6A9B;">Sin reportes con ubicación registrada</p>
     </div>

@@ -10,10 +10,7 @@
                 bg-gradient-to-r from-[#1B3A6B] to-[#2d5fa8] text-white">
             <div class="flex items-start gap-3">
                 <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12h6m-6 4h6M9 8h6M5 4h14v16H5z" />
-                    </svg>
+                    <lucide-icon name="clipboard-list" [size]="20" [strokeWidth]="2" color="white"></lucide-icon>
                 </div>
                 <div>
                     <h2 class="text-sm font-semibold tracking-wide">Crear Plan de Acción</h2>
@@ -24,10 +21,7 @@
                 <div *ngIf="loading" class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin">
                 </div>
                 <button (click)="onClose()" class="p-2 rounded-xl hover:bg-white/10 transition-colors">
-                    <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <lucide-icon name="x" [size]="16" [strokeWidth]="2" color="white"></lucide-icon>
                 </button>
             </div>
         </div>
@@ -79,9 +73,7 @@
                             {{ getUserName(uid) }}
                             <button type="button" (click)="toggleResponsible(uid)"
                                 class="ml-0.5 rounded-full hover:bg-[#1B3A6B]/10 transition">
-                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
+                                <lucide-icon name="x" [size]="12" [strokeWidth]="2.5" color="currentColor"></lucide-icon>
                             </button>
                         </span>
                     </div>
@@ -102,9 +94,8 @@
                                 {{ (u.first_name || '?').charAt(0).toUpperCase() }}
                             </div>
                             <span class="text-sm flex-1" style="color:#1B3A6B;">{{ u.first_name }} {{ u.last_name }}</span>
-                            <svg *ngIf="isResponsibleSelected(u.id)" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="#059669" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                            </svg>
+                            <lucide-icon *ngIf="isResponsibleSelected(u.id)" name="check" [size]="16"
+                                [strokeWidth]="2.5" color="#059669" class="shrink-0"></lucide-icon>
                         </div>
                     </div>
                     <p *ngIf="errors['responsible_user_ids']" class="text-xs text-red-500">{{ errors['responsible_user_ids'] }}</p>
@@ -163,10 +154,7 @@
 
                             <button *ngIf="form.plan_objectives.length > 1" (click)="removeObjective(oi)" type="button"
                                 class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition">
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12" />
-                                </svg>
+                                <lucide-icon name="x" [size]="14" [strokeWidth]="2" color="currentColor"></lucide-icon>
                             </button>
                         </div>
 
@@ -185,10 +173,7 @@
                             <button (click)="addActivity(oi)" type="button" class="flex items-center gap-1.5 text-xs font-medium text-[#2d5fa8] hover:text-[#1B3A6B]
                        w-full justify-center border border-dashed border-[#cdd9ee] rounded-lg py-2
                        hover:border-[#2d5fa8]">
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 4v16m8-8H4" />
-                                </svg>
+                                <lucide-icon name="plus" [size]="14" [strokeWidth]="2" color="currentColor"></lucide-icon>
                                 Agregar actividad
                             </button>
                         </div>
@@ -199,18 +184,12 @@
                         <button *ngIf="hasAvailableComponentObjectives" (click)="addObjectiveFromComponent()"
                             type="button" class="flex items-center gap-1.5 text-xs font-medium text-[#2d5fa8] hover:text-[#1B3A6B]
                      border border-[#d6e2f2] rounded-lg px-3 py-1.5 hover:border-[#2d5fa8]">
-                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 4v16m8-8H4" />
-                            </svg>
+                            <lucide-icon name="plus" [size]="12" [strokeWidth]="2" color="currentColor"></lucide-icon>
                             Agregar objetivo del componente
                         </button>
                         <button (click)="addNewObjective()" type="button" class="flex items-center gap-1.5 text-xs font-medium text-[#2d5fa8] hover:text-[#1B3A6B]
                      border border-[#d6e2f2] rounded-lg px-3 py-1.5 hover:border-[#2d5fa8]">
-                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 4v16m8-8H4" />
-                            </svg>
+                            <lucide-icon name="plus" [size]="12" [strokeWidth]="2" color="currentColor"></lucide-icon>
                             Agregar objetivo nuevo
                         </button>
                     </div>

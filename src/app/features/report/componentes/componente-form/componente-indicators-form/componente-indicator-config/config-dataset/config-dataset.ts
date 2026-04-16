@@ -2,11 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DatasetService } from '../../../../../../../features/datasets/services/datasets.service';
+import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-config-dataset',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
   templateUrl: './config-dataset.html'
 })
 export class ConfigDatasetComponent implements OnInit, OnChanges {

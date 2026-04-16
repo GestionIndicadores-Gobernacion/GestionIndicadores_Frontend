@@ -1,10 +1,12 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { LucideAngularModule } from 'lucide-angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DatasetService } from '../../../../features/datasets/services/datasets.service';
 import { GenericoViewComponent } from '../views/generico/view';
 import { PersonasCapacitadasViewComponent } from '../views/personas-capacitadas/view';
 import { PresupuestalViewComponent } from '../views/presupuestal/view';
+import { RedAnimaliaViewComponent } from '../views/red-animalia/view';
 import { DashboardRecordsComponent } from '../visualizations/dashboard-records/dashboard-records';
 
 export interface DashBar { label: string; value: number; pct: number; color: string; }
@@ -24,7 +26,7 @@ export interface DashboardData {
     total: number;
     kpis: DashKpi[];
     sections: DashSection[];
-    dataset_type: 'personas_capacitadas' | 'animales' | 'presupuesto' | 'generico' | 'censo_animal';
+    dataset_type: 'personas_capacitadas' | 'animales' | 'presupuesto' | 'generico' | 'censo_animal' | 'red_animalia';
     project_label?: string;  // ← agregar
 }
 
@@ -33,9 +35,11 @@ export interface DashboardData {
     standalone: true,
     imports: [
         CommonModule,
+        LucideAngularModule,
         PersonasCapacitadasViewComponent,
         GenericoViewComponent,
         PresupuestalViewComponent,
+        RedAnimaliaViewComponent,
         DashboardRecordsComponent,
     ],
     templateUrl: './table-viewer.html',

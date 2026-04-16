@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
 import { AuditLogModel } from '../action-plans/models/audit-log.model';
 import { AuditLogService } from '../action-plans/services/audit-log.service';
 import { UsersService } from '../user/services/users.service';
@@ -17,7 +18,7 @@ interface FilterState {
 @Component({
   selector: 'app-audit-history',
   standalone: true,
-  imports: [CommonModule, FormsModule, Pagination],
+  imports: [CommonModule, FormsModule, Pagination, LucideAngularModule],
   templateUrl: './audit-history.html',
 })
 export class AuditHistoryComponent implements OnInit {
@@ -175,21 +176,21 @@ export class AuditHistoryComponent implements OnInit {
     return map[action] ?? 'bg-zinc-50 text-zinc-700 border-zinc-200';
   }
 
-  actionIconPath(action: string): string {
+  actionIconName(action: string): string {
     const map: Record<string, string> = {
-      created: 'M12 4v16m8-8H4',
-      updated: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z',
-      deleted: 'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16',
+      created: 'plus',
+      updated: 'pencil',
+      deleted: 'trash-2',
     };
-    return map[action] ?? 'M13 16h-1v-4h-1m1-4h.01';
+    return map[action] ?? 'info';
   }
 
-  entityIconPath(entity: string): string {
+  entityIconName(entity: string): string {
     const map: Record<string, string> = {
-      report:      'M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8',
-      action_plan: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4',
+      report: 'file-text',
+      action_plan: 'clipboard-check',
     };
-    return map[entity] ?? 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z';
+    return map[entity] ?? 'info';
   }
 
   entityBadgeClass(entity: string): string {

@@ -12,6 +12,7 @@ import { StrategiesService } from '../../../../features/report/services/strategi
 import { UsersService } from '../../../../features/user/services/users.service';
 import { ActivityFormData, ActionPlanActivityFormComponent, SupportStaffEntry } from './action-plan-activity-form/action-plan-activity-form';
 import { MUNICIPIOS_VALLE } from '../../../../core/data/municipios';
+import { LucideAngularModule } from 'lucide-angular';
 
 const EXCLUDED_EMAILS = new Set([
   'admin@gobernacion.gov.co',
@@ -31,7 +32,7 @@ interface ObjectiveForm {
 @Component({
   selector: 'app-action-plan-create-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ActionPlanActivityFormComponent],
+  imports: [CommonModule, FormsModule, ActionPlanActivityFormComponent, LucideAngularModule],
   templateUrl: './action-plan-create-modal.html',
   styleUrl: './action-plan-create-modal.css',
 })

@@ -17,6 +17,7 @@ import { ReportsKpiCardsComponent } from './components/reports-kpi-cards/reports
 import { ReportsMapComponent } from './components/reports-map/reports-map';
 import { StrategyDashboardComponent } from '../../report/strategy/strategy-list/strategy-dashboard/strategy-dashboard';
 import { ComplianceGoalDashboardComponent } from './components/compliance-goal-dashboard/compliance-goal-dashboard';
+import { LucideAngularModule } from 'lucide-angular';
 
 type RangePreset = 'year' | 'month' | '3months' | '6months' | 'custom';
 
@@ -31,6 +32,7 @@ type RangePreset = 'year' | 'month' | '3months' | '6months' | 'custom';
     ReportsMapComponent,
     StrategyDashboardComponent,
     ComplianceGoalDashboardComponent,
+    LucideAngularModule,
   ],
   templateUrl: './home-dashboard.html',
 })
