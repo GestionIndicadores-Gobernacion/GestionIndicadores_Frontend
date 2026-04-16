@@ -2,11 +2,12 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DatasetService } from '../../../../../../../features/datasets/services/datasets.service';
+import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-config-categorized-group',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, LucideAngularModule],
   templateUrl: './config-categorized-group.html'
 })
 export class ConfigCategorizedGroupComponent implements OnInit {

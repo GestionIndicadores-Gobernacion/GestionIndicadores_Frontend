@@ -6,12 +6,7 @@
             <div class="flex items-center gap-4">
                 <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"
                     style="background: linear-gradient(135deg, #1B3A6B, #2d5fa8);">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="1.8"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
-                        <rect x="9" y="3" width="6" height="4" rx="1" />
-                        <path d="M9 12h6M9 16h4" />
-                    </svg>
+                    <lucide-icon name="history" [size]="20" [strokeWidth]="1.8" color="white"></lucide-icon>
                 </div>
                 <div>
                     <h1 class="text-[20px] font-bold leading-none" style="color: #1B3A6B;">
@@ -58,11 +53,9 @@
                                 class="w-full pl-9 pr-4 py-2 text-[12px] rounded-xl outline-none transition-all"
                                 style="background:#F0F4FA; border:1.5px solid #D6E0F0; color:#1B3A6B;"
                                 onfocus="this.style.borderColor='#1B3A6B'" onblur="this.style.borderColor='#D6E0F0'" />
-                            <svg class="absolute left-3 top-[calc(50%+9px)] -translate-y-1/2 pointer-events-none"
-                                width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4A6A9B"
-                                stroke-width="2" stroke-linecap="round">
-                                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-                            </svg>
+                            <span class="absolute left-3 top-[calc(50%+9px)] -translate-y-1/2 pointer-events-none inline-flex">
+                                <lucide-icon name="search" [size]="13" [strokeWidth]="2" color="#4A6A9B"></lucide-icon>
+                            </span>
                         </div>
 
                         <!-- Módulo -->
@@ -114,9 +107,7 @@
                             class="flex items-center gap-1.5 px-3 py-2 text-[12px] font-semibold rounded-xl border transition"
                             style="border-color:#D6E0F0; color:#4A6A9B; background:white;"
                             onmouseover="this.style.background='#F0F4FA'" onmouseout="this.style.background='white'">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
+                            <lucide-icon name="x" [size]="14" [strokeWidth]="2" color="currentColor"></lucide-icon>
                             Limpiar
                         </button>
 
@@ -134,9 +125,7 @@
                 class="rounded-2xl border py-16 text-center bg-white" style="border-color:#D6E0F0;">
                 <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
                     style="background:#F0F4FA;">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="#4A6A9B" stroke-width="1.8">
-                        <circle cx="12" cy="12" r="9" /><path d="M9 12h6" />
-                    </svg>
+                    <lucide-icon name="inbox" [size]="24" [strokeWidth]="1.8" color="#4A6A9B"></lucide-icon>
                 </div>
                 <p class="text-[13px] font-bold" style="color:#1B3A6B;">Sin registros</p>
                 <p class="text-[12px] mt-1" style="color:#8A9DC0;">No hay acciones que coincidan con los filtros</p>
@@ -168,11 +157,7 @@
                         <div class="flex items-center gap-2.5">
                             <div class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center border"
                                 [ngClass]="actionBadgeClass(log.action)">
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                    stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        [attr.d]="actionIconPath(log.action)" />
-                                </svg>
+                                <lucide-icon [name]="actionIconName(log.action)" [size]="14" [strokeWidth]="2" color="currentColor"></lucide-icon>
                             </div>
                             <div class="min-w-0">
                                 <p class="text-[12px] font-bold truncate" style="color:#1B3A6B;">
@@ -186,13 +171,14 @@
                         </div>
 
                         <!-- Módulo -->
-                        <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md border self-start sm:self-auto"
+                        <span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md border self-start sm:self-auto w-max"
                             [ngClass]="entityBadgeClass(log.entity)">
+                            <lucide-icon [name]="entityIconName(log.entity)" [size]="11" [strokeWidth]="2" color="currentColor"></lucide-icon>
                             {{ entityLabel(log.entity) }}
                         </span>
 
                         <!-- Acción -->
-                        <span class="text-[11px] font-bold px-2 py-0.5 rounded-md border self-start sm:self-auto"
+                        <span class="text-[11px] font-bold px-2 py-0.5 rounded-md border self-start sm:self-auto w-max"
                             [ngClass]="actionBadgeClass(log.action)">
                             {{ actionLabel(log.action) }}
                         </span>

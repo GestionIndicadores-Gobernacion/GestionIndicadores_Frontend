@@ -5,6 +5,7 @@ import { ActionPlanRecurrencePanelComponent, RecurrenceForm } from '../action-pl
 import { RecurrenceFrequency } from '../../../../../features/action-plans/models/action-plan.model';
 import { MUNICIPIOS_VALLE } from '../../../../../core/data/municipios';
 import { UserResponse } from '../../../../../features/user/models/user.model';
+import { LucideAngularModule } from 'lucide-angular';
 
 export interface SupportStaffEntry {
   name: string;
@@ -25,7 +26,7 @@ export interface ActivityFormData {
 @Component({
   selector: 'app-action-plan-activity-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, ActionPlanRecurrencePanelComponent],
+  imports: [CommonModule, FormsModule, ActionPlanRecurrencePanelComponent, LucideAngularModule],
   templateUrl: './action-plan-activity-form.html',
 })
 export class ActionPlanActivityFormComponent {

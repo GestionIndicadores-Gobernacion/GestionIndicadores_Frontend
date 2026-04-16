@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
 
 import { ComponentIndicatorModel } from '../../../../../features/report/models/component.model';
 import { initializeCategorizedGroup, sanitizeEmit } from './helpers/report-indicators.helpers';
@@ -28,6 +29,7 @@ import { DateFieldComponent } from './report-simple-fields/date-field/date-field
   imports: [
     CommonModule,
     FormsModule,
+    LucideAngularModule,
     NumberFieldComponent,
     TextFieldComponent,
     SelectFieldComponent,

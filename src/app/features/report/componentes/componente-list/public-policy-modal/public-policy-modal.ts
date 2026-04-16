@@ -4,13 +4,15 @@ import { PublicPoliciesService } from '../../../../../features/report/services/p
 import { ToastService } from '../../../../../core/services/toast.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-public-policy-modal',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    LucideAngularModule
   ],
   templateUrl: './public-policy-modal.html',
   styleUrl: './public-policy-modal.css',

@@ -11,14 +11,7 @@
                 <div class="w-11 h-11 rounded-2xl flex items-center justify-center shadow-md
         bg-gradient-to-br from-[#1B3A6B] to-[#2d5fa8]">
 
-                    <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                        stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                        <polyline points="14 2 14 8 20 8" />
-                        <line x1="16" y1="13" x2="8" y2="13" />
-                        <line x1="16" y1="17" x2="8" y2="17" />
-                    </svg>
+                    <lucide-icon name="file-text" [size]="20" [strokeWidth]="1.8" color="currentColor"></lucide-icon>
 
                 </div>
 
@@ -48,11 +41,7 @@
         <!-- BANNER: vinculado desde actividad del plan de acción -->
         <div *ngIf="activityPrefill && !activityPrefill.linked_report"
             class="flex items-start gap-3 px-4 py-3 rounded-xl border border-[#BBD6FB] bg-[#EEF5FF] mb-2">
-            <svg class="w-5 h-5 text-[#2d5fa8] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <span class="shrink-0 mt-0.5 inline-flex"><lucide-icon name="info" [size]="20" [strokeWidth]="2" color="#2d5fa8"></lucide-icon></span>
             <div class="flex-1">
                 <p class="text-[12px] font-semibold text-[#1B3A6B]">
                     Reporte vinculado a actividad del plan de acción
@@ -65,11 +54,7 @@
                 <!-- Advertencia si el link ya tiene reporte -->
                 <div *ngIf="activityPrefill.report_by_evidence_link"
                     class="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg border border-[#FED7AA] bg-[#FFF7ED]">
-                    <svg class="w-4 h-4 text-orange-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                        stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                    <span class="shrink-0 inline-flex"><lucide-icon name="circle-alert" [size]="16" [strokeWidth]="2" color="currentColor"></lucide-icon></span>
                     <p class="text-[11px] text-orange-700">
                         El link de evidencia ya está asociado al reporte
                         <strong>#{{ activityPrefill.report_by_evidence_link.id }}</strong>.
@@ -91,11 +76,7 @@
 
                     <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-[#E6EEF9]">
 
-                        <svg class="w-4 h-4 text-[#1B3A6B]" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
-                            <circle cx="12" cy="9" r="2.5" />
-                        </svg>
+                        <lucide-icon name="map-pin" [size]="16" [strokeWidth]="2" color="#1B3A6B"></lucide-icon>
 
                     </div>
 
@@ -116,11 +97,7 @@
                     <div
                         class="flex items-start gap-3 px-4 py-3 rounded-xl border border-[#FDE68A] bg-[#FFFBEB] text-[#92400E]">
 
-                        <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                        <span class="shrink-0 mt-0.5 inline-flex"><lucide-icon name="info" [size]="16" [strokeWidth]="2" color="currentColor"></lucide-icon></span>
 
                         <p class="text-[12px]">
                             <strong>Importante:</strong> Selecciona la fecha exacta de la intervención,

@@ -6,11 +6,7 @@
             <div class="flex items-center gap-4">
                 <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-md"
                     style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="1.8"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path
-                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
+                    <lucide-icon name="chart-column" [size]="20" [strokeWidth]="1.8" color="white"></lucide-icon>
                 </div>
                 <div>
                     <h1 class="text-[20px] font-bold leading-none" style="color:#1B3A6B;">Dashboard de cumplimiento</h1>
@@ -45,12 +41,9 @@
                         <label class="text-[10.5px] font-bold uppercase tracking-[1px]"
                             style="color:#1B3A6B;">Buscar</label>
                         <div class="relative">
-                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" width="13"
-                                height="13" viewBox="0 0 24 24" fill="none" stroke="#8A9DC0" stroke-width="2"
-                                stroke-linecap="round">
-                                <circle cx="11" cy="11" r="8" />
-                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                            </svg>
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none inline-flex">
+                                <lucide-icon name="search" [size]="13" [strokeWidth]="2" color="#8A9DC0"></lucide-icon>
+                            </span>
                             <input type="text" [(ngModel)]="search" (input)="applyFilters()"
                                 placeholder="Buscar por responsable o dueño del plan..."
                                 class="text-[12px] rounded-xl pl-9 pr-4 py-2 outline-none w-full"

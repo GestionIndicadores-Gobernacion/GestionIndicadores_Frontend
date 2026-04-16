@@ -14,6 +14,7 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { StrategyModel } from '../../../../features/report/models/strategy.model';
 import { PublicPolicyModel } from '../../../../features/report/models/component.model';
 import { ComponenteIndicatorsFormComponent } from './componente-indicators-form/componente-indicators-form';
+import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-component-form',
@@ -23,7 +24,8 @@ import { ComponenteIndicatorsFormComponent } from './componente-indicators-form/
     ReactiveFormsModule,
     RouterModule,
     ComponenteIndicatorsFormComponent,
-    FormsModule
+    FormsModule,
+    LucideAngularModule
   ],
   templateUrl: './componente-form.html',
   styleUrl: './componente-form.css'

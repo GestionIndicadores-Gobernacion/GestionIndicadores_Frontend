@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
 import { StrategiesService } from '../../../../../features/report/services/strategies.service';
 import { StrategyModel } from '../../../../../features/report/models/strategy.model';
 
@@ -25,7 +26,7 @@ export interface ComponentGoal {
 @Component({
   selector: 'app-compliance-goal-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule],
   templateUrl: './compliance-goal-dashboard.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

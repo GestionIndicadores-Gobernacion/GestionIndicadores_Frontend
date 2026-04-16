@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
 
 import { Dataset } from '../../../../../features/datasets/models/dataset.model';
 import { DatasetService } from '../../../../../features/datasets/services/datasets.service';
@@ -16,7 +17,7 @@ import {
 @Component({
   selector: 'app-strategy-metrics',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
   templateUrl: './strategy-metrics.html',
   styleUrl: './strategy-metrics.css',
 })

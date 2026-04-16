@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { LucideAngularModule } from 'lucide-angular';
 
 export interface FileValue {
   file_name: string;
@@ -10,7 +11,7 @@ export interface FileValue {
 @Component({
   selector: 'app-file-attachment-field',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LucideAngularModule],
   templateUrl: './file-attachment-field.html'
 })
 export class FileAttachmentFieldComponent {

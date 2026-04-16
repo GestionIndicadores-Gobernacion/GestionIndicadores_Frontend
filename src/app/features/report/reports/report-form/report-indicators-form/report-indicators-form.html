@@ -12,12 +12,7 @@
             <div
                 class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-gradient-to-br from-[#2d5fa8] to-[#1B3A6B] shadow-sm">
 
-                <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z" />
-                    <path d="M9 19V9a2 2 0 012-2h2a2 2 0 012 2v10" />
-                    <path d="M15 19a2 2 0 002 2h2a2 2 0 002-2V5" />
-                </svg>
+                <lucide-icon name="chart-column" [size]="20" [strokeWidth]="2" color="currentColor"></lucide-icon>
 
             </div>
 
@@ -37,11 +32,7 @@
             class="mx-6 mt-5 mb-4 flex items-start gap-3 px-4 py-3 rounded-xl border border-[#CFE0F5] bg-gradient-to-r from-[#F2F6FC] to-[#EEF4FB]">
 
             <div class="w-7 h-7 rounded-lg flex items-center justify-center bg-[#E6EEF9] shrink-0">
-                <svg class="w-4 h-4 text-[#2d5fa8]" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                    stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10" />
-                </svg>
+                <lucide-icon name="chart-column" [size]="16" [strokeWidth]="2" color="#2d5fa8"></lucide-icon>
             </div>
 
             <p class="text-[12px] text-[#35507F] leading-snug">
@@ -182,11 +173,7 @@
                                        bg-gradient-to-r from-[#1B3A6B] to-[#2d5fa8]
                                        hover:opacity-95 transition cursor-pointer shadow">
 
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5V4H2v16h5" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 9h6v11H9z" />
-                                </svg>
+                                <lucide-icon name="table" [size]="16" [strokeWidth]="2" color="currentColor"></lucide-icon>
 
                                 <span>
                                     {{ values[ind.id!]?.actors?.length > 0

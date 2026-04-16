@@ -6,12 +6,8 @@
       <div class="flex items-center gap-4">
         <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"
           style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);">
-          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="1.8" stroke-linecap="round"
-            stroke-linejoin="round">
-            <path d="M17 21v-2a4 4 0 00-3-3.87" />
-            <path d="M7 21v-2a4 4 0 013-3.87" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
+          <lucide-icon [name]="isEdit ? 'user-cog' : 'user-plus'" [size]="20" [strokeWidth]="1.8"
+            color="white"></lucide-icon>
         </div>
         <div>
           <h1 class="text-[20px] font-bold leading-none" style="color:#1B3A6B;">
@@ -47,11 +43,7 @@
         <div class="rounded-b-xl overflow-hidden border" style="border-color:#D6E0F0;background:white;">
           <div class="px-6 py-4 border-b flex items-center gap-3" style="border-color:#D6E0F0;background:#F8FAFD;">
             <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#D6E4F7;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="2.2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="7" r="4" />
-                <path d="M5.5 21a6.5 6.5 0 0113 0" />
-              </svg>
+              <lucide-icon name="user" [size]="14" [strokeWidth]="2.2" color="#1B3A6B"></lucide-icon>
             </div>
             <span class="text-[11px] font-bold uppercase tracking-[1px]" style="color:#1B3A6B;">Información
               personal</span>
@@ -155,13 +147,7 @@
             style="border-color:#D6E0F0;background:#F8FAFD;">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#D6E4F7;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="2.2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="3" width="7" height="7" rx="1" />
-                  <rect x="14" y="3" width="7" height="7" rx="1" />
-                  <rect x="3" y="14" width="7" height="7" rx="1" />
-                  <rect x="14" y="14" width="7" height="7" rx="1" />
-                </svg>
+                <lucide-icon name="grid-2x2" [size]="14" [strokeWidth]="2.2" color="#1B3A6B"></lucide-icon>
               </div>
               <div>
                 <span class="text-[11px] font-bold uppercase tracking-[1px]" style="color:#1B3A6B;">
@@ -199,10 +185,7 @@
                   class="w-4 h-4 rounded flex items-center justify-center shrink-0 transition-all duration-150 cursor-pointer"
                   [style.background]="isComponentSelected(comp.id) ? '#1B3A6B' : 'white'"
                   [style.border]="isComponentSelected(comp.id) ? '2px solid #1B3A6B' : '2px solid #B3CCE8'">
-                  <svg *ngIf="isComponentSelected(comp.id)" width="9" height="9" viewBox="0 0 12 12" fill="none">
-                    <polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round"
-                      stroke-linejoin="round" />
-                  </svg>
+                  <lucide-icon *ngIf="isComponentSelected(comp.id)" name="check" [size]="10" [strokeWidth]="2.5" color="white"></lucide-icon>
                 </div>
 
                 <span (click)="toggleComponent(comp.id)" class="text-[12px] font-medium leading-snug select-none"
@@ -220,12 +203,7 @@
       <!-- Mensaje admin -->
       <div *ngIf="selectedRoleIsAdmin" class="flex items-center gap-3 px-4 py-3 rounded-xl border"
         style="background:#F0F9FF;border-color:#BAE6FD;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="8" x2="12" y2="12" />
-          <line x1="12" y1="16" x2="12.01" y2="16" />
-        </svg>
+        <lucide-icon name="info" [size]="16" [strokeWidth]="2" color="#0284C7"></lucide-icon>
         <p class="text-[12px]" style="color:#0369A1;">
           Los administradores y monitores tienen acceso a <strong>todos los componentes</strong> automáticamente.
         </p>

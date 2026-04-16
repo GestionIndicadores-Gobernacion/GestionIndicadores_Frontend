@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';  // ← agregar ActivatedRoute, Router
+import { LucideAngularModule } from 'lucide-angular';
 import {
   ActionPlanActivityModel, ActionPlanFilters, ActionPlanModel,
   ActionPlanObjectiveModel, ActionPlanStatus
@@ -55,6 +56,7 @@ interface ModalState {
     ActionPlanCalendarGridComponent,
     ActionPlanFiltersComponent,
     ActionPlanCalendarNavComponent,
+    LucideAngularModule,
   ],
   templateUrl: './action-plan-calendar.html',
   styleUrl: './action-plan-calendar.css',

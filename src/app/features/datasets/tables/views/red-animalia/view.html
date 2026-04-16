@@ -1,0 +1,398 @@
+<!-- LOADING -->
+<div *ngIf="loading()" class="flex items-center justify-center py-32">
+    <div class="w-8 h-8 rounded-full animate-spin" style="border:3px solid #C8E6C9;border-top-color:#2E7D32;"></div>
+    <span class="ml-3 text-sm" style="color:#666;">Cargando datos...</span>
+</div>
+
+<div *ngIf="!loading()" class="max-w-[1440px] mx-auto px-4 sm:px-6 py-5 space-y-4">
+
+    <!-- ═══════ KPI CARDS ═══════ -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#2E7D32;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="users" [size]="13" color="#2E7D32" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Miembros</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().total | number }}</p>
+        </div>
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#1565C0;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="map-pin" [size]="13" color="#1565C0" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Municipios</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().municipios | number }}</p>
+        </div>
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#F9A825;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="heart" [size]="13" color="#F9A825" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Animales</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().totalAnimales | number }}</p>
+        </div>
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#7B1FA2;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="house" [size]="13" color="#7B1FA2" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Capacidad</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().capacidad | number }}</p>
+        </div>
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#E65100;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="smile" [size]="13" color="#E65100" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Caballos</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().caballos | number }}</p>
+        </div>
+    </div>
+
+    <!-- ═══════ FILTERS + MUNICIPIO CHART ═══════ -->
+    <div class="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)] gap-4">
+
+        <!-- FILTERS PANEL -->
+        <div class="rounded-xl p-3.5 space-y-2.5" style="background:white;border:1px solid #E2E8F0;">
+            <div class="flex items-center gap-2 pb-2 border-b" style="border-color:#E2E8F0;">
+                <lucide-icon name="list-filter" [size]="13" color="#2E7D32" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[11px] font-bold uppercase tracking-wider" style="color:#2E7D32;">Filtros</span>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-semibold block mb-0.5" style="color:#475569;">Municipio</label>
+                <select [ngModel]="filterMunicipio()"
+                    (ngModelChange)="filterMunicipio.set($event); applyFilters()"
+                    class="w-full text-[11px] rounded-lg px-2.5 py-1.5 outline-none"
+                    style="border:1px solid #E2E8F0;color:#333;background:#FAFAFA;">
+                    <option value="">Todos</option>
+                    <option *ngFor="let m of municipios()" [value]="m">{{ m }}</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-semibold block mb-0.5" style="color:#475569;">Tipo de
+                    Vinculacion</label>
+                <select [ngModel]="filterVinculacion()"
+                    (ngModelChange)="filterVinculacion.set($event); applyFilters()"
+                    class="w-full text-[11px] rounded-lg px-2.5 py-1.5 outline-none"
+                    style="border:1px solid #E2E8F0;color:#333;background:#FAFAFA;">
+                    <option value="">Todos</option>
+                    <option *ngFor="let v of vinculacionesNorm()" [value]="v">{{ v }}</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-semibold block mb-0.5" style="color:#475569;">Sexo</label>
+                <select [ngModel]="filterSexo()" (ngModelChange)="filterSexo.set($event); applyFilters()"
+                    class="w-full text-[11px] rounded-lg px-2.5 py-1.5 outline-none"
+                    style="border:1px solid #E2E8F0;color:#333;background:#FAFAFA;">
+                    <option value="">Todos</option>
+                    <option *ngFor="let s of sexos()" [value]="s">{{ s }}</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-semibold block mb-0.5" style="color:#475569;">Rango de Edad</label>
+                <div class="flex items-center gap-1.5">
+                    <input type="number" placeholder="Min" [ngModel]="filterEdadMin()"
+                        (ngModelChange)="filterEdadMin.set($event); applyFilters()"
+                        class="w-1/2 text-[11px] rounded-lg px-2.5 py-1.5 outline-none"
+                        style="border:1px solid #E2E8F0;color:#333;background:#FAFAFA;" />
+                    <span class="text-[10px]" style="color:#94A3B8;">-</span>
+                    <input type="number" placeholder="Max" [ngModel]="filterEdadMax()"
+                        (ngModelChange)="filterEdadMax.set($event); applyFilters()"
+                        class="w-1/2 text-[11px] rounded-lg px-2.5 py-1.5 outline-none"
+                        style="border:1px solid #E2E8F0;color:#333;background:#FAFAFA;" />
+                </div>
+            </div>
+
+            <button (click)="clearFilters()"
+                class="w-full text-[10px] font-bold py-1.5 rounded-lg cursor-pointer transition-all"
+                style="background:#F1F5F9;color:#64748B;border:1px solid #E2E8F0;"
+                onmouseover="this.style.background='#E2E8F0'" onmouseout="this.style.background='#F1F5F9'">
+                Limpiar filtros
+            </button>
+        </div>
+
+        <!-- MUNICIPIO BAR CHART -->
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Miembros por Municipio</p>
+                <p class="text-[10px]" style="color:#94A3B8;">{{ kpis().municipios }} municipios con presencia</p>
+            </div>
+            <div class="p-3" style="position:relative;height:280px;">
+                <canvas id="cvMunicipio"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ ROW 2: Sexo + Edad + Vinculacion + Discapacidad ═══════ -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+
+        <!-- SEXO -->
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Sexo de Miembros</p>
+            </div>
+            <div class="p-3">
+                <div class="flex flex-wrap gap-x-3 gap-y-1 mb-2">
+                    <span *ngFor="let s of sexoData()" class="flex items-center gap-1 text-[10px]"
+                        style="color:#475569;">
+                        <span class="w-2 h-2 rounded-sm shrink-0 inline-block" [style.background]="s.color"></span>
+                        {{ s.label }} {{ s.pct }}%
+                    </span>
+                </div>
+                <div style="position:relative;height:160px;">
+                    <canvas id="cvSexo"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- EDAD -->
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Edad de Miembros</p>
+            </div>
+            <div class="p-3" style="position:relative;height:195px;">
+                <canvas id="cvEdad"></canvas>
+            </div>
+        </div>
+
+        <!-- TIPO VINCULACION (ranking list, no chart) -->
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Tipo de Vinculacion</p>
+            </div>
+            <div class="p-3 space-y-1.5">
+                <div *ngFor="let v of vinculacionData()" class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-sm shrink-0" [style.background]="v.color"></span>
+                    <span class="text-[11px] flex-1 truncate" style="color:#333;">{{ v.label }}</span>
+                    <span class="text-[10px] font-bold shrink-0 px-1.5 py-0.5 rounded"
+                        style="background:#F1F5F9;color:#475569;">
+                        {{ v.value }}
+                    </span>
+                    <span class="text-[10px] shrink-0" style="color:#94A3B8;">{{ v.pct }}%</span>
+                </div>
+                <!-- Mini bar under each item -->
+                <div *ngFor="let v of vinculacionData()" class="hidden"></div>
+            </div>
+        </div>
+
+        <!-- DISCAPACIDAD -->
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Discapacidad</p>
+            </div>
+            <div class="p-3">
+                <div class="flex flex-wrap gap-x-3 gap-y-1 mb-2">
+                    <span *ngFor="let s of discapacidadData()" class="flex items-center gap-1 text-[10px]"
+                        style="color:#475569;">
+                        <span class="w-2 h-2 rounded-sm shrink-0 inline-block" [style.background]="s.color"></span>
+                        {{ s.label }}
+                        {{ (kpis().total > 0 ? s.value / kpis().total * 100 : 0) | number:'1.0-0' }}%
+                    </span>
+                </div>
+                <div style="position:relative;height:160px;">
+                    <canvas id="cvDiscapacidad"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ ROW 3: Animales + Ranking + Capacidad + Programas ═══════ -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+
+        <!-- ANIMALES POR TIPO -->
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Animales por Tipo</p>
+            </div>
+            <div class="p-3" style="position:relative;height:170px;">
+                <canvas id="cvAnimales"></canvas>
+            </div>
+        </div>
+
+        <!-- RANKING ORGANIZACIONES -->
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Ranking por Organizacion</p>
+            </div>
+            <div class="p-3 space-y-1 overflow-y-auto" style="max-height:195px;">
+                <div *ngFor="let org of rankingData(); let i = index"
+                    class="flex items-center justify-between px-2.5 py-1.5 rounded-lg"
+                    [style.background]="i % 2 === 0 ? '#F8FAF8' : 'white'">
+                    <span class="text-[11px] font-medium truncate" style="color:#333;max-width:70%;">
+                        {{ org.label }}
+                    </span>
+                    <span class="text-[12px] font-bold shrink-0" style="color:#2E7D32;">
+                        {{ org.value | number }}
+                    </span>
+                </div>
+                <p *ngIf="rankingData().length === 0" class="text-[11px] text-center py-3" style="color:#94A3B8;">
+                    Sin datos</p>
+            </div>
+        </div>
+
+        <!-- CAPACIDAD DE ALBERGUE -->
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Capacidad de Albergue</p>
+            </div>
+            <div class="p-3 space-y-3">
+                <div>
+                    <p class="text-[10px] font-bold uppercase tracking-wider mb-1" style="color:#94A3B8;">Capacidad
+                        Total</p>
+                    <div class="flex items-center gap-2">
+                        <div class="flex-1 rounded-full" style="background:#E8F5E9;height:8px;">
+                            <div class="rounded-full h-full" style="background:#2E7D32;width:100%;"></div>
+                        </div>
+                        <span class="text-[13px] font-bold shrink-0"
+                            style="color:#2E7D32;">{{ capacidadData().capacidad | number }}</span>
+                    </div>
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold uppercase tracking-wider mb-1" style="color:#94A3B8;">Animales
+                        Actuales</p>
+                    <div class="flex items-center gap-2">
+                        <div class="flex-1 rounded-full" style="background:#E3F2FD;height:8px;">
+                            <div class="rounded-full h-full" style="background:#1565C0;"
+                                [style.width]="(capacidadData().capacidad > 0 ? capacidadData().animalesActuales / capacidadData().capacidad * 100 : 0) + '%'">
+                            </div>
+                        </div>
+                        <span class="text-[13px] font-bold shrink-0"
+                            style="color:#1565C0;">{{ capacidadData().animalesActuales | number }}</span>
+                    </div>
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold uppercase tracking-wider mb-1" style="color:#94A3B8;">
+                        Disponibilidad</p>
+                    <div class="flex items-center gap-2">
+                        <div class="flex-1 rounded-full" style="background:#FFF3E0;height:8px;">
+                            <div class="rounded-full h-full" style="background:#F9A825;"
+                                [style.width]="(capacidadData().capacidad > 0 ? capacidadData().disponibilidad / capacidadData().capacidad * 100 : 0) + '%'">
+                            </div>
+                        </div>
+                        <span class="text-[13px] font-bold shrink-0"
+                            style="color:#F9A825;">{{ capacidadData().disponibilidad | number }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PARTICIPACION PROGRAMAS -->
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Participacion en Programas</p>
+            </div>
+            <div class="p-4">
+                <dashboard-completeness [bars]="programasData()" />
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ ROW 4: Necesidades + Tabla organizaciones ═══════ -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+        <!-- NECESIDADES PRINCIPALES (horizontal bar ranking) -->
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Necesidades Principales</p>
+                <p class="text-[10px]" style="color:#94A3B8;">Necesidades reportadas por albergues y hogares de paso</p>
+            </div>
+            <div class="p-3 space-y-1.5">
+                <div *ngFor="let n of necesidadesData()" class="space-y-0.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-medium" style="color:#333;">{{ n.label }}</span>
+                        <span class="text-[10px] font-bold" style="color:#475569;">{{ n.value }}</span>
+                    </div>
+                    <div class="w-full rounded-full" style="background:#F1F5F9;height:6px;">
+                        <div class="rounded-full h-full transition-all" [style.width]="n.pct + '%'"
+                            [style.background]="n.color"></div>
+                    </div>
+                </div>
+                <p *ngIf="necesidadesData().length === 0" class="text-[11px] text-center py-4"
+                    style="color:#94A3B8;">
+                    Sin datos de necesidades
+                </p>
+            </div>
+        </div>
+
+        <!-- TABLA ORGANIZACIONES -->
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Tabla de Organizaciones</p>
+                <p class="text-[10px]" style="color:#94A3B8;">
+                    {{ tablaOrgsData().length }} organizaciones con animales registrados
+                </p>
+            </div>
+            <div class="overflow-x-auto" style="max-height:300px;">
+                <table *ngIf="tablaOrgsData().length > 0" class="w-full">
+                    <thead class="sticky top-0">
+                        <tr style="background:#F8FAF8;">
+                            <th class="px-2.5 py-2 text-left text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Nombre</th>
+                            <th class="px-2.5 py-2 text-left text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Municipio</th>
+                            <th class="px-2.5 py-2 text-left text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Tipo</th>
+                            <th class="px-2.5 py-2 text-center text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Perros</th>
+                            <th class="px-2.5 py-2 text-center text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Gatos</th>
+                            <th class="px-2.5 py-2 text-center text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Cap.</th>
+                            <th class="px-2.5 py-2 text-center text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Rescate</th>
+                            <th class="px-2.5 py-2 text-center text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Adopcion</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let org of tablaOrgsData(); let i = index"
+                            class="transition-colors hover:bg-[#F0FFF0]"
+                            [style.background]="i % 2 === 0 ? 'white' : '#FAFCFA'"
+                            style="border-bottom:1px solid #F1F5F9;">
+                            <td class="px-2.5 py-2 text-[10px] font-semibold"
+                                style="color:#1B5E20;max-width:160px;">
+                                <span class="truncate block">{{ org.name }}</span>
+                            </td>
+                            <td class="px-2.5 py-2 text-[10px]" style="color:#475569;">{{ org.municipio }}</td>
+                            <td class="px-2.5 py-2 text-[10px]" style="color:#475569;">{{ org.tipo }}</td>
+                            <td class="px-2.5 py-2 text-[10px] text-center font-semibold" style="color:#333;">
+                                {{ org.perros }}</td>
+                            <td class="px-2.5 py-2 text-[10px] text-center font-semibold" style="color:#333;">
+                                {{ org.gatos }}</td>
+                            <td class="px-2.5 py-2 text-[10px] text-center font-semibold" style="color:#333;">
+                                {{ org.capacidad }}</td>
+                            <td class="px-2.5 py-2 text-center">
+                                <span class="text-[9px] px-1.5 py-0.5 rounded-full font-bold"
+                                    [style.background]="isYesValue(org.rescate) ? '#E8F5E9' : '#FEE2E2'"
+                                    [style.color]="isYesValue(org.rescate) ? '#2E7D32' : '#DC2626'">
+                                    {{ isYesValue(org.rescate) ? 'Si' : 'No' }}
+                                </span>
+                            </td>
+                            <td class="px-2.5 py-2 text-center">
+                                <span class="text-[9px] px-1.5 py-0.5 rounded-full font-bold"
+                                    [style.background]="isYesValue(org.adopcion) ? '#E8F5E9' : '#FEE2E2'"
+                                    [style.color]="isYesValue(org.adopcion) ? '#2E7D32' : '#DC2626'">
+                                    {{ isYesValue(org.adopcion) ? 'Si' : 'No' }}
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p *ngIf="tablaOrgsData().length === 0" class="text-[11px] text-center py-6" style="color:#94A3B8;">
+                    Sin datos de organizaciones
+                </p>
+            </div>
+        </div>
+    </div>
+
+</div>

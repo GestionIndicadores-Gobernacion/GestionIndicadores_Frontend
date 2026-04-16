@@ -3,10 +3,7 @@
     <!-- BADGE PROYECTO (solo si existe project_label) -->
     <div *ngIf="data.project_label" class="flex items-center gap-2 px-4 py-2.5 rounded-xl"
         style="background:#EFF6FF;border:1px solid #BFDBFE;">
-        <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="#2563EB" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round"
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
+        <lucide-icon name="file-text" [size]="14" color="#2563EB" [strokeWidth]="2" class="shrink-0"></lucide-icon>
         <span class="text-[11px] font-bold uppercase tracking-wider" style="color:#1D4ED8;">Proyecto analizado</span>
         <span class="text-[12px] font-medium truncate" style="color:#1E40AF;">{{ data.project_label }}</span>
     </div>
@@ -34,10 +31,7 @@
             <div class="flex items-center gap-3 px-5 py-3 border-b" style="border-color:#F1F5F9;">
                 <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
                     [style.background]="sectionIconBg(section.type)">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6m4 0h6" />
-                    </svg>
+                    <lucide-icon name="chart-column" [size]="14" color="white" [strokeWidth]="2"></lucide-icon>
                 </div>
                 <div class="min-w-0">
                     <p class="text-[13px] font-bold truncate" style="color:#0F172A;">{{ section.title }}</p>

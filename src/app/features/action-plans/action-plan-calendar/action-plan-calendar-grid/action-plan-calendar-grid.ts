@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { LucideAngularModule } from 'lucide-angular';
 import {
   ActionPlanActivityModel, ActionPlanModel,
   ActionPlanObjectiveModel, ActionPlanStatus
@@ -9,7 +10,7 @@ import { CalendarDay, FlatActivity } from '../action-plan-calendar';
 @Component({
   selector: 'app-action-plan-calendar-grid',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LucideAngularModule],
   templateUrl: './action-plan-calendar-grid.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

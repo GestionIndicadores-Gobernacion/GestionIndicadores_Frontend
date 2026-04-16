@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { LucideAngularModule } from 'lucide-angular';
 import {
   ActionPlanActivityModel,
   ActionPlanModel,
@@ -21,7 +22,7 @@ type SortField = 'date' | 'status' | 'name';
 @Component({
   selector: 'app-action-plan-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, Pagination],
+  imports: [CommonModule, FormsModule, Pagination, LucideAngularModule],
   templateUrl: './action-plan-list.html',
   styleUrl: './action-plan-list.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

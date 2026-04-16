@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, Chang
 import { ComponentIndicatorModel } from '../../../../../../../features/report/models/component.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
 
 interface DatasetOption {
   id: number;
@@ -11,7 +12,7 @@ interface DatasetOption {
 @Component({
   selector: 'app-dataset-select-field',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule],
   templateUrl: './dataset-select-field.html'
 })
 export class DatasetSelectFieldComponent implements OnChanges {

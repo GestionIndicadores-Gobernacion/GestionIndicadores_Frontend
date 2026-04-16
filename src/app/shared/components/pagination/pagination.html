@@ -1,13 +1,11 @@
 <div *ngIf="totalPages > 1" class="flex items-center justify-center gap-3 py-4">
 
     <!-- Previous Button -->
-    <button (click)="prev()" [disabled]="currentPage === 1" class="inline-flex items-center justify-center w-8 h-8 text-sm font-medium 
+    <button (click)="prev()" [disabled]="currentPage === 1" class="inline-flex items-center justify-center w-8 h-8 text-sm font-medium
            text-zinc-700 bg-white border border-zinc-200 rounded-lg
            hover:bg-zinc-50 hover:border-zinc-300 transition-colors duration-150
            disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer" title="Página anterior">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
+        <lucide-icon name="chevron-left" [size]="16" [strokeWidth]="2" color="currentColor"></lucide-icon>
     </button>
 
     <!-- Page Info -->
@@ -17,13 +15,11 @@
     </span>
 
     <!-- Next Button -->
-    <button (click)="next()" [disabled]="currentPage === totalPages" class="inline-flex items-center justify-center w-8 h-8 text-sm font-medium 
+    <button (click)="next()" [disabled]="currentPage === totalPages" class="inline-flex items-center justify-center w-8 h-8 text-sm font-medium
            text-zinc-700 bg-white border border-zinc-200 rounded-lg
            hover:bg-zinc-50 hover:border-zinc-300 transition-colors duration-150
            disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer" title="Página siguiente">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-        </svg>
+        <lucide-icon name="chevron-right" [size]="16" [strokeWidth]="2" color="currentColor"></lucide-icon>
     </button>
 
 </div>

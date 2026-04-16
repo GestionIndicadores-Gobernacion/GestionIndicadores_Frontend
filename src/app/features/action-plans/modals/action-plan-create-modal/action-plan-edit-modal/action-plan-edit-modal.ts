@@ -5,11 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { ActionPlanModel, ActionPlanObjectiveModel, ActionPlanActivityModel, RecurrenceFrequency, ActionPlanActivityEditRequest } from '../../../../../features/action-plans/models/action-plan.model';
 import { ActionPlanService } from '../../../../../features/action-plans/services/action-plan.service';
 import { ActionPlanActivityFormComponent, ActivityFormData } from '../action-plan-activity-form/action-plan-activity-form';
+import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-action-plan-edit-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ActionPlanActivityFormComponent],
+  imports: [CommonModule, FormsModule, ActionPlanActivityFormComponent, LucideAngularModule],
   templateUrl: './action-plan-edit-modal.html',
 })
 export class ActionPlanEditModalComponent implements OnInit {

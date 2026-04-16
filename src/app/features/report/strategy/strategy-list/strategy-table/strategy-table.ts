@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 
 import { StrategyModel } from '../../../../../features/report/models/strategy.model';
 import { Pagination } from '../../../../../shared/components/pagination/pagination';
+import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-strategy-table',
   standalone: true,
-  imports: [CommonModule, FormsModule, Pagination],
+  imports: [CommonModule, FormsModule, Pagination, LucideAngularModule],
   templateUrl: './strategy-table.html',
 })
 export class StrategyTableComponent implements OnChanges {

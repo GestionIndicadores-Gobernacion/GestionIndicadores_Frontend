@@ -2,62 +2,36 @@
 
   <app-dashboard-card title="Asistencias" [value]="kpis.asistenciasTecnicas"
     description="Asistencias técnicas realizadas" color="blue">
-    <svg icon class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
-      <path d="M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2" />
-    </svg>
+    <span icon class="inline-flex"><lucide-icon name="clipboard-list" [size]="20" [strokeWidth]="2"></lucide-icon></span>
   </app-dashboard-card>
 
   <app-dashboard-card title="Denuncias" [value]="kpis.denunciasReportadas" description="Denuncias reportadas"
     color="red">
-    <svg icon class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M12 9v2" />
-      <path d="M12 17h.01" />
-      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-    </svg>
+    <span icon class="inline-flex"><lucide-icon name="triangle-alert" [size]="20" [strokeWidth]="2"></lucide-icon></span>
   </app-dashboard-card>
 
   <app-dashboard-card title="Personas" [value]="kpis.personasCapacitadas" description="Personas capacitadas"
     color="indigo">
-    <svg icon class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="12" cy="7" r="4" />
-      <path d="M17 20H7" />
-      <path d="M17 20v-2a4 4 0 0 0-8 0v2" />
-    </svg>
+    <span icon class="inline-flex"><lucide-icon name="user" [size]="20" [strokeWidth]="2"></lucide-icon></span>
   </app-dashboard-card>
 
   <app-dashboard-card title="Niños" [value]="kpis.ninosSensibilizados" description="Niños sensibilizados" color="green">
-    <svg icon class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M9 10h.01" />
-      <path d="M15 10h.01" />
-      <path d="M8 15c1.5-1 6.5-1 8 0" />
-    </svg>
+    <span icon class="inline-flex"><lucide-icon name="smile" [size]="20" [strokeWidth]="2"></lucide-icon></span>
   </app-dashboard-card>
 
   <app-dashboard-card title="Animales" [value]="kpis.animalesEsterilizados" description="Animales esterilizados"
     color="orange">
-    <svg icon class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M4.318 6.318a4.5 4.5 0 0 0 0 6.364L12 20.364l7.682-7.682" />
-      <path d="M12 7.636l-1.318-1.318a4.5 4.5 0 0 0-6.364 0" />
-    </svg>
+    <span icon class="inline-flex"><lucide-icon name="heart" [size]="20" [strokeWidth]="2"></lucide-icon></span>
   </app-dashboard-card>
 
   <app-dashboard-card title="Espacios" [value]="kpis.refugiosImpactados" description="Refugios impactados: Fundaciones - Albergues"
     color="purple">
-    <svg icon class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M3 12l2-2 7-7 7 7" />
-      <path d="M5 10v10h14V10" />
-    </svg>
+    <span icon class="inline-flex"><lucide-icon name="house" [size]="20" [strokeWidth]="2"></lucide-icon></span>
   </app-dashboard-card>
 
   <app-dashboard-card title="Emprendedores" [value]="kpis.emprendedoresCofinanciados"
     description="Emprendedores cofinanciados" color="cyan">
-    <svg icon class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 8c-1.657 0-3 .895-3 2" />
-      <path d="M12 16c1.657 0 3-.895 3-2" />
-    </svg>
+    <span icon class="inline-flex"><lucide-icon name="globe" [size]="20" [strokeWidth]="2"></lucide-icon></span>
   </app-dashboard-card>
 
 </div>

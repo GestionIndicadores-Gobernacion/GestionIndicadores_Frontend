@@ -5,11 +5,7 @@
       <div class="flex items-center gap-4">
         <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"
           style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);">
-          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="1.8" stroke-linecap="round"
-            stroke-linejoin="round">
-            <path d="M3 3v18h18" />
-            <path d="M7 15l4-4 3 3 4-6" />
-          </svg>
+          <lucide-icon name="trending-up" [size]="20" [strokeWidth]="1.8" color="white"></lucide-icon>
         </div>
         <div>
           <h1 class="text-[20px] font-bold leading-none" style="color:#1B3A6B;">Estrategias</h1>
@@ -23,10 +19,7 @@
         class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-bold shadow-sm cursor-pointer"
         style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);color:white;"
         onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"
-          stroke-linecap="round">
-          <path d="M12 4v16m8-8H4" />
-        </svg>
+        <lucide-icon name="plus" [size]="16" [strokeWidth]="2.2" color="currentColor"></lucide-icon>
         Nueva estrategia
       </button>
 
@@ -44,11 +37,7 @@
       <div *ngIf="strategies.length === 0" class="rounded-2xl p-16 text-center border"
         style="background:white;border-color:#D6E0F0;">
         <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5" style="background:#F0F4FA;">
-          <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" style="color:#4A6A9B;"
-            stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 3v18h18" />
-            <path d="M7 15l4-4 3 3 4-6" />
-          </svg>
+          <lucide-icon name="trending-up" [size]="28" [strokeWidth]="1.5" color="#4A6A9B"></lucide-icon>
         </div>
         <h3 class="text-sm font-bold" style="color:#1B3A6B;">Sin estrategias registradas</h3>
         <p class="text-xs mt-1 max-w-xs mx-auto leading-relaxed" style="color:#4A6A9B;">
