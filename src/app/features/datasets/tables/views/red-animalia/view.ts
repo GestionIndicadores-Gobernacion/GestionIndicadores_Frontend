@@ -8,6 +8,46 @@ import { DashboardCompletenessComponent } from '../../visualizations/dashboard-c
 
 interface RecRow { id: number; data: Record<string, any>; }
 
+interface MemberRow {
+    id: number;
+    nombre: string;
+    initials: string;
+    municipio: string;
+    vinculacion: string;
+    vinculacionColor: string;
+    sexo: string;
+    edad: number;
+    escolaridad: string;
+    discapacidad: string;
+    saludMental: string;
+    telefono: string;
+    otroTelefono: string;
+    email: string;
+    direccion: string;
+    barrio: string;
+    organizacion: string;
+    perros: number;
+    gatos: number;
+    caballos: number;
+    otros: string;
+    capacidad: number;
+    area: string;
+    necesidad: string;
+    visitaGob: string;
+    adopcion: string;
+    emprendimiento: string;
+    tipoEmprendimiento: string;
+    fuenteIngreso: string;
+    donaciones: string;
+    victimaViolencia: string;
+    rescates: string;
+    apoyoActividades: string;
+    antecedentes: string;
+    capacitaciones: number;
+    jornadas: number;
+    totalAnimales: number;
+}
+
 @Component({
     selector: 'app-red-animalia-view',
     standalone: true,
@@ -25,6 +65,12 @@ export class RedAnimaliaViewComponent implements OnInit, OnDestroy {
     filterSexo = signal('');
     filterEdadMin = signal<number | null>(null);
     filterEdadMax = signal<number | null>(null);
+
+    // Members panel
+    memberSearch = signal('');
+    memberPage = signal(1);
+    expandedMemberId = signal<number | null>(null);
+    readonly memberPageSize = 15;
 
     private charts: Record<string, any> = {};
     private ChartJS: any = null;
@@ -383,6 +429,99 @@ export class RedAnimaliaViewComponent implements OnInit, OnDestroy {
             .slice(0, 12)
             .map(([label, value], i) => ({ label, value, color: colors[i % colors.length] }));
     });
+
+    // ─── Members panel ───────────────────────────────────────────────
+
+    private buildMember(r: RecRow): MemberRow {
+        const nombre = this.str(this.f(r.data, 'nombres', 'apellidos')) || this.str(this.f(r.data, 'nombre'));
+        const words = nombre.split(/\s+/).filter(Boolean);
+        const initials = words.length >= 2
+            ? (words[0][0] + words[words.length - 1][0]).toUpperCase()
+            : (words[0]?.[0] || '?').toUpperCase();
+        const rawVin = this.str(this.f(r.data, 'vinculacion'));
+        const vinculacion = this.normalizeVinculacion(rawVin);
+        const vinColors: Record<string, string> = {
+            'Rescatistas': '#2E7D32', 'Fundacion': '#1565C0', 'Albergue / Refugio': '#E65100',
+            'Hogar de Paso': '#F9A825', 'Voluntario/a': '#7B1FA2', 'Cuidador/a': '#0891B2', 'Otro': '#94A3B8',
+        };
+        const perros = this.num(this.f(r.data, 'perros'));
+        const gatos = this.num(this.f(r.data, 'gatos'));
+        const caballos = this.num(this.f(r.data, 'caballos'));
+
+        return {
+            id: r.id, nombre, initials,
+            municipio: this.str(this.f(r.data, 'municipio')),
+            vinculacion, vinculacionColor: vinColors[vinculacion] || '#94A3B8',
+            sexo: this.str(this.f(r.data, 'sexo')),
+            edad: this.num(this.f(r.data, 'edad')),
+            escolaridad: this.str(this.f(r.data, 'escolaridad')),
+            discapacidad: this.str(this.f(r.data, 'discapacidad')),
+            saludMental: this.str(this.f(r.data, 'salud', 'mental')),
+            telefono: this.str(this.f(r.data, 'telefono', 'celular')) || this.str(this.f(r.data, 'telefono')),
+            otroTelefono: this.str(this.f(r.data, 'otro', 'telefono')),
+            email: this.str(this.f(r.data, 'correo')),
+            direccion: this.str(this.f(r.data, 'direccion')),
+            barrio: this.str(this.f(r.data, 'barrio')),
+            organizacion: this.str(this.f(r.data, 'nombre', 'hogar')) || this.str(this.f(r.data, 'nombre', 'fundacion')),
+            perros, gatos, caballos,
+            otros: this.str(this.f(r.data, 'otros')),
+            capacidad: this.num(this.f(r.data, 'capacidad')),
+            area: this.str(this.f(r.data, 'area')),
+            necesidad: this.str(this.f(r.data, 'necesidad')),
+            visitaGob: this.str(this.f(r.data, 'visita')),
+            adopcion: this.str(this.f(r.data, 'adopcion')),
+            emprendimiento: this.str(this.f(r.data, 'emprendimiento')),
+            tipoEmprendimiento: this.str(this.f(r.data, 'cual', 'emprendimiento')),
+            fuenteIngreso: this.str(this.f(r.data, 'fuente', 'ingreso')),
+            donaciones: this.str(this.f(r.data, 'donaciones')),
+            victimaViolencia: this.str(this.f(r.data, 'victima', 'violencia')) || this.str(this.f(r.data, 'animal', 'victima')),
+            rescates: this.str(this.f(r.data, 'capacidad_operativa', 'rescate')) || this.str(this.f(r.data, 'rescate')),
+            apoyoActividades: this.str(this.f(r.data, 'apoyar', 'actividades')),
+            antecedentes: this.str(this.f(r.data, 'antecedente')),
+            capacitaciones: this.num(this.f(r.data, 'capacitaciones')),
+            jornadas: this.num(this.f(r.data, 'jornadas')),
+            totalAnimales: perros + gatos + caballos,
+        };
+    }
+
+    allMembers = computed((): MemberRow[] => {
+        return this.filteredRecords().map(r => this.buildMember(r));
+    });
+
+    searchedMembers = computed((): MemberRow[] => {
+        const q = this.memberSearch().toLowerCase().trim();
+        const all = this.allMembers();
+        if (!q) return all;
+        return all.filter(m =>
+            m.nombre.toLowerCase().includes(q) ||
+            m.municipio.toLowerCase().includes(q) ||
+            m.organizacion.toLowerCase().includes(q) ||
+            m.email.toLowerCase().includes(q)
+        );
+    });
+
+    paginatedMembers = computed((): MemberRow[] => {
+        const start = (this.memberPage() - 1) * this.memberPageSize;
+        return this.searchedMembers().slice(start, start + this.memberPageSize);
+    });
+
+    memberTotalPages = computed((): number => {
+        return Math.max(1, Math.ceil(this.searchedMembers().length / this.memberPageSize));
+    });
+
+    toggleMember(id: number): void {
+        this.expandedMemberId.set(this.expandedMemberId() === id ? null : id);
+    }
+
+    setMemberPage(page: number): void {
+        this.memberPage.set(page);
+        this.expandedMemberId.set(null);
+    }
+
+    onMemberSearch(): void {
+        this.memberPage.set(1);
+        this.expandedMemberId.set(null);
+    }
 
     // ─── Si/No helper for template ─────────────────────────────────
 
