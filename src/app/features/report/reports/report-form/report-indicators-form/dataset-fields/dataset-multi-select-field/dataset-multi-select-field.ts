@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { LucideAngularModule } from 'lucide-angular';
 import { ComponentIndicatorModel } from '../../../../../../../features/report/models/component.model';
 
 interface DatasetOption {
@@ -10,7 +11,7 @@ interface DatasetOption {
 @Component({
   selector: 'app-dataset-multi-select-field',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LucideAngularModule],
   templateUrl: './dataset-multi-select-field.html'
 })
 export class DatasetMultiSelectFieldComponent {

@@ -1,5 +1,6 @@
 // reports-map.ts
 import { CommonModule } from '@angular/common';
+import { LucideAngularModule } from 'lucide-angular';
 import { AfterViewInit, ChangeDetectorRef, Component, EventEmitter, Input, NgZone, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
 import * as L from 'leaflet';
 import { normalizeMunicipio } from '../../../../../core/data/valle-geo.data';
@@ -14,7 +15,7 @@ import { KPI_OPTIONS, KpiOption, MAP_STYLES, MunicipioSummary } from './reports-
 @Component({
   selector: 'app-reports-map',
   standalone: true,
-  imports: [CommonModule, MapToolbarComponent, MapListComponent, MapDetailComponent],
+  imports: [CommonModule, LucideAngularModule, MapToolbarComponent, MapListComponent, MapDetailComponent],
   templateUrl: './reports-map.html',
   styleUrl: './reports-map.css',
 })

@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { LucideAngularModule } from 'lucide-angular';
 import { Component, Input, OnChanges, OnInit, SimpleChanges, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -24,7 +25,7 @@ type SortOption = 'name' | 'records' | 'fields';
 @Component({
   selector: 'app-tables-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LucideAngularModule],
   templateUrl: './tables-list.html',
   styleUrls: ['./tables-list.css']
 })

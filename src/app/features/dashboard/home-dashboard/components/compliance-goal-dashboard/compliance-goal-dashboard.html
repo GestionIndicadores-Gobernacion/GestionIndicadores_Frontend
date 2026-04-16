@@ -5,10 +5,7 @@
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
                 style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
+                <lucide-icon name="chart-column" [size]="20" color="white" [strokeWidth]="1.8"></lucide-icon>
             </div>
             <div>
                 <h2 class="text-[15px] font-bold leading-none" style="color:#1B3A6B;">
@@ -66,10 +63,9 @@
                     <option [ngValue]="null">Todas las estrategias</option>
                     <option *ngFor="let s of strategies" [ngValue]="s.id">{{ s.name }}</option>
                 </select>
-                <svg class="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
-                    width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8A9DC0" stroke-width="2.5">
-                    <polyline points="6 9 12 15 18 9" />
-                </svg>
+                <span class="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none inline-flex">
+                    <lucide-icon name="chevron-down" [size]="12" color="#8A9DC0" [strokeWidth]="2.5"></lucide-icon>
+                </span>
             </div>
         </div>
 
@@ -87,10 +83,7 @@
         <div *ngIf="unconfiguredCount > 0"
             class="flex items-start gap-3 px-4 py-3 rounded-xl border"
             style="background:#FFFBEB;border-color:#FDE68A;">
-            <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="#D97706" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-            </svg>
+            <lucide-icon name="triangle-alert" [size]="16" color="#D97706" [strokeWidth]="2" class="shrink-0 mt-0.5"></lucide-icon>
             <p class="text-[12px]" style="color:#92400E;">
                 <strong>{{ unconfiguredCount }} componente{{ unconfiguredCount !== 1 ? 's' : '' }}</strong>
                 {{ unconfiguredCount !== 1 ? 'no tienen' : 'no tiene' }} metas anuales configuradas
@@ -104,10 +97,9 @@
 
             <!-- Búsqueda -->
             <div class="relative" style="min-width:180px;flex:1;max-width:320px;">
-                <svg class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" width="13" height="13"
-                    viewBox="0 0 24 24" fill="none" stroke="#8A9DC0" stroke-width="2">
-                    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none inline-flex">
+                    <lucide-icon name="search" [size]="13" color="#8A9DC0" [strokeWidth]="2"></lucide-icon>
+                </span>
                 <input type="text" [(ngModel)]="search" (input)="applyFilters()"
                     placeholder="Buscar componente o indicador..."
                     class="text-[12px] rounded-xl pl-9 pr-4 py-2 outline-none w-full"

@@ -1,6 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
 import { FormsModule } from "@angular/forms";
+import { LucideAngularModule } from 'lucide-angular';
 import { Router } from "@angular/router";
 import { forkJoin } from "rxjs";
 import { COMPONENT_EXPLORER_CONFIG, DEFAULT_EXPLORER_CONFIG } from "../../../../../core/data/component-explorer-config";
@@ -32,7 +33,7 @@ const COMPONENT_VIRTUAL_MAP: Record<number, (agg: ComponentIndicatorsAggregate |
 @Component({
   selector: 'app-reports-explorer',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReportsExplorerChartComponent],
+  imports: [CommonModule, FormsModule, ReportsExplorerChartComponent, LucideAngularModule],
   templateUrl: './reports-explorer.html',
 })
 export class ReportsExplorerComponent implements OnChanges {

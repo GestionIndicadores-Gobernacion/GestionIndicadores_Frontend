@@ -6,11 +6,12 @@ import { StrategyModel } from '../../../../features/report/models/strategy.model
 import { StrategiesService } from '../../../../features/report/services/strategies.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { StrategyTableComponent } from './strategy-table/strategy-table';
+import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-strategy-list',
   standalone: true,
-  imports: [CommonModule, StrategyTableComponent],
+  imports: [CommonModule, StrategyTableComponent, LucideAngularModule],
   templateUrl: './strategy-list.html',
   styleUrl: './strategy-list.css',
 })

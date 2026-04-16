@@ -9,10 +9,7 @@
         <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"
           style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);">
 
-          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="1.8" stroke-linecap="round"
-            stroke-linejoin="round">
-            <path d="M4 7h16M4 12h16M4 17h16" />
-          </svg>
+          <lucide-icon name="layers" [size]="20" [strokeWidth]="1.8" color="white"></lucide-icon>
 
         </div>
 
@@ -32,10 +29,7 @@
           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-bold border border-[#D6E0F0] bg-white cursor-pointer transition-all"
           style="color:#1B3A6B" onmouseover="this.style.background='#F0F4FA'"
           onmouseout="this.style.background='white'">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 12h6M9 16h6M9 8h6M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" />
-          </svg>
+          <lucide-icon name="scroll-text" [size]="16" [strokeWidth]="2" color="currentColor"></lucide-icon>
           Políticas públicas
         </button>
 
@@ -43,10 +37,7 @@
           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-bold shadow-sm cursor-pointer transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
           style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);color:white;"
           onmouseover="this.style.filter='brightness(1.08)'" onmouseout="this.style.filter='none'">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 4v16m8-8H4" />
-          </svg>
+          <lucide-icon name="plus" [size]="16" [strokeWidth]="2.2" color="currentColor"></lucide-icon>
           Crear componente
         </button>
       </div>
@@ -73,13 +64,9 @@
 
       <div class="relative">
 
-        <svg class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" width="13" height="13"
-          viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round">
-
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-
-        </svg>
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none inline-flex">
+          <lucide-icon name="search" [size]="13" [strokeWidth]="2" color="#9CA3AF"></lucide-icon>
+        </span>
 
         <input type="text" placeholder="Buscar por nombre o estrategia..." [(ngModel)]="search" (input)="applyFilter()"
           class="text-[12px] rounded-xl pl-9 pr-4 py-2 outline-none transition-all duration-150 w-64"
@@ -112,13 +99,7 @@
 
         <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5" style="background:#F0F4FA;">
 
-          <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" style="color:#4A6A9B;"
-            stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-
-            <rect x="3" y="4" width="18" height="16" rx="2" />
-            <path d="M8 8h8M8 12h6" />
-
-          </svg>
+          <lucide-icon name="layers" [size]="28" [strokeWidth]="1.5" color="#4A6A9B"></lucide-icon>
 
         </div>
 
@@ -151,13 +132,7 @@
 
               <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style="background:#D6E4F7;">
 
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="2.2"
-                  stroke-linecap="round" stroke-linejoin="round">
-
-                  <rect x="3" y="4" width="18" height="16" rx="2" />
-                  <path d="M8 8h8M8 12h6" />
-
-                </svg>
+                <lucide-icon name="list" [size]="14" [strokeWidth]="2.2" color="#1B3A6B"></lucide-icon>
 
               </div>
 
@@ -203,12 +178,9 @@
 
                       Componente
 
-                      <svg *ngIf="sortColumn === 'name'" class="w-3 h-3" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-
-                        <path [attr.d]="sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'" />
-
-                      </svg>
+                      <lucide-icon *ngIf="sortColumn === 'name'"
+                        [name]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'"
+                        [size]="12" [strokeWidth]="2.5" color="currentColor"></lucide-icon>
 
                     </div>
 
@@ -226,12 +198,9 @@
 
                       Estrategia
 
-                      <svg *ngIf="sortColumn === 'strategy'" class="w-3 h-3" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-
-                        <path [attr.d]="sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'" />
-
-                      </svg>
+                      <lucide-icon *ngIf="sortColumn === 'strategy'"
+                        [name]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'"
+                        [size]="12" [strokeWidth]="2.5" color="currentColor"></lucide-icon>
 
                     </div>
 
@@ -249,12 +218,9 @@
 
                       Creado
 
-                      <svg *ngIf="sortColumn === 'created_at'" class="w-3 h-3" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-
-                        <path [attr.d]="sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'" />
-
-                      </svg>
+                      <lucide-icon *ngIf="sortColumn === 'created_at'"
+                        [name]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'"
+                        [size]="12" [strokeWidth]="2.5" color="currentColor"></lucide-icon>
 
                     </div>
 

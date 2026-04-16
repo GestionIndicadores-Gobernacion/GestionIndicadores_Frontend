@@ -6,10 +6,7 @@
   <div class="flex items-center justify-between px-6 py-5 border-b border-[#D6E0F0] bg-[#F4F7FC]">
     <div class="flex items-center gap-3">
       <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-[#E6EEF9]">
-        <svg class="w-4 h-4 text-[#1B3A6B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
+        <lucide-icon name="chart-column" [size]="16" [strokeWidth]="2" color="currentColor" class="text-[#1B3A6B]"></lucide-icon>
       </div>
       <div>
         <span class="text-[11px] font-bold uppercase tracking-[1px] text-[#1B3A6B]">Medición de la meta</span>
@@ -19,9 +16,7 @@
     <button type="button" (click)="addMetric()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold
              border border-[#D6E0F0] bg-white text-[#1B3A6B]
              hover:bg-[#F0F4FA] hover:border-[#2d5fa8] transition-all cursor-pointer">
-      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-      </svg>
+      <lucide-icon name="plus" [size]="14" [strokeWidth]="2.5" color="currentColor"></lucide-icon>
       Agregar medición
     </button>
   </div>
@@ -29,10 +24,7 @@
   <!-- empty state -->
   <div *ngIf="metricGroups.length === 0" class="flex flex-col items-center justify-center py-12 px-6 text-center">
     <div class="w-12 h-12 rounded-2xl bg-[#EEF3FB] flex items-center justify-center mb-3">
-      <svg class="w-5 h-5 text-[#7C94BD]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-      </svg>
+      <lucide-icon name="chart-column" [size]="20" [strokeWidth]="1.8" color="currentColor" class="text-[#7C94BD]"></lucide-icon>
     </div>
     <p class="text-[13px] font-semibold text-[#4A6A9B]">Sin métricas definidas</p>
     <p class="text-[12px] text-[#8A9DC0] mt-1 max-w-xs">
@@ -63,9 +55,7 @@
         </span>
         <button type="button" (click)="removeMetric(i)" class="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-lg
                  text-[#B0BED4] hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer">
-          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <lucide-icon name="x" [size]="14" [strokeWidth]="2.5" color="currentColor"></lucide-icon>
         </button>
       </div>
 
@@ -150,10 +140,7 @@
       <!-- hint panel -->
       <div class="mx-4 mb-3 rounded-xl px-4 py-3 flex gap-3" style="background:#F0F7FF;border:1px solid #D6E8FF;">
         <div class="shrink-0 mt-0.5">
-          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="#2d5fa8" stroke-width="2.2">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 110 20A10 10 0 0112 2z" />
-          </svg>
+          <lucide-icon name="info" [size]="14" [strokeWidth]="2.2" color="#2d5fa8"></lucide-icon>
         </div>
         <div class="space-y-1">
           <p class="text-[10px] font-bold uppercase tracking-[0.8px]" style="color:#2d5fa8;">

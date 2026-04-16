@@ -9,11 +9,7 @@
         <!-- Título del panel -->
         <div class="flex items-center gap-3 px-5 py-4 border-b" style="border-color: #D6E0F0; background: #F8FAFD;">
             <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background: #D6E4F7;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B3A6B" stroke-width="2.2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 3v18h18" />
-                    <path d="M18 9l-5 5-2-2-4 4" />
-                </svg>
+                <lucide-icon name="trending-up" [size]="14" color="#1B3A6B" [strokeWidth]="2.2"></lucide-icon>
             </div>
             <div>
                 <span class="text-[11px] font-bold uppercase tracking-[1px]" style="color: #1B3A6B;">
@@ -36,12 +32,9 @@
                         Estrategia
                     </label>
                     <div class="relative">
-                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" width="13" height="13"
-                            viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round">
-                            <circle cx="12" cy="12" r="3" />
-                            <path
-                                d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" />
-                        </svg>
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none inline-flex">
+                            <lucide-icon name="target" [size]="13" color="#9CA3AF" [strokeWidth]="2"></lucide-icon>
+                        </span>
                         <select (change)="onStrategySelect($event)"
                             class="w-full text-[13px] rounded-xl pl-9 pr-4 py-2.5 outline-none transition-all duration-150 appearance-none cursor-pointer"
                             style="background: #F0F4FA; border: 1.5px solid #D6E0F0; color: #1B3A6B;"
@@ -52,11 +45,9 @@
                             </option>
                         </select>
                         <!-- flecha custom -->
-                        <svg class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" width="11"
-                            height="11" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5"
-                            stroke-linecap="round">
-                            <polyline points="6 9 12 15 18 9" />
-                        </svg>
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none inline-flex">
+                            <lucide-icon name="chevron-down" [size]="11" color="#9CA3AF" [strokeWidth]="2.5"></lucide-icon>
+                        </span>
                     </div>
                 </div>
 
@@ -66,13 +57,9 @@
                         Componente
                     </label>
                     <div class="relative">
-                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" width="13" height="13"
-                            viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round">
-                            <rect x="3" y="3" width="7" height="7" rx="1" />
-                            <rect x="14" y="3" width="7" height="7" rx="1" />
-                            <rect x="3" y="14" width="7" height="7" rx="1" />
-                            <rect x="14" y="14" width="7" height="7" rx="1" />
-                        </svg>
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none inline-flex">
+                            <lucide-icon name="grid-2x2" [size]="13" color="#9CA3AF" [strokeWidth]="2"></lucide-icon>
+                        </span>
                         <select (change)="onComponentSelect($event)" [disabled]="components.length === 0"
                             class="w-full text-[13px] rounded-xl pl-9 pr-4 py-2.5 outline-none transition-all duration-150 appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                             style="background: #F0F4FA; border: 1.5px solid #D6E0F0; color: #1B3A6B;"
@@ -85,11 +72,9 @@
                                 {{ c.component_name }}
                             </option>
                         </select>
-                        <svg class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" width="11"
-                            height="11" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5"
-                            stroke-linecap="round">
-                            <polyline points="6 9 12 15 18 9" />
-                        </svg>
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none inline-flex">
+                            <lucide-icon name="chevron-down" [size]="11" color="#9CA3AF" [strokeWidth]="2.5"></lucide-icon>
+                        </span>
                     </div>
                 </div>
 

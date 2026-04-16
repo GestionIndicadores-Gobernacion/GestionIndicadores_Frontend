@@ -10,6 +10,7 @@ import { TableService } from '../../../features/datasets/services/table.service'
 import { Pagination } from '../../../shared/components/pagination/pagination';
 import { ImportDatasetModalComponent } from './import-dataset-modal/import-dataset-modal';
 import { UpdateDatasetModalComponent } from './update-dataset-modal/update-dataset-modal';
+import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-datasets-list',
@@ -21,6 +22,7 @@ import { UpdateDatasetModalComponent } from './update-dataset-modal/update-datas
     ImportDatasetModalComponent,
     UpdateDatasetModalComponent,
     Pagination,
+    LucideAngularModule,
     // TablesListComponent eliminado
   ],
   templateUrl: './datasets-list.html',

@@ -10,6 +10,7 @@ import { ComponentsService } from '../../../../../../features/report/services/co
 import { UsersService } from '../../../../../../features/user/services/users.service';
 import { ActivityFormData, ActionPlanActivityFormComponent } from '../../action-plan-activity-form/action-plan-activity-form';
 import { MUNICIPIOS_VALLE } from '../../../../../../core/data/municipios';
+import { LucideAngularModule } from 'lucide-angular';
 
 
 const EXCLUDED_EMAILS = new Set([
@@ -30,7 +31,7 @@ interface ObjectiveForm {
 @Component({
   selector: 'app-action-plan-edit-plan-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ActionPlanActivityFormComponent],
+  imports: [CommonModule, FormsModule, ActionPlanActivityFormComponent, LucideAngularModule],
   templateUrl: './action-plan-edit-plan-modal.html',
 })
 export class ActionPlanEditPlanModalComponent implements OnInit {

@@ -1,13 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
 import { ComponentIndicatorModel } from '../../../../../../../features/report/models/component.model';
 import { toNumber } from '../../helpers/report-indicators.helpers';
 
 @Component({
   selector: 'app-sum-group-field',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule],
   templateUrl: './sum-group-field.html'
 })
 export class SumGroupFieldComponent {

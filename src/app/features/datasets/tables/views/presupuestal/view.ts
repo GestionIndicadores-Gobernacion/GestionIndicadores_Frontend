@@ -1,5 +1,6 @@
 import { Component, Input, OnChanges, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { LucideAngularModule } from 'lucide-angular';
 import { DashboardData } from '../../table-viewer/table-viewer';
 
 export interface PresupuestalActivity {
@@ -27,7 +28,7 @@ export interface PresupuestalGroup {
 @Component({
   selector: 'app-presupuestal-view',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LucideAngularModule],
   templateUrl: './view.html'
 })
 export class PresupuestalViewComponent implements OnInit, OnChanges {

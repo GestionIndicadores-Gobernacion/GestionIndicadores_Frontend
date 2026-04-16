@@ -12,6 +12,7 @@ import { ConfigSelectComponent } from './componente-indicator-config/config-sele
 import { ConfigSumGroupComponent } from './componente-indicator-config/config-sum-group/config-sum-group';
 import { IndicatorTargetsComponent } from './componente-indicator-targets/indicator-targets/indicator-targets';
 import { ConfigShowIfComponent } from './config-show-if/config-show-if';
+import { LucideAngularModule } from 'lucide-angular';
 
 
 @Component({
@@ -22,7 +23,8 @@ import { ConfigShowIfComponent } from './config-show-if/config-show-if';
     ConfigSelectComponent, ConfigSumGroupComponent,
     ConfigGroupedDataComponent, ConfigCategorizedGroupComponent,
     ConfigFileAttachmentComponent, ConfigDatasetComponent,
-    IndicatorTargetsComponent, ConfigShowIfComponent
+    IndicatorTargetsComponent, ConfigShowIfComponent,
+    LucideAngularModule
   ],
   templateUrl: './componente-indicators-form.html'
 })

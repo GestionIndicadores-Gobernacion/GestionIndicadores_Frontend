@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { LucideAngularModule } from 'lucide-angular';
 import { DashboardBarComponent } from '../../visualizations/dashboard-bar/dashboard-bar';
 import { DashboardDonutComponent } from '../../visualizations/dashboard-donut/dashboard-donut';
 import { DashboardHistogramComponent } from '../../visualizations/dashboard-histogram/dashboard-histogram';
@@ -12,6 +13,7 @@ import { DashboardData, DashSection, DashBar } from '../../table-viewer/table-vi
     standalone: true,
     imports: [
         CommonModule,
+        LucideAngularModule,
         DashboardBarComponent,
         DashboardDonutComponent,
         DashboardHistogramComponent,

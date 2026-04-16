@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
+import { LucideAngularModule } from 'lucide-angular';
 import Swal from 'sweetalert2';
 import { Dataset } from '../../../../features/datasets/models/dataset.model';
 import { DatasetService } from '../../../../features/datasets/services/datasets.service';
@@ -8,7 +9,8 @@ import { DatasetService } from '../../../../features/datasets/services/datasets.
   selector: 'app-update-dataset-modal',
   standalone: true,
   imports: [
-    CommonModule
+    CommonModule,
+    LucideAngularModule,
   ],
   templateUrl: './update-dataset-modal.html',
   styleUrl: './update-dataset-modal.css',

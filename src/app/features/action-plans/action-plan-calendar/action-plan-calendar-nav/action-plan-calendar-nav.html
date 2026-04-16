@@ -27,9 +27,7 @@
     <div class="flex items-center gap-0.5 sm:gap-1">
         <button (click)="prevMonth()"
             class="p-1.5 sm:p-2 rounded-lg sm:rounded-xl text-[#4A6A9B] hover:bg-[#EBF0FA] transition">
-            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
+            <lucide-icon name="chevron-left" [size]="16" [strokeWidth]="2" color="currentColor"></lucide-icon>
         </button>
 
         <button (click)="goToToday()" class="sm:hidden text-xs font-semibold rounded-lg px-2 py-1
@@ -39,25 +37,17 @@
 
         <button (click)="nextMonth()"
             class="p-1.5 sm:p-2 rounded-lg sm:rounded-xl text-[#4A6A9B] hover:bg-[#EBF0FA] transition">
-            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
+            <lucide-icon name="chevron-right" [size]="16" [strokeWidth]="2" color="currentColor"></lucide-icon>
         </button>
 
         <div class="flex items-center gap-0.5 sm:gap-1 ml-1 sm:ml-2 pl-1 sm:pl-2 border-l border-[#D6E0F0]">
             <button (click)="viewModeChange.emit('calendar')" class="p-1.5 sm:p-2 rounded-lg sm:rounded-xl transition"
                 [ngClass]="viewMode === 'calendar' ? 'bg-gradient-to-br from-[#1B3A6B] to-[#2d5fa8] text-white' : 'text-[#4A6A9B] hover:bg-[#EBF0FA]'">
-                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
+                <lucide-icon name="calendar" [size]="16" [strokeWidth]="2" color="currentColor"></lucide-icon>
             </button>
             <button (click)="viewModeChange.emit('agenda')" class="p-1.5 sm:p-2 rounded-lg sm:rounded-xl transition"
                 [ngClass]="viewMode === 'agenda' ? 'bg-gradient-to-br from-[#1B3A6B] to-[#2d5fa8] text-white' : 'text-[#4A6A9B] hover:bg-[#EBF0FA]'">
-                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                </svg>
+                <lucide-icon name="list" [size]="16" [strokeWidth]="2" color="currentColor"></lucide-icon>
             </button>
         </div>
     </div>

@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { LucideAngularModule } from 'lucide-angular';
 import { ComponentIndicatorModel } from '../../../../../../../features/report/models/component.model';
 
 @Component({
   selector: 'app-multi-select-field',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LucideAngularModule],
   templateUrl: './multi-select-field.html'
 })
 export class MultiSelectFieldComponent {

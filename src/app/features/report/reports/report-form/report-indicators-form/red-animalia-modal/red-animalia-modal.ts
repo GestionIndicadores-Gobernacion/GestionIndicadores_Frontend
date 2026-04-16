@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, S
 import { ComponentIndicatorModel } from '../../../../../../features/report/models/component.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
 import { DatasetService } from '../../../../../../features/datasets/services/datasets.service';
 
 export interface RedAnimaliaActorEntry {
@@ -18,7 +19,7 @@ export interface RedAnimaliaResult {
 @Component({
   selector: 'app-red-animalia-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule],
   templateUrl: './red-animalia-modal.html',
   styleUrl: './red-animalia-modal.css',
 })

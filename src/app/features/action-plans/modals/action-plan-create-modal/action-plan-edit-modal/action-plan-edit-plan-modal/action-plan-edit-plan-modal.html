@@ -9,10 +9,7 @@
                 bg-gradient-to-r from-[#1B3A6B] to-[#2d5fa8] text-white">
             <div class="flex items-start gap-3">
                 <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
+                    <lucide-icon name="pencil" [size]="20" [strokeWidth]="2" color="white"></lucide-icon>
                 </div>
                 <div>
                     <h2 class="text-sm font-semibold tracking-wide">Editar Plan de Acción</h2>
@@ -23,10 +20,7 @@
                 <div *ngIf="loading" class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin">
                 </div>
                 <button (click)="onClose()" class="p-2 rounded-xl hover:bg-white/10 transition-colors">
-                    <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <lucide-icon name="x" [size]="16" [strokeWidth]="2" color="white"></lucide-icon>
                 </button>
             </div>
         </div>
@@ -95,10 +89,7 @@
                             <button (click)="addActivity(oi)" type="button"
                                 class="flex items-center gap-1.5 text-xs font-medium text-[#2d5fa8] hover:text-[#1B3A6B]
                          w-full justify-center border border-dashed border-[#cdd9ee] rounded-lg py-2 hover:border-[#2d5fa8]">
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 4v16m8-8H4" />
-                                </svg>
+                                <lucide-icon name="plus" [size]="14" [strokeWidth]="2" color="currentColor"></lucide-icon>
                                 Agregar actividad
                             </button>
                         </div>

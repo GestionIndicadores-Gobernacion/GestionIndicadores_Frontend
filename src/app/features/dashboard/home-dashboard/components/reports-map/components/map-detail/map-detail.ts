@@ -1,12 +1,13 @@
 // components/map-detail/map-detail.ts
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { LucideAngularModule } from 'lucide-angular';
 import { KpiOption, MunicipioSummary } from '../../reports-map.types';
 
 @Component({
   selector: 'app-map-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LucideAngularModule],
   templateUrl: './map-detail.html',
 })
 export class MapDetailComponent {

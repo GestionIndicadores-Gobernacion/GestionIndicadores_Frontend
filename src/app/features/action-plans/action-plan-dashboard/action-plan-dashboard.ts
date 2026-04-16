@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
 import { ActionPlanService } from '../../../features/action-plans/services/action-plan.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Pagination } from '../../../shared/components/pagination/pagination';
@@ -44,7 +45,7 @@ export interface ActivityDetail {
 @Component({
   selector: 'app-action-plan-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, Pagination],
+  imports: [CommonModule, RouterModule, FormsModule, Pagination, LucideAngularModule],
   templateUrl: './action-plan-dashboard.html',
 })
 export class ActionPlanDashboardComponent implements OnInit {

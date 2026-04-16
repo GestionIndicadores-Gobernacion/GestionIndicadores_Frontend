@@ -11,6 +11,7 @@ import { UsersService } from '../../../../features/user/services/users.service';
 
 import { ReportsTableComponent } from './components/reports-table/reports-table';
 import { ComponentsService } from '../../../../features/report/services/components.service';
+import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-reports-list',
@@ -19,6 +20,7 @@ import { ComponentsService } from '../../../../features/report/services/componen
     CommonModule,
     RouterModule,
     ReportsTableComponent,
+    LucideAngularModule,
   ],
   templateUrl: './reports-list.html',
   styleUrl: './reports-list.css',

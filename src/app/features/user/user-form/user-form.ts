@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
 
 import { UsersService } from '../../../features/user/services/users.service';
 import { RolesService } from '../../../features/user/services/roles.service';
@@ -12,7 +13,7 @@ import { ToastService } from '../../../core/services/toast.service';
 @Component({
   selector: 'app-user-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, LucideAngularModule],
   templateUrl: './user-form.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
