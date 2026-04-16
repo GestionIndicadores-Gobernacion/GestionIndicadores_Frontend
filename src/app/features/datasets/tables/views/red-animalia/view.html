@@ -395,4 +395,292 @@
         </div>
     </div>
 
+    <!-- ═══════ ROW 5: DIRECTORIO DE MIEMBROS (expansion panel) ═══════ -->
+    <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+
+        <!-- HEADER -->
+        <div class="px-4 py-3 border-b flex flex-wrap items-center justify-between gap-3"
+            style="border-color:#E2E8F0;background:#F8FAF8;">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                    style="background:#2E7D32;">
+                    <lucide-icon name="users" [size]="15" color="white" [strokeWidth]="2"></lucide-icon>
+                </div>
+                <div>
+                    <p class="text-[12px] font-bold" style="color:#0F172A;">Directorio de Miembros</p>
+                    <p class="text-[10px]" style="color:#94A3B8;">
+                        {{ searchedMembers().length }} de {{ allMembers().length }} miembros
+                        <span *ngIf="filterMunicipio() || filterVinculacion() || filterSexo()">
+                            (filtrado)
+                        </span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- SEARCH -->
+            <div class="relative">
+                <span class="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none inline-flex">
+                    <lucide-icon name="search" [size]="12" color="#94A3B8" [strokeWidth]="2"></lucide-icon>
+                </span>
+                <input type="text" placeholder="Buscar miembro, municipio, organizacion..."
+                    [ngModel]="memberSearch()"
+                    (ngModelChange)="memberSearch.set($event); onMemberSearch()"
+                    class="text-[11px] rounded-lg pl-8 pr-3 py-1.5 outline-none w-64"
+                    style="border:1px solid #E2E8F0;color:#333;background:white;"
+                    onfocus="this.style.borderColor='#2E7D32';this.style.boxShadow='0 0 0 2px rgba(46,125,50,0.1)'"
+                    onblur="this.style.borderColor='#E2E8F0';this.style.boxShadow='none'" />
+            </div>
+        </div>
+
+        <!-- MEMBER LIST -->
+        <div class="divide-y" style="border-color:#F1F5F9;">
+            <div *ngFor="let m of paginatedMembers()" class="transition-colors"
+                [style.background]="expandedMemberId() === m.id ? '#F0FAF0' : 'white'">
+
+                <!-- COMPACT ROW -->
+                <div (click)="toggleMember(m.id)"
+                    class="flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors hover:bg-[#FAFCFA]">
+
+                    <!-- Avatar -->
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
+                        style="background:#E8F5E9;color:#2E7D32;">
+                        {{ m.initials }}
+                    </div>
+
+                    <!-- Info -->
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[12px] font-semibold truncate" style="color:#0F172A;">{{ m.nombre }}</p>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span class="text-[10px]" style="color:#64748B;">{{ m.municipio }}</span>
+                            <span *ngIf="m.edad" class="text-[10px]" style="color:#94A3B8;">{{ m.edad }} anos</span>
+                        </div>
+                    </div>
+
+                    <!-- Vinculacion badge -->
+                    <span class="text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 hidden sm:inline-block"
+                        [style.background]="m.vinculacionColor + '18'"
+                        [style.color]="m.vinculacionColor">
+                        {{ m.vinculacion }}
+                    </span>
+
+                    <!-- Animals count -->
+                    <div *ngIf="m.totalAnimales > 0"
+                        class="flex items-center gap-1 shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                        style="background:#FFF8E1;color:#E65100;">
+                        <lucide-icon name="heart" [size]="10" color="#E65100" [strokeWidth]="2"></lucide-icon>
+                        {{ m.totalAnimales }}
+                    </div>
+
+                    <!-- Chevron -->
+                    <lucide-icon
+                        [name]="expandedMemberId() === m.id ? 'chevron-down' : 'chevron-right'"
+                        [size]="14" color="#94A3B8" [strokeWidth]="2"
+                        class="shrink-0"></lucide-icon>
+                </div>
+
+                <!-- EXPANDED DETAIL -->
+                <div *ngIf="expandedMemberId() === m.id"
+                    class="px-4 pb-4 pt-1" style="border-top:1px solid #E8F5E9;">
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+
+                        <!-- PERSONAL -->
+                        <div class="rounded-lg p-3" style="background:#FAFCFA;border:1px solid #E8F5E9;">
+                            <p class="text-[10px] font-bold uppercase tracking-wider mb-2" style="color:#2E7D32;">
+                                Informacion Personal</p>
+                            <div class="space-y-1.5">
+                                <div *ngIf="m.sexo" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Sexo</span>
+                                    <span class="font-medium" style="color:#333;">{{ m.sexo }}</span>
+                                </div>
+                                <div *ngIf="m.edad" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Edad</span>
+                                    <span class="font-medium" style="color:#333;">{{ m.edad }} anos</span>
+                                </div>
+                                <div *ngIf="m.escolaridad" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Escolaridad</span>
+                                    <span class="font-medium" style="color:#333;">{{ m.escolaridad }}</span>
+                                </div>
+                                <div *ngIf="m.discapacidad" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Discapacidad</span>
+                                    <span class="font-medium" style="color:#333;">{{ m.discapacidad }}</span>
+                                </div>
+                                <div *ngIf="m.saludMental" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Salud mental</span>
+                                    <span class="font-medium" style="color:#333;">{{ m.saludMental }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CONTACTO -->
+                        <div class="rounded-lg p-3" style="background:#FAFCFA;border:1px solid #E8F5E9;">
+                            <p class="text-[10px] font-bold uppercase tracking-wider mb-2" style="color:#1565C0;">
+                                Contacto</p>
+                            <div class="space-y-1.5">
+                                <div *ngIf="m.municipio" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Municipio</span>
+                                    <span class="font-medium" style="color:#333;">{{ m.municipio }}</span>
+                                </div>
+                                <div *ngIf="m.direccion" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Direccion</span>
+                                    <span class="font-medium text-right truncate ml-2" style="color:#333;max-width:60%;">{{ m.direccion }}</span>
+                                </div>
+                                <div *ngIf="m.barrio" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Barrio</span>
+                                    <span class="font-medium text-right truncate ml-2" style="color:#333;max-width:60%;">{{ m.barrio }}</span>
+                                </div>
+                                <div *ngIf="m.telefono" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Telefono</span>
+                                    <span class="font-medium" style="color:#333;">{{ m.telefono }}</span>
+                                </div>
+                                <div *ngIf="m.otroTelefono" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Otro tel.</span>
+                                    <span class="font-medium" style="color:#333;">{{ m.otroTelefono }}</span>
+                                </div>
+                                <div *ngIf="m.email" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Correo</span>
+                                    <span class="font-medium text-right truncate ml-2" style="color:#333;max-width:60%;">{{ m.email }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ANIMALES Y ALBERGUE -->
+                        <div class="rounded-lg p-3" style="background:#FAFCFA;border:1px solid #E8F5E9;">
+                            <p class="text-[10px] font-bold uppercase tracking-wider mb-2" style="color:#E65100;">
+                                Animales y Albergue</p>
+                            <div class="space-y-1.5">
+                                <div *ngIf="m.organizacion" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Organizacion</span>
+                                    <span class="font-medium text-right truncate ml-2" style="color:#333;max-width:60%;">{{ m.organizacion }}</span>
+                                </div>
+                                <div class="flex items-center gap-3 py-1">
+                                    <span *ngIf="m.perros" class="text-[10px] font-bold px-2 py-0.5 rounded"
+                                        style="background:#E8F5E9;color:#2E7D32;">
+                                        {{ m.perros }} perros
+                                    </span>
+                                    <span *ngIf="m.gatos" class="text-[10px] font-bold px-2 py-0.5 rounded"
+                                        style="background:#E3F2FD;color:#1565C0;">
+                                        {{ m.gatos }} gatos
+                                    </span>
+                                    <span *ngIf="m.caballos" class="text-[10px] font-bold px-2 py-0.5 rounded"
+                                        style="background:#FFF8E1;color:#F9A825;">
+                                        {{ m.caballos }} caballos
+                                    </span>
+                                </div>
+                                <div *ngIf="m.otros" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Otros</span>
+                                    <span class="font-medium text-right truncate ml-2" style="color:#333;max-width:60%;">{{ m.otros }}</span>
+                                </div>
+                                <div *ngIf="m.capacidad" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Capacidad max.</span>
+                                    <span class="font-medium" style="color:#333;">{{ m.capacidad }}</span>
+                                </div>
+                                <div *ngIf="m.area" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Area (m2)</span>
+                                    <span class="font-medium" style="color:#333;">{{ m.area }}</span>
+                                </div>
+                                <div *ngIf="m.necesidad" class="text-[11px] mt-1">
+                                    <span style="color:#64748B;">Necesidad:</span>
+                                    <span class="font-medium ml-1" style="color:#333;">{{ m.necesidad }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- DISPOSICION -->
+                        <div class="rounded-lg p-3" style="background:#FAFCFA;border:1px solid #E8F5E9;">
+                            <p class="text-[10px] font-bold uppercase tracking-wider mb-2" style="color:#7B1FA2;">
+                                Disposicion</p>
+                            <div class="space-y-1.5">
+                                <div *ngIf="m.visitaGob" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Visita Gob.</span>
+                                    <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                                        [style.background]="isYesValue(m.visitaGob) ? '#E8F5E9' : '#FEE2E2'"
+                                        [style.color]="isYesValue(m.visitaGob) ? '#2E7D32' : '#DC2626'">
+                                        {{ isYesValue(m.visitaGob) ? 'Si' : 'No' }}
+                                    </span>
+                                </div>
+                                <div *ngIf="m.adopcion" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Adopcion</span>
+                                    <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                                        [style.background]="isYesValue(m.adopcion) ? '#E8F5E9' : '#FEE2E2'"
+                                        [style.color]="isYesValue(m.adopcion) ? '#2E7D32' : '#DC2626'">
+                                        {{ isYesValue(m.adopcion) ? 'Si' : 'No' }}
+                                    </span>
+                                </div>
+                                <div *ngIf="m.victimaViolencia" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Recibe victimas</span>
+                                    <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                                        [style.background]="isYesValue(m.victimaViolencia) ? '#E8F5E9' : '#FEE2E2'"
+                                        [style.color]="isYesValue(m.victimaViolencia) ? '#2E7D32' : '#DC2626'">
+                                        {{ isYesValue(m.victimaViolencia) ? 'Si' : 'No' }}
+                                    </span>
+                                </div>
+                                <div *ngIf="m.rescates" class="text-[11px]">
+                                    <span style="color:#64748B;">Rescates:</span>
+                                    <span class="font-medium ml-1" style="color:#333;">{{ m.rescates }}</span>
+                                </div>
+                                <div *ngIf="m.emprendimiento" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Emprendimiento</span>
+                                    <span class="font-medium" style="color:#333;">{{ m.emprendimiento }}</span>
+                                </div>
+                                <div *ngIf="m.donaciones" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Donaciones</span>
+                                    <span class="font-medium" style="color:#333;">{{ m.donaciones }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PROGRAMAS -->
+                        <div class="rounded-lg p-3" style="background:#FAFCFA;border:1px solid #E8F5E9;">
+                            <p class="text-[10px] font-bold uppercase tracking-wider mb-2" style="color:#0891B2;">
+                                Participacion</p>
+                            <div class="space-y-1.5">
+                                <div class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Capacitaciones RAV</span>
+                                    <span class="font-bold" style="color:#333;">{{ m.capacitaciones }}</span>
+                                </div>
+                                <div class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Jornadas de Salud</span>
+                                    <span class="font-bold" style="color:#333;">{{ m.jornadas }}</span>
+                                </div>
+                                <div *ngIf="m.antecedentes" class="text-[11px] mt-1">
+                                    <span style="color:#64748B;">Antecedentes:</span>
+                                    <span class="font-medium ml-1" style="color:#333;">{{ m.antecedentes }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EMPTY -->
+        <div *ngIf="paginatedMembers().length === 0" class="py-8 text-center">
+            <p class="text-[12px]" style="color:#94A3B8;">No se encontraron miembros</p>
+        </div>
+
+        <!-- PAGINATION -->
+        <div *ngIf="memberTotalPages() > 1"
+            class="flex items-center justify-between px-4 py-2.5 border-t"
+            style="border-color:#E2E8F0;background:#FAFCFA;">
+            <p class="text-[11px]" style="color:#64748B;">
+                Pagina {{ memberPage() }} de {{ memberTotalPages() }}
+            </p>
+            <div class="flex items-center gap-1.5">
+                <button [disabled]="memberPage() === 1" (click)="setMemberPage(memberPage() - 1)"
+                    class="px-2.5 py-1 text-[11px] font-semibold rounded-lg border cursor-pointer transition"
+                    style="background:white;color:#475569;border-color:#E2E8F0;"
+                    [class.opacity-40]="memberPage() === 1">
+                    <lucide-icon name="chevron-left" [size]="12" color="currentColor" [strokeWidth]="2"></lucide-icon>
+                </button>
+                <button [disabled]="memberPage() === memberTotalPages()" (click)="setMemberPage(memberPage() + 1)"
+                    class="px-2.5 py-1 text-[11px] font-semibold rounded-lg border cursor-pointer transition"
+                    style="background:white;color:#475569;border-color:#E2E8F0;"
+                    [class.opacity-40]="memberPage() === memberTotalPages()">
+                    <lucide-icon name="chevron-right" [size]="12" color="currentColor" [strokeWidth]="2"></lucide-icon>
+                </button>
+            </div>
+        </div>
+    </div>
+
 </div>
