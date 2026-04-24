@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
+import { Component, DestroyRef, Input, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DatasetService } from '../../../../../../../features/datasets/services/datasets.service';
 import { LucideAngularModule } from 'lucide-angular';
@@ -29,6 +30,8 @@ export class ConfigDatasetComponent implements OnInit, OnChanges {
   // indicadores tipo select disponibles para show_if
   selectIndicators: { name: string }[] = [];
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private datasetService: DatasetService,
     private cdr: ChangeDetectorRef
@@ -43,7 +46,7 @@ export class ConfigDatasetComponent implements OnInit, OnChanges {
     this.loading = true;
 
     // cargar datasets
-    this.datasetService.getAll().subscribe({
+    this.datasetService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (datasets) => {
         this.allDatasets = datasets;
         this.loading = false;
@@ -57,7 +60,7 @@ export class ConfigDatasetComponent implements OnInit, OnChanges {
     });
 
     // escuchar cambio de dataset
-    this.indicatorGroup.get('configDatasetId')?.valueChanges.subscribe(id => {
+    this.indicatorGroup.get('configDatasetId')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(id => {
       this.loadDatasetFields(id);
     });
 
@@ -90,7 +93,7 @@ export class ConfigDatasetComponent implements OnInit, OnChanges {
       return;
     }
 
-    this.datasetService.getRecordsByDataset(datasetId).subscribe({
+    this.datasetService.getRecordsByDataset(datasetId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: records => {
         if (records?.length) {
           // ← union de todas las keys de todos los registros

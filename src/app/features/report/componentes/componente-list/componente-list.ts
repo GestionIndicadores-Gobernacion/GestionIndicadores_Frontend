@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, DestroyRef, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -13,11 +14,12 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { Pagination } from '../../../../shared/components/pagination/pagination';
 import { PublicPolicyModalComponent } from './public-policy-modal/public-policy-modal';
 import { LucideAngularModule } from 'lucide-angular';
+import { PageState, PageStateComponent } from '../../../../shared/components/page-state/page-state';
 
 @Component({
   selector: 'app-component-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, Pagination, PublicPolicyModalComponent, LucideAngularModule],
+  imports: [CommonModule, FormsModule, Pagination, PublicPolicyModalComponent, LucideAngularModule, PageStateComponent],
   templateUrl: './componente-list.html',
   styleUrl: './componente-list.css',
 })
@@ -29,7 +31,15 @@ export class ComponentesListComponent implements OnInit {
   strategyMap: Record<number, string> = {};
 
   loading = false;
+  loadError = false;
   search = '';
+
+  get pageState(): PageState {
+    if (this.loading) return 'loading';
+    if (this.loadError) return 'error';
+    if (!this.filteredComponents.length) return 'empty';
+    return 'content';
+  }
 
   currentPage = 1;
   pageSize = 8;
@@ -37,6 +47,7 @@ export class ComponentesListComponent implements OnInit {
   sortColumn: keyof ComponentModel | 'strategy' | '' = '';
   sortDirection: 'asc' | 'desc' = 'asc';
 
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private componentsService: ComponentsService,
@@ -59,36 +70,41 @@ export class ComponentesListComponent implements OnInit {
   // =========================
   load(): void {
     this.loading = true;
+    this.loadError = false;
     this.cd.detectChanges();
 
-    this.strategiesService.getAll().subscribe({
-      next: (strategies: StrategyModel[]) => {
+    this.strategiesService.getAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (strategies: StrategyModel[]) => {
 
-        this.strategyMap = {};
-        strategies.forEach(s => {
-          this.strategyMap[s.id] = s.name;
-        });
+          this.strategyMap = {};
+          strategies.forEach(s => {
+            this.strategyMap[s.id] = s.name;
+          });
 
-        this.componentsService.getAll().subscribe({
-          next: (components) => {
-            this.components = components ?? [];
-            this.filteredComponents = components ?? [];
-            this.loading = false;
-            this.cd.detectChanges();
-          },
-          error: () => {
-            this.toast.error('Error al cargar componentes');
-            this.loading = false;
-            this.cd.detectChanges();
-          }
-        });
-      },
-      error: () => {
-        this.toast.error('Error al cargar estrategias');
-        this.loading = false;
-        this.cd.detectChanges();
-      }
-    });
+          this.componentsService.getAll()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+              next: (components) => {
+                this.components = components ?? [];
+                this.filteredComponents = components ?? [];
+                this.loading = false;
+                this.cd.detectChanges();
+              },
+              error: () => {
+                this.loadError = true;
+                this.loading = false;
+                this.cd.detectChanges();
+              }
+            });
+        },
+        error: () => {
+          this.loadError = true;
+          this.loading = false;
+          this.cd.detectChanges();
+        }
+      });
   }
 
   // =========================

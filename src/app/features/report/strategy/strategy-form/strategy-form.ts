@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, DestroyRef, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormBuilder,
   FormGroup,
@@ -36,6 +37,7 @@ export class StrategyFormComponent implements OnInit {
   components: any[] = []
 
   private _loadedStrategy?: StrategyModel;
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private fb: FormBuilder,
@@ -120,7 +122,7 @@ export class StrategyFormComponent implements OnInit {
     this.loading = true;
     this.cd.detectChanges(); // mostrar spinner
 
-    this.strategiesService.getById(this.id!).subscribe({
+    this.strategiesService.getById(this.id!).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (data: StrategyModel) => {
 
         this._loadedStrategy = data;
@@ -175,7 +177,7 @@ export class StrategyFormComponent implements OnInit {
       ? this.componentService.getByStrategy(this.id!)
       : this.componentService.getAll();
 
-    req$.subscribe({
+    req$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (data) => {
         this.components = data;
         this.cd.detectChanges();
@@ -221,7 +223,7 @@ export class StrategyFormComponent implements OnInit {
       ? this.strategiesService.update(this.id!, payload)
       : this.strategiesService.create(payload);
 
-    req.subscribe({
+    req.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.toast.success('Estrategia guardada correctamente');
         this.router.navigate(['/reports/strategies']);

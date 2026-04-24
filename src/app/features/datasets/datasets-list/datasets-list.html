@@ -29,27 +29,14 @@
     <!-- CONTENT -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
 
-        <!-- LOADING -->
-        <div *ngIf="loading" class="flex items-center gap-3 py-8">
-            <div class="w-4 h-4 rounded-full animate-spin" style="border:2px solid #D6E0F0;border-top-color:#1B3A6B;">
-            </div>
-            <span class="text-[13px]" style="color:#8A9DC0;">Cargando datasets...</span>
-        </div>
-
-        <ng-container *ngIf="!loading">
-
-            <!-- EMPTY -->
-            <div *ngIf="filteredDatasets.length === 0" class="rounded-2xl p-16 text-center border"
-                style="background:white;border-color:#D6E0F0;">
-                <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
-                    style="background:#F0F4FA;">
-                    <lucide-icon name="database" [size]="28" [strokeWidth]="1.5" color="#4A6A9B"></lucide-icon>
-                </div>
-                <h3 class="text-sm font-bold" style="color:#1B3A6B;">Sin datasets registrados</h3>
-                <p class="text-xs mt-1 max-w-xs mx-auto leading-relaxed" style="color:#4A6A9B;">
-                    Usa el botón <strong>Importar Excel</strong> para registrar el primer dataset
-                </p>
-            </div>
+        <app-page-state
+            [state]="pageState"
+            loadingMessage="Cargando datasets..."
+            errorMessage="No se pudieron cargar los datasets"
+            emptyMessage="Sin datasets registrados"
+            emptyHint="Usa el botón Importar Excel para registrar el primero"
+            emptyIcon="database"
+            (retry)="loadDatasets()">
 
             <!-- TABLE BLOCK -->
             <div *ngIf="filteredDatasets.length > 0" class="space-y-0">
@@ -250,10 +237,11 @@
             </div>
 
             <!-- PAGINATION -->
-            <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
+            <app-pagination *ngIf="filteredDatasets.length > 0"
+                            [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
             </app-pagination>
 
-        </ng-container>
+        </app-page-state>
 
     </div>
 

@@ -1,8 +1,9 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 import { UserResponse, UserCreateRequest, UserUpdateRequest } from '../models/user.model';
 import { Observable } from 'rxjs';
+import { Paginated } from '../../report/services/reports.service';
 
 @Injectable({ providedIn: 'root' })
 export class UsersService {
@@ -10,8 +11,17 @@ export class UsersService {
 
   constructor(private http: HttpClient) {}
 
+  /** Sin paginación → backend devuelve la lista completa (legacy). */
   getAll(): Observable<UserResponse[]> {
     return this.http.get<UserResponse[]>(this.api);
+  }
+
+  /** Paginado: backend devuelve `{ items, total, limit, offset }`. */
+  getPaginated(limit = 50, offset = 0): Observable<Paginated<UserResponse>> {
+    const params = new HttpParams()
+      .set('limit', String(limit))
+      .set('offset', String(offset));
+    return this.http.get<Paginated<UserResponse>>(this.api, { params });
   }
 
   getById(id: number): Observable<UserResponse> {

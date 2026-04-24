@@ -132,7 +132,7 @@
 
         </div>
 
-        <app-reports-kpi-cards [reports]="reports" [selectedYear]="selectedYear">
+        <app-reports-kpi-cards [selectedYear]="selectedYear">
         </app-reports-kpi-cards>
 
         <!-- EXPLORER -->
@@ -186,7 +186,8 @@
                 </p>
               </div>
             </div>
-            <app-strategy-dashboard [showStrategyButtons]="false" [dateFrom]="activeDateFrom" [dateTo]="activeDateTo">
+            <app-strategy-dashboard [showStrategyButtons]="false" [dateFrom]="activeDateFrom" [dateTo]="activeDateTo"
+              [selectedYear]="selectedYear" (yearChange)="onYearChange($event)">
             </app-strategy-dashboard>
           </div>
         </div>
@@ -196,7 +197,7 @@
           <div class="h-[3px] w-full rounded-t-xl"
             style="background: linear-gradient(90deg, #1B3A6B 0%, #059669 50%, #1B3A6B 100%);"></div>
           <div class="rounded-b-xl border p-5" style="border-color:#D6E0F0;background:white;">
-            <app-compliance-goal-dashboard>
+            <app-compliance-goal-dashboard [selectedYear]="selectedYear" (yearChange)="onYearChange($event)">
             </app-compliance-goal-dashboard>
           </div>
         </div>

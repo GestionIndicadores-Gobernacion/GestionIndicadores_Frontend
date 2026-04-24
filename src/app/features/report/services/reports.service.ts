@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 
@@ -15,6 +15,14 @@ import {
 } from '../models/report-aggregate.model';
 import { Observable } from 'rxjs';
 
+/** Envelope estándar de respuestas paginadas del backend. */
+export interface Paginated<T> {
+  items: T[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -24,8 +32,21 @@ export class ReportsService {
 
   constructor(private http: HttpClient) { }
 
+  /** Sin paginación → backend devuelve la lista completa (legacy). */
   getAll() {
     return this.http.get<ReportModel[]>(this.api);
+  }
+
+  /**
+   * Paginado: el backend devuelve `{ items, total, limit, offset }`.
+   * Útil para tablas grandes; conviene usarlo en pantallas con miles
+   * de reportes para evitar payloads pesados.
+   */
+  getPaginated(limit = 50, offset = 0): Observable<Paginated<ReportModel>> {
+    const params = new HttpParams()
+      .set('limit', String(limit))
+      .set('offset', String(offset));
+    return this.http.get<Paginated<ReportModel>>(this.api, { params });
   }
 
   getAllForDashboard(): Observable<ReportModel[]> {

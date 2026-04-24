@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, DestroyRef, Input, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 
@@ -38,13 +39,15 @@ export class StrategyMetricsComponent implements OnInit {
     return years;
   })();
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private fb: FormBuilder,
     private datasetService: DatasetService
   ) { }
 
   ngOnInit(): void {
-    this.datasetService.getAll().subscribe({
+    this.datasetService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (data) => this.datasets = data ?? []
     });
   }

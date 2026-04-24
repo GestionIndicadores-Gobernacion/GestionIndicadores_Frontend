@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ComponentIndicatorModel } from '../../../../../../features/report/models/component.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -46,6 +47,8 @@ export class RedAnimaliaModalComponent implements OnChanges {
   editingIndex = -1;
   stagingMetrics: Record<string, number> = {};
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private datasetService: DatasetService,
     private cdr: ChangeDetectorRef
@@ -84,7 +87,7 @@ export class RedAnimaliaModalComponent implements OnChanges {
       return;
     }
 
-    this.datasetService.getRecordsByDataset(datasetId).subscribe({
+    this.datasetService.getRecordsByDataset(datasetId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (records) => {
         this.allActors = records;
         this.applyFilters();

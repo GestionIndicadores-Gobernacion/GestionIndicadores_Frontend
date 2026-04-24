@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectorRef } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, Input, OnInit, Output, ChangeDetectorRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 
 import { ActionPlanModel, ActionPlanObjectiveModel, ActionPlanActivityModel, RecurrenceFrequency, ActionPlanActivityEditRequest } from '../../../../../features/action-plans/models/action-plan.model';
@@ -29,6 +30,8 @@ export class ActionPlanEditModalComponent implements OnInit {
   get isRecurrent(): boolean {
     return !!this.activity.recurrence_group_id;
   }
+
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private actionPlanService: ActionPlanService,
@@ -76,7 +79,7 @@ export class ActionPlanEditModalComponent implements OnInit {
     };
 
     this.saving = true;
-    this.actionPlanService.editActivity(this.activity.id!, payload).subscribe({
+    this.actionPlanService.editActivity(this.activity.id!, payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => { this.saving = false; this.edited.emit(); },
       error: (err) => {
         this.saving = false;

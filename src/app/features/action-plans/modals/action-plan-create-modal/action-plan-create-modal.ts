@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, EventEmitter, OnInit, Output, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { ActionPlanCreateRequest, RecurrenceFrequency } from '../../../../features/action-plans/models/action-plan.model';
@@ -67,6 +68,8 @@ export class ActionPlanCreateModalComponent implements OnInit {
       plan_objectives: []
     };
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private actionPlanService: ActionPlanService,
     private strategiesService: StrategiesService,
@@ -82,7 +85,7 @@ export class ActionPlanCreateModalComponent implements OnInit {
       strategies: this.strategiesService.getAll(),
       components: this.componentsService.getAll(),
       users: this.usersService.getAll(),
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: ({ strategies, components, users }) => {
         this.users = users.filter(u => !EXCLUDED_EMAILS.has(u.email));
 
@@ -165,7 +168,7 @@ export class ActionPlanCreateModalComponent implements OnInit {
     this.form.plan_objectives = [];
     if (!this.form.component_id || +this.form.component_id === 0) return;
 
-    this.componentsService.getById(+this.form.component_id).subscribe({
+    this.componentsService.getById(+this.form.component_id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: detail => {
         this.objectives = detail.objectives ?? [];
         if (this.objectives.length > 0) {
@@ -318,7 +321,7 @@ export class ActionPlanCreateModalComponent implements OnInit {
     };
 
     this.saving = true;
-    this.actionPlanService.create(payload).subscribe({
+    this.actionPlanService.create(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => { this.saving = false; this.created.emit(); },
       error: (err) => { this.saving = false; if (err?.error?.errors) this.errors = err.error.errors; this.cdr.detectChanges(); }
     });

@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
@@ -33,6 +34,8 @@ export class ActionPlanReportModalComponent implements OnInit {
   description = '';
   saving = false;
   error = '';
+
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private actionPlanService: ActionPlanService,
@@ -146,7 +149,7 @@ export class ActionPlanReportModalComponent implements OnInit {
     this.actionPlanService.report(this.activity.id!, {
       evidence_url: evidence || null,
       description: this.description.trim() || null,
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => { this.saving = false; this.reported.emit(); },
       error: (err) => {
         this.saving = false;
@@ -181,7 +184,7 @@ export class ActionPlanReportModalComponent implements OnInit {
 
     this.actionPlanService.addEvidence(this.activity.id!, {
       evidence_url: evidence,
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => { this.saving = false; this.reported.emit(); },
       error: (err) => {
         this.saving = false;

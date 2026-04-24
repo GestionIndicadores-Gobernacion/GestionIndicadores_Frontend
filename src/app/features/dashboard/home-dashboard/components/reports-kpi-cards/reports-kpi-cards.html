@@ -1,3 +1,9 @@
+<app-page-state
+  [state]="pageState"
+  loadingMessage="Cargando indicadores..."
+  errorMessage="No se pudieron cargar los indicadores"
+  (retry)="refresh()">
+
 <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
 
   <app-dashboard-card title="Asistencias" [value]="kpis.asistenciasTecnicas"
@@ -35,3 +41,4 @@
   </app-dashboard-card>
 
 </div>
+</app-page-state>

@@ -30,27 +30,14 @@
     <!-- CONTENT -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6 relative z-[1]">
 
-        <!-- LOADING -->
-        <div *ngIf="loading" class="flex items-center gap-3 py-8">
-            <div class="w-4 h-4 rounded-full animate-spin"
-                style="border: 2px solid #D6E0F0; border-top-color: #1B3A6B;"></div>
-            <span class="text-[13px]" style="color: #8A9DC0;">Cargando registros...</span>
-        </div>
-
-        <ng-container *ngIf="!loading">
-
-            <!-- EMPTY STATE -->
-            <div *ngIf="reports.length === 0" class="rounded-2xl p-16 text-center border"
-                style="background: white; border-color: #D6E0F0;">
-                <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
-                    style="background: #F0F4FA;">
-                    <lucide-icon name="file-text" [size]="28" [strokeWidth]="1.5" color="#4A6A9B"></lucide-icon>
-                </div>
-                <h3 class="text-sm font-bold" style="color: #1B3A6B;">Sin reportes registrados</h3>
-                <p class="text-xs mt-1 max-w-xs mx-auto leading-relaxed" style="color: #4A6A9B;">
-                    Usa el botón <strong>Nuevo reporte</strong> para crear el primer registro operativo
-                </p>
-            </div>
+        <app-page-state
+            [state]="pageState"
+            loadingMessage="Cargando registros..."
+            errorMessage="No se pudieron cargar los reportes"
+            emptyMessage="Sin reportes registrados"
+            emptyHint="Usa el botón Nuevo reporte para crear el primer registro operativo"
+            emptyIcon="file-text"
+            (retry)="reload()">
 
             <ng-container *ngIf="reports.length > 0">
 
@@ -97,7 +84,7 @@
 
             </ng-container>
 
-        </ng-container>
+        </app-page-state>
 
     </div>
 

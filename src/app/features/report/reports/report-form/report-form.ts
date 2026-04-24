@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, ViewChild, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
@@ -75,6 +76,8 @@ export class ReportFormComponent implements OnInit {
 
   prefillLoading = false;
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -136,10 +139,10 @@ export class ReportFormComponent implements OnInit {
   }
 
   loadBaseData(activityId: number | null = null): void {
-    this.strategiesService.getAll().subscribe({
+    this.strategiesService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (strategiesResp: any) => {
         const allStrategies = this.extractArray<StrategyModel>(strategiesResp);
-        this.componentsService.getAll().subscribe({
+        this.componentsService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
           next: (componentsResp: any) => {
             this.allComponents = this.extractArray<ComponentModel>(componentsResp);
 
@@ -161,7 +164,7 @@ export class ReportFormComponent implements OnInit {
   
   loadPrefill(activityId: number): void {
     this.prefillLoading = true;
-    this.actionPlanService.getPrefillForReport(activityId).subscribe({
+    this.actionPlanService.getPrefillForReport(activityId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (prefill) => {
         this.prefillLoading = false;
         this.activityPrefill = prefill;
@@ -208,7 +211,7 @@ export class ReportFormComponent implements OnInit {
   loadReport(): void {
     if (!this.id) return;
 
-    this.reportsService.getById(this.id).subscribe({
+    this.reportsService.getById(this.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (report: ReportModel) => {
 
         this.form = {
@@ -397,7 +400,7 @@ export class ReportFormComponent implements OnInit {
       ? this.reportsService.update(this.id!, payload)
       : this.reportsService.create(payload);
 
-    request.subscribe({
+    request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (savedReport) => {                          // ← recibir el reporte guardado
         this.toast.success(this.isEdit ? 'Reporte actualizado' : 'Reporte creado');
 

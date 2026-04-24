@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, DestroyRef, OnInit, ViewChild, ChangeDetectorRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormBuilder, FormGroup, FormArray,
   Validators, ReactiveFormsModule,
@@ -35,6 +36,7 @@ export class ComponenteFormComponent implements OnInit {
   private _indicatorsComponent?: ComponenteIndicatorsFormComponent;
   private pendingIndicators: any[] = [];
   private indicatorsLoaded = false;
+  private destroyRef = inject(DestroyRef);
 
   @ViewChild(ComponenteIndicatorsFormComponent)
   set indicatorsComponent(component: ComponenteIndicatorsFormComponent) {
@@ -115,7 +117,7 @@ export class ComponenteFormComponent implements OnInit {
   // ── Políticas públicas ──────────────────────────────────────
 
   loadPolicies(): void {
-    this.publicPoliciesService.getAll().subscribe({
+    this.publicPoliciesService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: policies => {
         this.allPolicies = policies ?? [];
         this.cdr.detectChanges();
@@ -180,7 +182,7 @@ export class ComponenteFormComponent implements OnInit {
   // ── Load data ───────────────────────────────────────────────
 
   loadStrategies(): void {
-    this.strategiesService.getAll().subscribe({
+    this.strategiesService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: s => {
         this.strategies = s ?? [];
         this.cdr.detectChanges();
@@ -193,7 +195,7 @@ export class ComponenteFormComponent implements OnInit {
     this.loading = true;
     this.cdr.detectChanges();
 
-    this.service.getById(this.id!).subscribe({
+    this.service.getById(this.id!).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: data => {
         this.form.patchValue({ strategy_id: data.strategy_id, name: data.name });
 
@@ -248,7 +250,7 @@ export class ComponenteFormComponent implements OnInit {
       ? this.service.update(this.id!, payload)
       : this.service.create(payload);
 
-    req.subscribe({
+    req.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.toast.success('Componente guardado correctamente');
         this.router.navigate(['/reports/components']);

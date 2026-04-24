@@ -1,4 +1,5 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, signal, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -53,6 +54,8 @@ export class TableViewerComponent implements OnInit {
     activeTab = signal<'dashboard' | 'records'>('dashboard');
     tableId = 0;
 
+    private destroyRef = inject(DestroyRef);
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -61,16 +64,20 @@ export class TableViewerComponent implements OnInit {
 
     ngOnInit(): void {
         this.tableId = Number(this.route.snapshot.paramMap.get('tableId'));
-        this.datasetService.getTableDashboard(this.tableId).subscribe({
-            next: d => {
-                this.data.set(d);
-                this.loading.set(false);
-                this.datasetService.getById(d.table.dataset_id).subscribe({
-                    next: ds => this.datasetName.set(ds.name)
-                });
-            },
-            error: () => { this.error.set('No se pudo cargar el dashboard'); this.loading.set(false); }
-        });
+        this.datasetService.getTableDashboard(this.tableId)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: d => {
+                    this.data.set(d);
+                    this.loading.set(false);
+                    this.datasetService.getById(d.table.dataset_id)
+                        .pipe(takeUntilDestroyed(this.destroyRef))
+                        .subscribe({
+                            next: ds => this.datasetName.set(ds.name)
+                        });
+                },
+                error: () => { this.error.set('No se pudo cargar el dashboard'); this.loading.set(false); }
+            });
     }
 
     goBack(): void { this.router.navigate(['/datasets']); }

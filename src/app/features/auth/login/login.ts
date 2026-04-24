@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, NgForm, NgModel } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../../core/services/auth.service';
@@ -23,6 +24,8 @@ export class LoginComponent implements OnInit {
   password = '';
   errorMessage = '';
   loading = false;
+
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private auth: AuthService,
@@ -59,6 +62,7 @@ export class LoginComponent implements OnInit {
     this.errorMessage = '';
 
     this.auth.login({ email: this.email, password: this.password })
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
           this.auth.saveSession(
@@ -84,7 +88,7 @@ export class LoginComponent implements OnInit {
     this.auth.login({
       email: 'publico@indicadorespyba.cloud',
       password: 'publico2026'
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
         this.auth.saveSession(res.access_token, res.refresh_token, res.user);
         this.router.navigate(['/dashboard']);

@@ -1,10 +1,10 @@
-import { ReportsKpiService } from '../../../../../../features/report/services/reports-kpi.service';
+import { KpiLocationItem } from '../../../../../../features/report/services/reports-kpi.service';
 import { findCentroid, normalizeMunicipio } from '../../../../../../core/data/valle-geo.data';
 import { ReportModel } from '../../../../../../features/report/models/report.model';
 import { MunicipioSummary, ReportDetail } from '../reports-map.types';
 
 export function formatIndicatorValue(
-    value: any,
+    value: unknown,
     fieldType: string
 ): string {
     if (value === null || value === undefined || value === '') return '—';
@@ -20,15 +20,17 @@ export function formatIndicatorValue(
         case 'multi_select': {
             if (Array.isArray(value)) return value.join(', ');
             if (typeof value === 'string') {
-                try { const p = JSON.parse(value); return Array.isArray(p) ? p.join(', ') : value; }
-                catch { return value; }
+                try {
+                    const p: unknown = JSON.parse(value);
+                    return Array.isArray(p) ? p.join(', ') : value;
+                } catch { return value; }
             }
             return String(value);
         }
         case 'sum_group': {
             if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-                const total = Object.values(value as Record<string, number>)
-                    .reduce((s, v) => s + (Number(v) || 0), 0);
+                const total = Object.values(value as Record<string, unknown>)
+                    .reduce<number>((s, v) => s + (Number(v) || 0), 0);
                 return total.toLocaleString('es-CO');
             }
             return String(value);
@@ -46,7 +48,12 @@ export function buildMunicipioSummary(
     reps: ReportModel[],
     componentMap: Record<number, string>,
     normalizeZone: (zone: string) => 'Urbana' | 'Rural',
-    kpiService: ReportsKpiService
+    /**
+     * KPIs calculados en el backend (fuente única).
+     * Si es `undefined`, los indicadores resumen simplemente no se
+     * muestran para esta ubicación — NO hay cálculo local.
+     */
+    kpiFromBackend?: KpiLocationItem,
 ): MunicipioSummary | null {
     const centroid = findCentroid(location);
     if (!centroid) return null;
@@ -72,12 +79,17 @@ export function buildMunicipioSummary(
         if (total > 0) indMap.set(id, { id, name, field_type: 'number', total });
     };
 
-    add(-1, 'Asistencias técnicas', kpiService.asistenciasTecnicas(reps));
-    add(-2, 'Denuncias reportadas', kpiService.denunciasReportadas(reps));
-    add(-3, 'Animales esterilizados', kpiService.animalesEsterilizados(reps));
-    add(-4, 'Refugios impactados', kpiService.refugiosImpactados(reps));
-    add(-5, 'Niños sensibilizados', kpiService.ninosSensibilizados(reps));
-    add(-6, 'Emprendedores cofinanciados', kpiService.emprendedoresCofinanciados(reps));
+    // Fuente única: backend /kpis/by-location. Si el endpoint aún no ha
+    // respondido, simplemente omitimos la sección de KPIs (la UI sigue
+    // mostrando totales por componente, urbana/rural y detalle de reportes).
+    if (kpiFromBackend) {
+        add(-1, 'Asistencias técnicas', kpiFromBackend.asistencias_tecnicas);
+        add(-2, 'Denuncias reportadas', kpiFromBackend.denuncias_reportadas);
+        add(-3, 'Animales esterilizados', kpiFromBackend.animales_esterilizados);
+        add(-4, 'Refugios impactados', kpiFromBackend.refugios_impactados);
+        add(-5, 'Niños sensibilizados', kpiFromBackend.ninos_sensibilizados);
+        add(-6, 'Emprendedores cofinanciados', kpiFromBackend.emprendedores_cofinanciados);
+    }
 
     // ── Detalle completo por reporte ──────────────────────────────────────────
     const reportDetails: ReportDetail[] = reps
@@ -119,8 +131,8 @@ export function buildMunicipioSummary(
 
             const n = fieldType === 'number'
                 ? Number(iv.value)
-                : Object.values(iv.value as Record<string, number>)
-                    .reduce((s, v) => s + (Number(v) || 0), 0);
+                : Object.values(iv.value as Record<string, unknown>)
+                    .reduce<number>((s, v) => s + (Number(v) || 0), 0);
             if (isNaN(n) || n <= 0) continue;
 
             const compName = componentMap[r.component_id] ?? `Componente ${r.component_id}`;
@@ -154,7 +166,7 @@ export function buildMunicipioMap(
     reports: ReportModel[],
     componentMap: Record<number, string>,
     normalizeZone: (zone: string) => 'Urbana' | 'Rural',
-    kpiService: ReportsKpiService
+    kpiByLocation?: Map<string, KpiLocationItem>,
 ): Map<string, MunicipioSummary> {
     const result = new Map<string, MunicipioSummary>();
     const grouped = new Map<string, ReportModel[]>();
@@ -165,9 +177,11 @@ export function buildMunicipioMap(
         grouped.get(key)!.push(r);
     }
 
-    for (const [, reps] of grouped) {
+    for (const [key, reps] of grouped) {
+        const kpi = kpiByLocation?.get(key);
         const summary = buildMunicipioSummary(
-            reps[0].intervention_location, reps, componentMap, normalizeZone, kpiService
+            reps[0].intervention_location, reps, componentMap,
+            normalizeZone, kpi,
         );
         if (summary) result.set(normalizeMunicipio(summary.name), summary);
     }

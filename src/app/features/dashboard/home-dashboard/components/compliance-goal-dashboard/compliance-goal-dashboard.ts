@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { StrategiesService } from '../../../../../features/report/services/strategies.service';
@@ -30,7 +31,11 @@ export interface ComponentGoal {
   templateUrl: './compliance-goal-dashboard.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ComplianceGoalDashboardComponent implements OnInit {
+export class ComplianceGoalDashboardComponent implements OnInit, OnChanges {
+
+  /** Año sincronizado con el dashboard principal. */
+  @Input() selectedYear: number = new Date().getFullYear();
+  @Output() yearChange = new EventEmitter<number>();
 
   items: ComponentGoal[] = [];
   filteredItems: ComponentGoal[] = [];
@@ -40,9 +45,10 @@ export class ComplianceGoalDashboardComponent implements OnInit {
   loading = true;
   search = '';
   selectedStrategyId: number | null = null;
-  selectedYear: number = new Date().getFullYear();
   sortCol: 'name' | 'avg_percent' = 'avg_percent';
   sortDir: 'asc' | 'desc' = 'desc';
+
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private strategiesService: StrategiesService,
@@ -50,16 +56,22 @@ export class ComplianceGoalDashboardComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.strategiesService.getAll().subscribe({
+    this.strategiesService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (s) => { this.strategies = s ?? []; this.cdr.markForCheck(); }
     });
     this.load();
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['selectedYear'] && !changes['selectedYear'].firstChange) {
+      this.load();
+    }
+  }
+
   private load(): void {
     this.loading = true;
     this.cdr.markForCheck();
-    this.strategiesService.getComponentGoals(this.selectedYear, this.selectedStrategyId).subscribe({
+    this.strategiesService.getComponentGoals(this.selectedYear, this.selectedStrategyId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (data) => {
         this.availableYears  = data.available_years ?? [];
         this.unconfiguredCount = data.unconfigured_count ?? 0;
@@ -83,7 +95,13 @@ export class ComplianceGoalDashboardComponent implements OnInit {
   }
 
   onStrategyChange(): void { this.load(); }
-  onYearChange(year: number): void { this.selectedYear = year; this.load(); }
+
+  onYearChange(year: number): void {
+    this.selectedYear = year;
+    this.load();
+    // Sincronizar con el dashboard principal.
+    this.yearChange.emit(year);
+  }
 
   applyFilters(): void {
     const term = this.search.toLowerCase().trim();

@@ -1,11 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuditLogModel } from '../action-plans/models/audit-log.model';
 import { AuditLogService } from '../action-plans/services/audit-log.service';
 import { UsersService } from '../user/services/users.service';
 import { Pagination } from '../../shared/components/pagination/pagination';
+import { PageState, PageStateComponent } from '../../shared/components/page-state/page-state';
 
 interface FilterState {
   search: string;
@@ -29,7 +31,15 @@ export class AuditHistoryComponent implements OnInit {
   userMap: Record<number, string> = {};
 
   loading = true;
+  loadError = false;
   timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  get pageState(): PageState {
+    if (this.loading) return 'loading';
+    if (this.loadError) return 'error';
+    if (!this.paginated.length) return 'empty';
+    return 'content';
+  }
 
   filters: FilterState = {
     search: '',
@@ -49,6 +59,8 @@ export class AuditHistoryComponent implements OnInit {
     action_plan: 'Plan de acción',
   };
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private auditLogService: AuditLogService,
     private usersService: UsersService,
@@ -56,34 +68,40 @@ export class AuditHistoryComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.usersService.getAll().subscribe({
-      next: users => {
-        this.userMap = Object.fromEntries(
-          users.map(u => [u.id, `${u.first_name} ${u.last_name}`])
-        );
-        this.loadLogs();
-      },
-      error: () => this.loadLogs(),
-    });
+    this.usersService.getAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: users => {
+          this.userMap = Object.fromEntries(
+            users.map(u => [u.id, `${u.first_name} ${u.last_name}`])
+          );
+          this.loadLogs();
+        },
+        error: () => this.loadLogs(),
+      });
   }
 
   loadLogs(): void {
     this.loading = true;
-    this.auditLogService.getAll().subscribe({
-      next: logs => {
-        this.logs = logs;
-        this.applyFilters();
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.logs = [];
-        this.filtered = [];
-        this.paginated = [];
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-    });
+    this.loadError = false;
+    this.auditLogService.getAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: logs => {
+          this.logs = logs;
+          this.applyFilters();
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.logs = [];
+          this.filtered = [];
+          this.paginated = [];
+          this.loadError = true;
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   applyFilters(): void {
