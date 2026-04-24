@@ -59,17 +59,29 @@ export class ReportsExplorerChartComponent implements OnChanges {
     this.buildChart();
   }
 
-  get isChartEmpty(): boolean {
-    if (!this.yearHasData) return true;
-    const d = this.chartData.datasets?.[0]?.data;
-    return !d || (d as number[]).every(v => v === 0);
+  get indicatorTotal(): number | null {
+    const datasets = this.chartData?.datasets;
+    if (!datasets || !datasets.length) return null;
+
+    let total = 0;
+    let hasData = false;
+    for (const ds of datasets) {
+      const arr = ds.data as number[] | undefined;
+      if (!arr || !arr.length) continue;
+      hasData = true;
+      for (const v of arr) total += Number(v || 0);
+    }
+    return hasData ? total : null;
   }
 
-  get indicatorTotal(): number | null {
-    const data = this.chartData?.datasets?.[0]?.data as number[] | undefined;
-    if (!data || !data.length) return null;
-
-    return data.reduce((sum, v) => sum + Number(v || 0), 0);
+  get isChartEmpty(): boolean {
+    if (!this.yearHasData) return true;
+    const datasets = this.chartData.datasets;
+    if (!datasets?.length) return true;
+    return datasets.every(ds => {
+      const arr = ds.data as number[] | undefined;
+      return !arr || arr.every(v => Number(v || 0) === 0);
+    });
   }
 
   get chartHeight(): number {
