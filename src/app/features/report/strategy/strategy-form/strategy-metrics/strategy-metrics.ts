@@ -112,16 +112,16 @@ export class StrategyMetricsComponent implements OnInit {
   getFieldNamePlaceholder(metric: FormGroup): string {
     const t = this.getType(metric);
     if (t === 'dataset_sum') return 'ej: personas_capacitadas';
-    if (t === 'report_sum') return 'ej: 137';
-    if (t === 'report_sum_nested') return 'ej: 99';
+    if (t === 'report_sum') return 'ej: 137 ó 163,162,164';
+    if (t === 'report_sum_nested') return 'ej: 99 ó 99,100';
     return 'ej: cantidad_beneficiarios';
   }
 
   getFieldNameHint(metric: FormGroup): string {
     const t = this.getType(metric);
     if (t === 'dataset_sum') return 'Nombre exacto de la columna en el archivo cargado';
-    if (t === 'report_sum') return 'ID del indicador numérico a sumar';
-    if (t === 'report_sum_nested') return 'ID del indicador con estructura JSON anidada';
+    if (t === 'report_sum') return 'ID(s) de indicador(es) a sumar. Uno o varios separados por coma.';
+    if (t === 'report_sum_nested') return 'ID(s) de indicador(es) con estructura JSON anidada. Acepta uno o varios separados por coma.';
     return 'Nombre del atributo numérico en el modelo de reporte';
   }
 
