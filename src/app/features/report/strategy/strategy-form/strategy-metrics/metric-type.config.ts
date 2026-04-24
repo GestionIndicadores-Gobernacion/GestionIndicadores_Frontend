@@ -29,22 +29,22 @@ export const METRIC_TYPE_META: Record<MetricType, MetricTypeMeta> = {
     report_sum: {
         label: 'Suma de campo en reporte',
         shortLabel: 'Suma campo',
-        hint: 'Suma un campo numérico plano de los reportes',
+        hint: 'Suma un indicador (o varios) en los reportes. Acepta valores planos y estructuras tipo sum_group.',
         badgeClass: 'bg-indigo-100 text-indigo-700',
         steps: [
             'Selecciona el componente que genera los reportes.',
-            'En "ID del indicador" escribe el ID numérico del campo a sumar (ej: 137).',
-            'El sistema sumará el valor de ese indicador en todos los reportes del año.',
+            'En "ID del indicador" escribe el ID del campo a sumar (ej: 137). Para combinar varios, sepáralos por coma (ej: 163,162,164) o usa un arreglo JSON ([163,162,164]).',
+            'El sistema sumará el valor de esos indicadores en todos los reportes del año, incluyendo estructuras mensuales (sum_group).',
         ],
     },
     report_sum_nested: {
         label: 'Suma de campo anidado en reporte',
         shortLabel: 'Suma anidada',
-        hint: 'Suma un campo numérico dentro de una estructura JSON anidada',
+        hint: 'Suma un campo numérico dentro de una estructura JSON anidada. Acepta uno o varios indicadores.',
         badgeClass: 'bg-violet-100 text-violet-700',
         steps: [
             'Selecciona el componente que genera los reportes.',
-            'En "ID del indicador" escribe el ID del indicador con estructura anidada (ej: 99).',
+            'En "ID del indicador" escribe el ID del indicador con estructura anidada (ej: 99). Para combinar varios, sepáralos por coma (ej: 99,100).',
             'El sistema buscará dentro del JSON el campo configurado y sumará sus valores.',
         ],
     },
