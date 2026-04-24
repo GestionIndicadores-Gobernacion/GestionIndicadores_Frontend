@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
-import { Component, Input, OnChanges, OnInit, SimpleChanges, signal, computed } from '@angular/core';
+import { Component, DestroyRef, Input, OnChanges, OnInit, SimpleChanges, signal, computed, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { Dataset } from '../../../../features/datasets/models/dataset.model';
@@ -51,6 +52,8 @@ export class TablesListComponent implements OnInit, OnChanges {
   sortBy = signal<SortOption>('name');
   fieldTypeFilter = signal<string | null>(null);
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private tableService: TableService,
     private fieldService: FieldService,
@@ -91,7 +94,7 @@ export class TablesListComponent implements OnInit, OnChanges {
     forkJoin({
       tables: this.tableService.getAll(),
       datasets: this.datasetService.getAll()
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: ({ tables, datasets }) => this.buildStats(tables, datasets),
       error: () => {
         this.error.set('Error cargando tablas');
@@ -118,7 +121,7 @@ export class TablesListComponent implements OnInit, OnChanges {
       })
     );
 
-    forkJoin(requests).subscribe({
+    forkJoin(requests).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: results => {
         const stats: TableStats[] = results.map((res, i) => {
           const fields = res.fields as Field[];

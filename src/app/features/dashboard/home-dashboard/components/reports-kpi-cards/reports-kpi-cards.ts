@@ -1,27 +1,53 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  DestroyRef,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+  inject,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LucideAngularModule } from 'lucide-angular';
-import { Subject, takeUntil, filter } from 'rxjs';
-import { ReportModel } from '../../../../../features/report/models/report.model';
+
 import { DashboardCardComponent } from './dashboard-card/dashboard-card';
-import { KpiSnapshot, ReportsKpiService } from '../../../../../features/report/services/reports-kpi.service';
+import {
+  KpiSnapshot,
+  ReportsKpiService,
+} from '../../../../../features/report/services/reports-kpi.service';
+import { PageState, PageStateComponent } from '../../../../../shared/components/page-state/page-state';
 
 @Component({
   selector: 'app-reports-kpi-cards',
   standalone: true,
-  imports: [CommonModule, DashboardCardComponent, LucideAngularModule],
+  imports: [CommonModule, DashboardCardComponent, LucideAngularModule, PageStateComponent],
   templateUrl: './reports-kpi-cards.html',
   styleUrl: './reports-kpi-cards.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ReportsKpiCardsComponent implements OnInit, OnChanges, OnDestroy {
+export class ReportsKpiCardsComponent implements OnInit, OnChanges {
 
-  @Input() reports: ReportModel[] = [];
+  /**
+   * El año a consultar. El componente NO recibe reportes ni calcula
+   * localmente: todos los valores vienen del endpoint GET /kpis.
+   */
   @Input() selectedYear: number = new Date().getFullYear();
 
   kpis: KpiSnapshot = this.emptySnapshot();
 
-  private destroy$ = new Subject<void>();
+  loading = false;
+  loadError = false;
+
+  get pageState(): PageState {
+    if (this.loading) return 'loading';
+    if (this.loadError) return 'error';
+    return 'content';
+  }
+
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private kpiService: ReportsKpiService,
@@ -29,27 +55,32 @@ export class ReportsKpiCardsComponent implements OnInit, OnChanges, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    this.kpiService.datasetReady$
-      .pipe(filter(ready => ready), takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.refresh();
-        this.cdr.markForCheck();
-      });
+    this.refresh();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['reports'] || changes['selectedYear']) {
-      this.refresh();
-    }
+    if (changes['selectedYear']) this.refresh();
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  private refresh(): void {
-    this.kpis = this.kpiService.getSnapshot(this.reports, this.selectedYear);
+  refresh(): void {
+    this.loading = true;
+    this.loadError = false;
+    this.kpiService
+      .getSnapshotRemote(this.selectedYear)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: snapshot => {
+          this.kpis = snapshot;
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.kpis = this.emptySnapshot();
+          this.loadError = true;
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   private emptySnapshot(): KpiSnapshot {
@@ -62,10 +93,5 @@ export class ReportsKpiCardsComponent implements OnInit, OnChanges, OnDestroy {
       refugiosImpactados: 0,
       emprendedoresCofinanciados: 0,
     };
-  }
-
-  get lastReportDate(): Date | null {
-    if (!this.reports.length) return null;
-    return new Date(Math.max(...this.reports.map(r => new Date(r.created_at).getTime())));
   }
 }

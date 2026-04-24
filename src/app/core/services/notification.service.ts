@@ -21,6 +21,8 @@ export class NotificationService implements OnDestroy {
 
   private api = `${environment.apiUrl}/notifications`;
   private pollSub: Subscription | null = null;
+  private pollingEnabled = false;
+  private visibilityHandler: (() => void) | null = null;
 
   private unreadCount$ = new BehaviorSubject<number>(0);
   private notifications$ = new BehaviorSubject<Notification[]>([]);
@@ -30,10 +32,41 @@ export class NotificationService implements OnDestroy {
 
   constructor(private http: HttpClient) {}
 
-  /** Inicia polling cada 30 segundos */
+  /**
+   * Inicia polling cada 30 segundos.
+   * Si la pestaña está en background, se pausa automáticamente y se
+   * reanuda al volver a primer plano (ahorra ~31 requests/min inútiles).
+   */
   startPolling(): void {
+    this.pollingEnabled = true;
     this.fetchAll();
     this.fetchCount();
+    this.startInterval();
+
+    if (typeof document !== 'undefined' && !this.visibilityHandler) {
+      this.visibilityHandler = () => {
+        if (document.hidden) {
+          this.pauseInterval();
+        } else if (this.pollingEnabled) {
+          this.fetchCount();
+          this.startInterval();
+        }
+      };
+      document.addEventListener('visibilitychange', this.visibilityHandler);
+    }
+  }
+
+  stopPolling(): void {
+    this.pollingEnabled = false;
+    this.pauseInterval();
+    if (typeof document !== 'undefined' && this.visibilityHandler) {
+      document.removeEventListener('visibilitychange', this.visibilityHandler);
+      this.visibilityHandler = null;
+    }
+  }
+
+  private startInterval(): void {
+    if (this.pollSub) return;
     this.pollSub = interval(30_000).pipe(
       switchMap(() => this.http.get<{ unread_count: number }>(`${this.api}/count`))
     ).subscribe(res => {
@@ -41,9 +74,16 @@ export class NotificationService implements OnDestroy {
     });
   }
 
-  stopPolling(): void {
+  private pauseInterval(): void {
     this.pollSub?.unsubscribe();
     this.pollSub = null;
+  }
+
+  /** Limpia estado local (llamar desde AuthService.logout). */
+  reset(): void {
+    this.stopPolling();
+    this.unreadCount$.next(0);
+    this.notifications$.next([]);
   }
 
   fetchCount(): void {

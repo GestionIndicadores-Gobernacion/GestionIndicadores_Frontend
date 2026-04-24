@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, Input, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DatasetService } from '../../../../../../../features/datasets/services/datasets.service';
 import { LucideAngularModule } from 'lucide-angular';
@@ -19,6 +20,8 @@ export class ConfigCategorizedGroupComponent implements OnInit {
   datasets: { id: number; name: string }[] = [];
   datasetFields: Record<number, string[]> = {}; // dataset_id → campos disponibles
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private datasetService: DatasetService,
     private cdr: ChangeDetectorRef
@@ -29,7 +32,7 @@ export class ConfigCategorizedGroupComponent implements OnInit {
     if (config?.metrics) this.metrics = [...config.metrics];
     if (config?.sub_sections) this.subSections = config.sub_sections.map((s: any) => ({ ...s }));
 
-    this.datasetService.getAll().subscribe({
+    this.datasetService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (ds) => {
         this.datasets = ds.map(d => ({ id: d.id, name: d.name }));
         this.cdr.detectChanges(); // ← AGREGAR para forzar renderizado
@@ -46,7 +49,7 @@ export class ConfigCategorizedGroupComponent implements OnInit {
 
   // Carga los campos del dataset seleccionado
   loadDatasetFields(datasetId: number): void {
-    this.datasetService.getRecordsByDataset(datasetId).subscribe({
+    this.datasetService.getRecordsByDataset(datasetId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (records) => {
         if (records.length > 0) {
           this.datasetFields[datasetId] = Object.keys(records[0].data || {});

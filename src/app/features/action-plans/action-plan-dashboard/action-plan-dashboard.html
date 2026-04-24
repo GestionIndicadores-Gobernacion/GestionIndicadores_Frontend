@@ -22,14 +22,16 @@
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-4">
 
-        <!-- LOADING -->
-        <div *ngIf="loading" class="flex items-center gap-3 py-8">
-            <div class="w-4 h-4 rounded-full animate-spin" style="border:2px solid #D6E0F0;border-top-color:#1B3A6B;">
-            </div>
-            <span class="text-[13px]" style="color:#8A9DC0;">Cargando dashboard...</span>
-        </div>
+        <app-page-state
+            [state]="pageState"
+            loadingMessage="Cargando dashboard..."
+            errorMessage="No se pudo cargar el dashboard"
+            emptyMessage="Sin usuarios responsables registrados"
+            emptyHint="Cuando haya planes de acción asignados, se mostrarán aquí"
+            emptyIcon="users"
+            (retry)="load()">
 
-        <ng-container *ngIf="!loading">
+        <ng-container *ngIf="pageState === 'content'">
 
             <!-- FILTROS -->
             <div class="rounded-2xl overflow-hidden border" style="border-color:#D6E0F0;background:white;">
@@ -361,6 +363,8 @@
             </div>
 
         </ng-container>
+
+        </app-page-state>
 
     </div>
 </div>

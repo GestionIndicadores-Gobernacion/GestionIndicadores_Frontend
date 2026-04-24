@@ -1,15 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { getIndicatorDisplayName } from '../../../../core/data/indicator-display-names';
 import { ReportModel } from '../../../../features/report/models/report.model';
 import { ReportsService } from '../../../../features/report/services/reports.service';
+import { PageState, PageStateComponent } from '../../../../shared/components/page-state/page-state';
 
 @Component({
   selector: 'app-report-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule],
+  imports: [CommonModule, RouterModule, LucideAngularModule, PageStateComponent],
   templateUrl: './report-detail.html',
   styleUrl: './report-detail.css',
 })
@@ -19,7 +21,27 @@ export class ReportDetailComponent implements OnInit {
   loading = true;
   error = false;
 
+  get pageState(): PageState {
+    if (this.loading) return 'loading';
+    if (this.error) return 'error';
+    if (!this.report) return 'empty';
+    return 'content';
+  }
+
+  reload(): void {
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    this.loading = true;
+    this.error = false;
+    this.reportsService.getById(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (r) => { this.report = r; this.loading = false; this.cd.detectChanges(); },
+        error: () => { this.error = true; this.loading = false; this.cd.detectChanges(); }
+      });
+  }
+
   private expandedSet = new Set<number>();
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private route: ActivatedRoute,
@@ -31,10 +53,12 @@ export class ReportDetailComponent implements OnInit {
     const user = JSON.parse(localStorage.getItem('user') ?? 'null');
     this.isViewer = user?.role?.name === 'viewer';
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.reportsService.getById(id).subscribe({
-      next: (r) => { this.report = r; this.loading = false; this.cd.detectChanges(); },
-      error: () => { this.error = true; this.loading = false; this.cd.detectChanges(); }
-    });
+    this.reportsService.getById(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (r) => { this.report = r; this.loading = false; this.cd.detectChanges(); },
+        error: () => { this.error = true; this.loading = false; this.cd.detectChanges(); }
+      });
   }
 
   // ── Expand/collapse ────────────────────────────────────────────────────────

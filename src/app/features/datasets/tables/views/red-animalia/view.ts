@@ -1,4 +1,5 @@
-import { Component, Input, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { Component, DestroyRef, Input, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
@@ -75,10 +76,12 @@ export class RedAnimaliaViewComponent implements OnInit, OnDestroy {
     private charts: Record<string, any> = {};
     private ChartJS: any = null;
 
+    private destroyRef = inject(DestroyRef);
+
     constructor(private ds: DatasetService) {}
 
     ngOnInit(): void {
-        this.ds.getTableViewer(this.data.table.id).subscribe({
+        this.ds.getTableViewer(this.data.table.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
             next: d => {
                 this.viewerData.set(d);
                 this.loading.set(false);

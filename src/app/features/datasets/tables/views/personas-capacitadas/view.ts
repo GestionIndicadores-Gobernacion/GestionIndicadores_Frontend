@@ -1,4 +1,5 @@
-import { Component, Input, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { Component, DestroyRef, Input, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ViewerData, DatasetService } from '../../../../../features/datasets/services/datasets.service';
 import { DashboardData } from '../../table-viewer/table-viewer';
@@ -21,10 +22,12 @@ export class PersonasCapacitadasViewComponent implements OnInit, OnDestroy {
     private charts: Record<string, any> = {};
     private ChartJS: any = null;
 
+    private destroyRef = inject(DestroyRef);
+
     constructor(private datasetService: DatasetService) { }
 
     ngOnInit(): void {
-        this.datasetService.getTableViewer(this.data.table.id).subscribe({
+        this.datasetService.getTableViewer(this.data.table.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
             next: d => {
                 this.viewerData.set(d);
                 setTimeout(() => this.renderAll(), 150);

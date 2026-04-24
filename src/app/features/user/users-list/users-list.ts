@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, DestroyRef, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,11 +8,12 @@ import { LucideAngularModule } from 'lucide-angular';
 import { UserModel } from '../../../features/user/models/user.model';
 import { UsersService } from '../../../features/user/services/users.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { PageState, PageStateComponent } from '../../../shared/components/page-state/page-state';
 
 @Component({
   selector: 'app-users-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, RouterModule, LucideAngularModule, PageStateComponent],
   templateUrl: './users-list.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -25,10 +27,21 @@ export class UsersListComponent implements OnInit {
   users: UserModel[] = [];
   filteredUsers: UserModel[] = [];
   loading = true;
+  loadError = false;
   search = '';
 
   sortColumn: keyof UserModel | '' = '';
   sortDirection: 'asc' | 'desc' = 'asc';
+
+  /** Estado agregado para <app-page-state>. */
+  get pageState(): PageState {
+    if (this.loading) return 'loading';
+    if (this.loadError) return 'error';
+    if (!this.sortedUsers.length) return 'empty';
+    return 'content';
+  }
+
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private usersService: UsersService,
@@ -43,19 +56,22 @@ export class UsersListComponent implements OnInit {
 
   loadUsers() {
     this.loading = true;
-    this.usersService.getAll().subscribe({
-      next: (res) => {
-        this.users = res;
-        this.filteredUsers = res;
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.toast.error('Error cargando usuarios');
-        this.loading = false;
-        this.cdr.markForCheck();
-      }
-    });
+    this.loadError = false;
+    this.usersService.getAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.users = res;
+          this.filteredUsers = res;
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.loadError = true;
+          this.loading = false;
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   applyFilter() {
@@ -118,15 +134,17 @@ export class UsersListComponent implements OnInit {
     ).then(result => {
       if (!result.isConfirmed) return;
 
-      this.usersService.delete(id).subscribe({
-        next: () => {
-          this.toast.success("Usuario desactivado correctamente");
-          this.loadUsers();
-        },
-        error: () => {
-          this.toast.error("Error al desactivar usuario");
-        }
-      });
+      this.usersService.delete(id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => {
+            this.toast.success("Usuario desactivado correctamente");
+            this.loadUsers();
+          },
+          error: () => {
+            this.toast.error("Error al desactivar usuario");
+          }
+        });
     });
   }
 

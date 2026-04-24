@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuditLogModel } from '../../../../../../features/action-plans/models/audit-log.model';
@@ -30,6 +31,8 @@ export class ReportsAuditLogComponent implements OnInit {
   pageSize = 6;
   totalPages = 1;
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private auditLogService: AuditLogService,
     private usersService: UsersService,
@@ -41,7 +44,7 @@ export class ReportsAuditLogComponent implements OnInit {
   }
 
   loadUsers(): void {
-    this.usersService.getAll().subscribe({
+    this.usersService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: users => {
         this.userMap = Object.fromEntries(
           users.map(u => [u.id, `${u.first_name} ${u.last_name}`])
@@ -53,7 +56,7 @@ export class ReportsAuditLogComponent implements OnInit {
   }
 
   loadLogs(): void {
-    this.auditLogService.getAll({ entity: 'report' }).subscribe({
+    this.auditLogService.getAll({ entity: 'report' }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: logs => {
         this.logs = logs;
         this.applyFilters();

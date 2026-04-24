@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, DestroyRef, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 
 import { StrategyModel } from '../../../../features/report/models/strategy.model';
@@ -7,11 +8,12 @@ import { StrategiesService } from '../../../../features/report/services/strategi
 import { ToastService } from '../../../../core/services/toast.service';
 import { StrategyTableComponent } from './strategy-table/strategy-table';
 import { LucideAngularModule } from 'lucide-angular';
+import { PageState, PageStateComponent } from '../../../../shared/components/page-state/page-state';
 
 @Component({
   selector: 'app-strategy-list',
   standalone: true,
-  imports: [CommonModule, StrategyTableComponent, LucideAngularModule],
+  imports: [CommonModule, StrategyTableComponent, LucideAngularModule, PageStateComponent],
   templateUrl: './strategy-list.html',
   styleUrl: './strategy-list.css',
 })
@@ -19,6 +21,16 @@ export class StrategyListComponent implements OnInit {
 
   strategies: StrategyModel[] = [];
   loading = false;
+  loadError = false;
+
+  get pageState(): PageState {
+    if (this.loading) return 'loading';
+    if (this.loadError) return 'error';
+    if (!this.strategies.length) return 'empty';
+    return 'content';
+  }
+
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private strategiesService: StrategiesService,
@@ -33,19 +45,22 @@ export class StrategyListComponent implements OnInit {
 
   loadStrategies(): void {
     this.loading = true;
+    this.loadError = false;
     this.cd.detectChanges();
-    this.strategiesService.getAll().subscribe({
-      next: (data) => {
-        this.strategies = data ?? [];
-        this.loading = false;
-        this.cd.detectChanges();
-      },
-      error: () => {
-        this.toast.error('No se pudieron cargar las estrategias');
-        this.loading = false;
-        this.cd.detectChanges();
-      }
-    });
+    this.strategiesService.getAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data) => {
+          this.strategies = data ?? [];
+          this.loading = false;
+          this.cd.detectChanges();
+        },
+        error: () => {
+          this.loadError = true;
+          this.loading = false;
+          this.cd.detectChanges();
+        }
+      });
   }
 
   goToCreate(): void {
@@ -61,13 +76,15 @@ export class StrategyListComponent implements OnInit {
       .confirm('¿Eliminar estrategia?', 'Esta acción no se puede deshacer.')
       .then(result => {
         if (!result.isConfirmed) return;
-        this.strategiesService.delete(id).subscribe({
-          next: () => {
-            this.toast.success('Estrategia eliminada correctamente');
-            this.loadStrategies();
-          },
-          error: () => this.toast.error('No se pudo eliminar la estrategia')
-        });
+        this.strategiesService.delete(id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.toast.success('Estrategia eliminada correctamente');
+              this.loadStrategies();
+            },
+            error: () => this.toast.error('No se pudo eliminar la estrategia')
+          });
       });
   }
 }
