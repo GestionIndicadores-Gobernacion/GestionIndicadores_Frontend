@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, DestroyRef, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -37,6 +38,7 @@ export class ComponentesListComponent implements OnInit {
   sortColumn: keyof ComponentModel | 'strategy' | '' = '';
   sortDirection: 'asc' | 'desc' = 'asc';
 
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private componentsService: ComponentsService,
@@ -61,34 +63,38 @@ export class ComponentesListComponent implements OnInit {
     this.loading = true;
     this.cd.detectChanges();
 
-    this.strategiesService.getAll().subscribe({
-      next: (strategies: StrategyModel[]) => {
+    this.strategiesService.getAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (strategies: StrategyModel[]) => {
 
-        this.strategyMap = {};
-        strategies.forEach(s => {
-          this.strategyMap[s.id] = s.name;
-        });
+          this.strategyMap = {};
+          strategies.forEach(s => {
+            this.strategyMap[s.id] = s.name;
+          });
 
-        this.componentsService.getAll().subscribe({
-          next: (components) => {
-            this.components = components ?? [];
-            this.filteredComponents = components ?? [];
-            this.loading = false;
-            this.cd.detectChanges();
-          },
-          error: () => {
-            this.toast.error('Error al cargar componentes');
-            this.loading = false;
-            this.cd.detectChanges();
-          }
-        });
-      },
-      error: () => {
-        this.toast.error('Error al cargar estrategias');
-        this.loading = false;
-        this.cd.detectChanges();
-      }
-    });
+          this.componentsService.getAll()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+              next: (components) => {
+                this.components = components ?? [];
+                this.filteredComponents = components ?? [];
+                this.loading = false;
+                this.cd.detectChanges();
+              },
+              error: () => {
+                this.toast.error('Error al cargar componentes');
+                this.loading = false;
+                this.cd.detectChanges();
+              }
+            });
+        },
+        error: () => {
+          this.toast.error('Error al cargar estrategias');
+          this.loading = false;
+          this.cd.detectChanges();
+        }
+      });
   }
 
   // =========================

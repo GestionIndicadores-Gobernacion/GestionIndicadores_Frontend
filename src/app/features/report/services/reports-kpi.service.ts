@@ -39,11 +39,23 @@ export class ReportsKpiService {
   private _datasetYear: number | null = null;
   private _datasetRecords: any[] = [];
   private _datasetLoaded = false;
+  private _datasetError = false;
 
   private _datasetReady$ = new BehaviorSubject<boolean>(false);
   readonly datasetReady$ = this._datasetReady$.asObservable();
 
+  /** True si la última carga del dataset falló (útil para mostrar fallback UI). */
+  get datasetFailed(): boolean { return this._datasetError; }
+
   constructor(private datasetService: DatasetService) {
+    this.loadDataset();
+  }
+
+  /** Reintenta cargar el dataset. Limpia el estado de error. */
+  refreshDataset(): void {
+    this._datasetLoaded = false;
+    this._datasetError = false;
+    this._datasetReady$.next(false);
     this.loadDataset();
   }
 
@@ -57,18 +69,22 @@ export class ReportsKpiService {
 
         this.datasetService.getRecordsByDataset(DATASET_ID_PERSONAS_CAPACITADAS).subscribe({
           next: (records) => {
-            this._datasetRecords = records;
+            this._datasetRecords = records ?? [];
             this._datasetLoaded = true;
+            this._datasetError = false;
             this._datasetReady$.next(true);
           },
           error: () => {
+            // Preservamos _datasetRecords previos si existen; marcamos error.
             this._datasetLoaded = true;
+            this._datasetError = true;
             this._datasetReady$.next(true);
           }
         });
       },
       error: () => {
         this._datasetLoaded = true;
+        this._datasetError = true;
         this._datasetReady$.next(true);
       }
     });

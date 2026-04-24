@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, DestroyRef, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -30,6 +31,8 @@ export class UsersListComponent implements OnInit {
   sortColumn: keyof UserModel | '' = '';
   sortDirection: 'asc' | 'desc' = 'asc';
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private usersService: UsersService,
     private router: Router,
@@ -43,19 +46,21 @@ export class UsersListComponent implements OnInit {
 
   loadUsers() {
     this.loading = true;
-    this.usersService.getAll().subscribe({
-      next: (res) => {
-        this.users = res;
-        this.filteredUsers = res;
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.toast.error('Error cargando usuarios');
-        this.loading = false;
-        this.cdr.markForCheck();
-      }
-    });
+    this.usersService.getAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.users = res;
+          this.filteredUsers = res;
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.toast.error('Error cargando usuarios');
+          this.loading = false;
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   applyFilter() {
@@ -118,15 +123,17 @@ export class UsersListComponent implements OnInit {
     ).then(result => {
       if (!result.isConfirmed) return;
 
-      this.usersService.delete(id).subscribe({
-        next: () => {
-          this.toast.success("Usuario desactivado correctamente");
-          this.loadUsers();
-        },
-        error: () => {
-          this.toast.error("Error al desactivar usuario");
-        }
-      });
+      this.usersService.delete(id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => {
+            this.toast.success("Usuario desactivado correctamente");
+            this.loadUsers();
+          },
+          error: () => {
+            this.toast.error("Error al desactivar usuario");
+          }
+        });
     });
   }
 

@@ -1,5 +1,6 @@
 import { CommonModule } from "@angular/common";
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
+import { ChangeDetectorRef, Component, DestroyRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { FormsModule } from "@angular/forms";
 import { LucideAngularModule } from 'lucide-angular';
 import { Router } from "@angular/router";
@@ -98,6 +99,8 @@ export class ReportsExplorerComponent implements OnChanges {
     return this.selectedIndicator;
   }
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private reportsService: ReportsService,
     private cd: ChangeDetectorRef,
@@ -157,7 +160,9 @@ export class ReportsExplorerComponent implements OnChanges {
         this.dateFrom ?? undefined,
         this.dateTo ?? undefined
       )
-    }).subscribe({
+    })
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
       next: ({ aggregate, indicators }) => {
         this.componentAggregate = aggregate;
         this.indicatorsAggregate = indicators;
@@ -191,7 +196,9 @@ export class ReportsExplorerComponent implements OnChanges {
           this.dateFrom ?? undefined,
           this.dateTo ?? undefined
         )
-      }).subscribe({
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
         next: ({ aggregate, indicators }) => {
           const currentId = this.selectedIndicator?.indicator_id ?? null;
           this.componentAggregate = aggregate;

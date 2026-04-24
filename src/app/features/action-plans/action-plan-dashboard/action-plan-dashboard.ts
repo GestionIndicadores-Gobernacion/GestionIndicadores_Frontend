@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, DestroyRef, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
@@ -63,6 +64,8 @@ export class ActionPlanDashboardComponent implements OnInit {
   sortCol: string = '';
   sortDir: 'asc' | 'desc' = 'asc'
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private actionPlanService: ActionPlanService,
     private toast: ToastService,
@@ -70,19 +73,21 @@ export class ActionPlanDashboardComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.actionPlanService.getDashboard().subscribe({
-      next: (data) => {
-        this.allUsers = data.map(u => ({ ...u, expanded: false }));
-        this.applyFilters();
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.toast.error('Error cargando dashboard');
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    });
+    this.actionPlanService.getDashboard()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data) => {
+          this.allUsers = data.map(u => ({ ...u, expanded: false }));
+          this.applyFilters();
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.toast.error('Error cargando dashboard');
+          this.loading = false;
+          this.cdr.detectChanges();
+        }
+      });
   }
 
   applyFilters(): void {

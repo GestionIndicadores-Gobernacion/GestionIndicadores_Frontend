@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, DestroyRef, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 
 import { AuthService } from '../../../core/services/auth.service';
@@ -71,6 +72,8 @@ export class HomeDashboardComponent implements OnInit {
     { key: 'year', label: 'Año actual' },
     { key: 'custom', label: 'Personalizado' },
   ];
+
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private authService: AuthService,
@@ -209,78 +212,85 @@ export class HomeDashboardComponent implements OnInit {
   // =========================================================
 
   private loadData(): void {
-    this.strategiesService.getAll().subscribe({
-      next: strategies => {
-        this.strategyMap = Object.fromEntries(strategies.map(s => [s.id, s.name]));
-        this.strategyIds = strategies
-          .sort((a, b) => a.name.localeCompare(b.name))
-          .map(s => s.id);
-        this.loadReports();
-      },
-      error: () => {
-        this.strategyMap = {};
-        this.strategyIds = [];
-        this.loading = false;
-        this.cd.detectChanges();
-      }
-    });
+    this.strategiesService.getAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: strategies => {
+          this.strategyMap = Object.fromEntries(strategies.map(s => [s.id, s.name]));
+          this.strategyIds = strategies
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map(s => s.id);
+          this.loadReports();
+        },
+        error: () => {
+          this.strategyMap = {};
+          this.strategyIds = [];
+          this.loading = false;
+          this.cd.detectChanges();
+        }
+      });
   }
 
   private loadReports(): void {
-    this.reportsService.getAllForDashboard().subscribe({
-      next: reports => {
-        this.allReports = reports ?? [];
+    this.reportsService.getAllForDashboard()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: reports => {
+          this.allReports = reports ?? [];
 
-        const years = [...new Set(this.allReports.map(r => new Date(r.report_date).getFullYear()))];
-        if (years.length > 0) this.selectedYear = Math.max(...years);
+          const years = [...new Set(this.allReports.map(r => new Date(r.report_date).getFullYear()))];
+          if (years.length > 0) this.selectedYear = Math.max(...years);
 
-        // Aplicar filtro inicial
-        this.applyFilter();
+          // Aplicar filtro inicial
+          this.applyFilter();
 
-        if (this.allReports.length === 0) {
+          if (this.allReports.length === 0) {
+            this.strategyAggregate = null;
+            this.components = [];
+            this.componentMap = {};
+            this.loading = false;
+            this.cd.detectChanges();
+            return;
+          }
+
+          this.selectedStrategyId = this.allReports[0].strategy_id;
+          const uniqueStrategyIds = [...new Set(this.allReports.map(r => r.strategy_id))];
+
+          const requests = uniqueStrategyIds.map(id =>
+            this.reportsService.aggregateByStrategy(id).pipe(catchError(() => of(this.emptyAggregate(id))))
+          );
+
+          forkJoin(requests)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(aggregates => {
+              const fullComponentMap: Record<number, string> = {};
+              aggregates.forEach((agg, index) => {
+                agg.by_component.forEach(c => { fullComponentMap[c.component_id] = c.component_name; });
+                if (uniqueStrategyIds[index] === this.selectedStrategyId) {
+                  this.strategyAggregate = agg;
+                  this.components = agg.by_component;
+                }
+              });
+              this.componentMap = fullComponentMap;
+              this.loading = false;
+              this.cd.detectChanges();
+            });
+        },
+        error: () => {
+          this.allReports = [];
+          this.reports = [];
           this.strategyAggregate = null;
           this.components = [];
-          this.componentMap = {};
           this.loading = false;
           this.cd.detectChanges();
-          return;
         }
-
-        this.selectedStrategyId = this.allReports[0].strategy_id;
-        const uniqueStrategyIds = [...new Set(this.allReports.map(r => r.strategy_id))];
-
-        const requests = uniqueStrategyIds.map(id =>
-          this.reportsService.aggregateByStrategy(id).pipe(catchError(() => of(this.emptyAggregate(id))))
-        );
-
-        forkJoin(requests).subscribe(aggregates => {
-          const fullComponentMap: Record<number, string> = {};
-          aggregates.forEach((agg, index) => {
-            agg.by_component.forEach(c => { fullComponentMap[c.component_id] = c.component_name; });
-            if (uniqueStrategyIds[index] === this.selectedStrategyId) {
-              this.strategyAggregate = agg;
-              this.components = agg.by_component;
-            }
-          });
-          this.componentMap = fullComponentMap;
-          this.loading = false;
-          this.cd.detectChanges();
-        });
-      },
-      error: () => {
-        this.allReports = [];
-        this.reports = [];
-        this.strategyAggregate = null;
-        this.components = [];
-        this.loading = false;
-        this.cd.detectChanges();
-      }
-    });
+      });
   }
 
   private loadAggregate(strategyId: number): void {
     this.reportsService.aggregateByStrategy(strategyId).pipe(
-      catchError(() => of(this.emptyAggregate(strategyId)))
+      catchError(() => of(this.emptyAggregate(strategyId))),
+      takeUntilDestroyed(this.destroyRef),
     ).subscribe(agg => {
       this.strategyAggregate = agg;
       this.components = agg.by_component;

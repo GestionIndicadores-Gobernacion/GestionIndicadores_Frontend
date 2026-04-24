@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, DestroyRef, Input, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { Router } from '@angular/router';
@@ -23,6 +24,8 @@ export class StrategyDashboardComponent implements OnInit {
   loading = false;
   selectedYear: number = new Date().getFullYear();
   availableYears: number[] = [];
+
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private strategiesService: StrategiesService,
@@ -58,7 +61,9 @@ export class StrategyDashboardComponent implements OnInit {
       year,
       this.dateFrom ?? undefined,
       this.dateTo ?? undefined,
-    ).subscribe({
+    )
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
       next: (data) => {
         this.strategies = data ?? [];
         this.loading = false;
