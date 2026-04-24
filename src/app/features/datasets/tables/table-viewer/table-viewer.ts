@@ -8,6 +8,8 @@ import { GenericoViewComponent } from '../views/generico/view';
 import { PersonasCapacitadasViewComponent } from '../views/personas-capacitadas/view';
 import { PresupuestalViewComponent } from '../views/presupuestal/view';
 import { RedAnimaliaViewComponent } from '../views/red-animalia/view';
+import { DonatonViewComponent } from '../views/donaton/view';
+import { CensoAnimalViewComponent } from '../views/censo-animal/view';
 import { DashboardRecordsComponent } from '../visualizations/dashboard-records/dashboard-records';
 
 export interface DashBar { label: string; value: number; pct: number; color: string; }
@@ -27,7 +29,7 @@ export interface DashboardData {
     total: number;
     kpis: DashKpi[];
     sections: DashSection[];
-    dataset_type: 'personas_capacitadas' | 'animales' | 'presupuesto' | 'generico' | 'censo_animal' | 'red_animalia';
+    dataset_type: 'personas_capacitadas' | 'animales' | 'presupuesto' | 'generico' | 'censo_animal' | 'red_animalia' | 'donaton';
     project_label?: string;  // ← agregar
 }
 
@@ -41,6 +43,8 @@ export interface DashboardData {
         GenericoViewComponent,
         PresupuestalViewComponent,
         RedAnimaliaViewComponent,
+        DonatonViewComponent,
+        CensoAnimalViewComponent,
         DashboardRecordsComponent,
     ],
     templateUrl: './table-viewer.html',
