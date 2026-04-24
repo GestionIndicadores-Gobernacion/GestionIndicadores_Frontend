@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import Swal from 'sweetalert2';
@@ -50,6 +51,8 @@ export class DatasetsListComponent implements OnInit {
   selectedDatasetToUpdate: Dataset | null = null;
   showUpdateModal = false;
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private datasetService: DatasetService,
     private tableService: TableService,
@@ -65,35 +68,39 @@ export class DatasetsListComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    this.datasetService.getAll().subscribe({
-      next: (data) => {
-        this.datasets = data;
-        this.applyFilters();
-        this.loading = false;
-        this.loadTables();
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.error = 'No se pudieron cargar los datasets';
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    });
+    this.datasetService.getAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data) => {
+          this.datasets = data;
+          this.applyFilters();
+          this.loading = false;
+          this.loadTables();
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.error = 'No se pudieron cargar los datasets';
+          this.loading = false;
+          this.cdr.detectChanges();
+        }
+      });
   }
 
   private loadTables(): void {
-    this.tableService.getAll().subscribe({
-      next: (tables) => {
-        this.tableMap.clear();
-        // Guardar solo la primera tabla por dataset
-        for (const t of tables) {
-          if (!this.tableMap.has(t.dataset_id)) {
-            this.tableMap.set(t.dataset_id, t);
+    this.tableService.getAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (tables) => {
+          this.tableMap.clear();
+          // Guardar solo la primera tabla por dataset
+          for (const t of tables) {
+            if (!this.tableMap.has(t.dataset_id)) {
+              this.tableMap.set(t.dataset_id, t);
+            }
           }
+          this.cdr.detectChanges();
         }
-        this.cdr.detectChanges();
-      }
-    });
+      });
   }
 
   goToDashboard(dataset: Dataset): void {
@@ -177,14 +184,16 @@ export class DatasetsListComponent implements OnInit {
       confirmButtonColor: '#d33'
     }).then(result => {
       if (!result.isConfirmed) return;
-      this.datasetService.deactivate(dataset.id).subscribe({
-        next: () => {
-          Swal.fire('Eliminado', 'El dataset fue eliminado correctamente', 'success');
-          this.loadDatasets();
-          this.refreshTrigger++;
-        },
-        error: () => Swal.fire('Error', 'No se pudo eliminar el dataset', 'error')
-      });
+      this.datasetService.deactivate(dataset.id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => {
+            Swal.fire('Eliminado', 'El dataset fue eliminado correctamente', 'success');
+            this.loadDatasets();
+            this.refreshTrigger++;
+          },
+          error: () => Swal.fire('Error', 'No se pudo eliminar el dataset', 'error')
+        });
     });
   }
 

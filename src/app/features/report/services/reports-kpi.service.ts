@@ -1,13 +1,16 @@
 import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 import { ReportModel } from '../models/report.model';
-import { BehaviorSubject } from 'rxjs';
-import { DatasetService } from '../../datasets/services/datasets.service';
 
-// ─── Constantes ───────────────────────────────────────────────────────────────
+// ─── Constantes de dominio ───────────────────────────────────────────────
+// Solo quedan las que usan los agregadores de subset (consumidos por el
+// mapa para calcular KPIs por municipio). El cálculo global por año
+// vive en el backend (/kpis).
 export const COMPONENT_ID_ASISTENCIAS = 2;
 export const COMPONENT_ID_JUNTAS = 21;
 export const COMPONENT_ID_EMPRENDEDORES = 14;
-export const COMPONENT_ID_PROMOTORES = 22;
 export const COMPONENT_ID_NINOS = 23;
 export const COMPONENT_ID_ESTERILIZACION = 8;
 export const STRATEGY_ID_ESTERILIZACION = 3;
@@ -17,12 +20,10 @@ export const ID_DENUNCIAS_REPORTADAS = 137;
 export const ID_ANIMALES_ESTERILIZADOS = 99;
 export const ID_REFUGIOS = 102;
 export const ID_NINOS_CANTIDAD_IMPACTADA = 114;
-export const ID_PERSONAS_CAPACITADAS_PROMOTORES = 76;
-export const ID_NINOS_CAPACITADOS_PROMOTORES = 163;
 
-const DATASET_ID_PERSONAS_CAPACITADAS = 8;
 const ESPACIOS_ACOGIDA = ['albergue/refugio', 'fundacion', 'hogar de paso'];
 
+// ─── Contratos ───────────────────────────────────────────────────────────
 export interface KpiSnapshot {
   asistenciasTecnicas: number;
   denunciasReportadas: number;
@@ -33,64 +34,90 @@ export interface KpiSnapshot {
   emprendedoresCofinanciados: number;
 }
 
+/** Forma exacta que devuelve el backend en GET /kpis. */
+interface KpiSnapshotApi {
+  year: number;
+  asistencias_tecnicas: number;
+  denuncias_reportadas: number;
+  personas_capacitadas: number;
+  ninos_sensibilizados: number;
+  animales_esterilizados: number;
+  refugios_impactados: number;
+  emprendedores_cofinanciados: number;
+}
+
+/** Forma de GET /kpis/by-location. */
+export interface KpiLocationItem {
+  location: string;
+  total_reports: number;
+  asistencias_tecnicas: number;
+  denuncias_reportadas: number;
+  animales_esterilizados: number;
+  refugios_impactados: number;
+  ninos_sensibilizados: number;
+  emprendedores_cofinanciados: number;
+}
+
+export interface KpiByLocationResponse {
+  year: number;
+  items: KpiLocationItem[];
+}
+
+
 @Injectable({ providedIn: 'root' })
 export class ReportsKpiService {
 
-  private _datasetYear: number | null = null;
-  private _datasetRecords: any[] = [];
-  private _datasetLoaded = false;
-  private _datasetError = false;
+  private api = `${environment.apiUrl}/kpis`;
 
-  private _datasetReady$ = new BehaviorSubject<boolean>(false);
-  readonly datasetReady$ = this._datasetReady$.asObservable();
+  constructor(private http: HttpClient) { }
 
-  /** True si la última carga del dataset falló (útil para mostrar fallback UI). */
-  get datasetFailed(): boolean { return this._datasetError; }
+  // =====================================================================
+  // FUENTE CANÓNICA — endpoint /kpis del backend
+  // =====================================================================
 
-  constructor(private datasetService: DatasetService) {
-    this.loadDataset();
+  /**
+   * Devuelve el snapshot de KPIs calculado en el backend (fuente única).
+   */
+  getSnapshotRemote(year: number): Observable<KpiSnapshot> {
+    const params = new HttpParams().set('year', String(year));
+    return this.http
+      .get<KpiSnapshotApi>(`${this.api}/`, { params })
+      .pipe(map(ReportsKpiService.fromApi));
   }
 
-  /** Reintenta cargar el dataset. Limpia el estado de error. */
-  refreshDataset(): void {
-    this._datasetLoaded = false;
-    this._datasetError = false;
-    this._datasetReady$.next(false);
-    this.loadDataset();
+  /**
+   * KPIs agrupados por municipio. El mapa consume este endpoint en vez
+   * de calcular los agregados en el frontend.
+   */
+  getByLocation(year: number): Observable<KpiByLocationResponse> {
+    const params = new HttpParams().set('year', String(year));
+    return this.http.get<KpiByLocationResponse>(
+      `${this.api}/by-location`, { params }
+    );
   }
 
-  // ─── Dataset ──────────────────────────────────────────────────────────────
-
-  private loadDataset(): void {
-    this.datasetService.getById(DATASET_ID_PERSONAS_CAPACITADAS).subscribe({
-      next: (dataset) => {
-        const match = dataset.name.match(/\b(20\d{2})\b/);
-        this._datasetYear = match ? Number(match[1]) : null;
-
-        this.datasetService.getRecordsByDataset(DATASET_ID_PERSONAS_CAPACITADAS).subscribe({
-          next: (records) => {
-            this._datasetRecords = records ?? [];
-            this._datasetLoaded = true;
-            this._datasetError = false;
-            this._datasetReady$.next(true);
-          },
-          error: () => {
-            // Preservamos _datasetRecords previos si existen; marcamos error.
-            this._datasetLoaded = true;
-            this._datasetError = true;
-            this._datasetReady$.next(true);
-          }
-        });
-      },
-      error: () => {
-        this._datasetLoaded = true;
-        this._datasetError = true;
-        this._datasetReady$.next(true);
-      }
-    });
+  /** Adapta snake_case del backend al camelCase que ya usa la UI. */
+  static fromApi(api: KpiSnapshotApi): KpiSnapshot {
+    return {
+      asistenciasTecnicas: api.asistencias_tecnicas,
+      denunciasReportadas: api.denuncias_reportadas,
+      personasCapacitadas: api.personas_capacitadas,
+      ninosSensibilizados: api.ninos_sensibilizados,
+      animalesEsterilizados: api.animales_esterilizados,
+      refugiosImpactados: api.refugios_impactados,
+      emprendedoresCofinanciados: api.emprendedores_cofinanciados,
+    };
   }
 
-  // ─── Filtro por año ───────────────────────────────────────────────────────
+  // =====================================================================
+  // AGREGADORES DE SUBSET (consumidos por reports-map para KPIs por
+  // municipio). NO son duplicación del endpoint: el endpoint devuelve
+  // totales globales por año; estos métodos aplican la misma aritmética
+  // a un subconjunto arbitrario de reportes (p. ej. los de un municipio).
+  //
+  // Si en el futuro se crea un endpoint /kpis/by-location, todo este
+  // bloque se puede eliminar y el mapa pasaría a consumirlo.
+  // =====================================================================
 
   filterByYear(reports: ReportModel[], year: number): ReportModel[] {
     const y = Number(year);
@@ -99,8 +126,6 @@ export class ReportsKpiService {
       return parseInt(parts[0], 10) === y;
     });
   }
-
-  // ─── KPIs individuales ────────────────────────────────────────────────────
 
   asistenciasTecnicas(reports: ReportModel[]): number {
     let total = 0;
@@ -123,67 +148,20 @@ export class ReportsKpiService {
     }, 0);
   }
 
-  private sumSumGroup(value: any): number {
-    if (!value || typeof value !== 'object') return 0;
-    return Object.values(value).reduce((sum: number, v) => {
-      const n = Number(v);
-      return sum + (isNaN(n) ? 0 : n);
-    }, 0);
-  }
-
-  calcularPersonasCapacitadas(reports: ReportModel[], selectedYear: number): number {
-    if (selectedYear === 2026) {
-      // Para 2026: dataset PERSONAS CAPACITADAS + indicador 163 (niños capacitados, sum_group) de PROMOTORES
-      const fromReports = reports
-        .filter(r => r.component_id === COMPONENT_ID_PROMOTORES)
-        .reduce((sum, r) => {
-          const iv = r.indicator_values?.find(i => i.indicator_id === ID_NINOS_CAPACITADOS_PROMOTORES);
-          if (iv?.value == null) return sum;
-          return sum + this.sumSumGroup(iv.value);
-        }, 0);
-
-      const fromDataset = this._datasetLoaded
-        ? this._datasetRecords.filter(r => r.data?.['mes'] != null && r.data?.['mes'] !== '').length
-        : 0;
-
-      return fromDataset + fromReports;
-    }
-
-    // Otros años: suma los reportes del componente Promotores (indicador 76)
-    const fromReports = reports
-      .filter(r => r.component_id === COMPONENT_ID_PROMOTORES)
-      .reduce((sum, r) => {
-        const iv = r.indicator_values?.find(i => i.indicator_id === ID_PERSONAS_CAPACITADAS_PROMOTORES);
-        if (iv?.value == null) return sum;
-        const n = Number(iv.value);
-        return sum + (isNaN(n) ? 0 : n);
-      }, 0);
-
-    // Si el año coincide con el dataset externo, suma también esos registros
-    if (this._datasetLoaded && this._datasetYear === selectedYear) {
-      const fromDataset = this._datasetRecords.filter(r =>
-        r.data?.['mes'] != null && r.data?.['mes'] !== ''
-      ).length;
-      return fromDataset + fromReports;
-    }
-
-    return fromReports;
-  }
-
   animalesEsterilizados(reports: ReportModel[]): number {
     return reports
       .filter(r => r.strategy_id === STRATEGY_ID_ESTERILIZACION && r.component_id === COMPONENT_ID_ESTERILIZACION)
       .reduce((sum, r) => {
         const iv = r.indicator_values?.find(i => i.indicator_id === ID_ANIMALES_ESTERILIZADOS);
         if (!iv?.value || typeof iv.value !== 'object') return sum;
-        const data = (iv.value as any)['data'];
+        const data = (iv.value as Record<string, unknown>)['data'];
         if (!data || typeof data !== 'object') return sum;
         let s = 0;
-        for (const especie of Object.values(data as Record<string, any>)) {
+        for (const especie of Object.values(data as Record<string, unknown>)) {
           if (!especie || typeof especie !== 'object') continue;
-          for (const sexo of Object.values(especie as Record<string, any>)) {
+          for (const sexo of Object.values(especie as Record<string, unknown>)) {
             if (!sexo || typeof sexo !== 'object') continue;
-            const val = (sexo as any)['no_de_animales_esterilizados'];
+            const val = (sexo as Record<string, unknown>)['no_de_animales_esterilizados'];
             if (typeof val === 'number' && !isNaN(val)) s += val;
           }
         }
@@ -213,20 +191,5 @@ export class ReportsKpiService {
 
   emprendedoresCofinanciados(reports: ReportModel[]): number {
     return reports.filter(r => r.component_id === COMPONENT_ID_EMPRENDEDORES).length;
-  }
-
-  // ─── Snapshot completo ────────────────────────────────────────────────────
-
-  getSnapshot(reports: ReportModel[], year: number): KpiSnapshot {
-    const filtered = this.filterByYear(reports, year);
-    return {
-      asistenciasTecnicas: this.asistenciasTecnicas(filtered),
-      denunciasReportadas: this.denunciasReportadas(filtered),
-      personasCapacitadas: this.calcularPersonasCapacitadas(filtered, year),
-      ninosSensibilizados: this.ninosSensibilizados(filtered),
-      animalesEsterilizados: this.animalesEsterilizados(filtered),
-      refugiosImpactados: this.refugiosImpactados(filtered),
-      emprendedoresCofinanciados: this.emprendedoresCofinanciados(filtered),
-    };
   }
 }

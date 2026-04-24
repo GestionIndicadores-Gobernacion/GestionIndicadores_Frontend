@@ -12,6 +12,7 @@ import {
   ActionPlanReportRequest,
   ActivityReportPrefill,
 } from '../models/action-plan.model';
+import { Paginated } from '../../report/services/reports.service';
 
 @Injectable({ providedIn: 'root' })
 export class ActionPlanService {
@@ -27,6 +28,22 @@ export class ActionPlanService {
     if (filters?.month) params = params.set('month', filters.month);
     if (filters?.year) params = params.set('year', filters.year);
     return this.http.get<ActionPlanModel[]>(this.api, { params });
+  }
+
+  /** Paginado: backend devuelve `{ items, total, limit, offset }`. */
+  getPaginated(
+    limit = 50,
+    offset = 0,
+    filters?: ActionPlanFilters,
+  ): Observable<Paginated<ActionPlanModel>> {
+    let params = new HttpParams()
+      .set('limit', String(limit))
+      .set('offset', String(offset));
+    if (filters?.strategy_id) params = params.set('strategy_id', filters.strategy_id);
+    if (filters?.component_id) params = params.set('component_id', filters.component_id);
+    if (filters?.month) params = params.set('month', filters.month);
+    if (filters?.year) params = params.set('year', filters.year);
+    return this.http.get<Paginated<ActionPlanModel>>(this.api, { params });
   }
 
   getById(id: number): Observable<ActionPlanModel> {

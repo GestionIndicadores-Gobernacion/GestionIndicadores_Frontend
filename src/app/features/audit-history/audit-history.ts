@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuditLogModel } from '../action-plans/models/audit-log.model';
@@ -49,6 +50,8 @@ export class AuditHistoryComponent implements OnInit {
     action_plan: 'Plan de acción',
   };
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private auditLogService: AuditLogService,
     private usersService: UsersService,
@@ -56,34 +59,38 @@ export class AuditHistoryComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.usersService.getAll().subscribe({
-      next: users => {
-        this.userMap = Object.fromEntries(
-          users.map(u => [u.id, `${u.first_name} ${u.last_name}`])
-        );
-        this.loadLogs();
-      },
-      error: () => this.loadLogs(),
-    });
+    this.usersService.getAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: users => {
+          this.userMap = Object.fromEntries(
+            users.map(u => [u.id, `${u.first_name} ${u.last_name}`])
+          );
+          this.loadLogs();
+        },
+        error: () => this.loadLogs(),
+      });
   }
 
   loadLogs(): void {
     this.loading = true;
-    this.auditLogService.getAll().subscribe({
-      next: logs => {
-        this.logs = logs;
-        this.applyFilters();
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.logs = [];
-        this.filtered = [];
-        this.paginated = [];
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-    });
+    this.auditLogService.getAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: logs => {
+          this.logs = logs;
+          this.applyFilters();
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.logs = [];
+          this.filtered = [];
+          this.paginated = [];
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   applyFilters(): void {

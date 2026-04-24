@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { getIndicatorDisplayName } from '../../../../core/data/indicator-display-names';
@@ -20,6 +21,7 @@ export class ReportDetailComponent implements OnInit {
   error = false;
 
   private expandedSet = new Set<number>();
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private route: ActivatedRoute,
@@ -31,10 +33,12 @@ export class ReportDetailComponent implements OnInit {
     const user = JSON.parse(localStorage.getItem('user') ?? 'null');
     this.isViewer = user?.role?.name === 'viewer';
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.reportsService.getById(id).subscribe({
-      next: (r) => { this.report = r; this.loading = false; this.cd.detectChanges(); },
-      error: () => { this.error = true; this.loading = false; this.cd.detectChanges(); }
-    });
+    this.reportsService.getById(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (r) => { this.report = r; this.loading = false; this.cd.detectChanges(); },
+        error: () => { this.error = true; this.loading = false; this.cd.detectChanges(); }
+      });
   }
 
   // ── Expand/collapse ────────────────────────────────────────────────────────

@@ -1,11 +1,15 @@
 // reports-map.ts
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
-import { AfterViewInit, ChangeDetectorRef, Component, EventEmitter, Input, NgZone, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, DestroyRef, EventEmitter, Input, NgZone, OnChanges, OnDestroy, Output, SimpleChanges, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import * as L from 'leaflet';
 import { normalizeMunicipio } from '../../../../../core/data/valle-geo.data';
 import { ReportModel } from '../../../../../features/report/models/report.model';
-import { ReportsKpiService } from '../../../../../features/report/services/reports-kpi.service';
+import {
+  KpiLocationItem,
+  ReportsKpiService,
+} from '../../../../../features/report/services/reports-kpi.service';
 import { MapDetailComponent } from './components/map-detail/map-detail';
 import { MapListComponent } from './components/map-list/map-list';
 import { MapToolbarComponent } from './components/map-toolbar/map-toolbar';
@@ -43,16 +47,49 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   readonly KPI_OPTIONS = KPI_OPTIONS;
   readonly MAP_STYLES = MAP_STYLES;
 
+  private kpiByLocation: Map<string, KpiLocationItem> | undefined;
+  private destroyRef = inject(DestroyRef);
+
   constructor(private cdr: ChangeDetectorRef, private zone: NgZone, private kpiService: ReportsKpiService) { }
 
   ngAfterViewInit(): void { this.zone.runOutsideAngular(() => setTimeout(() => this.initMap(), 100)); }
-  ngOnChanges(c: SimpleChanges): void { if (c['reports'] || c['componentMap'] || c['selectedYear']) this.rebuildMap(); }
+  ngOnChanges(c: SimpleChanges): void {
+    if (c['reports'] || c['componentMap'] || c['selectedYear']) {
+      this.fetchLocationKpis();
+      this.rebuildMap();
+    }
+  }
   ngOnDestroy(): void { if (this.map) this.map.remove(); }
 
   private get filteredReports(): ReportModel[] { return this.kpiService.filterByYear(this.reports, this.selectedYear); }
 
+  private fetchLocationKpis(): void {
+    // Fuente canónica: backend /kpis/by-location. Si falla, el helper
+    // cae al cálculo local con los mismos números.
+    this.kpiService.getByLocation(this.selectedYear)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: res => {
+          const map = new Map<string, KpiLocationItem>();
+          for (const it of res.items) {
+            map.set(normalizeMunicipio(it.location), it);
+          }
+          this.kpiByLocation = map;
+          this.rebuildMap();
+        },
+        error: () => {
+          this.kpiByLocation = undefined; // fallback local
+          this.rebuildMap();
+        }
+      });
+  }
+
   private rebuildMap(): void {
-    this.municipioMap = buildMunicipioMap(this.filteredReports, this.componentMap, this.normalizeZone.bind(this), this.kpiService);
+    this.municipioMap = buildMunicipioMap(
+      this.filteredReports, this.componentMap,
+      this.normalizeZone.bind(this), this.kpiService,
+      this.kpiByLocation,
+    );
     if (this.mapInitialized) this.renderMarkers();
   }
 
@@ -73,8 +110,12 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
       if (!byMun.has(key)) byMun.set(key, []);
       byMun.get(key)!.push(r);
     }
-    return Array.from(byMun.values())
-      .map(reps => buildMunicipioSummary(reps[0].intervention_location, reps, this.componentMap, this.normalizeZone.bind(this), this.kpiService))
+    return Array.from(byMun.entries())
+      .map(([key, reps]) => buildMunicipioSummary(
+        reps[0].intervention_location, reps, this.componentMap,
+        this.normalizeZone.bind(this), this.kpiService,
+        this.kpiByLocation?.get(key),
+      ))
       .filter((s): s is MunicipioSummary => s !== null)
       .sort((a, b) => this.getKpiValue(b) - this.getKpiValue(a));
   }

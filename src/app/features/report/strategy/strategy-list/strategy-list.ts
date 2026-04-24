@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, DestroyRef, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 
 import { StrategyModel } from '../../../../features/report/models/strategy.model';
@@ -20,6 +21,8 @@ export class StrategyListComponent implements OnInit {
   strategies: StrategyModel[] = [];
   loading = false;
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private strategiesService: StrategiesService,
     private router: Router,
@@ -34,18 +37,20 @@ export class StrategyListComponent implements OnInit {
   loadStrategies(): void {
     this.loading = true;
     this.cd.detectChanges();
-    this.strategiesService.getAll().subscribe({
-      next: (data) => {
-        this.strategies = data ?? [];
-        this.loading = false;
-        this.cd.detectChanges();
-      },
-      error: () => {
-        this.toast.error('No se pudieron cargar las estrategias');
-        this.loading = false;
-        this.cd.detectChanges();
-      }
-    });
+    this.strategiesService.getAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data) => {
+          this.strategies = data ?? [];
+          this.loading = false;
+          this.cd.detectChanges();
+        },
+        error: () => {
+          this.toast.error('No se pudieron cargar las estrategias');
+          this.loading = false;
+          this.cd.detectChanges();
+        }
+      });
   }
 
   goToCreate(): void {
@@ -61,13 +66,15 @@ export class StrategyListComponent implements OnInit {
       .confirm('¿Eliminar estrategia?', 'Esta acción no se puede deshacer.')
       .then(result => {
         if (!result.isConfirmed) return;
-        this.strategiesService.delete(id).subscribe({
-          next: () => {
-            this.toast.success('Estrategia eliminada correctamente');
-            this.loadStrategies();
-          },
-          error: () => this.toast.error('No se pudo eliminar la estrategia')
-        });
+        this.strategiesService.delete(id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.toast.success('Estrategia eliminada correctamente');
+              this.loadStrategies();
+            },
+            error: () => this.toast.error('No se pudo eliminar la estrategia')
+          });
       });
   }
 }
