@@ -1,0 +1,401 @@
+<!-- LOADING overlay (no oculta los canvas → permite render inmediato) -->
+<div *ngIf="loading()" class="flex items-center justify-center py-12">
+    <div class="w-8 h-8 rounded-full animate-spin" style="border:3px solid #E9D5FF;border-top-color:#7B1FA2;"></div>
+    <span class="ml-3 text-sm" style="color:#666;">Cargando datos...</span>
+</div>
+
+<!-- Contenido SIEMPRE en el DOM tras el primer CD: los <canvas> existen
+     desde el primer tick para que Chart.js los encuentre. Se ocultan
+     visualmente con [hidden] mientras carga, pero NO se desmontan. -->
+<div [hidden]="loading()" class="max-w-[1440px] mx-auto px-4 sm:px-6 py-5 space-y-4">
+
+    <!-- ═══════ KPI CARDS ═══════ -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#7B1FA2;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="package" [size]="13" color="#7B1FA2" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Kg recogidos</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().kgTotal | number:'1.0-0' }}</p>
+        </div>
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#1565C0;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="dog" [size]="13" color="#1565C0" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Para perros</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().kgPerro | number:'1.0-0' }}</p>
+        </div>
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#DB2777;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="cat" [size]="13" color="#DB2777" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Para gatos</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().kgGato | number:'1.0-0' }}</p>
+        </div>
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#0891B2;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="users" [size]="13" color="#0891B2" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Donantes</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().donantes | number }}</p>
+        </div>
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#E65100;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="map-pin" [size]="13" color="#E65100" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Municipios</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().municipios | number }}</p>
+        </div>
+    </div>
+
+    <!-- ═══════ FILTERS + MUNICIPIO CHART ═══════ -->
+    <div class="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)] gap-4">
+
+        <!-- FILTERS PANEL -->
+        <div class="rounded-xl p-3.5 space-y-2.5" style="background:white;border:1px solid #E2E8F0;">
+            <div class="flex items-center gap-2 pb-2 border-b" style="border-color:#E2E8F0;">
+                <lucide-icon name="list-filter" [size]="13" color="#7B1FA2" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[11px] font-bold uppercase tracking-wider" style="color:#7B1FA2;">Filtros</span>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-semibold block mb-0.5" style="color:#475569;">Municipio</label>
+                <select [ngModel]="filterMunicipio()"
+                    (ngModelChange)="filterMunicipio.set($event); applyFilters()"
+                    class="w-full text-[11px] rounded-lg px-2.5 py-1.5 outline-none"
+                    style="border:1px solid #E2E8F0;color:#333;background:#FAFAFA;">
+                    <option value="">Todos</option>
+                    <option *ngFor="let m of municipios()" [value]="m">{{ m }}</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-semibold block mb-0.5" style="color:#475569;">Mes</label>
+                <select [ngModel]="filterMes()"
+                    (ngModelChange)="filterMes.set($event); applyFilters()"
+                    class="w-full text-[11px] rounded-lg px-2.5 py-1.5 outline-none"
+                    style="border:1px solid #E2E8F0;color:#333;background:#FAFAFA;">
+                    <option value="">Todos</option>
+                    <option *ngFor="let m of mesesDisponibles()" [value]="m">{{ m }}</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-semibold block mb-0.5" style="color:#475569;">Tipo de alimento</label>
+                <select [ngModel]="filterTipo()"
+                    (ngModelChange)="filterTipo.set($event); applyFilters()"
+                    class="w-full text-[11px] rounded-lg px-2.5 py-1.5 outline-none"
+                    style="border:1px solid #E2E8F0;color:#333;background:#FAFAFA;">
+                    <option value="">Todos</option>
+                    <option value="perro">Solo perros</option>
+                    <option value="gato">Solo gatos</option>
+                </select>
+            </div>
+
+            <button (click)="clearFilters()"
+                class="w-full text-[10px] font-bold py-1.5 rounded-lg cursor-pointer transition-all"
+                style="background:#F1F5F9;color:#64748B;border:1px solid #E2E8F0;"
+                onmouseover="this.style.background='#E2E8F0'" onmouseout="this.style.background='#F1F5F9'">
+                Limpiar filtros
+            </button>
+        </div>
+
+        <!-- MUNICIPIO BAR CHART -->
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Top municipios por kg recogidos</p>
+                <p class="text-[10px]" style="color:#94A3B8;">{{ kpis().municipios }} municipios participantes</p>
+            </div>
+            <div class="p-3" style="position:relative;height:280px;">
+                <canvas id="cvDonMun"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ ROW 2: Composición + Ranking + Mes ═══════ -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+
+        <!-- COMPOSICIÓN PERROS/GATOS -->
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Distribución del alimento</p>
+            </div>
+            <div class="p-3">
+                <div class="flex flex-wrap gap-x-3 gap-y-1 mb-2">
+                    <span *ngFor="let s of composicionData()" class="flex items-center gap-1 text-[10px]"
+                        style="color:#475569;">
+                        <span class="w-2 h-2 rounded-sm shrink-0 inline-block" [style.background]="s.color"></span>
+                        {{ s.label }} {{ s.pct }}%
+                    </span>
+                </div>
+                <div style="position:relative;height:200px;">
+                    <canvas id="cvDonComp"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- TOP DONANTES -->
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Top donantes</p>
+                <p class="text-[10px]" style="color:#94A3B8;">{{ kpis().donantes }} donantes únicos</p>
+            </div>
+            <div class="p-3" style="position:relative;height:230px;">
+                <canvas id="cvDonRanking"></canvas>
+            </div>
+        </div>
+
+        <!-- RECOGIDA POR MES -->
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Recogida por mes</p>
+                <p class="text-[10px]" style="color:#94A3B8;">Kilogramos agrupados por mes</p>
+            </div>
+            <div class="p-3" style="position:relative;height:230px;">
+                <canvas id="cvDonMes"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ ROW 3: Tabla por municipio + Completitud ═══════ -->
+    <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] gap-4">
+
+        <!-- TABLA POR MUNICIPIO -->
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Resumen por municipio</p>
+                <p class="text-[10px]" style="color:#94A3B8;">
+                    {{ tablaMunData().length }} municipios con donaciones
+                </p>
+            </div>
+            <div class="overflow-x-auto" style="max-height:340px;">
+                <table *ngIf="tablaMunData().length > 0" class="w-full">
+                    <thead class="sticky top-0">
+                        <tr style="background:#FAF5FF;">
+                            <th class="px-2.5 py-2 text-left text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Municipio</th>
+                            <th class="px-2.5 py-2 text-center text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Donaciones</th>
+                            <th class="px-2.5 py-2 text-center text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Donantes</th>
+                            <th class="px-2.5 py-2 text-center text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Perro (kg)</th>
+                            <th class="px-2.5 py-2 text-center text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Gato (kg)</th>
+                            <th class="px-2.5 py-2 text-center text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let row of tablaMunData(); let i = index"
+                            class="transition-colors hover:bg-[#FAF5FF]"
+                            [style.background]="i % 2 === 0 ? 'white' : '#FCFAFE'"
+                            style="border-bottom:1px solid #F1F5F9;">
+                            <td class="px-2.5 py-2 text-[11px] font-semibold" style="color:#581C87;">
+                                {{ row.municipio }}
+                            </td>
+                            <td class="px-2.5 py-2 text-[10px] text-center" style="color:#475569;">
+                                {{ row.donaciones }}
+                            </td>
+                            <td class="px-2.5 py-2 text-[10px] text-center" style="color:#475569;">
+                                {{ row.donantes }}
+                            </td>
+                            <td class="px-2.5 py-2 text-[10px] text-center font-semibold" style="color:#1565C0;">
+                                {{ row.perro | number }}
+                            </td>
+                            <td class="px-2.5 py-2 text-[10px] text-center font-semibold" style="color:#DB2777;">
+                                {{ row.gato | number }}
+                            </td>
+                            <td class="px-2.5 py-2 text-[11px] text-center font-bold" style="color:#7B1FA2;">
+                                {{ row.total | number }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p *ngIf="tablaMunData().length === 0" class="text-[11px] text-center py-6" style="color:#94A3B8;">
+                    Sin datos por municipio
+                </p>
+            </div>
+        </div>
+
+        <!-- COMPLETITUD -->
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Completitud de los registros</p>
+                <p class="text-[10px]" style="color:#94A3B8;">% del total de donaciones</p>
+            </div>
+            <div class="p-4">
+                <dashboard-completeness [bars]="completitudData()" />
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ ROW 4: DIRECTORIO DE DONANTES ═══════ -->
+    <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+
+        <div class="px-4 py-3 border-b flex flex-wrap items-center justify-between gap-3"
+            style="border-color:#E2E8F0;background:#FAF5FF;">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style="background:#7B1FA2;">
+                    <lucide-icon name="users" [size]="15" color="white" [strokeWidth]="2"></lucide-icon>
+                </div>
+                <div>
+                    <p class="text-[12px] font-bold" style="color:#0F172A;">Directorio de donaciones</p>
+                    <p class="text-[10px]" style="color:#94A3B8;">
+                        {{ searchedDonantes().length }} de {{ allDonantes().length }} donaciones
+                        <span *ngIf="filterMunicipio() || filterMes() || filterTipo()">(filtrado)</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="relative">
+                <span class="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none inline-flex">
+                    <lucide-icon name="search" [size]="12" color="#94A3B8" [strokeWidth]="2"></lucide-icon>
+                </span>
+                <input type="text" placeholder="Buscar donante, municipio, teléfono..."
+                    [ngModel]="donanteSearch()"
+                    (ngModelChange)="donanteSearch.set($event); onDonanteSearch()"
+                    class="text-[11px] rounded-lg pl-8 pr-3 py-1.5 outline-none w-64"
+                    style="border:1px solid #E2E8F0;color:#333;background:white;"
+                    onfocus="this.style.borderColor='#7B1FA2';this.style.boxShadow='0 0 0 2px rgba(123,31,162,0.1)'"
+                    onblur="this.style.borderColor='#E2E8F0';this.style.boxShadow='none'" />
+            </div>
+        </div>
+
+        <div class="divide-y" style="border-color:#F1F5F9;">
+            <div *ngFor="let d of paginatedDonantes()" class="transition-colors"
+                [style.background]="expandedDonanteId() === d.id ? '#FAF5FF' : 'white'">
+
+                <div (click)="toggleDonante(d.id)"
+                    class="flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors hover:bg-[#FCFAFE]">
+
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
+                        style="background:#F3E8FF;color:#7B1FA2;">
+                        {{ d.initials }}
+                    </div>
+
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[12px] font-semibold truncate" style="color:#0F172A;">{{ d.nombre }}</p>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span class="text-[10px]" style="color:#64748B;">{{ d.municipio }}</span>
+                            <span *ngIf="d.mes !== 'Sin fecha'" class="text-[10px]" style="color:#94A3B8;">·
+                                {{ d.mes }}</span>
+                        </div>
+                    </div>
+
+                    <span *ngIf="d.perro > 0"
+                        class="text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 hidden sm:inline-block"
+                        style="background:#E3F2FD;color:#1565C0;">
+                        {{ d.perro }} kg perro
+                    </span>
+                    <span *ngIf="d.gato > 0"
+                        class="text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 hidden sm:inline-block"
+                        style="background:#FCE7F3;color:#DB2777;">
+                        {{ d.gato }} kg gato
+                    </span>
+
+                    <div class="flex items-center gap-1 shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                        style="background:#F3E8FF;color:#7B1FA2;">
+                        <lucide-icon name="package" [size]="10" color="#7B1FA2" [strokeWidth]="2"></lucide-icon>
+                        {{ d.total }} kg
+                    </div>
+
+                    <lucide-icon
+                        [name]="expandedDonanteId() === d.id ? 'chevron-down' : 'chevron-right'"
+                        [size]="14" color="#94A3B8" [strokeWidth]="2" class="shrink-0"></lucide-icon>
+                </div>
+
+                <div *ngIf="expandedDonanteId() === d.id" class="px-4 pb-4 pt-1"
+                    style="border-top:1px solid #F3E8FF;">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+                        <div class="rounded-lg p-3" style="background:#FCFAFE;border:1px solid #F3E8FF;">
+                            <p class="text-[10px] font-bold uppercase tracking-wider mb-2" style="color:#7B1FA2;">
+                                Información
+                            </p>
+                            <div class="space-y-1.5">
+                                <div class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Municipio</span>
+                                    <span class="font-medium" style="color:#333;">{{ d.municipio || '—' }}</span>
+                                </div>
+                                <div class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Fecha</span>
+                                    <span class="font-medium text-right" style="color:#333;max-width:60%;">
+                                        {{ d.fecha || '—' }}
+                                    </span>
+                                </div>
+                                <div *ngIf="d.telefono" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Teléfono</span>
+                                    <span class="font-medium" style="color:#333;">{{ d.telefono }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rounded-lg p-3" style="background:#FCFAFE;border:1px solid #F3E8FF;">
+                            <p class="text-[10px] font-bold uppercase tracking-wider mb-2" style="color:#1565C0;">
+                                Detalle por especie
+                            </p>
+                            <div class="space-y-1.5">
+                                <div class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Alimento perro</span>
+                                    <span class="font-bold" style="color:#1565C0;">{{ d.perro | number }} kg</span>
+                                </div>
+                                <div class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Alimento gato</span>
+                                    <span class="font-bold" style="color:#DB2777;">{{ d.gato | number }} kg</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rounded-lg p-3" style="background:#FCFAFE;border:1px solid #F3E8FF;">
+                            <p class="text-[10px] font-bold uppercase tracking-wider mb-2" style="color:#E65100;">
+                                Total
+                            </p>
+                            <p class="text-[1.6rem] font-bold leading-none" style="color:#7B1FA2;letter-spacing:-0.03em;">
+                                {{ d.total | number }} <span class="text-[12px]" style="color:#94A3B8;">kg</span>
+                            </p>
+                            <p class="text-[10px] mt-1" style="color:#94A3B8;">de alimento donado</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="paginatedDonantes().length === 0" class="py-8 text-center">
+            <p class="text-[12px]" style="color:#94A3B8;">No se encontraron donaciones</p>
+        </div>
+
+        <div *ngIf="donanteTotalPages() > 1"
+            class="flex items-center justify-between px-4 py-2.5 border-t"
+            style="border-color:#E2E8F0;background:#FCFAFE;">
+            <p class="text-[11px]" style="color:#64748B;">
+                Página {{ donantePage() }} de {{ donanteTotalPages() }}
+            </p>
+            <div class="flex items-center gap-1.5">
+                <button [disabled]="donantePage() === 1" (click)="setDonantePage(donantePage() - 1)"
+                    class="px-2.5 py-1 text-[11px] font-semibold rounded-lg border cursor-pointer transition"
+                    style="background:white;color:#475569;border-color:#E2E8F0;"
+                    [class.opacity-40]="donantePage() === 1">
+                    <lucide-icon name="chevron-left" [size]="12" color="currentColor" [strokeWidth]="2"></lucide-icon>
+                </button>
+                <button [disabled]="donantePage() === donanteTotalPages()" (click)="setDonantePage(donantePage() + 1)"
+                    class="px-2.5 py-1 text-[11px] font-semibold rounded-lg border cursor-pointer transition"
+                    style="background:white;color:#475569;border-color:#E2E8F0;"
+                    [class.opacity-40]="donantePage() === donanteTotalPages()">
+                    <lucide-icon name="chevron-right" [size]="12" color="currentColor" [strokeWidth]="2"></lucide-icon>
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>

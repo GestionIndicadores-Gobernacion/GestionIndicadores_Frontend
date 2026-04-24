@@ -90,9 +90,10 @@ export class DatasetService {
     );
   }
 
-  updateFromExcel(datasetId: number, file: File): Observable<DatasetImportResult> {
+  updateFromExcel(datasetId: number, file: File | null, datasetName?: string): Observable<DatasetImportResult> {
     const formData = new FormData();
-    formData.append('file', file);
+    if (file) formData.append('file', file);
+    if (datasetName) formData.append('dataset_name', datasetName);
     return this.http.put<DatasetImportResult>(
       `${this.baseUrl}/${datasetId}/update-excel`,
       formData

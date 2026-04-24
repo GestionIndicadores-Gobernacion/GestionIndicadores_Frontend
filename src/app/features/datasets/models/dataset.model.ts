@@ -4,6 +4,7 @@ export interface Dataset {
   description?: string | null;
   active: boolean;
   created_at: string;
+  updated_at?: string | null;
 }
 
 /**

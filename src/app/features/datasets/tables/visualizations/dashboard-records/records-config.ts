@@ -136,6 +136,23 @@ export const RECORDS_CONFIG: Record<string, RecordsConfig> = {
     detailSubtitle: ['poblacion_perros_2026', 'poblacion_gatos_2026'],
   },
 
+  donaton: {
+    tableFields: [
+      'nombre',
+      'municipio',
+      'fecha',
+      'alimento_perro',
+      'alimento_gato',
+      'total',
+      'telefono',
+    ],
+    yesnoFields: [],
+    categoricalFields: ['municipio'],
+    searchPlaceholder: 'Buscar donante, municipio...',
+    detailTitle: 'nombre',
+    detailSubtitle: ['municipio', 'fecha'],
+  },
+
   generico: {
     tableFields: [],
     yesnoFields: [],

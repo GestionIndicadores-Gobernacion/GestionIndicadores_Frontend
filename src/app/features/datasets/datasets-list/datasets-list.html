@@ -143,6 +143,19 @@
                                         </div>
                                     </th>
 
+                                    <th (click)="sort('updated_at')"
+                                        class="px-4 py-3 text-left cursor-pointer select-none transition"
+                                        onmouseover="this.style.background='rgba(255,255,255,0.08)'"
+                                        onmouseout="this.style.background='transparent'">
+                                        <div class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.8px]"
+                                            style="color:rgba(255,255,255,0.85)">
+                                            Última actualización
+                                            <lucide-icon *ngIf="sortColumn === 'updated_at'"
+                                                [name]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'"
+                                                [size]="12" [strokeWidth]="2.5" color="currentColor"></lucide-icon>
+                                        </div>
+                                    </th>
+
                                     <th (click)="sort('active')"
                                         class="px-4 py-3 text-left cursor-pointer select-none transition"
                                         onmouseover="this.style.background='rgba(255,255,255,0.08)'"
@@ -187,6 +200,13 @@
 
                                     <td class="px-4 py-3 text-[12px]" style="color:#8A9DC0;">
                                         {{ d.created_at | date:'dd/MM/yyyy' }}
+                                    </td>
+
+                                    <td class="px-4 py-3 text-[12px]" style="color:#8A9DC0;">
+                                        <ng-container *ngIf="d.updated_at; else noUpdate">
+                                            {{ d.updated_at | date:'dd/MM/yyyy HH:mm' }}
+                                        </ng-container>
+                                        <ng-template #noUpdate>—</ng-template>
                                     </td>
 
                                     <td class="px-4 py-3 text-[12px]">

@@ -1,0 +1,420 @@
+<!-- LOADING overlay (no oculta los canvas → permite render inmediato) -->
+<div *ngIf="loading()" class="flex items-center justify-center py-12">
+    <div class="w-8 h-8 rounded-full animate-spin" style="border:3px solid #CFFAFE;border-top-color:#0891B2;"></div>
+    <span class="ml-3 text-sm" style="color:#666;">Cargando censo...</span>
+</div>
+
+<!-- Contenido SIEMPRE en el DOM tras el primer CD: los <canvas> existen
+     desde el primer tick para que Chart.js los encuentre. Se ocultan
+     visualmente con [hidden] mientras carga, pero NO se desmontan. -->
+<div [hidden]="loading()" class="max-w-[1440px] mx-auto px-4 sm:px-6 py-5 space-y-4">
+
+    <!-- ═══════ KPI CARDS ═══════ -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#0891B2;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="map-pin" [size]="13" color="#0891B2" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Municipios</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().municipios | number }}</p>
+        </div>
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#06B6D4;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="dog" [size]="13" color="#06B6D4" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Perros</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().perros | number:'1.0-0' }}</p>
+        </div>
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#F59E0B;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="cat" [size]="13" color="#F59E0B" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Gatos</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().gatos | number:'1.0-0' }}</p>
+        </div>
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#0D9488;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="house" [size]="13" color="#0D9488" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Viviendas</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().viviendas | number:'1.0-0' }}</p>
+        </div>
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#7C3AED;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="circle-check" [size]="13" color="#7C3AED" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">VTA</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().vta | number:'1.0-0' }}</p>
+        </div>
+    </div>
+
+    <!-- ═══════ FILTERS + PERROS POR MUNICIPIO ═══════ -->
+    <div class="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)] gap-4">
+
+        <!-- FILTERS PANEL -->
+        <div class="rounded-xl p-3.5 space-y-2.5" style="background:white;border:1px solid #E2E8F0;">
+            <div class="flex items-center gap-2 pb-2 border-b" style="border-color:#E2E8F0;">
+                <lucide-icon name="list-filter" [size]="13" color="#0891B2" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[11px] font-bold uppercase tracking-wider" style="color:#0891B2;">Filtros</span>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-semibold block mb-0.5" style="color:#475569;">Municipio</label>
+                <select [ngModel]="filterMunicipio()"
+                    (ngModelChange)="filterMunicipio.set($event); applyFilters()"
+                    class="w-full text-[11px] rounded-lg px-2.5 py-1.5 outline-none"
+                    style="border:1px solid #E2E8F0;color:#333;background:#FAFAFA;">
+                    <option value="">Todos</option>
+                    <option *ngFor="let m of municipios()" [value]="m">{{ m }}</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-semibold block mb-0.5" style="color:#475569;">Especie</label>
+                <select [ngModel]="filterEspecie()"
+                    (ngModelChange)="filterEspecie.set($event); applyFilters()"
+                    class="w-full text-[11px] rounded-lg px-2.5 py-1.5 outline-none"
+                    style="border:1px solid #E2E8F0;color:#333;background:#FAFAFA;">
+                    <option value="">Ambas</option>
+                    <option value="perros">Solo perros</option>
+                    <option value="gatos">Solo gatos</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-semibold block mb-0.5" style="color:#475569;">Mín. animales</label>
+                <input type="number" placeholder="0" [ngModel]="filterMin()"
+                    (ngModelChange)="filterMin.set($event); applyFilters()"
+                    class="w-full text-[11px] rounded-lg px-2.5 py-1.5 outline-none"
+                    style="border:1px solid #E2E8F0;color:#333;background:#FAFAFA;" />
+            </div>
+
+            <button (click)="clearFilters()"
+                class="w-full text-[10px] font-bold py-1.5 rounded-lg cursor-pointer transition-all"
+                style="background:#F1F5F9;color:#64748B;border:1px solid #E2E8F0;"
+                onmouseover="this.style.background='#E2E8F0'" onmouseout="this.style.background='#F1F5F9'">
+                Limpiar filtros
+            </button>
+        </div>
+
+        <!-- PERROS BAR CHART -->
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Población de perros por municipio</p>
+                <p class="text-[10px]" style="color:#94A3B8;">Top 12 · estimado 2026</p>
+            </div>
+            <div class="p-3" style="position:relative;height:280px;">
+                <canvas id="cvCensoPerros"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ ROW 2: Gatos + Composición + Densidad ═══════ -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+
+        <!-- GATOS POR MUNICIPIO -->
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Población de gatos por municipio</p>
+                <p class="text-[10px]" style="color:#94A3B8;">Top 12 · estimado 2026</p>
+            </div>
+            <div class="p-3" style="position:relative;height:240px;">
+                <canvas id="cvCensoGatos"></canvas>
+            </div>
+        </div>
+
+        <!-- COMPOSICIÓN -->
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Composición animal</p>
+            </div>
+            <div class="p-3">
+                <div class="flex flex-wrap gap-x-3 gap-y-1 mb-2">
+                    <span *ngFor="let s of composicionData()" class="flex items-center gap-1 text-[10px]"
+                        style="color:#475569;">
+                        <span class="w-2 h-2 rounded-sm shrink-0 inline-block" [style.background]="s.color"></span>
+                        {{ s.label }} {{ s.pct }}%
+                    </span>
+                </div>
+                <div style="position:relative;height:200px;">
+                    <canvas id="cvCensoComp"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- DENSIDAD -->
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Densidad por municipio</p>
+                <p class="text-[10px]" style="color:#94A3B8;">Animales por vivienda · Top 10</p>
+            </div>
+            <div class="p-3" style="position:relative;height:240px;">
+                <canvas id="cvCensoDensidad"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ ROW 3: Tabla detallada + Cobertura ═══════ -->
+    <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] gap-4">
+
+        <!-- TABLA DETALLADA -->
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Detalle por municipio</p>
+                <p class="text-[10px]" style="color:#94A3B8;">{{ allMunicipios().length }} municipios censados</p>
+            </div>
+            <div class="overflow-x-auto" style="max-height:340px;">
+                <table *ngIf="allMunicipios().length > 0" class="w-full">
+                    <thead class="sticky top-0">
+                        <tr style="background:#ECFEFF;">
+                            <th class="px-2.5 py-2 text-left text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Municipio</th>
+                            <th class="px-2.5 py-2 text-center text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Perros</th>
+                            <th class="px-2.5 py-2 text-center text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Gatos</th>
+                            <th class="px-2.5 py-2 text-center text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Total</th>
+                            <th class="px-2.5 py-2 text-center text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Viviendas</th>
+                            <th class="px-2.5 py-2 text-center text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">VTA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let row of allMunicipios(); let i = index"
+                            class="transition-colors hover:bg-[#F0FCFE]"
+                            [style.background]="i % 2 === 0 ? 'white' : '#FAFEFF'"
+                            style="border-bottom:1px solid #F1F5F9;">
+                            <td class="px-2.5 py-2 text-[11px] font-semibold" style="color:#0E7490;">
+                                {{ row.municipio }}
+                            </td>
+                            <td class="px-2.5 py-2 text-[10px] text-center font-semibold" style="color:#06B6D4;">
+                                {{ row.poblacion_perros | number }}
+                            </td>
+                            <td class="px-2.5 py-2 text-[10px] text-center font-semibold" style="color:#F59E0B;">
+                                {{ row.poblacion_gatos | number }}
+                            </td>
+                            <td class="px-2.5 py-2 text-[11px] text-center font-bold" style="color:#0891B2;">
+                                {{ row.total_animales | number }}
+                            </td>
+                            <td class="px-2.5 py-2 text-[10px] text-center" style="color:#475569;">
+                                {{ row.viviendas | number }}
+                            </td>
+                            <td class="px-2.5 py-2 text-center">
+                                <span *ngIf="row.vta > 0" class="text-[9px] font-bold px-2 py-0.5 rounded-full"
+                                    style="background:#EDE9FE;color:#7C3AED;">
+                                    {{ row.vta | number }}
+                                </span>
+                                <span *ngIf="row.vta === 0" class="text-[10px]" style="color:#CBD5E1;">—</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p *ngIf="allMunicipios().length === 0" class="text-[11px] text-center py-6" style="color:#94A3B8;">
+                    Sin datos
+                </p>
+            </div>
+        </div>
+
+        <!-- COBERTURA -->
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Cobertura del censo</p>
+                <p class="text-[10px]" style="color:#94A3B8;">% de municipios con dato registrado</p>
+            </div>
+            <div class="p-4">
+                <dashboard-completeness [bars]="coberturaData()" />
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ ROW 4: DIRECTORIO MUNICIPIOS (expansion) ═══════ -->
+    <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+
+        <div class="px-4 py-3 border-b flex flex-wrap items-center justify-between gap-3"
+            style="border-color:#E2E8F0;background:#ECFEFF;">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style="background:#0891B2;">
+                    <lucide-icon name="map-pin" [size]="15" color="white" [strokeWidth]="2"></lucide-icon>
+                </div>
+                <div>
+                    <p class="text-[12px] font-bold" style="color:#0F172A;">Directorio de municipios</p>
+                    <p class="text-[10px]" style="color:#94A3B8;">
+                        {{ searchedMunicipios().length }} de {{ allMunicipios().length }} municipios
+                        <span *ngIf="filterMunicipio() || filterEspecie() || filterMin()">(filtrado)</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="relative">
+                <span class="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none inline-flex">
+                    <lucide-icon name="search" [size]="12" color="#94A3B8" [strokeWidth]="2"></lucide-icon>
+                </span>
+                <input type="text" placeholder="Buscar municipio..."
+                    [ngModel]="municipioSearch()"
+                    (ngModelChange)="municipioSearch.set($event); onMunicipioSearch()"
+                    class="text-[11px] rounded-lg pl-8 pr-3 py-1.5 outline-none w-64"
+                    style="border:1px solid #E2E8F0;color:#333;background:white;"
+                    onfocus="this.style.borderColor='#0891B2';this.style.boxShadow='0 0 0 2px rgba(8,145,178,0.1)'"
+                    onblur="this.style.borderColor='#E2E8F0';this.style.boxShadow='none'" />
+            </div>
+        </div>
+
+        <div class="divide-y" style="border-color:#F1F5F9;">
+            <div *ngFor="let m of paginatedMunicipios()" class="transition-colors"
+                [style.background]="expandedMunicipioId() === m.id ? '#ECFEFF' : 'white'">
+
+                <div (click)="toggleMunicipio(m.id)"
+                    class="flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors hover:bg-[#F0FCFE]">
+
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                        style="background:#CFFAFE;color:#0891B2;">
+                        <lucide-icon name="map-pin" [size]="14" color="#0891B2" [strokeWidth]="2"></lucide-icon>
+                    </div>
+
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[12px] font-semibold truncate" style="color:#0F172A;">{{ m.municipio }}</p>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span class="text-[10px]" style="color:#64748B;">{{ m.viviendas | number }} viviendas</span>
+                        </div>
+                    </div>
+
+                    <span class="text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 hidden sm:inline-block"
+                        style="background:#CFFAFE;color:#06B6D4;">
+                        {{ m.poblacion_perros | number }} perros
+                    </span>
+                    <span class="text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 hidden sm:inline-block"
+                        style="background:#FEF3C7;color:#F59E0B;">
+                        {{ m.poblacion_gatos | number }} gatos
+                    </span>
+
+                    <div class="flex items-center gap-1 shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                        style="background:#CCFBF1;color:#0D9488;">
+                        <lucide-icon name="heart" [size]="10" color="#0D9488" [strokeWidth]="2"></lucide-icon>
+                        {{ m.total_animales | number }}
+                    </div>
+
+                    <lucide-icon
+                        [name]="expandedMunicipioId() === m.id ? 'chevron-down' : 'chevron-right'"
+                        [size]="14" color="#94A3B8" [strokeWidth]="2" class="shrink-0"></lucide-icon>
+                </div>
+
+                <div *ngIf="expandedMunicipioId() === m.id" class="px-4 pb-4 pt-1"
+                    style="border-top:1px solid #CFFAFE;">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+                        <div class="rounded-lg p-3" style="background:#F0FCFE;border:1px solid #CFFAFE;">
+                            <p class="text-[10px] font-bold uppercase tracking-wider mb-2" style="color:#0891B2;">
+                                Población estimada
+                            </p>
+                            <div class="space-y-1.5">
+                                <div class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Perros</span>
+                                    <span class="font-bold" style="color:#06B6D4;">{{ m.poblacion_perros | number }}</span>
+                                </div>
+                                <div class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Gatos</span>
+                                    <span class="font-bold" style="color:#F59E0B;">{{ m.poblacion_gatos | number }}</span>
+                                </div>
+                                <div class="flex justify-between text-[11px] pt-1 border-t"
+                                    style="border-color:#CFFAFE;">
+                                    <span style="color:#64748B;">Total</span>
+                                    <span class="font-bold" style="color:#0891B2;">{{ m.total_animales | number }}</span>
+                                </div>
+                                <div *ngIf="m.pob_ajustada > 0" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Pob. ajustada</span>
+                                    <span class="font-medium" style="color:#333;">{{ m.pob_ajustada | number }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rounded-lg p-3" style="background:#F0FCFE;border:1px solid #CFFAFE;">
+                            <p class="text-[10px] font-bold uppercase tracking-wider mb-2" style="color:#0D9488;">
+                                Encuesta de viviendas
+                            </p>
+                            <div class="space-y-1.5">
+                                <div class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Viviendas encuestadas</span>
+                                    <span class="font-bold" style="color:#0D9488;">{{ m.viviendas | number }}</span>
+                                </div>
+                                <div class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Perros reportados</span>
+                                    <span class="font-medium" style="color:#06B6D4;">{{ m.perros_reportados | number }}</span>
+                                </div>
+                                <div class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Gatos reportados</span>
+                                    <span class="font-medium" style="color:#F59E0B;">{{ m.gatos_reportados | number }}</span>
+                                </div>
+                                <div *ngIf="m.ratio_perros > 0" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Perros/vivienda</span>
+                                    <span class="font-medium" style="color:#333;">{{ m.ratio_perros }}</span>
+                                </div>
+                                <div *ngIf="m.ratio_gatos > 0" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Gatos/vivienda</span>
+                                    <span class="font-medium" style="color:#333;">{{ m.ratio_gatos }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rounded-lg p-3" style="background:#F0FCFE;border:1px solid #CFFAFE;">
+                            <p class="text-[10px] font-bold uppercase tracking-wider mb-2" style="color:#7C3AED;">
+                                Vacunación VTA
+                            </p>
+                            <p class="text-[1.6rem] font-bold leading-none mb-1" style="color:#7C3AED;letter-spacing:-0.03em;">
+                                {{ m.vta | number }}
+                            </p>
+                            <p class="text-[10px]" style="color:#94A3B8;">vacunaciones registradas</p>
+                            <div class="mt-3 pt-3 border-t" style="border-color:#CFFAFE;">
+                                <p class="text-[10px]" style="color:#64748B;">
+                                    Cobertura sobre población total:
+                                    <span class="font-bold" style="color:#7C3AED;">
+                                        {{ m.total_animales > 0 ? ((m.vta / m.total_animales * 100) | number:'1.0-1') : '0' }}%
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="paginatedMunicipios().length === 0" class="py-8 text-center">
+            <p class="text-[12px]" style="color:#94A3B8;">No se encontraron municipios</p>
+        </div>
+
+        <div *ngIf="municipioTotalPages() > 1"
+            class="flex items-center justify-between px-4 py-2.5 border-t"
+            style="border-color:#E2E8F0;background:#F0FCFE;">
+            <p class="text-[11px]" style="color:#64748B;">
+                Página {{ municipioPage() }} de {{ municipioTotalPages() }}
+            </p>
+            <div class="flex items-center gap-1.5">
+                <button [disabled]="municipioPage() === 1" (click)="setMunicipioPage(municipioPage() - 1)"
+                    class="px-2.5 py-1 text-[11px] font-semibold rounded-lg border cursor-pointer transition"
+                    style="background:white;color:#475569;border-color:#E2E8F0;"
+                    [class.opacity-40]="municipioPage() === 1">
+                    <lucide-icon name="chevron-left" [size]="12" color="currentColor" [strokeWidth]="2"></lucide-icon>
+                </button>
+                <button [disabled]="municipioPage() === municipioTotalPages()"
+                    (click)="setMunicipioPage(municipioPage() + 1)"
+                    class="px-2.5 py-1 text-[11px] font-semibold rounded-lg border cursor-pointer transition"
+                    style="background:white;color:#475569;border-color:#E2E8F0;"
+                    [class.opacity-40]="municipioPage() === municipioTotalPages()">
+                    <lucide-icon name="chevron-right" [size]="12" color="currentColor" [strokeWidth]="2"></lucide-icon>
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>
