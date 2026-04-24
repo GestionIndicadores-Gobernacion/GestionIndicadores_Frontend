@@ -81,10 +81,11 @@ export function getAtencionVeterinariaVirtuals(
 
     // 3. Tipo de atención vs municipios
     if (byLocNested.length > 0) {
+        // 'Atención veterinaria vs municipios' se omite: ya está cubierto
+        // por la gráfica stacked "Cantidad de animales / tipo de atención vs municipios".
         const metricas = [
             { metric: 'no_de_animales_esterilizados', label: 'Esterilizados vs municipios' },
             { metric: 'no_de_animales_desparasitados', label: 'Desparasitados vs municipios' },
-            { metric: 'no_de_animales_con_atencion_veterinaria', label: 'Atención veterinaria vs municipios' },
             { metric: 'no_de_animales_vitaminizados', label: 'Vitaminizados vs municipios' },
             { metric: 'no_de_animales_vacunados', label: 'Vacunados vs municipios' },
         ];
