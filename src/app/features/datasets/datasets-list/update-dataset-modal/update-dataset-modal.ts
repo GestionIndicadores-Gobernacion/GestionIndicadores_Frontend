@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, EventEmitter, Input, Output, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LucideAngularModule } from 'lucide-angular';
 import Swal from 'sweetalert2';
 import { Dataset } from '../../../../features/datasets/models/dataset.model';
@@ -24,6 +25,8 @@ export class UpdateDatasetModalComponent {
   selectedFile: File | null = null;
   uploading = false;
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private datasetService: DatasetService,
     private cdr: ChangeDetectorRef
@@ -42,7 +45,7 @@ export class UpdateDatasetModalComponent {
     this.uploading = true;
     this.cdr.detectChanges();
 
-    this.datasetService.updateFromExcel(this.dataset.id, this.selectedFile).subscribe({
+    this.datasetService.updateFromExcel(this.dataset.id, this.selectedFile).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (result: any) => {
         this.uploading = false;
         Swal.fire(

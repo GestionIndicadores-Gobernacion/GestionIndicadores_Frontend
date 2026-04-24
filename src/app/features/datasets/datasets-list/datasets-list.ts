@@ -12,6 +12,7 @@ import { Pagination } from '../../../shared/components/pagination/pagination';
 import { ImportDatasetModalComponent } from './import-dataset-modal/import-dataset-modal';
 import { UpdateDatasetModalComponent } from './update-dataset-modal/update-dataset-modal';
 import { LucideAngularModule } from 'lucide-angular';
+import { PageState, PageStateComponent } from '../../../shared/components/page-state/page-state';
 
 @Component({
   selector: 'app-datasets-list',
@@ -24,7 +25,7 @@ import { LucideAngularModule } from 'lucide-angular';
     UpdateDatasetModalComponent,
     Pagination,
     LucideAngularModule,
-    // TablesListComponent eliminado
+    PageStateComponent,
   ],
   templateUrl: './datasets-list.html',
   styleUrls: ['./datasets-list.css']
@@ -41,6 +42,13 @@ export class DatasetsListComponent implements OnInit {
   loading = false;
   error: string | null = null;
   showImportModal = false;
+
+  get pageState(): PageState {
+    if (this.loading) return 'loading';
+    if (this.error) return 'error';
+    if (!this.filteredDatasets.length) return 'empty';
+    return 'content';
+  }
   searchTerm = '';
   currentPage = 1;
   pageSize = 10;

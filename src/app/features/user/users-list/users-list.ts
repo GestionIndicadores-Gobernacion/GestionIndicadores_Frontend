@@ -8,11 +8,12 @@ import { LucideAngularModule } from 'lucide-angular';
 import { UserModel } from '../../../features/user/models/user.model';
 import { UsersService } from '../../../features/user/services/users.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { PageState, PageStateComponent } from '../../../shared/components/page-state/page-state';
 
 @Component({
   selector: 'app-users-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, RouterModule, LucideAngularModule, PageStateComponent],
   templateUrl: './users-list.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -26,10 +27,19 @@ export class UsersListComponent implements OnInit {
   users: UserModel[] = [];
   filteredUsers: UserModel[] = [];
   loading = true;
+  loadError = false;
   search = '';
 
   sortColumn: keyof UserModel | '' = '';
   sortDirection: 'asc' | 'desc' = 'asc';
+
+  /** Estado agregado para <app-page-state>. */
+  get pageState(): PageState {
+    if (this.loading) return 'loading';
+    if (this.loadError) return 'error';
+    if (!this.sortedUsers.length) return 'empty';
+    return 'content';
+  }
 
   private destroyRef = inject(DestroyRef);
 
@@ -46,6 +56,7 @@ export class UsersListComponent implements OnInit {
 
   loadUsers() {
     this.loading = true;
+    this.loadError = false;
     this.usersService.getAll()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -56,7 +67,7 @@ export class UsersListComponent implements OnInit {
           this.cdr.markForCheck();
         },
         error: () => {
-          this.toast.error('Error cargando usuarios');
+          this.loadError = true;
           this.loading = false;
           this.cdr.markForCheck();
         }

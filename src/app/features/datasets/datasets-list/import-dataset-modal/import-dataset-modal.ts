@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, EventEmitter, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, EventEmitter, Output, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
@@ -39,6 +40,8 @@ export class ImportDatasetModalComponent {
   progress = 0;
   importing = false;
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private datasetService: DatasetService,
     private cdr: ChangeDetectorRef
@@ -53,7 +56,7 @@ export class ImportDatasetModalComponent {
 
     this.file = file;
 
-    this.datasetService.previewImport(file).subscribe({
+    this.datasetService.previewImport(file).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: res => {
         this.preview = res.preview.map(sheet => ({
           ...sheet,
@@ -111,7 +114,7 @@ export class ImportDatasetModalComponent {
       this.cdr.detectChanges();
     }, 300);
 
-    this.datasetService.importFromExcel(this.file).subscribe({
+    this.datasetService.importFromExcel(this.file).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         clearInterval(interval);
         this.progress = 100;

@@ -61,7 +61,13 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   }
   ngOnDestroy(): void { if (this.map) this.map.remove(); }
 
-  private get filteredReports(): ReportModel[] { return this.kpiService.filterByYear(this.reports, this.selectedYear); }
+  private get filteredReports(): ReportModel[] {
+    const y = Number(this.selectedYear);
+    return this.reports.filter(r => {
+      const parts = (r.report_date as string).split('-');
+      return parseInt(parts[0], 10) === y;
+    });
+  }
 
   private fetchLocationKpis(): void {
     // Fuente canónica: backend /kpis/by-location. Si falla, el helper
@@ -87,7 +93,7 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   private rebuildMap(): void {
     this.municipioMap = buildMunicipioMap(
       this.filteredReports, this.componentMap,
-      this.normalizeZone.bind(this), this.kpiService,
+      this.normalizeZone.bind(this),
       this.kpiByLocation,
     );
     if (this.mapInitialized) this.renderMarkers();
@@ -113,7 +119,7 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     return Array.from(byMun.entries())
       .map(([key, reps]) => buildMunicipioSummary(
         reps[0].intervention_location, reps, this.componentMap,
-        this.normalizeZone.bind(this), this.kpiService,
+        this.normalizeZone.bind(this),
         this.kpiByLocation?.get(key),
       ))
       .filter((s): s is MunicipioSummary => s !== null)
@@ -214,8 +220,12 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
       if (!grouped.has(key)) grouped.set(key, []);
       grouped.get(key)!.push(r);
     }
-    for (const [, reps] of grouped) {
-      const summary = buildMunicipioSummary(reps[0].intervention_location, reps, this.componentMap, this.normalizeZone.bind(this), this.kpiService);
+    for (const [key, reps] of grouped) {
+      const summary = buildMunicipioSummary(
+        reps[0].intervention_location, reps, this.componentMap,
+        this.normalizeZone.bind(this),
+        this.kpiByLocation?.get(key),
+      );
       if (!summary) continue;
       const { lat, lng } = summary.centroid;
       const kpiValue = this.getKpiValue(summary);

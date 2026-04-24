@@ -6,19 +6,27 @@ import { FormsModule } from '@angular/forms';
 import { UsersService } from '../../../features/user/services/users.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { UserModel, UserUpdateRequest } from '../../../features/user/models/user.model';
+import { PageState, PageStateComponent } from '../../../shared/components/page-state/page-state';
 
 @Component({
   selector: 'app-my-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageStateComponent],
   templateUrl: './my-profile.html',
   changeDetection: ChangeDetectionStrategy.OnPush   // ← único cambio de decorator
 })
 export class MyProfileComponent implements OnInit {
 
   loading = true;
+  loadError = false;
   saving = false;
   savingPassword = false;
+
+  get pageState(): PageState {
+    if (this.loading) return 'loading';
+    if (this.loadError) return 'error';
+    return 'content';
+  }
 
   isEditing = false;
   showChangePassword = false;
@@ -58,16 +66,17 @@ export class MyProfileComponent implements OnInit {
 
   loadProfile() {
     this.loading = true;
+    this.loadError = false;
     this.usersService.getMe()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (user) => {
           this.user = user;
           this.loading = false;
-          this.cdr.markForCheck();      // ← vista no sabe del dato hasta acá
+          this.cdr.markForCheck();
         },
         error: () => {
-          this.toast.error('Error cargando perfil');
+          this.loadError = true;
           this.loading = false;
           this.cdr.markForCheck();
         }

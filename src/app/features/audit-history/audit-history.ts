@@ -7,6 +7,7 @@ import { AuditLogModel } from '../action-plans/models/audit-log.model';
 import { AuditLogService } from '../action-plans/services/audit-log.service';
 import { UsersService } from '../user/services/users.service';
 import { Pagination } from '../../shared/components/pagination/pagination';
+import { PageState, PageStateComponent } from '../../shared/components/page-state/page-state';
 
 interface FilterState {
   search: string;
@@ -30,7 +31,15 @@ export class AuditHistoryComponent implements OnInit {
   userMap: Record<number, string> = {};
 
   loading = true;
+  loadError = false;
   timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  get pageState(): PageState {
+    if (this.loading) return 'loading';
+    if (this.loadError) return 'error';
+    if (!this.paginated.length) return 'empty';
+    return 'content';
+  }
 
   filters: FilterState = {
     search: '',
@@ -74,6 +83,7 @@ export class AuditHistoryComponent implements OnInit {
 
   loadLogs(): void {
     this.loading = true;
+    this.loadError = false;
     this.auditLogService.getAll()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -87,6 +97,7 @@ export class AuditHistoryComponent implements OnInit {
           this.logs = [];
           this.filtered = [];
           this.paginated = [];
+          this.loadError = true;
           this.loading = false;
           this.cdr.detectChanges();
         },

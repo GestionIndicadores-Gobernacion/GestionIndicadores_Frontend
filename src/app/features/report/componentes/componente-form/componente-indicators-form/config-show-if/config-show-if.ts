@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, Input, OnChanges, OnInit, SimpleChanges, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 
@@ -22,11 +23,13 @@ export class ConfigShowIfComponent implements OnInit, OnChanges {
 
   selectIndicators: { name: string; options: string[] }[] = [];
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.refresh();
-    this.indicatorGroup.get('configShowIfIndicatorName')?.valueChanges.subscribe(() => {
+    this.indicatorGroup.get('configShowIfIndicatorName')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.indicatorGroup.get('configShowIfValue')?.setValue(null, { emitEvent: false });
       this.cdr.detectChanges();
     });

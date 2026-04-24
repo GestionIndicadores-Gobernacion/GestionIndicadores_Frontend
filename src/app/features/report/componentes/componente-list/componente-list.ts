@@ -14,11 +14,12 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { Pagination } from '../../../../shared/components/pagination/pagination';
 import { PublicPolicyModalComponent } from './public-policy-modal/public-policy-modal';
 import { LucideAngularModule } from 'lucide-angular';
+import { PageState, PageStateComponent } from '../../../../shared/components/page-state/page-state';
 
 @Component({
   selector: 'app-component-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, Pagination, PublicPolicyModalComponent, LucideAngularModule],
+  imports: [CommonModule, FormsModule, Pagination, PublicPolicyModalComponent, LucideAngularModule, PageStateComponent],
   templateUrl: './componente-list.html',
   styleUrl: './componente-list.css',
 })
@@ -30,7 +31,15 @@ export class ComponentesListComponent implements OnInit {
   strategyMap: Record<number, string> = {};
 
   loading = false;
+  loadError = false;
   search = '';
+
+  get pageState(): PageState {
+    if (this.loading) return 'loading';
+    if (this.loadError) return 'error';
+    if (!this.filteredComponents.length) return 'empty';
+    return 'content';
+  }
 
   currentPage = 1;
   pageSize = 8;
@@ -61,6 +70,7 @@ export class ComponentesListComponent implements OnInit {
   // =========================
   load(): void {
     this.loading = true;
+    this.loadError = false;
     this.cd.detectChanges();
 
     this.strategiesService.getAll()
@@ -83,14 +93,14 @@ export class ComponentesListComponent implements OnInit {
                 this.cd.detectChanges();
               },
               error: () => {
-                this.toast.error('Error al cargar componentes');
+                this.loadError = true;
                 this.loading = false;
                 this.cd.detectChanges();
               }
             });
         },
         error: () => {
-          this.toast.error('Error al cargar estrategias');
+          this.loadError = true;
           this.loading = false;
           this.cd.detectChanges();
         }

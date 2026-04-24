@@ -18,11 +18,12 @@ import {
   KpiSnapshot,
   ReportsKpiService,
 } from '../../../../../features/report/services/reports-kpi.service';
+import { PageState, PageStateComponent } from '../../../../../shared/components/page-state/page-state';
 
 @Component({
   selector: 'app-reports-kpi-cards',
   standalone: true,
-  imports: [CommonModule, DashboardCardComponent, LucideAngularModule],
+  imports: [CommonModule, DashboardCardComponent, LucideAngularModule, PageStateComponent],
   templateUrl: './reports-kpi-cards.html',
   styleUrl: './reports-kpi-cards.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -36,6 +37,15 @@ export class ReportsKpiCardsComponent implements OnInit, OnChanges {
   @Input() selectedYear: number = new Date().getFullYear();
 
   kpis: KpiSnapshot = this.emptySnapshot();
+
+  loading = false;
+  loadError = false;
+
+  get pageState(): PageState {
+    if (this.loading) return 'loading';
+    if (this.loadError) return 'error';
+    return 'content';
+  }
 
   private destroyRef = inject(DestroyRef);
 
@@ -52,20 +62,22 @@ export class ReportsKpiCardsComponent implements OnInit, OnChanges {
     if (changes['selectedYear']) this.refresh();
   }
 
-  private refresh(): void {
+  refresh(): void {
+    this.loading = true;
+    this.loadError = false;
     this.kpiService
       .getSnapshotRemote(this.selectedYear)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: snapshot => {
           this.kpis = snapshot;
+          this.loading = false;
           this.cdr.markForCheck();
         },
         error: () => {
-          // Sin fallback: si el endpoint falla, se muestran los valores
-          // vacíos y el error-interceptor global emite el toast. El
-          // auth-interceptor ya maneja 401/expiración de sesión.
           this.kpis = this.emptySnapshot();
+          this.loadError = true;
+          this.loading = false;
           this.cdr.markForCheck();
         },
       });

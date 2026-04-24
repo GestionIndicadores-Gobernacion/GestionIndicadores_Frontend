@@ -41,7 +41,13 @@
     </div>
 
     <!-- CONTENIDO -->
-    <div *ngIf="!loading" class="max-w-4xl mx-auto px-6 pb-10 space-y-4 -mt-6">
+    <div class="max-w-4xl mx-auto px-6 pb-10 space-y-4 -mt-6">
+    <app-page-state
+        [state]="pageState"
+        loadingMessage="Cargando perfil..."
+        errorMessage="No se pudo cargar el perfil"
+        (retry)="loadProfile()">
+    <div *ngIf="pageState === 'content'" class="space-y-4">
 
         <!-- INFORMACIÓN PERSONAL -->
         <section class="bg-white border border-zinc-200 rounded-xl overflow-hidden">
@@ -226,5 +232,7 @@
             </div>
         </section>
 
+    </div>
+    </app-page-state>
     </div>
 </div>

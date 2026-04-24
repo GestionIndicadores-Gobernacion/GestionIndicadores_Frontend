@@ -6,11 +6,12 @@ import { LucideAngularModule } from 'lucide-angular';
 import { getIndicatorDisplayName } from '../../../../core/data/indicator-display-names';
 import { ReportModel } from '../../../../features/report/models/report.model';
 import { ReportsService } from '../../../../features/report/services/reports.service';
+import { PageState, PageStateComponent } from '../../../../shared/components/page-state/page-state';
 
 @Component({
   selector: 'app-report-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule],
+  imports: [CommonModule, RouterModule, LucideAngularModule, PageStateComponent],
   templateUrl: './report-detail.html',
   styleUrl: './report-detail.css',
 })
@@ -19,6 +20,25 @@ export class ReportDetailComponent implements OnInit {
   report: ReportModel | null = null;
   loading = true;
   error = false;
+
+  get pageState(): PageState {
+    if (this.loading) return 'loading';
+    if (this.error) return 'error';
+    if (!this.report) return 'empty';
+    return 'content';
+  }
+
+  reload(): void {
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    this.loading = true;
+    this.error = false;
+    this.reportsService.getById(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (r) => { this.report = r; this.loading = false; this.cd.detectChanges(); },
+        error: () => { this.error = true; this.loading = false; this.cd.detectChanges(); }
+      });
+  }
 
   private expandedSet = new Set<number>();
   private destroyRef = inject(DestroyRef);

@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, EventEmitter, OnInit, Output, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PublicPolicyModel } from '../../../../../features/report/models/component.model';
 import { PublicPoliciesService } from '../../../../../features/report/services/public-policies.service';
 import { ToastService } from '../../../../../core/services/toast.service';
@@ -34,6 +35,8 @@ export class PublicPolicyModalComponent implements OnInit {
   newSaving = false;
   showNewForm = false;
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private service: PublicPoliciesService,
     private toast: ToastService,
@@ -51,7 +54,7 @@ export class PublicPolicyModalComponent implements OnInit {
   loadPolicies(): void {
     this.loading = true;
     this.cd.detectChanges();
-    this.service.getAll().subscribe({
+    this.service.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: p => { this.policies = p ?? []; this.loading = false; this.cd.detectChanges(); },
       error: () => { this.toast.error('Error cargando políticas'); this.loading = false; this.cd.detectChanges(); }
     });
@@ -78,7 +81,7 @@ export class PublicPolicyModalComponent implements OnInit {
     if (!this.newCode.trim() || !this.newDescription.trim()) return;
     this.newSaving = true;
     this.cd.detectChanges();
-    this.service.create({ code: this.newCode.trim(), description: this.newDescription.trim() }).subscribe({
+    this.service.create({ code: this.newCode.trim(), description: this.newDescription.trim() }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.toast.success('Política creada');
         this.newCode = ''; this.newDescription = '';
@@ -110,7 +113,7 @@ export class PublicPolicyModalComponent implements OnInit {
     if (!this.editingPolicy || !this.editCode.trim() || !this.editDescription.trim()) return;
     this.editSaving = true;
     this.cd.detectChanges();
-    this.service.update(this.editingPolicy.id, { code: this.editCode.trim(), description: this.editDescription.trim() }).subscribe({
+    this.service.update(this.editingPolicy.id, { code: this.editCode.trim(), description: this.editDescription.trim() }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.toast.success('Política actualizada');
         this.editingPolicy = null; this.editSaving = false;
@@ -127,7 +130,7 @@ export class PublicPolicyModalComponent implements OnInit {
   deletePolicy(policy: PublicPolicyModel): void {
     this.toast.confirm(`¿Eliminar política ${policy.code}?`, 'Esta acción no se puede deshacer.').then(result => {
       if (!result.isConfirmed) return;
-      this.service.delete(policy.id).subscribe({
+      this.service.delete(policy.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => { this.toast.success('Política eliminada'); this.loadPolicies(); },
         error: err => { this.toast.error(err.error?.message || 'Error al eliminar'); this.cd.detectChanges(); }
       });

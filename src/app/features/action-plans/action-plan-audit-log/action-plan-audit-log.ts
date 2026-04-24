@@ -7,11 +7,12 @@ import { AuditLogModel } from '../../../features/action-plans/models/audit-log.m
 import { AuditLogService } from '../../../features/action-plans/services/audit-log.service';
 import { UsersService } from '../../../features/user/services/users.service';
 import { Pagination } from '../../../shared/components/pagination/pagination';
+import { PageState, PageStateComponent } from '../../../shared/components/page-state/page-state';
 
 @Component({
   selector: 'app-action-plan-audit-log',
   standalone: true,
-  imports: [CommonModule, FormsModule, Pagination, LucideAngularModule],
+  imports: [CommonModule, FormsModule, Pagination, LucideAngularModule, PageStateComponent],
   templateUrl: './action-plan-audit-log.html',
   styleUrl: './action-plan-audit-log.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,12 +24,22 @@ export class ActionPlanAuditLogComponent implements OnInit {
   paginated: AuditLogModel[] = [];
   userMap: Record<number, string> = {};
 
+  loading = true;
+  loadError = false;
+
   searchTerm = '';
   filterAction = '';
 
   currentPage = 1;
   pageSize = 3;
   totalPages = 1;
+
+  get pageState(): PageState {
+    if (this.loading) return 'loading';
+    if (this.loadError) return 'error';
+    if (!this.logs.length) return 'empty';
+    return 'content';
+  }
 
   private destroyRef = inject(DestroyRef);
 
@@ -57,18 +68,23 @@ export class ActionPlanAuditLogComponent implements OnInit {
   }
 
   loadLogs(): void {
+    this.loading = true;
+    this.loadError = false;
     this.auditLogService.getAll({ entity: 'action_plan' })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: logs => {
           this.logs = logs;
           this.applyFilters();
+          this.loading = false;
           this.cdr.detectChanges();
         },
         error: () => {
           this.logs = [];
           this.filtered = [];
           this.paginated = [];
+          this.loadError = true;
+          this.loading = false;
           this.cdr.detectChanges();
         }
       });

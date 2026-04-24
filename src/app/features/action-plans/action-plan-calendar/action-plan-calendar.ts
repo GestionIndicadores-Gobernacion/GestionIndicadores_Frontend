@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, NgZone, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';  // ← agregar ActivatedRoute, Router
 import { LucideAngularModule } from 'lucide-angular';
 import {
@@ -114,6 +115,8 @@ export class ActionPlanCalendarComponent implements OnInit {
   // ← NUEVO: para prefill del modal al regresar desde reporte
   prefillEvidenceUrl = '';
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private actionPlanService: ActionPlanService,
     private strategiesService: StrategiesService,
@@ -164,14 +167,14 @@ export class ActionPlanCalendarComponent implements OnInit {
   // ── Loaders ──────────────────────────────────────────────────────
 
   private loadStrategies(): void {
-    this.strategiesService.getAll().subscribe({
+    this.strategiesService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: s => { this.strategies = s ?? []; this.loadComponents(); },
       error: () => this.toast.error('Error cargando estrategias')
     });
   }
 
   private loadComponents(): void {
-    this.componentsService.getAll().subscribe({
+    this.componentsService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: c => {
         this.components = c ?? [];
         this.filteredComponents = this.selectedStrategyId
@@ -188,7 +191,7 @@ export class ActionPlanCalendarComponent implements OnInit {
       month: this.currentDate.getMonth() + 1,
       year: this.currentDate.getFullYear(),
     };
-    this.actionPlanService.getAll(filters).pipe(catchError(() => of([]))).subscribe(plans => {
+    this.actionPlanService.getAll(filters).pipe(catchError(() => of([])), takeUntilDestroyed(this.destroyRef)).subscribe(plans => {
       this.plans = [...(plans ?? [])];
       this.buildCalendar();
       this.checkReturnParams();   // ← NUEVO: verificar después de cargar planes
@@ -364,7 +367,7 @@ export class ActionPlanCalendarComponent implements OnInit {
       .then(result => {
         if (!result.isConfirmed) return;
         this.ngZone.run(() => {
-          this.actionPlanService.deleteActivity(activityId).subscribe({
+          this.actionPlanService.deleteActivity(activityId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
             next: () => { this.loadPlans(); this.toast.success('Actividad eliminada'); },
             error: () => this.toast.error('Error al eliminar')
           });

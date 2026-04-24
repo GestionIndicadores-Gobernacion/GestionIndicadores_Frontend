@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit, ViewChildren, QueryList } from '@angular/core';
+import { Component, DestroyRef, Input, OnInit, ViewChildren, QueryList, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormBuilder, FormGroup, FormArray,
   Validators, ReactiveFormsModule, AbstractControl
@@ -37,6 +38,8 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
 
   @ViewChildren(ConfigGroupedDataComponent)
   gdComponents!: QueryList<ConfigGroupedDataComponent>;
+
+  private destroyRef = inject(DestroyRef);
 
   draggedIndex: number | null = null;
   dragOverIndex: number | null = null;
@@ -123,19 +126,19 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
     (group as any)._rawConfig = data?.config || null;
 
     // Auto-uppercase nombre
-    group.get('name')?.valueChanges.subscribe(v => {
+    group.get('name')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(v => {
       if (typeof v === 'string' && v !== v.toUpperCase())
         group.get('name')?.setValue(v.toUpperCase(), { emitEvent: false });
     });
 
-    group.get('group_name')?.valueChanges.subscribe((v: string) => {
+    group.get('group_name')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((v: string) => {
       if (typeof v === 'string' && v.includes(' ')) {
         group.get('group_name')?.setValue(v.replace(/ /g, '_'), { emitEvent: false });
       }
     });
 
     // Limpiar configShowIfValue si cambia el indicador padre
-    group.get('configShowIfIndicatorName')?.valueChanges.subscribe(() => {
+    group.get('configShowIfIndicatorName')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       group.get('configShowIfValue')?.setValue(null, { emitEvent: false });
     });
 
@@ -147,7 +150,7 @@ export class ComponenteIndicatorsFormComponent implements OnInit {
     this.indicators.push(group);
 
     // Escuchar cambio de tipo para gestionar targets
-    group.get('field_type')?.valueChanges.subscribe(newType => {
+    group.get('field_type')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(newType => {
       const needsTargets = this.TYPES_WITH_TARGETS.includes(newType);
       if (needsTargets && !group.contains('targets')) {
         group.addControl('targets', this.buildTargetsArray([], newType));

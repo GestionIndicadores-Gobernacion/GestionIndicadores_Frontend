@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, DestroyRef, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -37,6 +38,8 @@ export class UserFormComponent implements OnInit {
     role_id: null as number | null,
     profile_image_url: ''
   };
+
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     public router: Router,
@@ -104,21 +107,21 @@ export class UserFormComponent implements OnInit {
   // ── Carga de datos ───────────────────────────────────────────────────
 
   loadRoles() {
-    this.rolesService.getAll().subscribe({
+    this.rolesService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => { this.roles = res; this.cdr.markForCheck(); },
       error: () => this.toast.error('Error cargando roles')
     });
   }
 
   loadComponents() {
-    this.componentsService.getAll().subscribe({
+    this.componentsService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => { this.allComponents = res; this.cdr.markForCheck(); },
       error: () => this.toast.error('Error cargando componentes')
     });
   }
 
   loadUser() {
-    this.usersService.getById(this.userId!).subscribe({
+    this.usersService.getById(this.userId!).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (user) => {
         this.form = {
           first_name: user.first_name,
@@ -175,7 +178,7 @@ export class UserFormComponent implements OnInit {
       if (this.form.password.trim()) payload.password = this.form.password;
       if (this.form.profile_image_url.trim()) payload.profile_image_url = this.form.profile_image_url.trim();
 
-      this.usersService.update(this.userId!, payload).subscribe({
+      this.usersService.update(this.userId!, payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => { this.toast.success('Usuario actualizado correctamente'); this.router.navigate(['/users']); },
         error: () => { this.saving = false; this.cdr.markForCheck(); }
       });
@@ -191,7 +194,7 @@ export class UserFormComponent implements OnInit {
       };
       if (this.form.profile_image_url.trim()) payload.profile_image_url = this.form.profile_image_url.trim();
 
-      this.usersService.create(payload).subscribe({
+      this.usersService.create(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => { this.toast.success('Usuario creado correctamente'); this.router.navigate(['/users']); },
         error: () => { this.saving = false; this.cdr.markForCheck(); }
       });

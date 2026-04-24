@@ -7,6 +7,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import { ActionPlanService } from '../../../features/action-plans/services/action-plan.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Pagination } from '../../../shared/components/pagination/pagination';
+import { PageState, PageStateComponent } from '../../../shared/components/page-state/page-state';
 
 export interface PlanOwner {
   user_id: number;
@@ -46,7 +47,7 @@ export interface ActivityDetail {
 @Component({
   selector: 'app-action-plan-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, Pagination, LucideAngularModule],
+  imports: [CommonModule, RouterModule, FormsModule, Pagination, LucideAngularModule, PageStateComponent],
   templateUrl: './action-plan-dashboard.html',
 })
 export class ActionPlanDashboardComponent implements OnInit {
@@ -54,6 +55,14 @@ export class ActionPlanDashboardComponent implements OnInit {
   allUsers: UserDashboard[] = [];
   users: UserDashboard[] = [];
   loading = true;
+  loadError = false;
+
+  get pageState(): PageState {
+    if (this.loading) return 'loading';
+    if (this.loadError) return 'error';
+    if (!this.allUsers.length) return 'empty';
+    return 'content';
+  }
 
   search = '';
   statusFilter = '';
@@ -73,6 +82,12 @@ export class ActionPlanDashboardComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.load();
+  }
+
+  load(): void {
+    this.loading = true;
+    this.loadError = false;
     this.actionPlanService.getDashboard()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -83,7 +98,7 @@ export class ActionPlanDashboardComponent implements OnInit {
           this.cdr.detectChanges();
         },
         error: () => {
-          this.toast.error('Error cargando dashboard');
+          this.loadError = true;
           this.loading = false;
           this.cdr.detectChanges();
         }

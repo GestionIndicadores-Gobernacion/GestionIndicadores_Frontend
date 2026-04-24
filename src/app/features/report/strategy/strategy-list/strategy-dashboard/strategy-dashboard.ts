@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, Input, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ChangeDetectorRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
@@ -8,21 +8,39 @@ import { StrategyModel } from '../../../../../features/report/models/strategy.mo
 import { StrategiesService } from '../../../../../features/report/services/strategies.service';
 import { ToastService } from '../../../../../core/services/toast.service';
 
+/**
+ * 2024 es un año exclusivo del dashboard de estrategias (tiene metas
+ * configuradas allí pero no reportes ni KPIs en los demás componentes).
+ * Cuando el usuario elige 2024 localmente se aísla el cambio: no se
+ * propaga al padre para evitar que los demás componentes queden en un
+ * año sin datos.
+ */
+const STRATEGY_ONLY_YEAR = 2024;
+
 @Component({
   selector: 'app-strategy-dashboard',
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule],
   templateUrl: './strategy-dashboard.html',
 })
-export class StrategyDashboardComponent implements OnInit {
+export class StrategyDashboardComponent implements OnInit, OnChanges {
 
   @Input() showStrategyButtons = true;
-  @Input() dateFrom: string | null = null;   // ← NUEVO: recibe rango desde el padre
-  @Input() dateTo: string | null = null;     // ← NUEVO
+  @Input() dateFrom: string | null = null;
+  @Input() dateTo: string | null = null;
+
+  /**
+   * Año sincronizado con el dashboard principal. Si el padre cambia el
+   * año, este componente se actualiza. Si el usuario lo cambia
+   * localmente, emite `yearChange` salvo cuando elige 2024 (ver
+   * `STRATEGY_ONLY_YEAR`).
+   */
+  @Input() selectedYear: number = new Date().getFullYear();
+
+  @Output() yearChange = new EventEmitter<number>();
 
   strategies: StrategyModel[] = [];
   loading = false;
-  selectedYear: number = new Date().getFullYear();
   availableYears: number[] = [];
 
   private destroyRef = inject(DestroyRef);
@@ -39,9 +57,12 @@ export class StrategyDashboardComponent implements OnInit {
     this.loadDashboard(this.selectedYear);
   }
 
-  ngOnChanges(): void {
-    // Re-cargar cuando el padre cambie el rango
-    if (this.dateFrom && this.dateTo) {
+  ngOnChanges(changes: SimpleChanges): void {
+    // El padre cambió el año (o el rango) → recargar con el nuevo valor.
+    // Se excluye el firstChange para no duplicar la carga inicial de ngOnInit.
+    const yearChanged = changes['selectedYear'] && !changes['selectedYear'].firstChange;
+    const rangeChanged = (changes['dateFrom'] || changes['dateTo']) && this.dateFrom && this.dateTo;
+    if (yearChanged || rangeChanged) {
       this.loadDashboard(this.selectedYear);
     }
   }
@@ -80,6 +101,11 @@ export class StrategyDashboardComponent implements OnInit {
   onYearChange(year: number): void {
     this.selectedYear = year;
     this.loadDashboard(year);
+    // Emitir al padre solo si el año NO es exclusivo de estrategias.
+    // 2024 se queda aislado aquí para no romper los demás componentes.
+    if (year !== STRATEGY_ONLY_YEAR) {
+      this.yearChange.emit(year);
+    }
   }
 
   goToEdit(id: number): void {

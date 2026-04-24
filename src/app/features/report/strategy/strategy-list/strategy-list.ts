@@ -8,11 +8,12 @@ import { StrategiesService } from '../../../../features/report/services/strategi
 import { ToastService } from '../../../../core/services/toast.service';
 import { StrategyTableComponent } from './strategy-table/strategy-table';
 import { LucideAngularModule } from 'lucide-angular';
+import { PageState, PageStateComponent } from '../../../../shared/components/page-state/page-state';
 
 @Component({
   selector: 'app-strategy-list',
   standalone: true,
-  imports: [CommonModule, StrategyTableComponent, LucideAngularModule],
+  imports: [CommonModule, StrategyTableComponent, LucideAngularModule, PageStateComponent],
   templateUrl: './strategy-list.html',
   styleUrl: './strategy-list.css',
 })
@@ -20,6 +21,14 @@ export class StrategyListComponent implements OnInit {
 
   strategies: StrategyModel[] = [];
   loading = false;
+  loadError = false;
+
+  get pageState(): PageState {
+    if (this.loading) return 'loading';
+    if (this.loadError) return 'error';
+    if (!this.strategies.length) return 'empty';
+    return 'content';
+  }
 
   private destroyRef = inject(DestroyRef);
 
@@ -36,6 +45,7 @@ export class StrategyListComponent implements OnInit {
 
   loadStrategies(): void {
     this.loading = true;
+    this.loadError = false;
     this.cd.detectChanges();
     this.strategiesService.getAll()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -46,7 +56,7 @@ export class StrategyListComponent implements OnInit {
           this.cd.detectChanges();
         },
         error: () => {
-          this.toast.error('No se pudieron cargar las estrategias');
+          this.loadError = true;
           this.loading = false;
           this.cd.detectChanges();
         }

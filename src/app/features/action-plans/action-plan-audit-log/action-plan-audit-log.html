@@ -26,10 +26,19 @@
 
     </div>
 
-    <!-- Empty -->
-    <div *ngIf="filtered.length === 0" class="py-10 text-center">
-        <p class="text-sm font-medium text-zinc-900">Sin registros</p>
-        <p class="text-xs text-zinc-400 mt-1">No hay acciones que coincidan</p>
+    <app-page-state
+        [state]="pageState"
+        loadingMessage="Cargando registros..."
+        errorMessage="No se pudo cargar el historial"
+        emptyMessage="Sin registros"
+        emptyHint="No hay acciones registradas"
+        emptyIcon="history"
+        (retry)="loadLogs()">
+
+    <!-- Sin resultados filtrados (cuando hay logs pero filtros no devuelven nada) -->
+    <div *ngIf="pageState === 'content' && filtered.length === 0" class="py-10 text-center">
+        <p class="text-sm font-medium text-zinc-900">Sin coincidencias</p>
+        <p class="text-xs text-zinc-400 mt-1">No hay acciones que coincidan con los filtros</p>
     </div>
 
     <!-- Lista -->
@@ -72,5 +81,7 @@
     <app-pagination *ngIf="filtered.length > pageSize" [currentPage]="currentPage" [totalPages]="totalPages"
         (pageChange)="onPageChange($event)">
     </app-pagination>
+
+    </app-page-state>
 
 </div>

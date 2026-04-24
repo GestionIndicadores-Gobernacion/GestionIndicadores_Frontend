@@ -82,26 +82,39 @@ describe('ReportsKpiService', () => {
     });
   });
 
-  // ─── Agregadores de subset (consumidos por el mapa) ─────────────────
-  describe('asistenciasTecnicas', () => {
-    it('cuenta 1 por reporte del componente ASISTENCIAS y suma valor del indicador 160 en JUNTAS', () => {
-      const reports = [
-        { component_id: 2, indicator_values: [] },
-        { component_id: 2, indicator_values: [] },
-        { component_id: 21, indicator_values: [{ indicator_id: 160, value: 5 }] },
-      ] as any;
-      expect(service.asistenciasTecnicas(reports)).toBe(7);
-    });
-  });
+  // ─── getByLocation ──────────────────────────────────────────────────
+  describe('getByLocation', () => {
+    it('llama GET /kpis/by-location?year=YYYY', async () => {
+      const promise = new Promise<void>(resolve => {
+        service.getByLocation(2026).subscribe(res => {
+          expect(res.year).toBe(2026);
+          expect(res.items.length).toBe(1);
+          expect(res.items[0].location).toBe('Cali');
+          expect(res.items[0].asistencias_tecnicas).toBe(3);
+          resolve();
+        });
+      });
 
-  describe('refugiosImpactados', () => {
-    it('cuenta solo reportes cuyo indicador 102 cae en el set de espacios de acogida', () => {
-      const reports = [
-        { indicator_values: [{ indicator_id: 102, value: 'Albergue/Refugio' }] },
-        { indicator_values: [{ indicator_id: 102, value: 'Otro' }] },
-        { indicator_values: [{ indicator_id: 102, value: 'fundacion' }] },
-      ] as any;
-      expect(service.refugiosImpactados(reports)).toBe(2);
+      const req = httpMock.expectOne(
+        r => r.url === `${environment.apiUrl}/kpis/by-location`
+          && r.params.get('year') === '2026'
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush({
+        year: 2026,
+        items: [{
+          location: 'Cali',
+          total_reports: 10,
+          asistencias_tecnicas: 3,
+          denuncias_reportadas: 1,
+          animales_esterilizados: 850,
+          refugios_impactados: 2,
+          ninos_sensibilizados: 120,
+          emprendedores_cofinanciados: 0,
+        }],
+      });
+
+      await promise;
     });
   });
 });

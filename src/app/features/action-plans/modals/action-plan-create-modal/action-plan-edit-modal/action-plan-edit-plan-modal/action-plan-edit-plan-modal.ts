@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { ActionPlanModel, RecurrenceFrequency } from '../../../../../../features/action-plans/models/action-plan.model';
@@ -59,6 +60,8 @@ export class ActionPlanEditPlanModalComponent implements OnInit {
       plan_objectives: []
     };
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private actionPlanService: ActionPlanService,
     private componentsService: ComponentsService,
@@ -70,7 +73,7 @@ export class ActionPlanEditPlanModalComponent implements OnInit {
     forkJoin({
       users: this.usersService.getAll(),
       component: this.componentsService.getById(this.plan.component_id),
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: ({ users, component }) => {
         this.users = users.filter(u => !EXCLUDED_EMAILS.has(u.email));
         this.objectives = component.objectives ?? [];
@@ -201,7 +204,7 @@ export class ActionPlanEditPlanModalComponent implements OnInit {
     };
 
     this.saving = true;
-    this.actionPlanService.updatePlan(this.plan.id, payload).subscribe({
+    this.actionPlanService.updatePlan(this.plan.id, payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => { this.saving = false; this.edited.emit(); },
       error: (err) => {
         this.saving = false;

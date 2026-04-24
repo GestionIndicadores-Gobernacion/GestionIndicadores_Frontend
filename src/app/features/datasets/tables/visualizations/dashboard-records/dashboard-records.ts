@@ -1,4 +1,5 @@
-import { Component, Input, OnInit, signal, computed } from '@angular/core';
+import { Component, DestroyRef, Input, OnInit, signal, computed, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
@@ -157,10 +158,12 @@ export class DashboardRecordsComponent implements OnInit {
   get detailTitle(): string       { return this.cfg.detailTitle; }
   get detailSubtitleFields(): string[] { return this.cfg.detailSubtitle; }
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(private datasetService: DatasetService) {}
 
   ngOnInit(): void {
-    this.datasetService.getTableViewer(this.tableId).subscribe({
+    this.datasetService.getTableViewer(this.tableId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: d => { this.viewerData.set(d); this.loading.set(false); },
       error: () => this.loading.set(false)
     });
