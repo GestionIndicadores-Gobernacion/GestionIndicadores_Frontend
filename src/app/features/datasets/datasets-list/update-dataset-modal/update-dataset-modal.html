@@ -15,26 +15,47 @@
         </div>
 
         <p class="text-[12px]" style="color:#4A6A9B">
-            Se reemplazarán todos los registros actuales con los del nuevo archivo Excel.
-            Los indicadores vinculados a este dataset no se verán afectados.
+            Puedes cambiar el nombre, subir un nuevo Excel, o ambos.
+            Si subes un archivo, se reemplazarán todos los registros actuales.
         </p>
 
-        <label
-            class="flex flex-col items-center gap-3 px-6 py-8 border-2 border-dashed rounded-2xl cursor-pointer transition"
-            style="border-color:#D6E0F0;background:#F8FAFD">
-            <lucide-icon name="upload" [size]="40" color="#4A6A9B" [strokeWidth]="2"></lucide-icon>
-            <span class="text-[13px] font-semibold" style="color:#1B3A6B">
-                {{ selectedFile ? selectedFile.name : 'Seleccionar archivo Excel' }}
-            </span>
-            <input type="file" accept=".xlsx,.xls" (change)="onFile($event)" class="hidden" />
-        </label>
+        <div class="space-y-1.5">
+            <label class="text-[11px] font-bold uppercase tracking-wider" style="color:#1B3A6B">
+                Nombre del dataset
+            </label>
+            <input type="text" [(ngModel)]="datasetName" [disabled]="uploading"
+                placeholder="Nombre del dataset"
+                class="w-full text-[13px] rounded-xl px-3 py-2 outline-none transition-all duration-150"
+                style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B"
+                onfocus="this.style.borderColor='#1B3A6B';this.style.background='#fff';this.style.boxShadow='0 0 0 3px rgba(27,58,107,0.08)'"
+                onblur="this.style.borderColor='#D6E0F0';this.style.background='#F0F4FA';this.style.boxShadow='none'" />
+        </div>
+
+        <div class="space-y-1.5">
+            <label class="text-[11px] font-bold uppercase tracking-wider" style="color:#1B3A6B">
+                Archivo Excel <span class="font-normal lowercase tracking-normal" style="color:#8A9DC0">(opcional)</span>
+            </label>
+            <label
+                class="flex flex-col items-center gap-3 px-6 py-8 border-2 border-dashed rounded-2xl cursor-pointer transition"
+                style="border-color:#D6E0F0;background:#F8FAFD">
+                <lucide-icon name="upload" [size]="40" color="#4A6A9B" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[13px] font-semibold text-center" style="color:#1B3A6B">
+                    {{ selectedFile ? selectedFile.name : 'Seleccionar archivo Excel' }}
+                </span>
+                <input type="file" accept=".xlsx,.xls" (change)="onFile($event)" class="hidden" />
+            </label>
+            <button *ngIf="selectedFile" type="button" (click)="clearFile()" [disabled]="uploading"
+                class="text-[11px] font-semibold cursor-pointer underline" style="color:#dc2626">
+                Quitar archivo
+            </button>
+        </div>
 
         <div class="flex justify-end gap-2">
             <button (click)="closeModal()" [disabled]="uploading" class="px-4 py-2 text-sm cursor-pointer"
                 style="color:#4A6A9B">
                 Cancelar
             </button>
-            <button (click)="upload()" [disabled]="!selectedFile || uploading"
+            <button (click)="upload()" [disabled]="!canSubmit"
                 class="px-4 py-2 text-sm font-bold rounded-xl text-white cursor-pointer disabled:opacity-50"
                 style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8)">
                 {{ uploading ? 'Actualizando...' : 'Actualizar' }}
