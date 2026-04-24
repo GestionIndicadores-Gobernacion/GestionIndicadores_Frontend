@@ -14,6 +14,15 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         return throwError(() => error);
       }
 
+      // ✅ 422 proveniente de errores JWT (token_invalid) → lo gestiona authInterceptor
+      const isJwtInvalid =
+        error.status === 422 &&
+        typeof error.error?.error === 'string' &&
+        String(error.error.error).startsWith('token_');
+      if (isJwtInvalid) {
+        return throwError(() => error);
+      }
+
       console.error('ERROR COMPLETO:', error);
       let message = 'Error desconocido';
 

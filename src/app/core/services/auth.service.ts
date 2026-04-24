@@ -12,6 +12,8 @@ interface JwtPayload {
   exp: number;
 }
 
+export type SessionExpiredReason = 'expired' | 'invalid' | 'manual';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -79,7 +81,44 @@ export class AuthService {
     return payload.exp < now;
   }
 
+  // ─── Refresh token helpers ───────────────────────────────────────
+  private decodeRefreshPayload(): { exp?: number } | null {
+    const token = this.getRefreshToken();
+    if (!token) return null;
+    try {
+      return jwtDecode<{ exp?: number }>(token);
+    } catch {
+      return null;
+    }
+  }
+
+  isRefreshTokenExpired(): boolean {
+    const payload = this.decodeRefreshPayload();
+    if (!payload?.exp) return true;
+    const now = Math.floor(Date.now() / 1000);
+    return payload.exp < now;
+  }
+
+  hasValidRefreshToken(): boolean {
+    return !!this.getRefreshToken() && !this.isRefreshTokenExpired();
+  }
+
+  /**
+   * Autenticado "efectivo": el usuario tiene sesión utilizable.
+   * - access válido → true
+   * - access expirado pero refresh válido → true (el interceptor lo renovará)
+   * - sin tokens o ambos expirados → false
+   */
   isAuthenticated(): boolean {
+    if (this.getAccessToken() && !this.isTokenExpired()) return true;
+    return this.hasValidRefreshToken();
+  }
+
+  /**
+   * Estricto: access token vigente. Útil solo para decisiones internas;
+   * los guards deben usar isAuthenticated() para permitir el refresh silencioso.
+   */
+  hasLiveAccessToken(): boolean {
     return !!this.getAccessToken() && !this.isTokenExpired();
   }
 
@@ -128,9 +167,26 @@ export class AuthService {
   // =====================================================
   // 7️⃣ LOGOUT
   // =====================================================
-  logout(): void {
+  /**
+   * Limpia la sesión local. Acepta una razón opcional que se expone
+   * vía `lastSessionExpiredReason` para que la capa de UI pueda
+   * reaccionar (toast, mensaje en login, etc.).
+   */
+  logout(reason?: SessionExpiredReason): void {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
+    if (reason) {
+      AuthService._lastReason = reason;
+    }
+  }
+
+  private static _lastReason: SessionExpiredReason | null = null;
+
+  /** Lee y consume la última razón de expiración (one-shot). */
+  consumeSessionExpiredReason(): SessionExpiredReason | null {
+    const r = AuthService._lastReason;
+    AuthService._lastReason = null;
+    return r;
   }
 }
