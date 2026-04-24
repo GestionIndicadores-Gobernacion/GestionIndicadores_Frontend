@@ -64,6 +64,18 @@ export interface IndicatorByLocation {
   total: number;
 }
 
+export interface IndicatorByLocationStackedSegment {
+  metric: string;
+  label: string;
+  total: number;
+  color?: string;
+}
+
+export interface IndicatorByLocationStacked {
+  location: string;
+  segments: IndicatorByLocationStackedSegment[];
+}
+
 export interface IndicatorDetail {
   indicator_id: number;
   indicator_name: string;
@@ -72,6 +84,7 @@ export interface IndicatorDetail {
   by_category?: IndicatorByCategory[];
   by_nested?: Record<string, IndicatorByNestedEntry[]>;
   by_location?: IndicatorByLocation[];
+  by_location_stacked?: IndicatorByLocationStacked[];
   indicator_name_short?: string;
   navigable?: boolean;  // ← si false o ausente, el click en el chart no navega
 }

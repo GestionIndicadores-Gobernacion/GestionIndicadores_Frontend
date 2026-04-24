@@ -34,24 +34,35 @@ export function getAtencionVeterinariaVirtuals(
     const byLocNested = indicatorsAggregate?.by_location_nested ?? [];
     const byLoc = indicatorsAggregate?.by_location ?? [];
 
-    // 1. Cantidad de animales / tipo de atención vs municipios
+    // 1. Cantidad de animales / tipo de atención vs municipios (stacked bar)
     if (byLocNested.length > 0) {
-        const locationData = byLocNested
+        const ATENCION_METRICS: { metric: string; label: string; color: string }[] = [
+            { metric: 'no_de_animales_esterilizados',            label: 'Esterilizados',        color: '#10b981' },
+            { metric: 'no_de_animales_desparasitados',           label: 'Desparasitados',       color: '#6366f1' },
+            { metric: 'no_de_animales_con_atencion_veterinaria', label: 'Atención veterinaria', color: '#f59e0b' },
+            { metric: 'no_de_animales_vitaminizados',            label: 'Vitaminizados',        color: '#ef4444' },
+            { metric: 'no_de_animales_vacunados',                label: 'Vacunados',            color: '#3b82f6' },
+        ];
+
+        const stackedData = byLocNested
             .map(l => {
                 const ind = l.indicators.find(i => i.indicator_id === 125);
                 if (!ind) return null;
-                const total = ind.metrics
-                    .find(m => m.metric === 'no_de_animales_con_atencion_veterinaria')?.total ?? 0;
-                return total > 0 ? { location: l.location, total } : null;
+                const segments = ATENCION_METRICS.map(cfg => {
+                    const total = ind.metrics.find(m => m.metric === cfg.metric)?.total ?? 0;
+                    return { metric: cfg.metric, label: cfg.label, total, color: cfg.color };
+                });
+                const hasAny = segments.some(s => s.total > 0);
+                return hasAny ? { location: l.location, segments } : null;
             })
-            .filter(Boolean) as { location: string; total: number }[];
+            .filter(Boolean) as { location: string; segments: { metric: string; label: string; total: number; color: string }[] }[];
 
-        if (locationData.length > 0) {
+        if (stackedData.length > 0) {
             virtual.push({
                 indicator_id: -10021,
                 indicator_name: 'Cantidad de animales / tipo de atención vs municipios',
-                field_type: 'by_location',
-                by_location: locationData,
+                field_type: 'by_location_stacked',
+                by_location_stacked: stackedData,
                 navigable: true,
             });
         }
