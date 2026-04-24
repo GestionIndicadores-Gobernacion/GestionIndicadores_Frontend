@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule, NgForm, NgModel } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../../core/services/auth.service';
@@ -17,7 +17,7 @@ import { ToastService } from '../../../core/services/toast.service';
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
 
   email = '';
   password = '';
@@ -29,6 +29,17 @@ export class LoginComponent {
     private router: Router,
     private toast: ToastService
   ) { }
+
+  ngOnInit(): void {
+    // Si el usuario llegó a login por una sesión expirada, mostrar aviso
+    // una sola vez. consumeSessionExpiredReason() limpia el estado.
+    const reason = this.auth.consumeSessionExpiredReason();
+    if (reason && !this.errorMessage) {
+      this.errorMessage = reason === 'invalid'
+        ? 'Tu sesión no es válida. Inicia sesión nuevamente.'
+        : 'Tu sesión ha expirado. Inicia sesión nuevamente.';
+    }
+  }
 
   // ==============================
   // 🔥 Igual que en tus otros forms
