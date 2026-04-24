@@ -46,6 +46,7 @@ export class ChartBuildersService {
             return this.jornadas(aggregate, year, safeClick, componentId);
         }
 
+        if (d.by_location_stacked) return this.locationStacked(d, safeClick, componentId);
         if (d.by_nested) return this.donut(d, safeClick, componentId);
         if (d.by_location) return this.location(d, safeClick, componentId);
         if (d.by_category) return this.category(d, aggregate, safeClick, componentId);
@@ -256,6 +257,98 @@ export class ChartBuildersService {
                         componentId,
                         indicatorId: d.indicator_id
                     });
+                }
+            }
+        };
+    }
+
+    // ─────────────────────────────────────────
+    // Por municipio (stacked por tipo de atención)
+    // ─────────────────────────────────────────
+
+    private locationStacked(
+        d: IndicatorDetail,
+        onBarClick: (e: BarClickEvent) => void,
+        componentId: number | null,
+    ): ChartResult {
+
+        const rows = (d.by_location_stacked ?? [])
+            .filter(r => r.segments.some(s => s.total > 0));
+
+        const labels = rows.map(r => r.location);
+
+        const segmentOrder: { metric: string; label: string; color: string }[] = [];
+        rows.forEach(r => {
+            r.segments.forEach(s => {
+                if (!segmentOrder.find(x => x.metric === s.metric)) {
+                    segmentOrder.push({
+                        metric: s.metric,
+                        label: s.label,
+                        color: s.color ?? '#64748b',
+                    });
+                }
+            });
+        });
+
+        const datasets = segmentOrder.map(seg => ({
+            label: seg.label,
+            data: rows.map(r => r.segments.find(s => s.metric === seg.metric)?.total ?? 0),
+            backgroundColor: seg.color,
+            borderRadius: 4,
+            borderSkipped: false as const,
+            stack: 'atencion',
+        }));
+
+        return {
+            type: 'bar',
+            data: { labels, datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                onHover: d.navigable
+                    ? (event: any, elements: any[]) => {
+                        event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+                    }
+                    : undefined,
+                onClick: (_e: any, elements: any[]) => {
+                    if (!elements.length) return;
+                    const i = elements[0].index;
+                    const dsIdx = elements[0].datasetIndex;
+                    onBarClick({
+                        label: labels[i],
+                        datasetLabel: datasets[dsIdx]?.label ?? d.indicator_name,
+                        componentId,
+                        indicatorId: d.indicator_id,
+                    });
+                },
+                interaction: { mode: 'nearest', intersect: true },
+                plugins: {
+                    legend: { display: true, position: 'bottom' },
+                    tooltip: {
+                        mode: 'nearest',
+                        intersect: true,
+                        callbacks: {
+                            label: (ctx) => {
+                                const label = ctx.dataset.label ?? '';
+                                const value = ctx.parsed.x ?? 0;
+                                return `${label}: ${value.toLocaleString()}`;
+                            },
+                            footer: (items) => {
+                                if (!items?.length) return '';
+                                const idx = items[0].dataIndex;
+                                const total = datasets.reduce(
+                                    (sum, ds) => sum + Number(ds.data[idx] ?? 0),
+                                    0
+                                );
+                                return `Total: ${total.toLocaleString()}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { stacked: true, beginAtZero: true, ticks: { precision: 0 } },
+                    y: { stacked: true, type: 'category' },
                 }
             }
         };
