@@ -40,6 +40,7 @@ import {
   Target, Award, Briefcase, Layers,
   Inbox, Send,
   Heart, Smile,
+  Package, Dog, Cat,
 } from 'lucide-angular';
 
 export const LUCIDE_ICON_SET = {
@@ -64,4 +65,5 @@ export const LUCIDE_ICON_SET = {
   Target, Award, Briefcase, Layers,
   Inbox, Send,
   Heart, Smile,
+  Package, Dog, Cat,
 };
