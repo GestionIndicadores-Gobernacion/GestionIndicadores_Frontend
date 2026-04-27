@@ -34,6 +34,8 @@ export class ActionPlanListComponent {
   @Input() plans: ActionPlanModel[] = [];
   @Input() currentUser: any = null;
   @Input() canEditPlan: (plan: ActionPlanModel) => boolean = () => false;
+  /** Solo responsables del plan pueden reportar (admin override). */
+  @Input() canReport: (plan: ActionPlanModel) => boolean = () => false;
 
   @Output() report = new EventEmitter<{ plan: ActionPlanModel; objective: ActionPlanObjectiveModel; activity: ActionPlanActivityModel; event: Event }>();
   @Output() delete = new EventEmitter<{ activityId: number; event: Event }>();
@@ -190,13 +192,17 @@ export class ActionPlanListComponent {
 
   /** True si el botón de acción debe mostrarse activo */
   canClickAction(activity: ActionPlanActivityModel, plan: ActionPlanModel): boolean {
+    // Realizado: solo lectura, todos pueden ver el detalle.
     if (activity.status === 'Realizado') return true;
-    if (activity.status === 'Pendiente de Evidencia') return this.canModify(plan);
-    return this.canModify(plan);
+    // Reportar / Agregar evidencia → exclusivo del responsable (o admin).
+    return this.canReport(plan);
   }
 
   onReport(plan: ActionPlanModel, objective: ActionPlanObjectiveModel, activity: ActionPlanActivityModel, event: Event): void {
     event.stopPropagation();
+    // Defensa en profundidad: si por alguna ruta llega un click no
+    // autorizado, no emitir. Solo se permite ver detalle si Realizado.
+    if (activity.status !== 'Realizado' && !this.canReport(plan)) return;
     this.report.emit({ plan, objective, activity, event });
   }
 
