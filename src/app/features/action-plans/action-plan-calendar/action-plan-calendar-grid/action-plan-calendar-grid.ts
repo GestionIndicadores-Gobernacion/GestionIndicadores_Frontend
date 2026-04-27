@@ -21,6 +21,8 @@ export class ActionPlanCalendarGridComponent {
   @Input() currentDate = new Date();
   @Input() canInteract: (plan: ActionPlanModel) => boolean = () => true;
   @Input() canEditPlan: (plan: ActionPlanModel) => boolean = () => false;
+  /** Solo responsables del plan pueden reportar (admin override). */
+  @Input() canReport: (plan: ActionPlanModel) => boolean = () => false;
 
   @Output() report = new EventEmitter<{ plan: ActionPlanModel; objective: ActionPlanObjectiveModel; activity: ActionPlanActivityModel; event: Event }>();
   @Output() edit = new EventEmitter<{ plan: ActionPlanModel; objective: ActionPlanObjectiveModel; activity: ActionPlanActivityModel; event: Event }>();
