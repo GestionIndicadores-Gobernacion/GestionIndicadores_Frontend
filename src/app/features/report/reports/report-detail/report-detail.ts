@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { getIndicatorDisplayName } from '../../../../core/data/indicator-display-names';
 import { ReportModel } from '../../../../features/report/models/report.model';
@@ -36,7 +37,7 @@ export class ReportDetailComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (r) => { this.report = r; this.loading = false; this.cd.detectChanges(); },
-        error: () => { this.error = true; this.loading = false; this.cd.detectChanges(); }
+        error: (err) => this.handleLoadError(err),
       });
   }
 
@@ -45,6 +46,7 @@ export class ReportDetailComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private reportsService: ReportsService,
     private cd: ChangeDetectorRef,
   ) { }
@@ -57,8 +59,23 @@ export class ReportDetailComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (r) => { this.report = r; this.loading = false; this.cd.detectChanges(); },
-        error: () => { this.error = true; this.loading = false; this.cd.detectChanges(); }
+        error: (err) => this.handleLoadError(err),
       });
+  }
+
+  /**
+   * 403/404 → redirige al listado para no dejar pantalla en blanco.
+   * El toast lo dispara el errorInterceptor global.
+   */
+  private handleLoadError(err: unknown): void {
+    const status = err instanceof HttpErrorResponse ? err.status : 0;
+    if (status === 403 || status === 404) {
+      this.router.navigate(['/reports']);
+      return;
+    }
+    this.error = true;
+    this.loading = false;
+    this.cd.detectChanges();
   }
 
   // ── Expand/collapse ────────────────────────────────────────────────────────

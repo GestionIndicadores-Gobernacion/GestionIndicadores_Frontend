@@ -211,18 +211,13 @@ export class ActionPlanListComponent {
     this.delete.emit({ activityId, event });
   }
 
+  /** Eliminar actividad: admin override o creador del plan. */
   canModify(plan: ActionPlanModel): boolean {
     if (!this.currentUser) return false;
     const role = this.currentUser.role?.name;
-    if (role === 'admin' || role === 'monitor') return true;
+    if (role === 'admin') return true;
     if (role === 'viewer') return false;
-    if (role === 'editor') {
-      const assigned = (this.currentUser.component_assignments ?? []).map((c: any) => c.component_id);
-      if (assigned.includes(plan.component_id)) return true;
-      if (plan.responsible_user_id && plan.responsible_user_id === this.currentUser.id) return true;
-      return false;
-    }
-    return false;
+    return plan.user_id != null && plan.user_id === this.currentUser.id;
   }
   
   onEdit(plan: ActionPlanModel, objective: ActionPlanObjectiveModel, activity: ActionPlanActivityModel, event: Event): void {
