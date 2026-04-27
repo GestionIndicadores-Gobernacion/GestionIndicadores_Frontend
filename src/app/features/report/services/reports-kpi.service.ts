@@ -57,17 +57,27 @@ export class ReportsKpiService {
 
   constructor(private http: HttpClient) { }
 
-  /** Snapshot global para el año solicitado. */
-  getSnapshotRemote(year: number): Observable<KpiSnapshot> {
-    const params = new HttpParams().set('year', String(year));
+  /**
+   * Snapshot global. Si llega rango (`dateFrom`+`dateTo`) los reportes se
+   * filtran por ese rango y `year` se conserva para los cálculos que
+   * dependen del año (p.ej. `personas_capacitadas` del dataset externo).
+   */
+  getSnapshotRemote(year: number, dateFrom?: string | null, dateTo?: string | null): Observable<KpiSnapshot> {
+    let params = new HttpParams().set('year', String(year));
+    if (dateFrom && dateTo) {
+      params = params.set('date_from', dateFrom).set('date_to', dateTo);
+    }
     return this.http
       .get<KpiSnapshotApi>(`${this.api}/`, { params })
       .pipe(map(ReportsKpiService.fromApi));
   }
 
   /** KPIs agrupados por municipio. Consumido por el mapa del dashboard. */
-  getByLocation(year: number): Observable<KpiByLocationResponse> {
-    const params = new HttpParams().set('year', String(year));
+  getByLocation(year: number, dateFrom?: string | null, dateTo?: string | null): Observable<KpiByLocationResponse> {
+    let params = new HttpParams().set('year', String(year));
+    if (dateFrom && dateTo) {
+      params = params.set('date_from', dateFrom).set('date_to', dateTo);
+    }
     return this.http.get<KpiByLocationResponse>(
       `${this.api}/by-location`, { params }
     );

@@ -35,6 +35,9 @@ export class ReportsKpiCardsComponent implements OnInit, OnChanges {
    * localmente: todos los valores vienen del endpoint GET /kpis.
    */
   @Input() selectedYear: number = new Date().getFullYear();
+  /** Rango activo del filtro de período (preset != year o custom). */
+  @Input() dateFrom: string | null = null;
+  @Input() dateTo: string | null = null;
 
   kpis: KpiSnapshot = this.emptySnapshot();
 
@@ -59,14 +62,16 @@ export class ReportsKpiCardsComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['selectedYear']) this.refresh();
+    if (changes['selectedYear'] || changes['dateFrom'] || changes['dateTo']) {
+      this.refresh();
+    }
   }
 
   refresh(): void {
     this.loading = true;
     this.loadError = false;
     this.kpiService
-      .getSnapshotRemote(this.selectedYear)
+      .getSnapshotRemote(this.selectedYear, this.dateFrom, this.dateTo)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: snapshot => {

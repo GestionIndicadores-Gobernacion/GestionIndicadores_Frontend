@@ -55,84 +55,103 @@
       <ng-container *ngIf="showDashboard && !loading && allReports.length > 0">
 
         <!-- ── FILTRO DE RANGO ─────────────────────────────────── -->
-        <div class="rounded-xl border px-4 py-3 bg-white" style="border-color:#D6E0F0;">
+        <div class="rounded-2xl border bg-white shadow-sm overflow-hidden" style="border-color:#D6E0F0;">
 
-          <!-- Fila 1: Presets de rango -->
-          <div class="flex flex-wrap items-center gap-2">
-            <span class="text-[10px] font-bold uppercase tracking-[1px] shrink-0" style="color:#4A6A9B;">
-              Período de reportes
+          <!-- Header con resumen activo -->
+          <div class="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b"
+               style="background:linear-gradient(180deg,#F8FAFD 0%,#FFFFFF 100%);border-color:#EEF2F9;">
+            <div class="flex items-center gap-2.5">
+              <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                   style="background:#D6E4F7;">
+                <lucide-icon name="sliders-horizontal" [size]="13" [strokeWidth]="2.2" color="#1B3A6B"></lucide-icon>
+              </div>
+              <div class="leading-tight">
+                <p class="text-[11px] font-bold uppercase tracking-[1px]" style="color:#1B3A6B;">
+                  Filtro del dashboard
+                </p>
+                <p class="text-[10.5px] mt-0.5" style="color:#8A9DC0;">
+                  <strong style="color:#1B3A6B;">{{ rangeLabel }}</strong>
+                  · <span style="color:#2d5fa8;font-weight:600;">{{ reports.length }}</span>
+                  {{ reports.length === 1 ? 'reporte' : 'reportes' }}
+                </p>
+              </div>
+            </div>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-bold border"
+                  style="background:#F0F4FA;color:#1B3A6B;border-color:#D6E0F0;">
+              <lucide-icon name="calendar-days" [size]="11" [strokeWidth]="2.2" color="currentColor"></lucide-icon>
+              {{ selectedYear }}
             </span>
-            <button *ngFor="let p of PRESETS" (click)="applyPreset(p.key)"
-              class="px-3 py-1.5 rounded-lg text-[11px] font-semibold border transition-all duration-150"
-              [style.background]="selectedPreset === p.key ? '#1B3A6B' : '#F0F4FA'"
-              [style.color]="selectedPreset === p.key ? 'white' : '#4A6A9B'"
-              [style.border-color]="selectedPreset === p.key ? '#1B3A6B' : '#D6E0F0'">
-              {{ p.label }}
-            </button>
           </div>
 
-          <!-- Selector de año extra cuando preset = year -->
-          <div *ngIf="selectedPreset === 'year'" class="flex items-center gap-2 mt-2">
-            <span class="text-[10px] font-bold uppercase tracking-[1px]" style="color:#4A6A9B;">Año</span>
-            <button *ngFor="let y of availableYears" (click)="onYearChange(y)"
-              class="px-3 py-1 rounded-lg text-[11px] font-bold border transition-all"
-              [style.background]="y === selectedYear ? '#2d5fa8' : 'white'"
-              [style.color]="y === selectedYear ? 'white' : '#4A6A9B'"
-              [style.border-color]="y === selectedYear ? '#2d5fa8' : '#D6E0F0'">
-              {{ y }}
-            </button>
-          </div>
+          <!-- Cuerpo -->
+          <div class="px-5 py-4 space-y-4">
 
-          <!-- Rango personalizado -->
-          <div *ngIf="selectedPreset === 'custom'" class="flex flex-wrap items-end gap-3 mt-2">
-            <div class="flex flex-col gap-1">
-              <label class="text-[10px] font-bold uppercase tracking-[1px]" style="color:#4A6A9B;">Desde</label>
-              <input type="date" [(ngModel)]="customDateFrom" [max]="customDateTo || ''"
-                (change)="onCustomDateFromChange()" class="text-[12px] rounded-xl px-3 py-2 outline-none"
-                style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B;" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-[10px] font-bold uppercase tracking-[1px]" style="color:#4A6A9B;">Hasta</label>
-              <input type="date" [(ngModel)]="customDateTo" [min]="customDateFrom || ''"
-                (change)="onCustomDateToChange()" class="text-[12px] rounded-xl px-3 py-2 outline-none"
-                style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B;" />
-            </div>
-            <button (click)="applyCustomRange()" [disabled]="!customDateFrom || !customDateTo"
-              class="px-4 py-2 rounded-xl text-[12px] font-bold text-white transition disabled:opacity-40 disabled:cursor-not-allowed"
-              style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);">
-              Aplicar
-            </button>
-          </div>
-
-          <!-- Divisor -->
-          <div class="border-t mt-3 pt-3" style="border-color:#EEF2F9;">
-
-            <!-- Selector de año de visualización — siempre visible -->
+            <!-- Fila: Presets de rango -->
             <div class="flex flex-wrap items-center gap-2">
-              <span class="text-[10px] font-bold uppercase tracking-[1px] shrink-0" style="color:#4A6A9B;">
-                Año de visualización
+              <span class="text-[10px] font-bold uppercase tracking-[1px] shrink-0 w-[110px]" style="color:#4A6A9B;">
+                Período
               </span>
-              <button *ngFor="let y of availableYears" (click)="onYearChange(y)"
-                class="px-3 py-1 rounded-lg text-[11px] font-bold border transition-all"
-                [style.background]="y === selectedYear ? '#2d5fa8' : 'white'"
-                [style.color]="y === selectedYear ? 'white' : '#4A6A9B'"
-                [style.border-color]="y === selectedYear ? '#2d5fa8' : '#D6E0F0'">
-                {{ y }}
-              </button>
+              <div class="flex flex-wrap gap-1.5">
+                <button *ngFor="let p of PRESETS" (click)="applyPreset(p.key)"
+                  class="px-3 py-1.5 rounded-lg text-[11px] font-semibold border transition-all duration-150"
+                  [style.background]="selectedPreset === p.key ? '#1B3A6B' : 'white'"
+                  [style.color]="selectedPreset === p.key ? 'white' : '#4A6A9B'"
+                  [style.border-color]="selectedPreset === p.key ? '#1B3A6B' : '#D6E0F0'">
+                  {{ p.label }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Fila: Año (solo cuando preset='year') -->
+            <div *ngIf="selectedPreset === 'year'" class="flex flex-wrap items-center gap-2">
+              <span class="text-[10px] font-bold uppercase tracking-[1px] shrink-0 w-[110px]" style="color:#4A6A9B;">
+                Año
+              </span>
+              <div class="flex flex-wrap gap-1.5">
+                <button *ngFor="let y of availableYears" (click)="onYearChange(y)"
+                  class="px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all min-w-[52px]"
+                  [style.background]="y === selectedYear ? '#2d5fa8' : 'white'"
+                  [style.color]="y === selectedYear ? 'white' : '#4A6A9B'"
+                  [style.border-color]="y === selectedYear ? '#2d5fa8' : '#D6E0F0'">
+                  {{ y }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Fila: Rango personalizado -->
+            <div *ngIf="selectedPreset === 'custom'" class="flex flex-wrap items-end gap-3">
+              <span class="text-[10px] font-bold uppercase tracking-[1px] shrink-0 w-[110px] pb-2.5" style="color:#4A6A9B;">
+                Fechas
+              </span>
+              <div class="flex flex-wrap items-end gap-3">
+                <div class="flex flex-col gap-1">
+                  <label class="text-[10px] font-bold uppercase tracking-[1px]" style="color:#8A9DC0;">Desde</label>
+                  <input type="date" [(ngModel)]="customDateFrom" [max]="customDateTo || ''"
+                    (change)="onCustomDateFromChange()"
+                    class="text-[12px] rounded-lg px-3 py-2 outline-none transition focus:ring-2"
+                    style="background:white;border:1.5px solid #D6E0F0;color:#1B3A6B;" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-[10px] font-bold uppercase tracking-[1px]" style="color:#8A9DC0;">Hasta</label>
+                  <input type="date" [(ngModel)]="customDateTo" [min]="customDateFrom || ''"
+                    (change)="onCustomDateToChange()"
+                    class="text-[12px] rounded-lg px-3 py-2 outline-none transition focus:ring-2"
+                    style="background:white;border:1.5px solid #D6E0F0;color:#1B3A6B;" />
+                </div>
+                <button (click)="applyCustomRange()" [disabled]="!customDateFrom || !customDateTo"
+                  class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[12px] font-bold text-white transition disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110 active:scale-[.98]"
+                  style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);">
+                  Aplicar
+                </button>
+              </div>
             </div>
 
           </div>
-
-          <!-- Label del rango activo -->
-          <p class="text-[10.5px] mt-2" style="color:#8A9DC0;">
-            Reportes: <strong style="color:#1B3A6B;">{{ rangeLabel }}</strong>
-            · <span style="color:#2d5fa8;font-weight:600;">{{ reports.length }}</span> en este período
-            · Visualizando año <strong style="color:#1B3A6B;">{{ selectedYear }}</strong>
-          </p>
 
         </div>
 
-        <app-reports-kpi-cards [selectedYear]="selectedYear">
+        <app-reports-kpi-cards [selectedYear]="selectedYear"
+          [dateFrom]="activeDateFrom" [dateTo]="activeDateTo">
         </app-reports-kpi-cards>
 
         <!-- EXPLORER -->
@@ -163,7 +182,9 @@
               </div>
             </div>
             <app-reports-map [reports]="reports" [allReports]="allReports" [strategyMap]="strategyMap"
-              [componentMap]="componentMap" [selectedYear]="selectedYear" (yearChange)="onYearChange($event)">
+              [componentMap]="componentMap" [selectedYear]="selectedYear"
+              [dateFrom]="activeDateFrom" [dateTo]="activeDateTo"
+              (yearChange)="onYearChange($event)">
             </app-reports-map>
           </div>
         </div>

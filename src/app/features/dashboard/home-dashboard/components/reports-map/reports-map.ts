@@ -30,6 +30,9 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   @Input() strategyMap: Record<number, string> = {};
   @Input() componentMap: Record<number, string> = {};
   @Input() selectedYear: number = new Date().getFullYear();
+  /** Rango activo del filtro de período (preset != year o custom). */
+  @Input() dateFrom: string | null = null;
+  @Input() dateTo: string | null = null;
   @Output() yearChange = new EventEmitter<number>();
 
   private map!: L.Map;
@@ -54,14 +57,25 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
 
   ngAfterViewInit(): void { this.zone.runOutsideAngular(() => setTimeout(() => this.initMap(), 100)); }
   ngOnChanges(c: SimpleChanges): void {
-    if (c['reports'] || c['componentMap'] || c['selectedYear']) {
+    if (c['reports'] || c['componentMap'] || c['selectedYear'] || c['dateFrom'] || c['dateTo']) {
       this.fetchLocationKpis();
       this.rebuildMap();
     }
   }
   ngOnDestroy(): void { if (this.map) this.map.remove(); }
 
+  /**
+   * Si hay rango activo, los reportes ya vienen filtrados por el padre
+   * (`home-dashboard.applyFilter`) — solo aplicamos el rango como guarda
+   * adicional. Si no, filtramos por año.
+   */
   private get filteredReports(): ReportModel[] {
+    if (this.dateFrom && this.dateTo) {
+      return this.reports.filter(r => {
+        const d = (r.report_date as string).substring(0, 10);
+        return d >= this.dateFrom! && d <= this.dateTo!;
+      });
+    }
     const y = Number(this.selectedYear);
     return this.reports.filter(r => {
       const parts = (r.report_date as string).split('-');
@@ -72,7 +86,7 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   private fetchLocationKpis(): void {
     // Fuente canónica: backend /kpis/by-location. Si falla, el helper
     // cae al cálculo local con los mismos números.
-    this.kpiService.getByLocation(this.selectedYear)
+    this.kpiService.getByLocation(this.selectedYear, this.dateFrom, this.dateTo)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: res => {

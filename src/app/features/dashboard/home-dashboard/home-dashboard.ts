@@ -64,6 +64,12 @@ export class HomeDashboardComponent implements OnInit {
   customDateTo = '';
   activeDateFrom: string | null = null;
   activeDateTo: string | null = null;
+  /**
+   * Label memorizado del rango activo. Se recomputa solo en `applyFilter`
+   * para evitar NG0100 (un getter cambiaba de `undefined` a "Año YYYY"
+   * entre el primer y segundo CD del padre tras `loadReports()`).
+   */
+  rangeLabel = `Año ${new Date().getFullYear()}`;
 
   readonly PRESETS: { key: RangePreset; label: string }[] = [
     { key: 'month', label: 'Mes actual' },
@@ -101,21 +107,30 @@ export class HomeDashboardComponent implements OnInit {
     const pad = (n: number) => String(n).padStart(2, '0');
     const fmt = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
+    // Punto de referencia para presets relativos:
+    //  - Año actual del calendario → `today` (vivo, "Mes actual" = mes en curso).
+    //  - Año pasado seleccionado    → 31-dic de ese año (rango anclado dentro
+    //    del contexto del año, evita mezclar años — bug previo en 2025+3m
+    //    que devolvía 2026-01-27 → 2026-04-27).
+    const reference = (this.selectedYear === today.getFullYear())
+      ? today
+      : new Date(this.selectedYear, 11, 31);
+
     switch (preset) {
       case 'month': {
-        const from = new Date(today.getFullYear(), today.getMonth(), 1);
-        const to = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        const from = new Date(reference.getFullYear(), reference.getMonth(), 1);
+        const to = new Date(reference.getFullYear(), reference.getMonth() + 1, 0);
         return { from: fmt(from), to: fmt(to) };
       }
       case '3months': {
-        const from = new Date(today);
+        const from = new Date(reference);
         from.setMonth(from.getMonth() - 3);
-        return { from: fmt(from), to: fmt(today) };
+        return { from: fmt(from), to: fmt(reference) };
       }
       case '6months': {
-        const from = new Date(today);
+        const from = new Date(reference);
         from.setMonth(from.getMonth() - 6);
-        return { from: fmt(from), to: fmt(today) };
+        return { from: fmt(from), to: fmt(reference) };
       }
       case 'year':
         return null;
@@ -154,16 +169,14 @@ export class HomeDashboardComponent implements OnInit {
         return d >= range.from && d <= range.to;
       });
 
-      // Actualizar selectedYear al año más reciente del rango
-      const yearsInRange = [...new Set(this.reports.map(r =>
-        new Date(r.report_date).getFullYear()
-      ))];
-      if (yearsInRange.length > 0) {
-        this.selectedYear = Math.max(...yearsInRange);
-      }
+      // El "año de visualización" sigue al final del rango (range.to).
+      // Antes se usaba Math.max(años con reportes), lo que hacía que un
+      // rango 2025-10 → 2026-04 quedara mostrando 2025 cuando no había
+      // reportes en 2026 — confuso para el usuario.
+      this.selectedYear = Number(range.to.substring(0, 4));
 
     } else {
-      // Preset = year
+      // Preset = year — el usuario controla selectedYear con los botones.
       this.activeDateFrom = null;
       this.activeDateTo = null;
       this.reports = this.allReports.filter(r =>
@@ -171,13 +184,11 @@ export class HomeDashboardComponent implements OnInit {
       );
     }
 
-    this.cd.detectChanges();
-  }
+    this.rangeLabel = (this.activeDateFrom && this.activeDateTo)
+      ? `${this.activeDateFrom} → ${this.activeDateTo}`
+      : `Año ${this.selectedYear}`;
 
-  get rangeLabel(): string {
-    if (this.activeDateFrom && this.activeDateTo)
-      return `${this.activeDateFrom} → ${this.activeDateTo}`;
-    return `Año ${this.selectedYear}`;
+    this.cd.detectChanges();
   }
 
   // =========================================================
