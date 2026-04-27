@@ -112,6 +112,21 @@ export class ActionPlanCalendarComponent implements OnInit {
     return false;
   };
 
+  /**
+   * Reportar una actividad es exclusivo del responsable asignado del
+   * plan. Admin mantiene override total. Editor/Monitor no pueden
+   * reportar planes ajenos aunque tengan acceso al componente.
+   */
+  canReportActivity = (plan: ActionPlanModel): boolean => {
+    if (!this.currentUser) return false;
+    const role = this.currentUser.role?.name;
+    if (role === 'admin') return true;
+    if (role === 'viewer') return false;
+    const ids = new Set<number>(plan.responsible_user_ids ?? []);
+    if (plan.responsible_user_id) ids.add(plan.responsible_user_id);
+    return ids.has(this.currentUser.id);
+  };
+
   // ← NUEVO: para prefill del modal al regresar desde reporte
   prefillEvidenceUrl = '';
 
@@ -344,6 +359,13 @@ export class ActionPlanCalendarComponent implements OnInit {
 
   openReportModal(p: ActionPlanModel, o: ActionPlanObjectiveModel, a: ActionPlanActivityModel, event: Event): void {
     event.stopPropagation();
+    // Guarda final: solo el responsable asignado (o admin) puede reportar.
+    // El grid/lista ya bloquean el click, esto cubre el caso del query
+    // param de retorno (`?reportActivity=`) y cualquier path futuro.
+    if (!this.canReportActivity(p)) {
+      this.toast.error('Solo el responsable asignado del plan puede reportar esta actividad.');
+      return;
+    }
     this.prefillEvidenceUrl = '';   // ← limpiar prefill al abrir manualmente
     this.setModal(p, o, a);
     this.showReportModal = true;
