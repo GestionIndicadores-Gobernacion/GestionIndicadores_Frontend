@@ -49,6 +49,7 @@ export class ActionPlanCreateModalComponent implements OnInit {
   users: UserResponse[] = [];          // ← lista filtrada (sin admin)
 
   loading = true;
+  loadingUsers = false;
   saving = false;
   errors: Record<string, string> = {};
 
@@ -81,14 +82,13 @@ export class ActionPlanCreateModalComponent implements OnInit {
   ngOnInit(): void {
     this.currentUser = JSON.parse(localStorage.getItem('user') ?? 'null');
 
+    // No cargamos usuarios aquí: la lista de "Responsables" se obtiene
+    // recién cuando se elige un Componente, filtrada por backend.
     forkJoin({
       strategies: this.strategiesService.getAll(),
       components: this.componentsService.getAll(),
-      users: this.usersService.getAll(),
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: ({ strategies, components, users }) => {
-        this.users = users.filter(u => !EXCLUDED_EMAILS.has(u.email));
-
+      next: ({ strategies, components }) => {
         const role = this.currentUser?.role?.name;
 
         if (role === 'editor') {
@@ -113,6 +113,31 @@ export class ActionPlanCreateModalComponent implements OnInit {
       },
       error: () => { this.loading = false; this.cdr.detectChanges(); }
     });
+  }
+
+  /** Carga la lista de usuarios asignados al componente seleccionado y
+   *  descarta de `responsible_user_ids` a quienes ya no pertenezcan a ese
+   *  componente. */
+  private loadUsersForComponent(componentId: number): void {
+    this.loadingUsers = true;
+    this.usersService.getAll(componentId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (users) => {
+          this.users = users.filter(u => !u.email || !EXCLUDED_EMAILS.has(u.email));
+          const validIds = new Set(this.users.map(u => u.id));
+          this.form.responsible_user_ids = this.form.responsible_user_ids
+            .filter(id => validIds.has(id));
+          this.loadingUsers = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.users = [];
+          this.form.responsible_user_ids = [];
+          this.loadingUsers = false;
+          this.cdr.detectChanges();
+        }
+      });
   }
 
   /** Nombre completo para mostrar en el select */
@@ -158,17 +183,26 @@ export class ActionPlanCreateModalComponent implements OnInit {
     this.form.component_id = 0;
     this.objectives = [];
     this.form.plan_objectives = [];
+    this.users = [];
+    this.form.responsible_user_ids = [];
     this.filteredComponents = this.form.strategy_id
       ? this.components.filter(c => c.strategy_id === +this.form.strategy_id)
       : [];
   }
-  
+
   onComponentChange(): void {
     this.objectives = [];
     this.form.plan_objectives = [];
-    if (!this.form.component_id || +this.form.component_id === 0) return;
+    this.users = [];
+    this.form.responsible_user_ids = [];
 
-    this.componentsService.getById(+this.form.component_id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    const cid = +this.form.component_id;
+    if (!cid) return;
+
+    // Recarga usuarios filtrados por componente (solo asignados a `cid`).
+    this.loadUsersForComponent(cid);
+
+    this.componentsService.getById(cid).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: detail => {
         this.objectives = detail.objectives ?? [];
         if (this.objectives.length > 0) {

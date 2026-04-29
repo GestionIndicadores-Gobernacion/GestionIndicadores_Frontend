@@ -59,11 +59,19 @@
                 </div>
 
                 <!-- RESPONSABLE(S) -->
-                <div class="flex flex-col gap-1.5">
+                <div class="flex flex-col gap-1.5"
+                     [class.opacity-60]="!form.component_id || +form.component_id === 0">
                     <label class="text-xs font-semibold text-[#1B3A6B]">
                         Persona(s) responsable(s) <span class="text-red-500">*</span>
                     </label>
-                    <p class="text-xs text-slate-400 -mt-1">Puedes seleccionar uno o varios responsables.</p>
+                    <p class="text-xs text-slate-400 -mt-1">
+                        <ng-container *ngIf="!form.component_id || +form.component_id === 0">
+                            Selecciona primero un componente para ver los responsables disponibles.
+                        </ng-container>
+                        <ng-container *ngIf="form.component_id && +form.component_id !== 0">
+                            Solo se muestran usuarios asignados al componente elegido.
+                        </ng-container>
+                    </p>
 
                     <!-- Chips de seleccionados -->
                     <div *ngIf="form.responsible_user_ids.length > 0" class="flex flex-wrap gap-1.5">
@@ -78,8 +86,37 @@
                         </span>
                     </div>
 
+                    <!-- Estado: aún sin componente -->
+                    <div *ngIf="!form.component_id || +form.component_id === 0"
+                        class="border border-dashed rounded-xl px-3 py-4 text-center bg-white"
+                        style="border-color:#D6E0F0;">
+                        <p class="text-xs text-slate-400">Selecciona un componente para cargar la lista de responsables.</p>
+                    </div>
+
+                    <!-- Estado: cargando usuarios -->
+                    <div *ngIf="form.component_id && +form.component_id !== 0 && loadingUsers"
+                        class="border rounded-xl px-3 py-4 flex items-center justify-center gap-2 bg-white"
+                        style="border-color:#D6E0F0;">
+                        <div class="w-3.5 h-3.5 border-2 border-[#2d5fa8]/30 border-t-[#2d5fa8] rounded-full animate-spin"></div>
+                        <span class="text-xs text-slate-500">Cargando responsables…</span>
+                    </div>
+
+                    <!-- Estado: componente sin usuarios asignados -->
+                    <div *ngIf="form.component_id && +form.component_id !== 0 && !loadingUsers && users.length === 0"
+                        class="border border-dashed rounded-xl px-3 py-4 text-center bg-white"
+                        [class.border-red-300]="errors['responsible_user_ids']"
+                        style="border-color:#D6E0F0;">
+                        <p class="text-xs text-slate-500">
+                            Este componente aún no tiene usuarios asignados.
+                        </p>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            Solicita a un administrador asignar al menos un usuario antes de crear el plan.
+                        </p>
+                    </div>
+
                     <!-- Lista de usuarios seleccionables -->
-                    <div class="border rounded-xl overflow-hidden max-h-40 overflow-y-auto"
+                    <div *ngIf="form.component_id && +form.component_id !== 0 && !loadingUsers && users.length > 0"
+                        class="border rounded-xl overflow-hidden max-h-40 overflow-y-auto"
                         [class.border-red-300]="errors['responsible_user_ids']"
                         style="border-color:#D6E0F0;">
                         <div *ngFor="let u of users"

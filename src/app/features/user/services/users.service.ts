@@ -11,9 +11,16 @@ export class UsersService {
 
   constructor(private http: HttpClient) {}
 
-  /** Sin paginación → backend devuelve la lista completa (legacy). */
-  getAll(): Observable<UserResponse[]> {
-    return this.http.get<UserResponse[]>(this.api);
+  /** Sin paginación → backend devuelve la lista completa (legacy).
+   *  Si se pasa `componentId`, el backend filtra solo usuarios asignados
+   *  a ese componente (via tabla user_components).
+   */
+  getAll(componentId?: number): Observable<UserResponse[]> {
+    let params = new HttpParams();
+    if (componentId != null && componentId > 0) {
+      params = params.set('component_id', String(componentId));
+    }
+    return this.http.get<UserResponse[]>(this.api, { params });
   }
 
   /** Paginado: backend devuelve `{ items, total, limit, offset }`. */
