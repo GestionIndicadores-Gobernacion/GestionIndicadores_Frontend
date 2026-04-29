@@ -1,0 +1,480 @@
+<!-- LOADING -->
+<div *ngIf="loading()" class="flex items-center justify-center py-12">
+    <div class="w-8 h-8 rounded-full animate-spin" style="border:3px solid #E9D5FF;border-top-color:#7B1FA2;"></div>
+    <span class="ml-3 text-sm" style="color:#666;">Cargando datos...</span>
+</div>
+
+<div [hidden]="loading()" class="max-w-[1440px] mx-auto px-4 sm:px-6 py-5 space-y-4">
+
+    <!-- ═══════ KPI CARDS ═══════ -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#7B1FA2;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="users" [size]="13" color="#7B1FA2" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Personas</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().total | number }}</p>
+        </div>
+
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#DB2777;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="user" [size]="13" color="#DB2777" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Mujeres</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().mujer | number }}</p>
+        </div>
+
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#1565C0;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="user" [size]="13" color="#1565C0" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Hombres</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().hombre | number }}</p>
+        </div>
+
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#10B981;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="trees" [size]="13" color="#10B981" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Rural</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().rural | number }}</p>
+        </div>
+
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#0891B2;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="building" [size]="13" color="#0891B2" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Urbana</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().urbana | number }}</p>
+        </div>
+
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#E65100;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="map-pin" [size]="13" color="#E65100" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Municipios</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().municipios | number }}</p>
+        </div>
+
+    </div>
+
+    <!-- ═══════ FILTERS + MUNICIPIO CHART ═══════ -->
+    <div class="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)] gap-4">
+
+        <div class="rounded-xl p-3.5 space-y-2.5" style="background:white;border:1px solid #E2E8F0;">
+            <div class="flex items-center gap-2 pb-2 border-b" style="border-color:#E2E8F0;">
+                <lucide-icon name="list-filter" [size]="13" color="#7B1FA2" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[11px] font-bold uppercase tracking-wider" style="color:#7B1FA2;">Filtros</span>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-semibold block mb-0.5" style="color:#475569;">Municipio</label>
+                <select [ngModel]="filterMunicipio()"
+                    (ngModelChange)="filterMunicipio.set($event); applyFilters()"
+                    class="w-full text-[11px] rounded-lg px-2.5 py-1.5 outline-none"
+                    style="border:1px solid #E2E8F0;color:#333;background:#FAFAFA;">
+                    <option value="">Todos</option>
+                    <option *ngFor="let m of municipios()" [value]="m">{{ m }}</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-semibold block mb-0.5" style="color:#475569;">Año</label>
+                <select [ngModel]="filterAnio()"
+                    (ngModelChange)="onAnioChange($event)"
+                    class="w-full text-[11px] rounded-lg px-2.5 py-1.5 outline-none"
+                    style="border:1px solid #E2E8F0;color:#333;background:#FAFAFA;">
+                    <option value="">Todos</option>
+                    <option *ngFor="let a of aniosDisponibles()" [value]="a">{{ a }}</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-semibold block mb-0.5" style="color:#475569;">Mes</label>
+                <select [ngModel]="filterMes()"
+                    (ngModelChange)="filterMes.set($event); applyFilters()"
+                    class="w-full text-[11px] rounded-lg px-2.5 py-1.5 outline-none"
+                    style="border:1px solid #E2E8F0;color:#333;background:#FAFAFA;">
+                    <option value="">Todos</option>
+                    <option *ngFor="let m of mesesDisponibles()" [value]="m">{{ m }}</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-semibold block mb-0.5" style="color:#475569;">Zona</label>
+                <select [ngModel]="filterZona()"
+                    (ngModelChange)="filterZona.set($event); applyFilters()"
+                    class="w-full text-[11px] rounded-lg px-2.5 py-1.5 outline-none"
+                    style="border:1px solid #E2E8F0;color:#333;background:#FAFAFA;">
+                    <option value="">Todas</option>
+                    <option value="rural">Rural</option>
+                    <option value="urbana">Urbana</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-semibold block mb-0.5" style="color:#475569;">Género</label>
+                <select [ngModel]="filterGenero()"
+                    (ngModelChange)="filterGenero.set($event); applyFilters()"
+                    class="w-full text-[11px] rounded-lg px-2.5 py-1.5 outline-none"
+                    style="border:1px solid #E2E8F0;color:#333;background:#FAFAFA;">
+                    <option value="">Todos</option>
+                    <option value="mujer">Mujer</option>
+                    <option value="hombre">Hombre</option>
+                </select>
+            </div>
+
+            <button (click)="clearFilters()"
+                class="w-full text-[10px] font-bold py-1.5 rounded-lg cursor-pointer transition-all"
+                style="background:#F1F5F9;color:#64748B;border:1px solid #E2E8F0;"
+                onmouseover="this.style.background='#E2E8F0'" onmouseout="this.style.background='#F1F5F9'">
+                Limpiar filtros
+            </button>
+        </div>
+
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Top municipios por personas capacitadas</p>
+                <p class="text-[10px]" style="color:#94A3B8;">{{ kpis().municipios }} municipios participantes</p>
+            </div>
+            <div class="p-3" style="position:relative;height:280px;">
+                <canvas id="cvPcMun"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ ROW 2: Género + Zona + Mes ═══════ -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Distribución por género</p>
+            </div>
+            <div class="p-3">
+                <div class="flex flex-wrap gap-x-3 gap-y-1 mb-2">
+                    <span *ngFor="let s of generoData()" class="flex items-center gap-1 text-[10px]"
+                        style="color:#475569;">
+                        <span class="w-2 h-2 rounded-sm shrink-0 inline-block" [style.background]="s.color"></span>
+                        {{ s.label }} {{ s.pct }}%
+                    </span>
+                </div>
+                <div style="position:relative;height:200px;">
+                    <canvas id="cvPcGenero"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Distribución urbana/rural</p>
+            </div>
+            <div class="p-3">
+                <div class="flex flex-wrap gap-x-3 gap-y-1 mb-2">
+                    <span *ngFor="let s of zonaData()" class="flex items-center gap-1 text-[10px]"
+                        style="color:#475569;">
+                        <span class="w-2 h-2 rounded-sm shrink-0 inline-block" [style.background]="s.color"></span>
+                        {{ s.label }} {{ s.pct }}%
+                    </span>
+                </div>
+                <div style="position:relative;height:200px;">
+                    <canvas id="cvPcZona"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Capacitaciones por mes</p>
+                <p class="text-[10px]" style="color:#94A3B8;">Personas agrupadas por mes</p>
+            </div>
+            <div class="p-3" style="position:relative;height:230px;">
+                <canvas id="cvPcMes"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ ROW 3: Tabla por municipio + Completitud ═══════ -->
+    <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] gap-4">
+
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Resumen por municipio</p>
+                <p class="text-[10px]" style="color:#94A3B8;">
+                    {{ tablaMunData().length }} municipios con personas capacitadas
+                </p>
+            </div>
+            <div class="overflow-x-auto" style="max-height:340px;">
+                <table *ngIf="tablaMunData().length > 0" class="w-full">
+                    <thead class="sticky top-0">
+                        <tr style="background:#FAF5FF;">
+                            <th class="px-2.5 py-2 text-left text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Municipio</th>
+                            <th class="px-2.5 py-2 text-center text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Personas</th>
+                            <th class="px-2.5 py-2 text-center text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Mujeres</th>
+                            <th class="px-2.5 py-2 text-center text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Hombres</th>
+                            <th class="px-2.5 py-2 text-center text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Rural</th>
+                            <th class="px-2.5 py-2 text-center text-[9px] font-bold uppercase tracking-wider"
+                                style="color:#64748B;">Urbana</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let row of tablaMunData(); let i = index"
+                            class="transition-colors hover:bg-[#FAF5FF]"
+                            [style.background]="i % 2 === 0 ? 'white' : '#FCFAFE'"
+                            style="border-bottom:1px solid #F1F5F9;">
+                            <td class="px-2.5 py-2 text-[11px] font-semibold" style="color:#581C87;">
+                                {{ row.municipio }}
+                            </td>
+                            <td class="px-2.5 py-2 text-[11px] text-center font-bold" style="color:#7B1FA2;">
+                                {{ row.total | number }}
+                            </td>
+                            <td class="px-2.5 py-2 text-[10px] text-center font-semibold" style="color:#DB2777;">
+                                {{ row.mujer | number }}
+                            </td>
+                            <td class="px-2.5 py-2 text-[10px] text-center font-semibold" style="color:#1565C0;">
+                                {{ row.hombre | number }}
+                            </td>
+                            <td class="px-2.5 py-2 text-[10px] text-center" style="color:#10B981;">
+                                {{ row.rural | number }}
+                            </td>
+                            <td class="px-2.5 py-2 text-[10px] text-center" style="color:#0891B2;">
+                                {{ row.urbana | number }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p *ngIf="tablaMunData().length === 0" class="text-[11px] text-center py-6" style="color:#94A3B8;">
+                    Sin datos por municipio
+                </p>
+            </div>
+        </div>
+
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Completitud de los registros</p>
+                <p class="text-[10px]" style="color:#94A3B8;">% del total de personas capacitadas</p>
+            </div>
+            <div class="p-4">
+                <dashboard-completeness [bars]="completitudData()" />
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ ROW 4: DIRECTORIO DE PERSONAS ═══════ -->
+    <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+
+        <div class="px-4 py-3 border-b flex flex-wrap items-center justify-between gap-3"
+            style="border-color:#E2E8F0;background:#FAF5FF;">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style="background:#7B1FA2;">
+                    <lucide-icon name="users" [size]="15" color="white" [strokeWidth]="2"></lucide-icon>
+                </div>
+                <div>
+                    <p class="text-[12px] font-bold" style="color:#0F172A;">Directorio de personas capacitadas</p>
+                    <p class="text-[10px]" style="color:#94A3B8;">
+                        {{ searchedPersonas().length }} de {{ allPersonas().length }} personas
+                        <span *ngIf="filterMunicipio() || filterAnio() || filterMes() || filterZona() || filterGenero()">(filtrado)</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="relative">
+                <span class="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none inline-flex">
+                    <lucide-icon name="search" [size]="12" color="#94A3B8" [strokeWidth]="2"></lucide-icon>
+                </span>
+                <input type="text" placeholder="Buscar persona, documento, municipio, teléfono..."
+                    [ngModel]="personaSearch()"
+                    (ngModelChange)="personaSearch.set($event); onPersonaSearch()"
+                    class="text-[11px] rounded-lg pl-8 pr-3 py-1.5 outline-none w-72"
+                    style="border:1px solid #E2E8F0;color:#333;background:white;"
+                    onfocus="this.style.borderColor='#7B1FA2';this.style.boxShadow='0 0 0 2px rgba(123,31,162,0.1)'"
+                    onblur="this.style.borderColor='#E2E8F0';this.style.boxShadow='none'" />
+            </div>
+        </div>
+
+        <div class="divide-y" style="border-color:#F1F5F9;">
+            <div *ngFor="let p of paginatedPersonas()" class="transition-colors"
+                [style.background]="expandedPersonaId() === p.id ? '#FAF5FF' : 'white'">
+
+                <div (click)="togglePersona(p.id)"
+                    class="flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors hover:bg-[#FCFAFE]">
+
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
+                        style="background:#F3E8FF;color:#7B1FA2;">
+                        {{ p.initials }}
+                    </div>
+
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[12px] font-semibold truncate" style="color:#0F172A;">{{ p.nombre }}</p>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span class="text-[10px]" style="color:#64748B;">{{ p.municipio || '—' }}</span>
+                            <span *ngIf="p.mes !== 'Sin fecha'" class="text-[10px]" style="color:#94A3B8;">·
+                                {{ p.mes }}</span>
+                        </div>
+                    </div>
+
+                    <span *ngIf="p.genero === 'Mujer'"
+                        class="text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 hidden sm:inline-block"
+                        style="background:#FCE7F3;color:#DB2777;">Mujer</span>
+                    <span *ngIf="p.genero === 'Hombre'"
+                        class="text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 hidden sm:inline-block"
+                        style="background:#E3F2FD;color:#1565C0;">Hombre</span>
+
+                    <span *ngIf="p.zona !== '—'"
+                        class="text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 hidden md:inline-block"
+                        [style.background]="p.zona === 'Rural' ? '#D1FAE5' : '#CFFAFE'"
+                        [style.color]="p.zona === 'Rural' ? '#10B981' : '#0891B2'">
+                        {{ p.zona }}
+                    </span>
+
+                    <span *ngIf="p.edad != null"
+                        class="text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 hidden md:inline-block"
+                        style="background:#F3E8FF;color:#7B1FA2;">
+                        {{ p.edad }} años
+                    </span>
+
+                    <lucide-icon
+                        [name]="expandedPersonaId() === p.id ? 'chevron-down' : 'chevron-right'"
+                        [size]="14" color="#94A3B8" [strokeWidth]="2" class="shrink-0"></lucide-icon>
+                </div>
+
+                <div *ngIf="expandedPersonaId() === p.id" class="px-4 pb-4 pt-1"
+                    style="border-top:1px solid #F3E8FF;">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+                        <div class="rounded-lg p-3" style="background:#FCFAFE;border:1px solid #F3E8FF;">
+                            <p class="text-[10px] font-bold uppercase tracking-wider mb-2" style="color:#7B1FA2;">
+                                Información
+                            </p>
+                            <div class="space-y-1.5">
+                                <div class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Municipio</span>
+                                    <span class="font-medium" style="color:#333;">{{ p.municipio || '—' }}</span>
+                                </div>
+                                <div class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Fecha</span>
+                                    <span class="font-medium text-right" style="color:#333;max-width:60%;">
+                                        {{ p.fecha || '—' }}
+                                    </span>
+                                </div>
+                                <div *ngIf="p.documento" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Documento</span>
+                                    <span class="font-medium" style="color:#333;">{{ p.documento }}</span>
+                                </div>
+                                <div *ngIf="p.telefono" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Teléfono</span>
+                                    <span class="font-medium" style="color:#333;">{{ p.telefono }}</span>
+                                </div>
+                                <div *ngIf="p.correo" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Correo</span>
+                                    <span class="font-medium text-right break-all" style="color:#333;max-width:60%;">
+                                        {{ p.correo }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rounded-lg p-3" style="background:#FCFAFE;border:1px solid #F3E8FF;">
+                            <p class="text-[10px] font-bold uppercase tracking-wider mb-2" style="color:#1565C0;">
+                                Caracterización
+                            </p>
+                            <div class="space-y-1.5">
+                                <div class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Género</span>
+                                    <span class="font-bold" style="color:#1565C0;">{{ p.genero }}</span>
+                                </div>
+                                <div class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Zona</span>
+                                    <span class="font-bold"
+                                        [style.color]="p.zona === 'Rural' ? '#10B981' : p.zona === 'Urbana' ? '#0891B2' : '#94A3B8'">
+                                        {{ p.zona }}
+                                    </span>
+                                </div>
+                                <div *ngIf="p.edad != null" class="flex justify-between text-[11px]">
+                                    <span style="color:#64748B;">Edad</span>
+                                    <span class="font-bold" style="color:#7B1FA2;">{{ p.edad }} años</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rounded-lg p-3" style="background:#FCFAFE;border:1px solid #F3E8FF;">
+                            <p class="text-[10px] font-bold uppercase tracking-wider mb-2" style="color:#E65100;">
+                                Guías recibidas
+                            </p>
+                            <div class="space-y-1.5">
+                                <div class="flex items-center justify-between text-[11px]">
+                                    <span style="color:#64748B;">Guía 1</span>
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                                        [style.background]="p.guia1 ? '#DCFCE7' : '#F1F5F9'"
+                                        [style.color]="p.guia1 ? '#15803D' : '#94A3B8'">
+                                        {{ p.guia1 ? 'Sí' : '—' }}
+                                    </span>
+                                </div>
+                                <div class="flex items-center justify-between text-[11px]">
+                                    <span style="color:#64748B;">Guía 2</span>
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                                        [style.background]="p.guia2 ? '#DCFCE7' : '#F1F5F9'"
+                                        [style.color]="p.guia2 ? '#15803D' : '#94A3B8'">
+                                        {{ p.guia2 ? 'Sí' : '—' }}
+                                    </span>
+                                </div>
+                                <div class="flex items-center justify-between text-[11px]">
+                                    <span style="color:#64748B;">Guía 3</span>
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                                        [style.background]="p.guia3 ? '#DCFCE7' : '#F1F5F9'"
+                                        [style.color]="p.guia3 ? '#15803D' : '#94A3B8'">
+                                        {{ p.guia3 ? 'Sí' : '—' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="paginatedPersonas().length === 0" class="py-8 text-center">
+            <p class="text-[12px]" style="color:#94A3B8;">No se encontraron personas</p>
+        </div>
+
+        <div *ngIf="personaTotalPages() > 1"
+            class="flex items-center justify-between px-4 py-2.5 border-t"
+            style="border-color:#E2E8F0;background:#FCFAFE;">
+            <p class="text-[11px]" style="color:#64748B;">
+                Página {{ personaPage() }} de {{ personaTotalPages() }}
+            </p>
+            <div class="flex items-center gap-1.5">
+                <button [disabled]="personaPage() === 1" (click)="setPersonaPage(personaPage() - 1)"
+                    class="px-2.5 py-1 text-[11px] font-semibold rounded-lg border cursor-pointer transition"
+                    style="background:white;color:#475569;border-color:#E2E8F0;"
+                    [class.opacity-40]="personaPage() === 1">
+                    <lucide-icon name="chevron-left" [size]="12" color="currentColor" [strokeWidth]="2"></lucide-icon>
+                </button>
+                <button [disabled]="personaPage() === personaTotalPages()" (click)="setPersonaPage(personaPage() + 1)"
+                    class="px-2.5 py-1 text-[11px] font-semibold rounded-lg border cursor-pointer transition"
+                    style="background:white;color:#475569;border-color:#E2E8F0;"
+                    [class.opacity-40]="personaPage() === personaTotalPages()">
+                    <lucide-icon name="chevron-right" [size]="12" color="currentColor" [strokeWidth]="2"></lucide-icon>
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>

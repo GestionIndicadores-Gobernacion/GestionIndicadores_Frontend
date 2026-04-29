@@ -19,6 +19,36 @@ export const RECORDS_CONFIG: Record<string, RecordsConfig> = {
     detailSubtitle: ['municipio', 'mes'],
   },
 
+  personas_capacitadas_consolidado: {
+    tableFields: [
+      'fecha',
+      'municipio',
+      'nombres_y_apellidos',
+      'documento',
+      'telefono',
+      'correo_electronico',
+      'edad',
+      'guia_1',
+      'guia_2',
+      'guia_3',
+      'observacion',
+    ],
+    // Nota: el header del Excel real es "INTERSESiUAL" (typo en origen) →
+    // se normaliza como `intersesiual`. Mantenemos también 'intersexual'
+    // por si la base se corrige a futuro.
+    yesnoFields: [
+      'mujer', 'hombre', 'intersesiual', 'intersexual', 'lgbtiq',
+      'afro', 'indigena', 'rrom',
+      'discapacidad', 'victima', 'reincorporado',
+      'rural', 'urbana',
+      'guia_1', 'guia_2', 'guia_3',
+    ],
+    categoricalFields: ['municipio', 'fecha'],
+    searchPlaceholder: 'Buscar persona, documento, municipio...',
+    detailTitle: 'nombres_y_apellidos',
+    detailSubtitle: ['municipio', 'fecha'],
+  },
+
   animales: {
     tableFields: [
       'nombres_y_apellidos',

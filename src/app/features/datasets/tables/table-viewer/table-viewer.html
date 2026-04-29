@@ -46,7 +46,10 @@
                             <ng-container *ngIf="data()!.dataset_type === 'censo_animal'">
                                 {{ data()!.total | number }} municipios censados
                             </ng-container>
-                            <ng-container *ngIf="data()!.dataset_type !== 'presupuesto' && data()!.dataset_type !== 'red_animalia' && data()!.dataset_type !== 'donaton' && data()!.dataset_type !== 'censo_animal'">
+                            <ng-container *ngIf="data()!.dataset_type === 'personas_capacitadas_consolidado'">
+                                {{ data()!.total | number }} personas capacitadas
+                            </ng-container>
+                            <ng-container *ngIf="data()!.dataset_type !== 'presupuesto' && data()!.dataset_type !== 'red_animalia' && data()!.dataset_type !== 'donaton' && data()!.dataset_type !== 'censo_animal' && data()!.dataset_type !== 'personas_capacitadas_consolidado'">
                                 {{ data()!.total | number }} registros
                             </ng-container>
                         </p>
@@ -62,7 +65,7 @@
                         [style.color]="activeTab() === 'dashboard' ? 'white' : '#4A6A9B'">
                         Dashboard
                     </button>
-                    <button *ngIf="data()?.dataset_type !== 'presupuesto' && data()?.dataset_type !== 'red_animalia' && data()?.dataset_type !== 'donaton' && data()?.dataset_type !== 'censo_animal'" (click)="setTab('records')"
+                    <button *ngIf="data()?.dataset_type !== 'presupuesto' && data()?.dataset_type !== 'red_animalia' && data()?.dataset_type !== 'donaton' && data()?.dataset_type !== 'censo_animal' && data()?.dataset_type !== 'personas_capacitadas_consolidado'" (click)="setTab('records')"
                         class="px-4 py-1.5 rounded-lg text-[13px] font-bold cursor-pointer transition-all whitespace-nowrap"
                         [style.background]="activeTab() === 'records' ? '#1B3A6B' : 'transparent'"
                         [style.color]="activeTab() === 'records' ? 'white' : '#4A6A9B'">
@@ -97,7 +100,8 @@
             <app-red-animalia-view *ngIf="data()!.dataset_type === 'red_animalia'" [data]="data()!" />
             <app-donaton-view *ngIf="data()!.dataset_type === 'donaton'" [data]="data()!" />
             <app-censo-animal-view *ngIf="data()!.dataset_type === 'censo_animal'" [data]="data()!" />
-            <app-generico-view *ngIf="data()!.dataset_type !== 'personas_capacitadas' && data()!.dataset_type !== 'presupuesto' && data()!.dataset_type !== 'red_animalia' && data()!.dataset_type !== 'donaton' && data()!.dataset_type !== 'censo_animal'" [data]="data()!" />
+            <app-personas-capacitadas-consolidado-view *ngIf="data()!.dataset_type === 'personas_capacitadas_consolidado'" [data]="data()!" />
+            <app-generico-view *ngIf="data()!.dataset_type !== 'personas_capacitadas' && data()!.dataset_type !== 'personas_capacitadas_consolidado' && data()!.dataset_type !== 'presupuesto' && data()!.dataset_type !== 'red_animalia' && data()!.dataset_type !== 'donaton' && data()!.dataset_type !== 'censo_animal'" [data]="data()!" />
         </ng-container>
 
         <!-- TAB: REGISTROS -->

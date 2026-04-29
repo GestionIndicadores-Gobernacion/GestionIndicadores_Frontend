@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DatasetService } from '../../../../features/datasets/services/datasets.service';
 import { GenericoViewComponent } from '../views/generico/view';
 import { PersonasCapacitadasViewComponent } from '../views/personas-capacitadas/view';
+import { PersonasCapacitadasConsolidadoViewComponent } from '../views/personas-capacitadas-consolidado/view';
 import { PresupuestalViewComponent } from '../views/presupuestal/view';
 import { RedAnimaliaViewComponent } from '../views/red-animalia/view';
 import { DonatonViewComponent } from '../views/donaton/view';
@@ -29,7 +30,7 @@ export interface DashboardData {
     total: number;
     kpis: DashKpi[];
     sections: DashSection[];
-    dataset_type: 'personas_capacitadas' | 'animales' | 'presupuesto' | 'generico' | 'censo_animal' | 'red_animalia' | 'donaton';
+    dataset_type: 'personas_capacitadas' | 'personas_capacitadas_consolidado' | 'animales' | 'presupuesto' | 'generico' | 'censo_animal' | 'red_animalia' | 'donaton';
     project_label?: string;  // ← agregar
 }
 
@@ -40,6 +41,7 @@ export interface DashboardData {
         CommonModule,
         LucideAngularModule,
         PersonasCapacitadasViewComponent,
+        PersonasCapacitadasConsolidadoViewComponent,
         GenericoViewComponent,
         PresupuestalViewComponent,
         RedAnimaliaViewComponent,
