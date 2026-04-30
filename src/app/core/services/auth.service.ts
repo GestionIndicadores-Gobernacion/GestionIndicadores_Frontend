@@ -205,21 +205,27 @@ export class AuthService {
   // =====================================================
   /**
    * Punto único para reaccionar a una sesión inválida/expirada.
-   * Idempotente: si ya se está manejando, no duplica toasts ni navegaciones.
    * Lo usan: authInterceptor, authGuard, adminGuard, viewerGuard.
+   *
+   * Toast + logout son idempotentes (no duplicar al usuario).
+   * La navegación al login SIEMPRE se intenta: si no separamos esto,
+   * un click en un link protegido tras la primera expiración hace que
+   * el guard rechace la navegación pero no haya nada que avise al
+   * usuario — los enlaces parecen "inertes".
    */
   handleExpiredSession(reason: SessionExpiredReason = 'expired'): void {
-    if (this.sessionExpiredHandled) return;
-    this.sessionExpiredHandled = true;
+    if (!this.sessionExpiredHandled) {
+      this.sessionExpiredHandled = true;
+      this.logout(reason);
+      const message = reason === 'invalid'
+        ? 'Tu sesión no es válida. Por favor inicia sesión nuevamente.'
+        : 'Tu sesión ha expirado. Por favor inicia sesión nuevamente.';
+      this.toast.warning(message);
+    }
 
-    this.logout(reason);
-
-    const message = reason === 'invalid'
-      ? 'Tu sesión no es válida. Por favor inicia sesión nuevamente.'
-      : 'Tu sesión ha expirado. Por favor inicia sesión nuevamente.';
-    this.toast.warning(message);
-
-    this.router.navigate(['/auth/login']);
+    if (!this.router.url.startsWith('/auth/login')) {
+      this.router.navigate(['/auth/login']);
+    }
   }
 
   /**
