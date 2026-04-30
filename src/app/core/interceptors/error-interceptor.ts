@@ -2,24 +2,19 @@ import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { catchError, throwError } from 'rxjs';
 import { inject } from '@angular/core';
 import { ToastService } from '../services/toast.service';
+import { AuthService } from '../services/auth.service';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const toast = inject(ToastService);
+  const auth = inject(AuthService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
 
-      // ✅ Ignorar 401 aquí — authInterceptor ya lo maneja
-      if (error.status === 401) {
-        return throwError(() => error);
-      }
-
-      // ✅ 422 proveniente de errores JWT (token_invalid) → lo gestiona authInterceptor
-      const isJwtInvalid =
-        error.status === 422 &&
-        typeof error.error?.error === 'string' &&
-        String(error.error.error).startsWith('token_');
-      if (isJwtInvalid) {
+      // Cualquier error que el authInterceptor reconozca como rechazo de
+      // token (401, 422, o 403 con shape JWT) se deja pasar sin toast aquí:
+      // ya se mostró el aviso de "sesión expirada" desde AuthService.
+      if (auth.isAuthRejection(error)) {
         return throwError(() => error);
       }
 

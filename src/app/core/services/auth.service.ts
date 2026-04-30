@@ -1,10 +1,12 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { jwtDecode } from 'jwt-decode';
 
 import { LoginRequest, LoginResponse } from '../models/auth.model';
+import { ToastService } from './toast.service';
 
 interface JwtPayload {
   sub: number;
@@ -20,6 +22,12 @@ export type SessionExpiredReason = 'expired' | 'invalid' | 'manual';
 export class AuthService {
 
   private api = `${environment.apiUrl}/auth`;
+  private router = inject(Router);
+  private toast = inject(ToastService);
+
+  // Bandera única para evitar disparar múltiples toasts/redirects cuando
+  // varias peticiones fallan en paralelo. Se libera en login() exitoso.
+  private sessionExpiredHandled = false;
 
   constructor(private http: HttpClient) { }
 
@@ -30,6 +38,8 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.api}/login`, data).pipe(
       tap(res => {
         this.saveSession(res.access_token, res.refresh_token, res.user);
+        // Reset limpio: nuevo login → habilitar futuras detecciones.
+        this.sessionExpiredHandled = false;
       })
     );
   }
@@ -188,5 +198,56 @@ export class AuthService {
     const r = AuthService._lastReason;
     AuthService._lastReason = null;
     return r;
+  }
+
+  // =====================================================
+  // 8️⃣ HELPER UNIFICADO DE SESIÓN EXPIRADA
+  // =====================================================
+  /**
+   * Punto único para reaccionar a una sesión inválida/expirada.
+   * Idempotente: si ya se está manejando, no duplica toasts ni navegaciones.
+   * Lo usan: authInterceptor, authGuard, adminGuard, viewerGuard.
+   */
+  handleExpiredSession(reason: SessionExpiredReason = 'expired'): void {
+    if (this.sessionExpiredHandled) return;
+    this.sessionExpiredHandled = true;
+
+    this.logout(reason);
+
+    const message = reason === 'invalid'
+      ? 'Tu sesión no es válida. Por favor inicia sesión nuevamente.'
+      : 'Tu sesión ha expirado. Por favor inicia sesión nuevamente.';
+    this.toast.warning(message);
+
+    this.router.navigate(['/auth/login']);
+  }
+
+  /**
+   * Heurística para decidir si una respuesta HTTP está rechazando el token,
+   * incluso cuando el backend devuelve 403 en vez de 401.
+   * Cubre payloads de flask-jwt-extended (`error: token_expired`, `msg: ...`).
+   */
+  isAuthRejection(err: HttpErrorResponse): boolean {
+    if (err.status === 401) return true;
+
+    // 422 → JWT malformado (fallback legacy de flask-jwt-extended).
+    if (err.status === 422) return true;
+
+    // 403 con shape de error de token: tratarlo como auth, no como permisos.
+    if (err.status === 403) {
+      const body = err.error;
+      const candidates: unknown[] = [
+        body?.error,
+        body?.code,
+        body?.msg,
+        body?.message,
+      ];
+      const tokenPattern = /^token_|expired|invalid_token|revoked|missing.*token|not.*authoriz/i;
+      return candidates.some(
+        v => typeof v === 'string' && tokenPattern.test(v)
+      );
+    }
+
+    return false;
   }
 }
