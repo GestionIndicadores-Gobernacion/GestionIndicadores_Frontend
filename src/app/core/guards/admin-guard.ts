@@ -7,7 +7,7 @@ export const adminGuard: CanActivateFn = () => {
   const router = inject(Router);
 
   if (!auth.isAuthenticated()) {
-    router.navigate(['/auth/login']);
+    auth.handleExpiredSession('expired');
     return false;
   }
 
