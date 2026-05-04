@@ -49,7 +49,10 @@
                             <ng-container *ngIf="data()!.dataset_type === 'personas_capacitadas_consolidado'">
                                 {{ data()!.total | number }} personas capacitadas
                             </ng-container>
-                            <ng-container *ngIf="data()!.dataset_type !== 'presupuesto' && data()!.dataset_type !== 'red_animalia' && data()!.dataset_type !== 'donaton' && data()!.dataset_type !== 'censo_animal' && data()!.dataset_type !== 'personas_capacitadas_consolidado'">
+                            <ng-container *ngIf="data()!.dataset_type === 'denuncias'">
+                                {{ data()!.project_label || ((data()!.total | number) + ' denuncias') }}
+                            </ng-container>
+                            <ng-container *ngIf="data()!.dataset_type !== 'presupuesto' && data()!.dataset_type !== 'red_animalia' && data()!.dataset_type !== 'donaton' && data()!.dataset_type !== 'censo_animal' && data()!.dataset_type !== 'personas_capacitadas_consolidado' && data()!.dataset_type !== 'denuncias'">
                                 {{ data()!.total | number }} registros
                             </ng-container>
                         </p>
@@ -65,7 +68,7 @@
                         [style.color]="activeTab() === 'dashboard' ? 'white' : '#4A6A9B'">
                         Dashboard
                     </button>
-                    <button *ngIf="data()?.dataset_type !== 'presupuesto' && data()?.dataset_type !== 'red_animalia' && data()?.dataset_type !== 'donaton' && data()?.dataset_type !== 'censo_animal' && data()?.dataset_type !== 'personas_capacitadas_consolidado'" (click)="setTab('records')"
+                    <button *ngIf="data()?.dataset_type !== 'presupuesto' && data()?.dataset_type !== 'red_animalia' && data()?.dataset_type !== 'donaton' && data()?.dataset_type !== 'censo_animal' && data()?.dataset_type !== 'personas_capacitadas_consolidado' && data()?.dataset_type !== 'denuncias'" (click)="setTab('records')"
                         class="px-4 py-1.5 rounded-lg text-[13px] font-bold cursor-pointer transition-all whitespace-nowrap"
                         [style.background]="activeTab() === 'records' ? '#1B3A6B' : 'transparent'"
                         [style.color]="activeTab() === 'records' ? 'white' : '#4A6A9B'">
@@ -101,7 +104,8 @@
             <app-donaton-view *ngIf="data()!.dataset_type === 'donaton'" [data]="data()!" />
             <app-censo-animal-view *ngIf="data()!.dataset_type === 'censo_animal'" [data]="data()!" />
             <app-personas-capacitadas-consolidado-view *ngIf="data()!.dataset_type === 'personas_capacitadas_consolidado'" [data]="data()!" />
-            <app-generico-view *ngIf="data()!.dataset_type !== 'personas_capacitadas' && data()!.dataset_type !== 'personas_capacitadas_consolidado' && data()!.dataset_type !== 'presupuesto' && data()!.dataset_type !== 'red_animalia' && data()!.dataset_type !== 'donaton' && data()!.dataset_type !== 'censo_animal'" [data]="data()!" />
+            <app-denuncias-view *ngIf="data()!.dataset_type === 'denuncias'" [data]="data()!" />
+            <app-generico-view *ngIf="data()!.dataset_type !== 'personas_capacitadas' && data()!.dataset_type !== 'personas_capacitadas_consolidado' && data()!.dataset_type !== 'presupuesto' && data()!.dataset_type !== 'red_animalia' && data()!.dataset_type !== 'donaton' && data()!.dataset_type !== 'censo_animal' && data()!.dataset_type !== 'denuncias'" [data]="data()!" />
         </ng-container>
 
         <!-- TAB: REGISTROS -->

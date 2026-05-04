@@ -11,6 +11,7 @@ import { PresupuestalViewComponent } from '../views/presupuestal/view';
 import { RedAnimaliaViewComponent } from '../views/red-animalia/view';
 import { DonatonViewComponent } from '../views/donaton/view';
 import { CensoAnimalViewComponent } from '../views/censo-animal/view';
+import { DenunciasViewComponent } from '../views/denuncias/view';
 import { DashboardRecordsComponent } from '../visualizations/dashboard-records/dashboard-records';
 
 export interface DashBar { label: string; value: number; pct: number; color: string; }
@@ -30,7 +31,7 @@ export interface DashboardData {
     total: number;
     kpis: DashKpi[];
     sections: DashSection[];
-    dataset_type: 'personas_capacitadas' | 'personas_capacitadas_consolidado' | 'animales' | 'presupuesto' | 'generico' | 'censo_animal' | 'red_animalia' | 'donaton';
+    dataset_type: 'personas_capacitadas' | 'personas_capacitadas_consolidado' | 'animales' | 'presupuesto' | 'generico' | 'censo_animal' | 'red_animalia' | 'donaton' | 'denuncias';
     project_label?: string;  // ← agregar
 }
 
@@ -47,6 +48,7 @@ export interface DashboardData {
         RedAnimaliaViewComponent,
         DonatonViewComponent,
         CensoAnimalViewComponent,
+        DenunciasViewComponent,
         DashboardRecordsComponent,
     ],
     templateUrl: './table-viewer.html',

@@ -1,0 +1,472 @@
+<!-- LOADING overlay -->
+<div *ngIf="loading()" class="flex items-center justify-center py-12">
+    <div class="w-8 h-8 rounded-full animate-spin" style="border:3px solid #FECACA;border-top-color:#DC2626;"></div>
+    <span class="ml-3 text-sm" style="color:#666;">Cargando denuncias...</span>
+</div>
+
+<div [hidden]="loading()" class="max-w-[1440px] mx-auto px-4 sm:px-6 py-5 space-y-4">
+
+    <!-- ═══════ KPI CARDS ═══════ -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#DC2626;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="clipboard" [size]="13" color="#DC2626" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Denuncias</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().total | number }}</p>
+            <p class="text-[10px] mt-0.5" style="color:#94A3B8;">en {{ kpis().municipios }} municipios</p>
+        </div>
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#64748B;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="shield" [size]="13" color="#64748B" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Anónimas</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().anonimas | number }}</p>
+            <p class="text-[10px] mt-0.5" style="color:#94A3B8;">{{ kpis().pctAnonimas }}% del total</p>
+        </div>
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#7C3AED;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="check" [size]="13" color="#7C3AED" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Con seguimiento</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().conSeguimiento | number }}</p>
+            <p class="text-[10px] mt-0.5" style="color:#94A3B8;">{{ kpis().pctSeguimiento }}% gestionadas</p>
+        </div>
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#059669;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="paperclip" [size]="13" color="#059669" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Con evidencia</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().conEvidencia | number }}</p>
+            <p class="text-[10px] mt-0.5" style="color:#94A3B8;">{{ kpis().pctEvidencia }}% con adjuntos</p>
+        </div>
+        <div class="rounded-xl px-4 py-3 relative overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="absolute top-0 left-0 right-0 h-[3px]" style="background:#0891B2;"></div>
+            <div class="flex items-center gap-1.5 mb-1">
+                <lucide-icon name="phone" [size]="13" color="#0891B2" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color:#94A3B8;">Contactables</span>
+            </div>
+            <p class="text-[1.4rem] font-bold leading-tight" style="color:#0F172A;letter-spacing:-0.03em;">
+                {{ kpis().pctContactables }}%</p>
+            <p class="text-[10px] mt-0.5" style="color:#94A3B8;">
+                {{ kpis().conTel }} tel · {{ kpis().conCorreo }} correo
+            </p>
+        </div>
+    </div>
+
+    <!-- ═══════ FILTERS + MUNICIPIO CHART ═══════ -->
+    <div class="grid grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)] gap-4">
+
+        <div class="rounded-xl p-3.5 space-y-2.5" style="background:white;border:1px solid #E2E8F0;">
+            <div class="flex items-center gap-2 pb-2 border-b" style="border-color:#E2E8F0;">
+                <lucide-icon name="list-filter" [size]="13" color="#DC2626" [strokeWidth]="2"></lucide-icon>
+                <span class="text-[11px] font-bold uppercase tracking-wider" style="color:#DC2626;">Filtros</span>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-semibold block mb-0.5" style="color:#475569;">Municipio</label>
+                <select [ngModel]="filterMunicipio()"
+                    (ngModelChange)="filterMunicipio.set($event); applyFilters()"
+                    class="w-full text-[11px] rounded-lg px-2.5 py-1.5 outline-none"
+                    style="border:1px solid #E2E8F0;color:#333;background:#FAFAFA;">
+                    <option value="">Todos</option>
+                    <option *ngFor="let m of municipios()" [value]="m">{{ m }}</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-semibold block mb-0.5" style="color:#475569;">Motivo</label>
+                <select [ngModel]="filterMotivo()"
+                    (ngModelChange)="filterMotivo.set($event); applyFilters()"
+                    class="w-full text-[11px] rounded-lg px-2.5 py-1.5 outline-none"
+                    style="border:1px solid #E2E8F0;color:#333;background:#FAFAFA;">
+                    <option value="">Todos</option>
+                    <option *ngFor="let m of motivosDisponibles()" [value]="m">{{ m }}</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-semibold block mb-0.5" style="color:#475569;">Especie</label>
+                <select [ngModel]="filterEspecie()"
+                    (ngModelChange)="filterEspecie.set($event); applyFilters()"
+                    class="w-full text-[11px] rounded-lg px-2.5 py-1.5 outline-none"
+                    style="border:1px solid #E2E8F0;color:#333;background:#FAFAFA;">
+                    <option value="">Todas</option>
+                    <option *ngFor="let e of especies()" [value]="e">{{ e }}</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-semibold block mb-0.5" style="color:#475569;">Año</label>
+                <select [ngModel]="filterAnio()"
+                    (ngModelChange)="onAnioChange($event)"
+                    class="w-full text-[11px] rounded-lg px-2.5 py-1.5 outline-none"
+                    style="border:1px solid #E2E8F0;color:#333;background:#FAFAFA;">
+                    <option value="">Todos</option>
+                    <option *ngFor="let a of aniosDisponibles()" [value]="a">{{ a }}</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-semibold block mb-0.5" style="color:#475569;">Mes</label>
+                <select [ngModel]="filterMes()"
+                    (ngModelChange)="filterMes.set($event); applyFilters()"
+                    class="w-full text-[11px] rounded-lg px-2.5 py-1.5 outline-none"
+                    style="border:1px solid #E2E8F0;color:#333;background:#FAFAFA;">
+                    <option value="">Todos</option>
+                    <option *ngFor="let m of mesesDisponibles()" [value]="m">{{ m }}</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-semibold block mb-0.5" style="color:#475569;">Tipo de denuncia</label>
+                <select [ngModel]="filterAnonima()"
+                    (ngModelChange)="filterAnonima.set($event); applyFilters()"
+                    class="w-full text-[11px] rounded-lg px-2.5 py-1.5 outline-none"
+                    style="border:1px solid #E2E8F0;color:#333;background:#FAFAFA;">
+                    <option value="">Todas</option>
+                    <option value="si">Solo anónimas</option>
+                    <option value="no">Solo identificadas</option>
+                </select>
+            </div>
+
+            <button (click)="clearFilters()"
+                class="w-full text-[10px] font-bold py-1.5 rounded-lg cursor-pointer transition-all"
+                style="background:#F1F5F9;color:#64748B;border:1px solid #E2E8F0;"
+                onmouseover="this.style.background='#E2E8F0'" onmouseout="this.style.background='#F1F5F9'">
+                Limpiar filtros
+            </button>
+        </div>
+
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Top municipios por denuncias</p>
+                <p class="text-[10px]" style="color:#94A3B8;">{{ kpis().municipios }} municipios reportados</p>
+            </div>
+            <div class="p-3" style="position:relative;height:280px;">
+                <canvas id="cvDenMun"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ ROW 2: Motivo + Especie + Mes ═══════ -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Motivo de la denuncia</p>
+                <p class="text-[10px]" style="color:#94A3B8;">Clasificación por categoría</p>
+            </div>
+            <div class="p-3">
+                <div class="flex flex-wrap gap-x-3 gap-y-1 mb-2">
+                    <span *ngFor="let s of motivoData()" class="flex items-center gap-1 text-[10px]"
+                        style="color:#475569;">
+                        <span class="w-2 h-2 rounded-sm shrink-0 inline-block" [style.background]="s.color"></span>
+                        {{ s.label }} {{ s.pct }}%
+                    </span>
+                </div>
+                <div style="position:relative;height:200px;">
+                    <canvas id="cvDenMotivo"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Especies afectadas</p>
+                <p class="text-[10px]" style="color:#94A3B8;">{{ especieData().length }} especies registradas</p>
+            </div>
+            <div class="p-3" style="position:relative;height:230px;">
+                <canvas id="cvDenEspecie"></canvas>
+            </div>
+        </div>
+
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Denuncias por mes</p>
+                <p class="text-[10px]" style="color:#94A3B8;">Volumen mensual de reportes</p>
+            </div>
+            <div class="p-3" style="position:relative;height:230px;">
+                <canvas id="cvDenMes"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ ROW 3: Anonimato + Completitud ═══════ -->
+    <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] gap-4">
+
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Identificación del denunciante</p>
+                <p class="text-[10px]" style="color:#94A3B8;">{{ kpis().total | number }} denuncias filtradas</p>
+            </div>
+            <div class="p-3">
+                <div class="flex flex-wrap gap-x-3 gap-y-1 mb-2">
+                    <span *ngFor="let s of anonimatoData()" class="flex items-center gap-1 text-[10px]"
+                        style="color:#475569;">
+                        <span class="w-2 h-2 rounded-sm shrink-0 inline-block" [style.background]="s.color"></span>
+                        {{ s.label }} {{ s.pct }}%
+                    </span>
+                </div>
+                <div style="position:relative;height:220px;">
+                    <canvas id="cvDenAnon"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+            <div class="px-4 py-2.5 border-b" style="border-color:#F1F5F9;">
+                <p class="text-[12px] font-bold" style="color:#0F172A;">Completitud y capacidad de seguimiento</p>
+                <p class="text-[10px]" style="color:#94A3B8;">% del total de denuncias filtradas</p>
+            </div>
+            <div class="p-4">
+                <dashboard-completeness [bars]="completitudData()" />
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ ROW 4: DIRECTORIO DE DENUNCIAS ═══════ -->
+    <div class="rounded-xl overflow-hidden" style="background:white;border:1px solid #E2E8F0;">
+
+        <div class="px-4 py-3 border-b flex flex-wrap items-center justify-between gap-3"
+            style="border-color:#E2E8F0;background:#FEF2F2;">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style="background:#DC2626;">
+                    <lucide-icon name="clipboard" [size]="15" color="white" [strokeWidth]="2"></lucide-icon>
+                </div>
+                <div>
+                    <p class="text-[12px] font-bold" style="color:#0F172A;">Directorio de denuncias</p>
+                    <p class="text-[10px]" style="color:#94A3B8;">
+                        {{ searchedDenuncias().length }} de {{ allDenuncias().length }} denuncias
+                        <span *ngIf="filterMunicipio() || filterMotivo() || filterEspecie() || filterAnio() || filterMes() || filterAnonima()">(filtrado)</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="relative">
+                <span class="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none inline-flex">
+                    <lucide-icon name="search" [size]="12" color="#94A3B8" [strokeWidth]="2"></lucide-icon>
+                </span>
+                <input type="text" placeholder="Buscar caso, denunciante, municipio..."
+                    [ngModel]="casoSearch()"
+                    (ngModelChange)="casoSearch.set($event); onCasoSearch()"
+                    class="text-[11px] rounded-lg pl-8 pr-3 py-1.5 outline-none w-64"
+                    style="border:1px solid #E2E8F0;color:#333;background:white;"
+                    onfocus="this.style.borderColor='#DC2626';this.style.boxShadow='0 0 0 2px rgba(220,38,38,0.1)'"
+                    onblur="this.style.borderColor='#E2E8F0';this.style.boxShadow='none'" />
+            </div>
+        </div>
+
+        <div class="divide-y" style="border-color:#F1F5F9;">
+            <div *ngFor="let d of paginatedDenuncias()" class="transition-colors"
+                [style.background]="expandedCasoId() === d.id ? '#FEF2F2' : 'white'">
+
+                <div (click)="toggleCaso(d.id)"
+                    class="flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors hover:bg-[#FFF7F7]">
+
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
+                        [style.background]="d.anonima ? '#F1F5F9' : '#FEE2E2'"
+                        [style.color]="d.anonima ? '#64748B' : '#DC2626'">
+                        <lucide-icon *ngIf="d.anonima" name="shield" [size]="14" color="#64748B" [strokeWidth]="2"></lucide-icon>
+                        <span *ngIf="!d.anonima">{{ d.initials }}</span>
+                    </div>
+
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded" style="background:#FEE2E2;color:#DC2626;">
+                                #{{ d.caso }}
+                            </span>
+                            <p class="text-[12px] font-semibold truncate" style="color:#0F172A;">
+                                {{ d.denunciante }}
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span class="text-[10px]" style="color:#64748B;">{{ d.municipio || '—' }}</span>
+                            <span *ngIf="d.fechaCorta" class="text-[10px]" style="color:#94A3B8;">· {{ d.fechaCorta }}</span>
+                            <span *ngIf="d.especie" class="text-[10px]" style="color:#94A3B8;">· {{ d.especie }}</span>
+                        </div>
+                    </div>
+
+                    <span class="text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 hidden sm:inline-block"
+                        [style.background]="d.motivoColor + '22'"
+                        [style.color]="d.motivoColor">
+                        {{ d.motivo }}
+                    </span>
+
+                    <lucide-icon
+                        [name]="expandedCasoId() === d.id ? 'chevron-down' : 'chevron-right'"
+                        [size]="14" color="#94A3B8" [strokeWidth]="2" class="shrink-0"></lucide-icon>
+                </div>
+
+                <div *ngIf="expandedCasoId() === d.id" class="px-4 pb-4 pt-1"
+                    style="border-top:1px solid #FEE2E2;">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+                        <!-- Información general -->
+                        <div class="rounded-lg p-3" style="background:#FFF7F7;border:1px solid #FEE2E2;">
+                            <p class="text-[10px] font-bold uppercase tracking-wider mb-2" style="color:#DC2626;">
+                                Información general
+                            </p>
+                            <div class="space-y-1.5">
+                                <div class="flex justify-between text-[11px] gap-2">
+                                    <span style="color:#64748B;">Caso</span>
+                                    <span class="font-medium text-right" style="color:#333;">#{{ d.caso }}</span>
+                                </div>
+                                <div class="flex justify-between text-[11px] gap-2">
+                                    <span style="color:#64748B;">Fecha</span>
+                                    <span class="font-medium text-right" style="color:#333;max-width:60%;">
+                                        {{ d.fecha || '—' }}
+                                    </span>
+                                </div>
+                                <div class="flex justify-between text-[11px] gap-2">
+                                    <span style="color:#64748B;">Municipio</span>
+                                    <span class="font-medium text-right" style="color:#333;">{{ d.municipio || '—' }}</span>
+                                </div>
+                                <div *ngIf="d.zona" class="flex justify-between text-[11px] gap-2">
+                                    <span style="color:#64748B;">Zona</span>
+                                    <span class="font-medium" style="color:#333;">{{ d.zona }}</span>
+                                </div>
+                                <div *ngIf="d.barrio" class="flex justify-between text-[11px] gap-2">
+                                    <span style="color:#64748B;">Barrio/Vereda</span>
+                                    <span class="font-medium text-right" style="color:#333;max-width:60%;">{{ d.barrio }}</span>
+                                </div>
+                                <div *ngIf="d.direccion" class="flex justify-between text-[11px] gap-2">
+                                    <span style="color:#64748B;">Dirección</span>
+                                    <span class="font-medium text-right" style="color:#333;max-width:60%;">{{ d.direccion }}</span>
+                                </div>
+                                <div class="flex justify-between text-[11px] gap-2">
+                                    <span style="color:#64748B;">Especie</span>
+                                    <span class="font-medium" style="color:#333;">{{ d.especie || '—' }}</span>
+                                </div>
+                                <div class="flex justify-between text-[11px] gap-2">
+                                    <span style="color:#64748B;">Motivo</span>
+                                    <span class="font-bold" [style.color]="d.motivoColor">{{ d.motivo }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Denunciante y contacto -->
+                        <div class="rounded-lg p-3" style="background:#FFF7F7;border:1px solid #FEE2E2;">
+                            <p class="text-[10px] font-bold uppercase tracking-wider mb-2" style="color:#0891B2;">
+                                Denunciante y contacto
+                            </p>
+                            <div class="space-y-1.5">
+                                <div class="flex justify-between text-[11px] gap-2">
+                                    <span style="color:#64748B;">Nombre</span>
+                                    <span class="font-medium text-right" style="color:#333;max-width:65%;">
+                                        {{ d.denunciante }}
+                                        <span *ngIf="d.anonima" class="ml-1 text-[9px] px-1.5 py-0.5 rounded"
+                                            style="background:#F1F5F9;color:#64748B;">Anónima</span>
+                                    </span>
+                                </div>
+                                <div *ngIf="d.tipoDoc || d.documento" class="flex justify-between text-[11px] gap-2">
+                                    <span style="color:#64748B;">Documento</span>
+                                    <span class="font-medium text-right" style="color:#333;">
+                                        {{ d.tipoDoc }} {{ d.documento }}
+                                    </span>
+                                </div>
+                                <div *ngIf="d.celular" class="flex justify-between text-[11px] gap-2">
+                                    <span style="color:#64748B;">Celular</span>
+                                    <span class="font-medium" style="color:#333;">{{ d.celular }}</span>
+                                </div>
+                                <div *ngIf="d.whatsapp" class="flex justify-between text-[11px] gap-2">
+                                    <span style="color:#64748B;">WhatsApp</span>
+                                    <span class="font-medium" style="color:#333;">{{ d.whatsapp }}</span>
+                                </div>
+                                <div *ngIf="d.otroTel" class="flex justify-between text-[11px] gap-2">
+                                    <span style="color:#64748B;">Otro contacto</span>
+                                    <span class="font-medium" style="color:#333;">{{ d.otroTel }}</span>
+                                </div>
+                                <div *ngIf="d.correo" class="flex justify-between text-[11px] gap-2">
+                                    <span style="color:#64748B;">Correo</span>
+                                    <span class="font-medium text-right break-all" style="color:#333;max-width:65%;">{{ d.correo }}</span>
+                                </div>
+                                <div *ngIf="d.cuidador" class="flex justify-between text-[11px] gap-2">
+                                    <span style="color:#64748B;">Cuidador</span>
+                                    <span class="font-medium text-right" style="color:#333;max-width:65%;">{{ d.cuidador }}</span>
+                                </div>
+                                <div *ngIf="d.horario" class="flex justify-between text-[11px] gap-2">
+                                    <span style="color:#64748B;">Horario</span>
+                                    <span class="font-medium text-right" style="color:#333;max-width:65%;">{{ d.horario }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hechos y seguimiento -->
+                        <div class="rounded-lg p-3" style="background:#FFF7F7;border:1px solid #FEE2E2;">
+                            <p class="text-[10px] font-bold uppercase tracking-wider mb-2" style="color:#7C3AED;">
+                                Hechos y seguimiento
+                            </p>
+                            <div class="space-y-2">
+                                <div *ngIf="d.hechos">
+                                    <p class="text-[10px] font-semibold" style="color:#64748B;">Hechos</p>
+                                    <p class="text-[11px] mt-0.5" style="color:#333;line-height:1.4;">{{ d.hechos }}</p>
+                                </div>
+                                <div *ngIf="d.peticion">
+                                    <p class="text-[10px] font-semibold" style="color:#64748B;">Petición</p>
+                                    <p class="text-[11px] mt-0.5" style="color:#333;line-height:1.4;">{{ d.peticion }}</p>
+                                </div>
+                                <div *ngIf="d.adjuntos">
+                                    <p class="text-[10px] font-semibold" style="color:#64748B;">Adjuntos</p>
+                                    <a *ngIf="isUrl(d.adjuntos)" [href]="d.adjuntos" target="_blank" rel="noopener"
+                                        class="text-[11px] inline-flex items-center gap-1 mt-0.5"
+                                        style="color:#0891B2;text-decoration:underline;">
+                                        <lucide-icon name="paperclip" [size]="11" color="#0891B2" [strokeWidth]="2"></lucide-icon>
+                                        Ver evidencia
+                                    </a>
+                                    <p *ngIf="!isUrl(d.adjuntos)" class="text-[11px] mt-0.5" style="color:#333;">{{ d.adjuntos }}</p>
+                                </div>
+                                <div *ngIf="d.gestion1">
+                                    <p class="text-[10px] font-semibold" style="color:#64748B;">Gestión 1</p>
+                                    <p class="text-[11px] mt-0.5" style="color:#333;line-height:1.4;">{{ d.gestion1 }}</p>
+                                </div>
+                                <div *ngIf="d.gestion2">
+                                    <p class="text-[10px] font-semibold" style="color:#64748B;">Gestión 2</p>
+                                    <p class="text-[11px] mt-0.5" style="color:#333;line-height:1.4;">{{ d.gestion2 }}</p>
+                                </div>
+                                <div *ngIf="!d.hechos && !d.peticion && !d.adjuntos && !d.gestion1 && !d.gestion2">
+                                    <p class="text-[11px]" style="color:#94A3B8;">Sin información adicional</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="paginatedDenuncias().length === 0" class="py-8 text-center">
+            <p class="text-[12px]" style="color:#94A3B8;">No se encontraron denuncias con los filtros aplicados</p>
+        </div>
+
+        <div *ngIf="casoTotalPages() > 1"
+            class="flex items-center justify-between px-4 py-2.5 border-t"
+            style="border-color:#E2E8F0;background:#FFF7F7;">
+            <p class="text-[11px]" style="color:#64748B;">
+                Página {{ casoPage() }} de {{ casoTotalPages() }}
+            </p>
+            <div class="flex items-center gap-1.5">
+                <button [disabled]="casoPage() === 1" (click)="setCasoPage(casoPage() - 1)"
+                    class="px-2.5 py-1 text-[11px] font-semibold rounded-lg border cursor-pointer transition"
+                    style="background:white;color:#475569;border-color:#E2E8F0;"
+                    [class.opacity-40]="casoPage() === 1">
+                    <lucide-icon name="chevron-left" [size]="12" color="currentColor" [strokeWidth]="2"></lucide-icon>
+                </button>
+                <button [disabled]="casoPage() === casoTotalPages()" (click)="setCasoPage(casoPage() + 1)"
+                    class="px-2.5 py-1 text-[11px] font-semibold rounded-lg border cursor-pointer transition"
+                    style="background:white;color:#475569;border-color:#E2E8F0;"
+                    [class.opacity-40]="casoPage() === casoTotalPages()">
+                    <lucide-icon name="chevron-right" [size]="12" color="currentColor" [strokeWidth]="2"></lucide-icon>
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>
