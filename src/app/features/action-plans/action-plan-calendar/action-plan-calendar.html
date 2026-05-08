@@ -159,5 +159,6 @@
 </app-action-plan-edit-modal>
 
 <app-action-plan-edit-plan-modal *ngIf="showEditPlanModal && planToEdit" [plan]="planToEdit"
-    (close)="closeEditPlanModal()" (edited)="onPlanEdited()">
+    [currentUser]="currentUser"
+    (close)="closeEditPlanModal()" (edited)="onPlanEdited()" (deleted)="onPlanDeleted()">
 </app-action-plan-edit-plan-modal>
