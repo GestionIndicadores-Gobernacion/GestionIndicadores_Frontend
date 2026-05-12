@@ -21,8 +21,14 @@ export class ActionPlanCalendarGridComponent {
   @Input() currentDate = new Date();
   @Input() canInteract: (plan: ActionPlanModel) => boolean = () => true;
   @Input() canEditPlan: (plan: ActionPlanModel) => boolean = () => false;
-  /** Solo responsables del plan pueden reportar (admin override). */
-  @Input() canReport: (plan: ActionPlanModel) => boolean = () => false;
+  /**
+   * Decide si un pillito del calendario es clickable. Recibe la
+   * actividad además del plan para que el padre pueda combinar reglas
+   * de lectura (estado visualizable) y escritura (responsable). El
+   * padre emite el evento `report` indistintamente; allí se resuelve
+   * el modo del modal (lectura vs reporte).
+   */
+  @Input() canOpen: (plan: ActionPlanModel, activity: ActionPlanActivityModel) => boolean = () => false;
 
   @Output() report = new EventEmitter<{ plan: ActionPlanModel; objective: ActionPlanObjectiveModel; activity: ActionPlanActivityModel; event: Event }>();
   @Output() edit = new EventEmitter<{ plan: ActionPlanModel; objective: ActionPlanObjectiveModel; activity: ActionPlanActivityModel; event: Event }>();

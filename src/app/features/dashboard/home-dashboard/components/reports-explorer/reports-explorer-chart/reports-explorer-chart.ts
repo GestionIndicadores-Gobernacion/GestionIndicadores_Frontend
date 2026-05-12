@@ -4,7 +4,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
-import { NgChartsModule, BaseChartDirective } from 'ng2-charts';
+import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartType } from 'chart.js';
 import { Router } from '@angular/router';
 
@@ -17,7 +17,7 @@ const MONTHS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', '
 @Component({
   selector: 'app-reports-explorer-chart',
   standalone: true,
-  imports: [CommonModule, NgChartsModule, LucideAngularModule],
+  imports: [CommonModule, BaseChartDirective, LucideAngularModule],
   templateUrl: './reports-explorer-chart.html',
 })
 export class ReportsExplorerChartComponent implements OnChanges {
