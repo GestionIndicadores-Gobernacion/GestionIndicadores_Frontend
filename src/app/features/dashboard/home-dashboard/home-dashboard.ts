@@ -223,7 +223,11 @@ export class HomeDashboardComponent implements OnInit {
   // =========================================================
 
   private loadData(): void {
-    this.strategiesService.getAll()
+    // Solo necesitamos id+name para los mapas/tabs de estrategia.
+    // `getSummary()` evita las N+1 que dispara el schema completo
+    // (annual_goals, metrics). El resto del dashboard que consume
+    // datos enriquecidos sigue llamando a los aggregate endpoints.
+    this.strategiesService.getSummary()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: strategies => {

@@ -4,7 +4,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { StrategiesService } from '../../../../../features/report/services/strategies.service';
-import { StrategyModel } from '../../../../../features/report/models/strategy.model';
 
 export interface IndicatorGoal {
   indicator_id: number;
@@ -41,7 +40,10 @@ export class ComplianceGoalDashboardComponent implements OnInit, OnChanges {
   filteredItems: ComponentGoal[] = [];
   availableYears: number[] = [];
   unconfiguredCount = 0;
-  strategies: StrategyModel[] = [];
+  // Solo se usan id+name (selector del template). Tipo aligerado para
+  // permitir consumir `/strategies/summary` y evitar las N+1 del schema
+  // completo.
+  strategies: { id: number; name: string }[] = [];
   loading = true;
   search = '';
   selectedStrategyId: number | null = null;
@@ -56,7 +58,7 @@ export class ComplianceGoalDashboardComponent implements OnInit, OnChanges {
   ) { }
 
   ngOnInit(): void {
-    this.strategiesService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    this.strategiesService.getSummary().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (s) => { this.strategies = s ?? []; this.cdr.markForCheck(); }
     });
     this.load();
