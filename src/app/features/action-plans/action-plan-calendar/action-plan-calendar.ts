@@ -360,10 +360,25 @@ export class ActionPlanCalendarComponent implements OnInit {
 
   openReportModal(p: ActionPlanModel, o: ActionPlanObjectiveModel, a: ActionPlanActivityModel, event: Event): void {
     event.stopPropagation();
-    // Guarda final: solo el responsable asignado (o admin) puede reportar.
-    // El grid/lista ya bloquean el click, esto cubre el caso del query
-    // param de retorno (`?reportActivity=`) y cualquier path futuro.
-    if (!this.canReportActivity(p)) {
+
+    // El modal sirve para tres cosas según `activity.status`:
+    //  - 'Realizado'             → detalle solo-lectura (todos pueden VER).
+    //  - 'Pendiente de Evidencia'→ detalle + form de evidencia gateado por
+    //                              `canManageEvidence` dentro del propio modal
+    //                              (a quien no es responsable se le muestra
+    //                              el aviso "solo el responsable puede agregar
+    //                              la evidencia").
+    //  - 'Pendiente' / 'En Ejecución' → reporte inicial; SOLO el responsable
+    //                                   (o admin) puede entrar.
+    //
+    // La guarda anterior bloqueaba SIEMPRE a no-responsables, lo que rompía
+    // el caso "Ver" del monitor sobre actividades Realizado/Pendiente de
+    // Evidencia. El backend mantiene la barrera de escritura (PUT /report y
+    // /evidence) en `_can_report_activity` y `_can_add_evidence`.
+    const status = a.status;
+    const isViewableStatus = status === 'Realizado' || status === 'Pendiente de Evidencia';
+
+    if (!isViewableStatus && !this.canReportActivity(p)) {
       this.toast.error('Solo el responsable asignado del plan puede reportar esta actividad.');
       return;
     }
