@@ -166,6 +166,35 @@ export const RECORDS_CONFIG: Record<string, RecordsConfig> = {
     detailSubtitle: ['poblacion_perros_2026', 'poblacion_gatos_2026'],
   },
 
+  denuncias: {
+    tableFields: [
+      'numero_de_caso',
+      'fecha',
+      'nombre_del_denunciante',
+      'tipo_de_documento',
+      'numero_de_documento',
+      // El nombre real del campo varía por la longitud del header en el Excel.
+      // Se incluyen las variantes más probables tras normalize_name (truncado a 100 chars).
+      'escriba_el_municipio_donde_se_esta_presentando_el_maltrato',
+      'municipio',
+      'especie_afectada_por_el_presunto_maltrato_animal',
+      'su_denuncia_es_anonima',
+      'denuncia_anonima',
+      'numero_de_celular_en_caso_de_requerir_mas_informacion_sobre_la_denuncia',
+      'correo_electronico_para_enviar_respuesta_y_seguimiento_de_la_denuncia',
+    ],
+    yesnoFields: [],
+    categoricalFields: [
+      'municipio',
+      'escriba_el_municipio_donde_se_esta_presentando_el_maltrato',
+      'tipo_de_documento',
+      'especie_afectada_por_el_presunto_maltrato_animal',
+    ],
+    searchPlaceholder: 'Buscar caso, denunciante, municipio...',
+    detailTitle: 'numero_de_caso',
+    detailSubtitle: ['fecha', 'escriba_el_municipio_donde_se_esta_presentando_el_maltrato', 'municipio'],
+  },
+
   donaton: {
     tableFields: [
       'nombre',
