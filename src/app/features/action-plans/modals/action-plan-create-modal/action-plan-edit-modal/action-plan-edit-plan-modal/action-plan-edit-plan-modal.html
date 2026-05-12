@@ -107,6 +107,12 @@
 
         <!-- FOOTER -->
         <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#e6edf7] bg-white">
+            <button *ngIf="canDeletePlan()" (click)="openDeleteConfirm()" type="button"
+                class="mr-auto inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-red-600
+                       border border-red-200 rounded-xl hover:bg-red-50 transition">
+                <lucide-icon name="trash-2" [size]="14" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                Eliminar plan
+            </button>
             <p *ngIf="errors['general']" class="text-xs text-red-500 mr-auto">{{ errors['general'] }}</p>
             <button (click)="onClose()" type="button"
                 class="px-4 py-2 text-sm font-medium text-slate-600 border border-[#d6e2f2] rounded-xl hover:bg-slate-50 transition">
@@ -116,6 +122,128 @@
                  rounded-xl hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed">
                 {{ saving ? 'Guardando...' : 'Guardar cambios' }}
             </button>
+        </div>
+    </div>
+
+    <!-- SUB-MODAL DE CONFIRMACIÓN DE ELIMINACIÓN -->
+    <div *ngIf="showDeleteConfirm" class="fixed inset-0 z-[60] flex items-center justify-center p-4"
+         (click)="$event.stopPropagation(); closeDeleteConfirm()">
+        <div class="absolute inset-0 bg-[#0f172a]/60 backdrop-blur-sm"></div>
+
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden border border-[#e6edf7]"
+             (click)="$event.stopPropagation()">
+
+            <!-- HEADER -->
+            <div class="flex items-center justify-between px-5 py-4 border-b border-[#e6edf7] bg-gradient-to-r from-red-600 to-red-500 text-white">
+                <div class="flex items-start gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center">
+                        <lucide-icon name="alert-triangle" [size]="18" [strokeWidth]="2" color="white"></lucide-icon>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold tracking-wide">
+                            {{ deleteMode === 'menu' ? 'Eliminar plan de acción' : 'Eliminar actividades' }}
+                        </h3>
+                        <p class="text-xs text-red-100 mt-0.5">Esta acción es irreversible</p>
+                    </div>
+                </div>
+                <button (click)="closeDeleteConfirm()" [disabled]="deleting"
+                        class="p-2 rounded-xl hover:bg-white/10 transition-colors disabled:opacity-40">
+                    <lucide-icon name="x" [size]="16" [strokeWidth]="2" color="white"></lucide-icon>
+                </button>
+            </div>
+
+            <!-- BODY: MENU -->
+            <div *ngIf="deleteMode === 'menu'" class="px-5 py-5 space-y-4 bg-[#f7f9fc] overflow-y-auto">
+                <p class="text-sm text-slate-700">
+                    Este plan contiene
+                    <strong>{{ totalActivities }}</strong>
+                    actividad{{ totalActivities === 1 ? '' : 'es' }}<ng-container *ngIf="reportedActivities > 0">,
+                    de las cuales <strong class="text-amber-700">{{ reportedActivities }}</strong> ya fueron reportadas</ng-container>.
+                </p>
+                <p class="text-sm text-slate-600">¿Qué deseas hacer?</p>
+
+                <p *ngIf="deleteError" class="text-xs text-red-500">{{ deleteError }}</p>
+            </div>
+
+            <!-- BODY: CHOOSE ACTIVITIES -->
+            <div *ngIf="deleteMode === 'choose-activities'" class="px-5 py-4 space-y-3 bg-[#f7f9fc] overflow-y-auto flex-1">
+                <p class="text-sm text-slate-700">
+                    Selecciona las actividades a eliminar.
+                </p>
+
+                <div *ngIf="allActivities.length === 0"
+                     class="border border-dashed border-[#d6e2f2] rounded-xl p-6 text-center bg-white">
+                    <p class="text-sm text-slate-400">El plan no tiene actividades.</p>
+                </div>
+
+                <div *ngFor="let item of allActivities"
+                     class="flex items-start gap-3 px-3 py-2.5 bg-white border border-[#e6edf7] rounded-xl hover:bg-[#f0f4fa] transition cursor-pointer"
+                     (click)="toggleActivitySelection(item.activity.id!)">
+                    <input type="checkbox"
+                           [checked]="isActivitySelected(item.activity.id!)"
+                           (click)="$event.stopPropagation(); toggleActivitySelection(item.activity.id!)"
+                           class="mt-0.5 h-4 w-4 rounded border-slate-300 text-red-600 focus:ring-red-500" />
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-slate-800 truncate">{{ item.activity.name }}</p>
+                        <p class="text-xs text-slate-500 truncate">{{ item.activity.deliverable }}</p>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="text-[11px] text-slate-500">{{ item.activity.delivery_date }}</span>
+                            <span *ngIf="item.activity.status"
+                                  class="text-[11px] px-1.5 py-0.5 rounded-full border"
+                                  [ngClass]="{
+                                    'bg-emerald-50 text-emerald-700 border-emerald-200': item.activity.status === 'Realizado',
+                                    'bg-blue-50 text-blue-700 border-blue-200': item.activity.status === 'En Ejecución',
+                                    'bg-red-50 text-red-700 border-red-200': item.activity.status === 'Pendiente',
+                                    'bg-amber-50 text-amber-700 border-amber-200': item.activity.status === 'Pendiente de Evidencia'
+                                  }">
+                                {{ item.activity.status }}
+                            </span>
+                            <span *ngIf="item.activity.reported_at"
+                                  class="text-[11px] text-amber-700">
+                                · ya reportada
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <p *ngIf="deleteError" class="text-xs text-red-500">{{ deleteError }}</p>
+            </div>
+
+            <!-- FOOTER: MENU -->
+            <div *ngIf="deleteMode === 'menu'"
+                 class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 px-5 py-4 border-t border-[#e6edf7] bg-white">
+                <button (click)="closeDeleteConfirm()" type="button" [disabled]="deleting"
+                        class="px-4 py-2 text-sm font-medium text-slate-600 border border-[#d6e2f2] rounded-xl hover:bg-slate-50 transition disabled:opacity-40">
+                    Cancelar
+                </button>
+                <button (click)="goChooseActivities()" type="button" [disabled]="deleting || totalActivities === 0"
+                        class="px-4 py-2 text-sm font-medium text-amber-700 border border-amber-200 rounded-xl hover:bg-amber-50 transition disabled:opacity-40">
+                    Eliminar uno
+                </button>
+                <button (click)="confirmDeletePlan()" type="button" [disabled]="deleting"
+                        class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-xl hover:bg-red-700 transition disabled:opacity-40">
+                    {{ deleting ? 'Eliminando...' : 'Confirmar' }}
+                </button>
+            </div>
+
+            <!-- FOOTER: CHOOSE ACTIVITIES -->
+            <div *ngIf="deleteMode === 'choose-activities'"
+                 class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-2 px-5 py-4 border-t border-[#e6edf7] bg-white">
+                <button (click)="backToMenu()" type="button" [disabled]="deleting"
+                        class="px-4 py-2 text-sm font-medium text-slate-600 border border-[#d6e2f2] rounded-xl hover:bg-slate-50 transition disabled:opacity-40">
+                    Volver
+                </button>
+                <div class="flex flex-col-reverse sm:flex-row sm:items-center gap-2">
+                    <span class="text-xs text-slate-500 sm:mr-2">
+                        {{ selectedActivityIds.size }} seleccionada{{ selectedActivityIds.size === 1 ? '' : 's' }}
+                    </span>
+                    <button (click)="confirmDeleteSelectedActivities()" type="button"
+                            [disabled]="deleting || selectedActivityIds.size === 0"
+                            class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-xl hover:bg-red-700 transition disabled:opacity-40">
+                        {{ deleting ? 'Eliminando...' : 'Eliminar seleccionadas' }}
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>

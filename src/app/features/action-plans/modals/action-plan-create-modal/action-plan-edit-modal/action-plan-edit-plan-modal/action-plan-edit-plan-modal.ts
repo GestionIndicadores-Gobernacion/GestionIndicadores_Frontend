@@ -2,8 +2,9 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, DestroyRef, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
-import { ActionPlanModel, RecurrenceFrequency } from '../../../../../../features/action-plans/models/action-plan.model';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { ActionPlanActivityModel, ActionPlanModel, ActionPlanObjectiveModel, RecurrenceFrequency } from '../../../../../../features/action-plans/models/action-plan.model';
 import { ComponentObjectiveModel } from '../../../../../../features/report/models/component.model';
 import { UserResponse } from '../../../../../../features/user/models/user.model';
 import { ActionPlanService } from '../../../../../../features/action-plans/services/action-plan.service';
@@ -38,8 +39,16 @@ interface ObjectiveForm {
 export class ActionPlanEditPlanModalComponent implements OnInit {
 
   @Input() plan!: ActionPlanModel;
+  @Input() currentUser: any = null;
   @Output() close = new EventEmitter<void>();
   @Output() edited = new EventEmitter<void>();
+  @Output() deleted = new EventEmitter<void>();
+
+  showDeleteConfirm = false;
+  deleteMode: 'menu' | 'choose-activities' = 'menu';
+  selectedActivityIds = new Set<number>();
+  deleting = false;
+  deleteError: string | null = null;
 
   users: UserResponse[] = [];
   objectives: ComponentObjectiveModel[] = [];
@@ -221,4 +230,116 @@ export class ActionPlanEditPlanModalComponent implements OnInit {
   }
 
   onClose(): void { this.close.emit(); }
+
+  // ─────────────────────────────────────────────
+  // ELIMINAR PLAN / ACTIVIDADES
+  // ─────────────────────────────────────────────
+
+  /** Admin o creador del plan pueden eliminar. Viewer nunca. */
+  canDeletePlan(): boolean {
+    if (!this.currentUser) return false;
+    const role = this.currentUser.role?.name;
+    if (role === 'admin') return true;
+    if (role === 'viewer') return false;
+    return this.plan?.user_id != null && this.plan.user_id === this.currentUser.id;
+  }
+
+  /** Lista plana de todas las actividades del plan, con su objetivo asociado. */
+  get allActivities(): { activity: ActionPlanActivityModel; objective: ActionPlanObjectiveModel }[] {
+    const out: { activity: ActionPlanActivityModel; objective: ActionPlanObjectiveModel }[] = [];
+    for (const obj of this.plan?.plan_objectives ?? []) {
+      for (const act of obj.activities ?? []) {
+        if (act.id != null) out.push({ activity: act, objective: obj });
+      }
+    }
+    return out;
+  }
+
+  get totalActivities(): number {
+    return this.allActivities.length;
+  }
+
+  get reportedActivities(): number {
+    return this.allActivities.filter(x => !!x.activity.reported_at).length;
+  }
+
+  openDeleteConfirm(): void {
+    this.deleteMode = 'menu';
+    this.selectedActivityIds.clear();
+    this.deleteError = null;
+    this.showDeleteConfirm = true;
+  }
+
+  closeDeleteConfirm(): void {
+    if (this.deleting) return;
+    this.showDeleteConfirm = false;
+    this.deleteMode = 'menu';
+    this.selectedActivityIds.clear();
+    this.deleteError = null;
+  }
+
+  goChooseActivities(): void {
+    this.deleteMode = 'choose-activities';
+    this.selectedActivityIds.clear();
+    this.deleteError = null;
+  }
+
+  backToMenu(): void {
+    this.deleteMode = 'menu';
+    this.selectedActivityIds.clear();
+    this.deleteError = null;
+  }
+
+  toggleActivitySelection(id: number): void {
+    if (this.selectedActivityIds.has(id)) this.selectedActivityIds.delete(id);
+    else this.selectedActivityIds.add(id);
+  }
+
+  isActivitySelected(id: number): boolean {
+    return this.selectedActivityIds.has(id);
+  }
+
+  confirmDeletePlan(): void {
+    if (this.deleting) return;
+    this.deleting = true;
+    this.deleteError = null;
+    this.actionPlanService.delete(this.plan.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.deleting = false;
+        this.showDeleteConfirm = false;
+        this.deleted.emit();
+      },
+      error: (err) => {
+        this.deleting = false;
+        this.deleteError = err?.error?.error ?? err?.error?.message ?? 'No se pudo eliminar el plan.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  confirmDeleteSelectedActivities(): void {
+    if (this.deleting || this.selectedActivityIds.size === 0) return;
+    this.deleting = true;
+    this.deleteError = null;
+    const ids = Array.from(this.selectedActivityIds);
+    const calls = ids.map(id =>
+      this.actionPlanService.deleteActivity(id).pipe(
+        map(() => ({ id, ok: true as const })),
+        catchError((err) => of({ id, ok: false as const, err }))
+      )
+    );
+    forkJoin(calls).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(results => {
+      this.deleting = false;
+      const failed = results.filter(r => !r.ok);
+      if (failed.length === 0) {
+        this.showDeleteConfirm = false;
+        this.deleted.emit();
+      } else {
+        this.deleteError = `No se pudieron eliminar ${failed.length} de ${ids.length} actividades.`;
+        // Si al menos una se borró, refrescar el padre igual al cerrar.
+        if (failed.length < ids.length) this.deleted.emit();
+        this.cdr.detectChanges();
+      }
+    });
+  }
 }
