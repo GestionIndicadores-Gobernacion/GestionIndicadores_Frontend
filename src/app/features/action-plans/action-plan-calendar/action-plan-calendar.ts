@@ -174,6 +174,12 @@ export class ActionPlanCalendarComponent implements OnInit {
     this.toast.success('Plan actualizado correctamente');
   }
 
+  onPlanDeleted(): void {
+    this.closeEditPlanModal();
+    this.loadPlans();
+    this.toast.success('Eliminación completada');
+  }
+
   // ── Loaders ──────────────────────────────────────────────────────
 
   private loadStrategies(): void {
