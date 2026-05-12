@@ -34,10 +34,10 @@
         <div class="sm:hidden flex flex-col gap-0.5 px-0.5">
             <ng-container *ngFor="let flat of getFlatActivitiesForDay(day).slice(0, 3); trackBy: trackByFlat">
                 <div class="flex items-center gap-1"
-                    [class.cursor-pointer]="canReport(flat.plan)"
-                    [class.cursor-default]="!canReport(flat.plan)"
-                    [class.opacity-70]="!canReport(flat.plan)"
-                    (click)="canReport(flat.plan) && report.emit({ plan: flat.plan, objective: flat.obj, activity: flat.activity, event: $event })">
+                    [class.cursor-pointer]="canOpen(flat.plan, flat.activity)"
+                    [class.cursor-default]="!canOpen(flat.plan, flat.activity)"
+                    [class.opacity-70]="!canOpen(flat.plan, flat.activity)"
+                    (click)="canOpen(flat.plan, flat.activity) && report.emit({ plan: flat.plan, objective: flat.obj, activity: flat.activity, event: $event })">
                     <span class="w-1.5 h-1.5 rounded-full flex-shrink-0"
                         [ngClass]="statusDot(flat.activity.status!, flat.activity.generates_report)"></span>
                     <span class="text-[9px] font-medium truncate leading-tight" [ngClass]="{
@@ -62,10 +62,10 @@
         <ng-container *ngFor="let flat of getFlatActivitiesForDay(day).slice(0, 3); trackBy: trackByFlat">
             <div class="hidden sm:flex group items-start gap-1 px-1.5 py-1 rounded-lg border transition hover:shadow-sm"
                 [ngClass]="statusClass(flat.activity.status!, flat.activity.generates_report)"
-                [class.cursor-pointer]="canReport(flat.plan)"
-                [class.cursor-default]="!canReport(flat.plan)"
-                [class.opacity-70]="!canReport(flat.plan)"
-                (click)="canReport(flat.plan) && report.emit({ plan: flat.plan, objective: flat.obj, activity: flat.activity, event: $event })"
+                [class.cursor-pointer]="canOpen(flat.plan, flat.activity)"
+                [class.cursor-default]="!canOpen(flat.plan, flat.activity)"
+                [class.opacity-70]="!canOpen(flat.plan, flat.activity)"
+                (click)="canOpen(flat.plan, flat.activity) && report.emit({ plan: flat.plan, objective: flat.obj, activity: flat.activity, event: $event })"
                 (mouseenter)="showTooltip({ plan: flat.plan, objective: flat.obj, activity: flat.activity }, $event)"
                 (mouseleave)="hover.emit(null)">
 
