@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
+import { Observable, catchError, finalize, forkJoin, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { jwtDecode } from 'jwt-decode';
 
@@ -147,10 +147,17 @@ export class AuthService {
   // =====================================================
   // 6️⃣ REFRESH TOKEN
   // =====================================================
-  refreshToken(): Observable<{ access_token: string }> {
+  /**
+   * Renueva el access token. A partir de Fase 2 el backend también rota
+   * el refresh token: si la respuesta incluye `refresh_token`, lo
+   * persistimos para reemplazar el anterior (que el backend ya revocó).
+   * El campo es opcional para mantener compatibilidad hacia atrás con
+   * backends que aún no devuelvan el nuevo refresh.
+   */
+  refreshToken(): Observable<{ access_token: string; refresh_token?: string }> {
     const refresh = this.getRefreshToken();
 
-    return this.http.post<{ access_token: string }>(
+    return this.http.post<{ access_token: string; refresh_token?: string }>(
       `${this.api}/refresh`,
       {},
       {
@@ -161,6 +168,9 @@ export class AuthService {
     ).pipe(
       tap(res => {
         localStorage.setItem('access_token', res.access_token);
+        if (res.refresh_token) {
+          localStorage.setItem('refresh_token', res.refresh_token);
+        }
       })
     );
   }
@@ -189,6 +199,49 @@ export class AuthService {
     if (reason) {
       AuthService._lastReason = reason;
     }
+  }
+
+  /**
+   * Logout "real": revoca el access y el refresh en el backend antes
+   * de limpiar la sesión local. Tolerante a errores: si el backend
+   * está caído, devuelve 401 o cualquier otra cosa, la sesión local
+   * se limpia igualmente y se navega a /auth/login.
+   *
+   * Llamarlo solo desde acciones explícitas del usuario (botón
+   * "Cerrar sesión"). Para expiración automática usar
+   * `handleExpiredSession()` — ese no llama al backend porque el
+   * token ya está vencido y solo provocaría un 401.
+   */
+  logoutFromServer(): Observable<void> {
+    const access = this.getAccessToken();
+    const refresh = this.getRefreshToken();
+
+    const revokeAccess$ = access
+      ? this.http.post(`${this.api}/logout`, {}, {
+          headers: new HttpHeaders({ Authorization: `Bearer ${access}` }),
+        }).pipe(catchError(() => of(null)))
+      : of(null);
+
+    const revokeRefresh$ = refresh
+      ? this.http.post(`${this.api}/logout-refresh`, {}, {
+          headers: new HttpHeaders({ Authorization: `Bearer ${refresh}` }),
+        }).pipe(catchError(() => of(null)))
+      : of(null);
+
+    return forkJoin([revokeAccess$, revokeRefresh$]).pipe(
+      // Mapeamos a void y centralizamos limpieza + navegación en finalize,
+      // así un error inesperado no deja la sesión en estado mixto.
+      finalize(() => {
+        this.logout();
+        this.sessionExpiredHandled = false;
+        if (!this.router.url.startsWith('/auth/login')) {
+          this.router.navigate(['/auth/login']);
+        }
+      }),
+      // forkJoin emite un array; lo descartamos. Importante: solo emite
+      // tras completarse ambos requests, evitando "doble navegación".
+      tap(() => undefined),
+    ) as unknown as Observable<void>;
   }
 
   private static _lastReason: SessionExpiredReason | null = null;
