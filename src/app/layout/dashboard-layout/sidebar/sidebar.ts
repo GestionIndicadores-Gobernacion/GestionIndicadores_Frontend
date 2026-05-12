@@ -28,7 +28,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
   // ===============================
   // SIDEBAR STATE
   // ===============================
-  isOpen = false; // Cerrado por defecto en móvil
+  // Inicializado en el constructor desde SidebarService.isOpen para que
+  // el primer change detection use el mismo valor que el emit sincrónico
+  // del BehaviorSubject al suscribirse en ngOnInit. Sin esto, Angular
+  // dispara NG0100 (ExpressionChangedAfterItHasBeenChecked). El estado
+  // por viewport lo decide el servicio (singleton): abierto en desktop,
+  // cerrado en móvil.
+  isOpen!: boolean;
 
   // ===============================
   // USER INFO
@@ -61,6 +67,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private menuService: MenuService,
   ) {
+    // Igualar el estado local al del servicio ANTES del primer render.
+    // El servicio ya decidió el valor según viewport en su construcción.
+    this.isOpen = this.sidebarService.isOpen;
+
     // ===== USER DATA =====
     const user = this.authService.getUser();
 
@@ -102,10 +112,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.expandedSections['Reportes PYBA'] = true;
     }
 
-    // Set initial state based on screen size
-    if (window.innerWidth >= 768) {
-      this.sidebarService.open();
-    }
+    // Nota: el estado inicial según viewport lo resuelve SidebarService
+    // en su constructor (singleton). No hace falta abrir/cerrar aquí.
   }
 
   ngOnDestroy() {
@@ -157,7 +165,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
   // LOGOUT
   // ===============================
   logout() {
-    this.authService.logout();
-    this.router.navigate(['/auth/login']);
+    // logoutFromServer() revoca el access y el refresh en el backend
+    // (tolerante a errores) y luego limpia la sesión local + navega.
+    // No suscribirse causaría que el observable nunca se ejecute.
+    this.authService.logoutFromServer().subscribe();
   }
 }
