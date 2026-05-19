@@ -74,13 +74,25 @@
                     </p>
 
                     <!-- Chips de seleccionados -->
-                    <div *ngIf="form.responsible_user_ids.length > 0" class="flex flex-wrap gap-1.5">
+                    <div *ngIf="form.responsible_user_ids.length > 0 || form.responsible_dataset_names.length > 0"
+                        class="flex flex-wrap gap-1.5">
                         <span *ngFor="let uid of form.responsible_user_ids"
                             class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full"
                             style="background:#D6E4F7;color:#1B3A6B;border:1px solid #B3CCE8;">
                             {{ getUserName(uid) }}
                             <button type="button" (click)="toggleResponsible(uid)"
                                 class="ml-0.5 rounded-full hover:bg-[#1B3A6B]/10 transition">
+                                <lucide-icon name="x" [size]="12" [strokeWidth]="2.5" color="currentColor"></lucide-icon>
+                            </button>
+                        </span>
+                        <span *ngFor="let n of form.responsible_dataset_names"
+                            class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full"
+                            style="background:#FEF3C7;color:#92400E;border:1px solid #FCD34D;"
+                            title="Persona del dataset Promotores PYBA">
+                            {{ n }}
+                            <span class="text-[10px] font-medium opacity-70">PYBA</span>
+                            <button type="button" (click)="toggleDatasetResponsible(n)"
+                                class="ml-0.5 rounded-full hover:bg-amber-700/10 transition">
                                 <lucide-icon name="x" [size]="12" [strokeWidth]="2.5" color="currentColor"></lucide-icon>
                             </button>
                         </span>
@@ -135,6 +147,67 @@
                                 [strokeWidth]="2.5" color="#059669" class="shrink-0"></lucide-icon>
                         </div>
                     </div>
+
+                    <!-- Bloque dataset Promotores PYBA -->
+                    <ng-container *ngIf="isPromotoresComponent">
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="text-[11px] font-semibold uppercase tracking-wide text-amber-700">
+                                Personas del dataset Promotores PYBA
+                            </span>
+                            <span *ngIf="!loadingDatasetPersons"
+                                class="text-[11px] text-slate-400">
+                                ({{ datasetPersons.length }})
+                            </span>
+                        </div>
+
+                        <!-- Loading -->
+                        <div *ngIf="loadingDatasetPersons"
+                            class="border rounded-xl px-3 py-3 flex items-center justify-center gap-2 bg-white"
+                            style="border-color:#FDE68A;">
+                            <div class="w-3.5 h-3.5 border-2 border-amber-300 border-t-amber-600 rounded-full animate-spin"></div>
+                            <span class="text-xs text-amber-700">Cargando personas del dataset…</span>
+                        </div>
+
+                        <!-- Error -->
+                        <div *ngIf="!loadingDatasetPersons && datasetPersonsError"
+                            class="border border-dashed rounded-xl px-3 py-3 text-center bg-white"
+                            style="border-color:#FCA5A5;">
+                            <p class="text-xs text-red-600">{{ datasetPersonsError }}</p>
+                        </div>
+
+                        <!-- Dataset no encontrado o vacío -->
+                        <div *ngIf="!loadingDatasetPersons && !datasetPersonsError && datasetPersons.length === 0"
+                            class="border border-dashed rounded-xl px-3 py-3 text-center bg-white"
+                            style="border-color:#FDE68A;">
+                            <p class="text-xs text-slate-500">
+                                No se encontraron personas en el dataset <strong>PERSONAS PROMOTORES PYBA</strong>.
+                            </p>
+                            <p class="text-[11px] text-slate-400 mt-0.5">
+                                Verifica que el dataset esté importado y activo.
+                            </p>
+                        </div>
+
+                        <!-- Lista -->
+                        <div *ngIf="!loadingDatasetPersons && datasetPersons.length > 0"
+                            class="border rounded-xl overflow-hidden max-h-40 overflow-y-auto"
+                            style="border-color:#FDE68A;">
+                            <div *ngFor="let p of datasetPersons"
+                                (click)="toggleDatasetResponsible(p.name)"
+                                class="flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors"
+                                [style.background]="isDatasetResponsibleSelected(p.name) ? '#FEF3C7' : 'white'"
+                                style="border-bottom:1px solid #FEF6DE;">
+                                <div class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold"
+                                    [style.background]="isDatasetResponsibleSelected(p.name) ? '#92400E' : '#FDE68A'"
+                                    [style.color]="isDatasetResponsibleSelected(p.name) ? 'white' : '#92400E'">
+                                    {{ (p.name || '?').charAt(0).toUpperCase() }}
+                                </div>
+                                <span class="text-sm flex-1 truncate" style="color:#92400E;">{{ p.name }}</span>
+                                <lucide-icon *ngIf="isDatasetResponsibleSelected(p.name)" name="check" [size]="16"
+                                    [strokeWidth]="2.5" color="#059669" class="shrink-0"></lucide-icon>
+                            </div>
+                        </div>
+                    </ng-container>
+
                     <p *ngIf="errors['responsible_user_ids']" class="text-xs text-red-500">{{ errors['responsible_user_ids'] }}</p>
                 </div>
 
@@ -203,6 +276,7 @@
                                 [canRemove]="obj.activities.length > 1" [showRecurrence]="true"
                                 [showNameError]="!!errors['activities']"
                                 [availableUsers]="users"
+                                [datasetPersons]="datasetPersons"
                                 (remove)="removeActivity(oi, ai)"
                                 (addStaff)="addStaff(oi, ai)" (removeStaff)="removeStaff(oi, ai, $event)">
                             </app-action-plan-activity-form>

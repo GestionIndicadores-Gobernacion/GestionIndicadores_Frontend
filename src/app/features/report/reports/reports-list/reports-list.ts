@@ -2,13 +2,14 @@ import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, OnInit, ChangeDetectorRef, ViewChild, ElementRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { catchError, forkJoin, of } from 'rxjs';
 
 import { ReportModel } from '../../../../features/report/models/report.model';
 
 import { ReportsService } from '../../../../features/report/services/reports.service';
 import { StrategiesService } from '../../../../features/report/services/strategies.service';
 import { ToastService } from '../../../../core/services/toast.service';
-import { UsersService } from '../../../../features/user/services/users.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 import { ReportsTableComponent } from './components/reports-table/reports-table';
 import { ComponentsService } from '../../../../features/report/services/components.service';
@@ -61,8 +62,8 @@ export class ReportsListComponent implements OnInit {
   constructor(
     private reportsService: ReportsService,
     private strategiesService: StrategiesService,
-    private usersService: UsersService,
     private componentsService: ComponentsService,
+    private authService: AuthService,
     private toast: ToastService,
     private cd: ChangeDetectorRef,
     private route: ActivatedRoute,
@@ -70,18 +71,13 @@ export class ReportsListComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.usersService.getMe().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: user => {
-        this.currentUserId = user.id;
-        this.isAdmin = user.role?.name === 'admin';
-        this.isViewer = user.role?.name === 'viewer';
-        this.cd.detectChanges();
-      },
-      error: () => {
-        this.isAdmin = false;
-        this.cd.detectChanges();
-      }
-    });
+    // Datos del usuario actual desde la sesión local — evita el round-trip
+    // a /users/me en cada entrada a la pantalla. La sesión se guarda en
+    // login() y solo cambia con login/logout, así que es consistente.
+    const user = this.authService.getUser();
+    this.currentUserId = user?.id ?? null;
+    this.isAdmin       = user?.role?.name === 'admin';
+    this.isViewer      = user?.role?.name === 'viewer';
 
     this.loadData();
 
@@ -135,46 +131,24 @@ export class ReportsListComponent implements OnInit {
   }
 
   private loadData(): void {
-    this.strategiesService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: strategies => {
-        this.strategyMap = Object.fromEntries(strategies.map(s => [s.id, s.name]));
-
-        this.componentsService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-          next: (resp: any) => {
-            const components = Array.isArray(resp) ? resp
-              : Array.isArray(resp?.data) ? resp.data
-                : Array.isArray(resp?.items) ? resp.items : [];
-
-            this.componentMap = Object.fromEntries(components.map((c: any) => [c.id, c.name]));
-            this.loadReports();
-          },
-          error: () => {
-            this.componentMap = {};
-            this.loadReports();
-          }
-        });
-      },
-      error: () => {
-        this.strategyMap = {};
-        this.loading = false;
+    // Las tres requests son independientes (strategies y components solo
+    // alimentan mapas id→nombre; reports es la fuente de filas). Se
+    // disparan en paralelo y se ensamblan en un único `next`. Si alguna
+    // falla, las otras siguen su curso gracias al `catchError` local.
+    forkJoin({
+      strategies: this.strategiesService.getSummary().pipe(catchError(() => of([]))),
+      components: this.componentsService.getSummary().pipe(catchError(() => of([]))),
+      reports:    this.reportsService.getAllForDashboard().pipe(
+        catchError(() => { this.loadError = true; return of([] as ReportModel[]); })
+      ),
+    })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(({ strategies, components, reports }) => {
+        this.strategyMap  = Object.fromEntries(strategies.map(s => [s.id, s.name]));
+        this.componentMap = Object.fromEntries(components.map(c => [c.id, c.name]));
+        this.reports      = reports ?? [];
+        this.loading      = false;
         this.cd.detectChanges();
-      }
-    });
-  }
-
-  private loadReports(): void {
-    this.reportsService.getAllForDashboard().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: reports => {
-        this.reports = reports ?? [];
-        this.loading = false;
-        this.cd.detectChanges();
-      },
-      error: () => {
-        this.reports = [];
-        this.loadError = true;
-        this.loading = false;
-        this.cd.detectChanges();
-      }
-    });
+      });
   }
 }

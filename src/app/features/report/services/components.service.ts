@@ -27,6 +27,17 @@ export class ComponentsService {
     return this.http.get<ComponentModel[]>(this.api);
   }
 
+  /**
+   * Listado ultra-liviano: `[{ id, name }]`. Para reports-list y otros
+   * consumidores que solo necesitan poblar mapas id→nombre. Evita los
+   * N+1 de `objectives`, `mga_activities`, `indicators(+targets)` y los
+   * selectin de `public_policies` / `user_assignments` que dispara
+   * `ComponentSchema`.
+   */
+  getSummary(): Observable<{ id: number; name: string }[]> {
+    return this.http.get<{ id: number; name: string }[]>(`${this.api}/summary`);
+  }
+
   getById(id: number): Observable<ComponentDetailResponse> {
     return this.http.get<ComponentDetailResponse>(`${this.api}/${id}`);
   }

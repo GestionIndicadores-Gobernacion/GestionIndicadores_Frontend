@@ -23,6 +23,16 @@ export class StrategiesService {
     return this.http.get<StrategyModel[]>(this.api);
   }
 
+  /**
+   * Listado ultra-liviano: `[{ id, name }]`. Para pantallas que solo
+   * necesitan poblar selects / mapas id→nombre (reports-list, dashboard).
+   * Evita las N+1 que dispara `StrategySchema` al serializar
+   * `annual_goals` y `metrics`.
+   */
+  getSummary(): Observable<{ id: number; name: string }[]> {
+    return this.http.get<{ id: number; name: string }[]>(`${this.api}/summary`);
+  }
+
   getDashboard(year?: number, dateFrom?: string, dateTo?: string): Observable<StrategyModel[]> {
     let params = new HttpParams();
     if (dateFrom && dateTo) {
