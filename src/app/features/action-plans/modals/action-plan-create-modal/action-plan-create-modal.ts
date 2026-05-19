@@ -11,9 +11,13 @@ import { ActionPlanService } from '../../../../features/action-plans/services/ac
 import { ComponentsService } from '../../../../features/report/services/components.service';
 import { StrategiesService } from '../../../../features/report/services/strategies.service';
 import { UsersService } from '../../../../features/user/services/users.service';
+import { DatasetService } from '../../../../features/datasets/services/datasets.service';
 import { ActivityFormData, ActionPlanActivityFormComponent, SupportStaffEntry } from './action-plan-activity-form/action-plan-activity-form';
 import { MUNICIPIOS_VALLE } from '../../../../core/data/municipios';
 import { LucideAngularModule } from 'lucide-angular';
+
+const PROMOTORES_PYBA_DATASET_NAME = 'PERSONAS PROMOTORES PYBA';
+const PROMOTORES_PYBA_COMPONENT_HINT = 'PROMOTORES PYBA';
 
 const EXCLUDED_EMAILS = new Set([
   'admin@gobernacion.gov.co',
@@ -48,6 +52,12 @@ export class ActionPlanCreateModalComponent implements OnInit {
   objectives: ComponentObjectiveModel[] = [];
   users: UserResponse[] = [];          // ← lista filtrada (sin admin)
 
+  /** Personas extraídas del dataset "PERSONAS PROMOTORES PYBA". Se cargan
+   *  solo cuando el componente seleccionado es "Promotores PYBA". */
+  datasetPersons: { name: string }[] = [];
+  loadingDatasetPersons = false;
+  datasetPersonsError = '';
+
   loading = true;
   loadingUsers = false;
   saving = false;
@@ -61,11 +71,13 @@ export class ActionPlanCreateModalComponent implements OnInit {
     strategy_id: number;
     component_id: number;
     responsible_user_ids: number[];
+    responsible_dataset_names: string[];
     plan_objectives: ObjectiveForm[];
   } = {
       strategy_id: 0,
       component_id: 0,
       responsible_user_ids: [],
+      responsible_dataset_names: [],
       plan_objectives: []
     };
 
@@ -76,6 +88,7 @@ export class ActionPlanCreateModalComponent implements OnInit {
     private strategiesService: StrategiesService,
     private componentsService: ComponentsService,
     private usersService: UsersService,
+    private datasetService: DatasetService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -164,6 +177,149 @@ export class ActionPlanCreateModalComponent implements OnInit {
     return u ? this.userDisplayName(u) : String(userId);
   }
 
+  // ── Personas del dataset Promotores PYBA ────────────────────────
+
+  /** True si el componente seleccionado es "Promotores PYBA". */
+  get isPromotoresComponent(): boolean {
+    const cid = +this.form.component_id;
+    if (!cid) return false;
+    const comp = this.components.find(c => c.id === cid);
+    return (comp?.name || '').toUpperCase().includes(PROMOTORES_PYBA_COMPONENT_HINT);
+  }
+
+  /** Alterna la selección de un responsable proveniente del dataset. */
+  toggleDatasetResponsible(name: string): void {
+    const idx = this.form.responsible_dataset_names.indexOf(name);
+    if (idx === -1) {
+      this.form.responsible_dataset_names.push(name);
+    } else {
+      this.form.responsible_dataset_names.splice(idx, 1);
+    }
+  }
+
+  isDatasetResponsibleSelected(name: string): boolean {
+    return this.form.responsible_dataset_names.includes(name);
+  }
+
+  /** Detecta cuál es el "campo nombre" mirando las claves de los registros.
+   *  Estrategia:
+   *  1. Match exacto contra una lista de campos comunes (nombres_y_apellidos,
+   *     nombre_completo, etc.).
+   *  2. Si no hay match exacto, busca cualquier campo cuyo nombre contenga
+   *     "nombre" o "apellido" (cubre "nombre_completo_del_promotor", etc.),
+   *     excluyendo campos de email/correo.
+   *  Devuelve la clave detectada o null. */
+  private detectNameField(rows: { id: number; data: any }[]): string | null {
+    if (!rows.length) return null;
+
+    // Recolectar todas las claves presentes en los registros.
+    const allKeys = new Set<string>();
+    for (const r of rows) {
+      const data = r?.data || {};
+      Object.keys(data).forEach(k => allKeys.add(k));
+    }
+
+    const EXACT_CANDIDATES = [
+      'nombres_y_apellidos', 'nombre_completo', 'nombre_y_apellido',
+      'nombre_completo_del_promotor', 'nombre_del_promotor',
+      'nombre', 'nombres',
+    ];
+    for (const c of EXACT_CANDIDATES) {
+      if (allKeys.has(c)) return c;
+    }
+
+    // Heurística: primer campo que contenga "nombre" o "apellido"
+    // (excluyendo email y otros falsos positivos).
+    const isBlacklisted = (k: string) =>
+      k.includes('correo') || k.includes('email') ||
+      k.includes('telefono') || k.includes('cedula') ||
+      k.includes('documento');
+
+    for (const k of allKeys) {
+      if (isBlacklisted(k)) continue;
+      if (k.includes('nombre') || k.includes('apellido')) return k;
+    }
+
+    return null;
+  }
+
+  private extractPersonNames(rows: { id: number; data: any }[]): { name: string }[] {
+    const seen = new Set<string>();
+    const out: { name: string }[] = [];
+    const nameField = this.detectNameField(rows);
+
+    for (const r of rows) {
+      const data = r?.data || {};
+      let name = '';
+
+      // 1. Campo detectado automáticamente
+      if (nameField) {
+        const v = data[nameField];
+        if (v !== undefined && v !== null && String(v).trim() !== '') {
+          name = String(v).trim();
+        }
+      }
+
+      // 2. Fallback: combinar nombre(s) + apellido(s)
+      if (!name) {
+        const parts = [
+          data['primer_nombre'], data['segundo_nombre'],
+          data['primer_apellido'], data['segundo_apellido'],
+        ].filter(p => p !== undefined && p !== null && String(p).trim() !== '')
+         .map(p => String(p).trim());
+        if (parts.length) name = parts.join(' ');
+      }
+
+      if (!name) continue;
+      const key = name.toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        out.push({ name });
+      }
+    }
+
+    return out.sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
+  }
+
+  private loadPromotoresDataset(): void {
+    this.datasetPersons = [];
+    this.datasetPersonsError = '';
+    this.loadingDatasetPersons = true;
+
+    this.datasetService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: datasets => {
+        const target = (datasets || []).find(d =>
+          d.active && (d.name || '').toUpperCase().trim() === PROMOTORES_PYBA_DATASET_NAME
+        );
+        if (!target) {
+          this.loadingDatasetPersons = false;
+          this.cdr.detectChanges();
+          return;
+        }
+        this.datasetService.getRecordsByDataset(target.id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: rows => {
+              this.datasetPersons = this.extractPersonNames(rows || []);
+              this.loadingDatasetPersons = false;
+              this.cdr.detectChanges();
+            },
+            error: () => {
+              this.datasetPersons = [];
+              this.datasetPersonsError = 'No se pudo cargar el dataset de Promotores PYBA.';
+              this.loadingDatasetPersons = false;
+              this.cdr.detectChanges();
+            }
+          });
+      },
+      error: () => {
+        this.datasetPersonsError = 'No se pudo consultar los datasets disponibles.';
+        this.loadingDatasetPersons = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   /**
    * Dado un nombre libre (planes ya creados con texto plano),
    * intenta encontrar el usuario cuyo nombre completo coincida.
@@ -185,6 +341,9 @@ export class ActionPlanCreateModalComponent implements OnInit {
     this.form.plan_objectives = [];
     this.users = [];
     this.form.responsible_user_ids = [];
+    this.form.responsible_dataset_names = [];
+    this.datasetPersons = [];
+    this.datasetPersonsError = '';
     this.filteredComponents = this.form.strategy_id
       ? this.components.filter(c => c.strategy_id === +this.form.strategy_id)
       : [];
@@ -195,12 +354,20 @@ export class ActionPlanCreateModalComponent implements OnInit {
     this.form.plan_objectives = [];
     this.users = [];
     this.form.responsible_user_ids = [];
+    this.form.responsible_dataset_names = [];
+    this.datasetPersons = [];
+    this.datasetPersonsError = '';
 
     const cid = +this.form.component_id;
     if (!cid) return;
 
     // Recarga usuarios filtrados por componente (solo asignados a `cid`).
     this.loadUsersForComponent(cid);
+
+    // Si el componente es "Promotores PYBA", carga el dataset de personas.
+    if (this.isPromotoresComponent) {
+      this.loadPromotoresDataset();
+    }
 
     this.componentsService.getById(cid).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: detail => {
@@ -304,7 +471,9 @@ export class ActionPlanCreateModalComponent implements OnInit {
 
     if (!+this.form.strategy_id) this.errors['strategy_id'] = 'Debes seleccionar una estrategia.';
     if (!+this.form.component_id) this.errors['component_id'] = 'Debes seleccionar un componente.';
-    if (!this.form.responsible_user_ids.length) this.errors['responsible_user_ids'] = 'Debes asignar al menos un responsable.';
+    if (!this.form.responsible_user_ids.length && !this.form.responsible_dataset_names.length) {
+      this.errors['responsible_user_ids'] = 'Debes asignar al menos un responsable.';
+    }
     if (!this.form.plan_objectives.length) this.errors['plan_objectives'] = 'Debes tener al menos un objetivo.';
     if (this.form.plan_objectives.some(o => o.isNew && !o.objective_text.trim()))
       this.errors['plan_objectives'] = 'Los objetivos nuevos deben tener descripción.';
@@ -325,8 +494,24 @@ export class ActionPlanCreateModalComponent implements OnInit {
     if (Object.keys(this.errors).length) return;
 
     // Construir display name a partir de los responsables seleccionados
+    // (usuarios del sistema + personas del dataset Promotores PYBA).
+    // Se eliminan duplicados por nombre (case-insensitive) para evitar que
+    // un mismo nombre aparezca dos veces si la persona ya está como usuario.
     const selectedUsers = this.users.filter(u => this.form.responsible_user_ids.includes(u.id));
-    const responsibleText = selectedUsers.map(u => this.userDisplayName(u)).join(', ') || null;
+    const seenNames = new Set<string>();
+    const responsibleNames: string[] = [];
+    for (const name of [
+      ...selectedUsers.map(u => this.userDisplayName(u)),
+      ...this.form.responsible_dataset_names,
+    ]) {
+      const trimmed = (name || '').trim();
+      if (!trimmed) continue;
+      const key = trimmed.toLowerCase();
+      if (seenNames.has(key)) continue;
+      seenNames.add(key);
+      responsibleNames.push(trimmed);
+    }
+    const responsibleText = responsibleNames.join(', ') || null;
 
     const payload: ActionPlanCreateRequest = {
       strategy_id: +this.form.strategy_id,
