@@ -5,15 +5,22 @@ import { FormsModule } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { ActionPlanActivityModel, ActionPlanModel, ActionPlanObjectiveModel, RecurrenceFrequency } from '../../../../../../features/action-plans/models/action-plan.model';
-import { ComponentObjectiveModel } from '../../../../../../features/report/models/component.model';
+import { ComponentObjectiveModel, ComponentModel } from '../../../../../../features/report/models/component.model';
 import { UserResponse } from '../../../../../../features/user/models/user.model';
 import { ActionPlanService } from '../../../../../../features/action-plans/services/action-plan.service';
 import { ComponentsService } from '../../../../../../features/report/services/components.service';
 import { UsersService } from '../../../../../../features/user/services/users.service';
+import { DatasetService } from '../../../../../../features/datasets/services/datasets.service';
 import { ActivityFormData, ActionPlanActivityFormComponent } from '../../action-plan-activity-form/action-plan-activity-form';
 import { MUNICIPIOS_VALLE } from '../../../../../../core/data/municipios';
+import { AuthService } from '../../../../../../core/services/auth.service';
+import { PermissionService } from '../../../../../../core/services/permission.service';
+import { PERMS, ROLE_IDS } from '../../../../../../core/constants/permissions';
 import { LucideAngularModule } from 'lucide-angular';
 
+
+const PROMOTORES_PYBA_DATASET_NAME = 'PERSONAS PROMOTORES PYBA';
+const PROMOTORES_PYBA_COMPONENT_HINT = 'PROMOTORES PYBA';
 
 const EXCLUDED_EMAILS = new Set([
   'admin@gobernacion.gov.co',
@@ -52,6 +59,12 @@ export class ActionPlanEditPlanModalComponent implements OnInit {
 
   users: UserResponse[] = [];
   objectives: ComponentObjectiveModel[] = [];
+  component: ComponentModel | null = null;
+
+  /** Personas del dataset PROMOTORES PYBA — sólo si el componente lo requiere. */
+  datasetPersons: { name: string }[] = [];
+  loadingDatasetPersons = false;
+  datasetPersonsError = '';
 
   loading = true;
   saving = false;
@@ -59,13 +72,17 @@ export class ActionPlanEditPlanModalComponent implements OnInit {
 
   municipios = MUNICIPIOS_VALLE;
 
-  legacyResponsible: string | null = null;
+  /** Nombres del responsable original que no se pudieron resolver ni contra
+   *  users del sistema ni contra el dataset (planes legacy / dataset cambió). */
+  legacyResponsibles: string[] = [];
 
   form: {
-    responsible_user_id: number | null;
+    responsible_user_ids: number[];
+    responsible_dataset_names: string[];
     plan_objectives: ObjectiveForm[];
   } = {
-      responsible_user_id: null,
+      responsible_user_ids: [],
+      responsible_dataset_names: [],
       plan_objectives: []
     };
 
@@ -75,29 +92,35 @@ export class ActionPlanEditPlanModalComponent implements OnInit {
     private actionPlanService: ActionPlanService,
     private componentsService: ComponentsService,
     private usersService: UsersService,
-    private cdr: ChangeDetectorRef
+    private datasetService: DatasetService,
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService,
+    private permissionService: PermissionService
   ) { }
 
+  /** True si el componente del plan es "Promotores PYBA". */
+  get isPromotoresComponent(): boolean {
+    return ((this.component?.name) || '').toUpperCase().includes(PROMOTORES_PYBA_COMPONENT_HINT);
+  }
+
   ngOnInit(): void {
+    // Cargamos users filtrados por componente (mismo criterio que el create
+    // modal) + el componente para detectar si es Promotores PYBA.
     forkJoin({
-      users: this.usersService.getAll(),
+      users: this.usersService.getAll(this.plan.component_id),
       component: this.componentsService.getById(this.plan.component_id),
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: ({ users, component }) => {
-        this.users = users.filter(u => !EXCLUDED_EMAILS.has(u.email));
+        this.users = users.filter(u => !u.email || !EXCLUDED_EMAILS.has(u.email));
         this.objectives = component.objectives ?? [];
+        this.component = component;
 
-        const responsibleName = this.plan.responsible?.trim() ?? '';
-
-        const matched = this.users.find(u =>
-          `${u.first_name} ${u.last_name}`.trim().toLowerCase() === responsibleName.toLowerCase()
-        );
-
-        if (matched) {
-          this.form.responsible_user_id = matched.id;
+        // Continuamos con la pre-carga del responsable. Si el componente
+        // es Promotores PYBA cargamos el dataset y luego resolvemos.
+        if (this.isPromotoresComponent) {
+          this.loadPromotoresDatasetThen(() => this.hydrateResponsibles());
         } else {
-          this.form.responsible_user_id = null;
-          this.legacyResponsible = responsibleName;
+          this.hydrateResponsibles();
         }
 
         // Precargar objetivos y actividades
@@ -175,11 +198,160 @@ export class ActionPlanEditPlanModalComponent implements OnInit {
     return `${u.first_name} ${u.last_name}`.trim();
   }
 
+  // ── Toggles de responsable (users del sistema) ───────────────────
+  toggleResponsible(userId: number): void {
+    const idx = this.form.responsible_user_ids.indexOf(userId);
+    if (idx === -1) this.form.responsible_user_ids.push(userId);
+    else this.form.responsible_user_ids.splice(idx, 1);
+  }
+  isResponsibleSelected(userId: number): boolean {
+    return this.form.responsible_user_ids.includes(userId);
+  }
+  getUserName(userId: number): string {
+    const u = this.users.find(x => x.id === userId);
+    return u ? this.userDisplayName(u) : String(userId);
+  }
+
+  // ── Toggles de responsable (personas del dataset Promotores) ─────
+  toggleDatasetResponsible(name: string): void {
+    const idx = this.form.responsible_dataset_names.indexOf(name);
+    if (idx === -1) this.form.responsible_dataset_names.push(name);
+    else this.form.responsible_dataset_names.splice(idx, 1);
+  }
+  isDatasetResponsibleSelected(name: string): boolean {
+    return this.form.responsible_dataset_names.includes(name);
+  }
+
+  // ── Pre-carga: resuelve plan.responsible_user_ids + plan.responsible ──
+  private hydrateResponsibles(): void {
+    // 1. Pre-cargar IDs relacionales (cuando el backend los emite).
+    const ids = (this.plan.responsible_user_ids ?? [])
+      .filter(id => this.users.some(u => u.id === id));
+    this.form.responsible_user_ids = [...ids];
+
+    // 2. Parsear el string `responsible` (formato "Nombre1, Nombre2").
+    //    Para cada nombre que NO esté ya cubierto por IDs relacionales,
+    //    intentamos resolver primero contra users del sistema (por nombre
+    //    completo), luego contra el dataset. Si no hay match, queda como
+    //    legacy display.
+    const raw = (this.plan.responsible ?? '').split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+    const idNamesLower = new Set(
+      this.form.responsible_user_ids
+        .map(id => this.users.find(u => u.id === id))
+        .filter((u): u is UserResponse => !!u)
+        .map(u => this.userDisplayName(u).toLowerCase()),
+    );
+
+    const legacy: string[] = [];
+    for (const name of raw) {
+      const lower = name.toLowerCase();
+      if (idNamesLower.has(lower)) continue;
+      const userMatch = this.users.find(u => this.userDisplayName(u).toLowerCase() === lower);
+      if (userMatch) {
+        if (!this.form.responsible_user_ids.includes(userMatch.id)) {
+          this.form.responsible_user_ids.push(userMatch.id);
+        }
+        continue;
+      }
+      const datasetMatch = this.datasetPersons.find(p => p.name.toLowerCase() === lower);
+      if (datasetMatch) {
+        if (!this.form.responsible_dataset_names.includes(datasetMatch.name)) {
+          this.form.responsible_dataset_names.push(datasetMatch.name);
+        }
+        continue;
+      }
+      legacy.push(name);
+    }
+    this.legacyResponsibles = legacy;
+    this.cdr.detectChanges();
+  }
+
+  // ── Carga del dataset Promotores PYBA ─────────────────────────────
+  private loadPromotoresDatasetThen(after: () => void): void {
+    this.loadingDatasetPersons = true;
+    this.datasetService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: datasets => {
+        const target = (datasets || []).find(d =>
+          d.active && (d.name || '').toUpperCase().trim() === PROMOTORES_PYBA_DATASET_NAME
+        );
+        if (!target) {
+          this.loadingDatasetPersons = false;
+          after();
+          return;
+        }
+        this.datasetService.getRecordsByDataset(target.id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: rows => {
+              this.datasetPersons = this.extractPersonNames(rows || []);
+              this.loadingDatasetPersons = false;
+              after();
+            },
+            error: () => {
+              this.datasetPersons = [];
+              this.datasetPersonsError = 'No se pudo cargar el dataset de Promotores PYBA.';
+              this.loadingDatasetPersons = false;
+              after();
+            }
+          });
+      },
+      error: () => {
+        this.datasetPersonsError = 'No se pudo consultar los datasets disponibles.';
+        this.loadingDatasetPersons = false;
+        after();
+      }
+    });
+  }
+
+  /** Extrae nombres únicos del dataset (replica el algoritmo del create modal). */
+  private extractPersonNames(rows: { id: number; data: any }[]): { name: string }[] {
+    const detectField = (rs: { data: any }[]): string | null => {
+      if (!rs.length) return null;
+      const allKeys = new Set<string>();
+      for (const r of rs) Object.keys(r?.data || {}).forEach(k => allKeys.add(k));
+      const EXACT = ['nombres_y_apellidos', 'nombre_completo', 'nombre_y_apellido',
+        'nombre_completo_del_promotor', 'nombre_del_promotor', 'nombre', 'nombres'];
+      for (const c of EXACT) if (allKeys.has(c)) return c;
+      const blacklisted = (k: string) =>
+        k.includes('correo') || k.includes('email') || k.includes('telefono') ||
+        k.includes('cedula') || k.includes('documento');
+      for (const k of allKeys) {
+        if (blacklisted(k)) continue;
+        if (k.includes('nombre') || k.includes('apellido')) return k;
+      }
+      return null;
+    };
+    const nameField = detectField(rows);
+    const seen = new Set<string>();
+    const out: { name: string }[] = [];
+    for (const r of rows) {
+      const data = r?.data || {};
+      let name = '';
+      if (nameField) {
+        const v = data[nameField];
+        if (v !== undefined && v !== null && String(v).trim() !== '') name = String(v).trim();
+      }
+      if (!name) {
+        const parts = [data['primer_nombre'], data['segundo_nombre'],
+          data['primer_apellido'], data['segundo_apellido']]
+          .filter(p => p !== undefined && p !== null && String(p).trim() !== '')
+          .map(p => String(p).trim());
+        if (parts.length) name = parts.join(' ');
+      }
+      if (!name) continue;
+      const key = name.toLowerCase();
+      if (!seen.has(key)) { seen.add(key); out.push({ name }); }
+    }
+    return out.sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
+  }
+
   submit(): void {
     this.errors = {};
 
-    if (!this.form.responsible_user_id)
-      this.errors['responsible'] = 'Debes asignar un responsable.';
+    if (!this.form.responsible_user_ids.length && !this.form.responsible_dataset_names.length)
+      this.errors['responsible'] = 'Debes asignar al menos un responsable.';
     if (!this.form.plan_objectives.length)
       this.errors['objectives'] = 'Debe haber al menos un objetivo con actividades.';
     for (const obj of this.form.plan_objectives) {
@@ -193,11 +365,27 @@ export class ActionPlanEditPlanModalComponent implements OnInit {
 
     if (Object.keys(this.errors).length) return;
 
-    const selectedUser = this.users.find(u => u.id === this.form.responsible_user_id) ?? null;
+    // Construir display name a partir de los responsables seleccionados
+    // (users del sistema + personas del dataset). Deduplica por nombre.
+    const selectedUsers = this.users.filter(u => this.form.responsible_user_ids.includes(u.id));
+    const seenNames = new Set<string>();
+    const responsibleNames: string[] = [];
+    for (const name of [
+      ...selectedUsers.map(u => this.userDisplayName(u)),
+      ...this.form.responsible_dataset_names,
+    ]) {
+      const trimmed = (name || '').trim();
+      if (!trimmed) continue;
+      const key = trimmed.toLowerCase();
+      if (seenNames.has(key)) continue;
+      seenNames.add(key);
+      responsibleNames.push(trimmed);
+    }
+    const responsibleText = responsibleNames.join(', ') || null;
 
     const payload = {
-      responsible: selectedUser ? this.userDisplayName(selectedUser) : null,
-      responsible_user_id: this.form.responsible_user_id,
+      responsible: responsibleText,
+      responsible_user_ids: this.form.responsible_user_ids,
       plan_objectives: this.form.plan_objectives.map(obj => ({
         objective_id: obj.isNew ? null : obj.objective_id,
         objective_text: obj.isNew ? obj.objective_text.trim() : null,
@@ -238,9 +426,9 @@ export class ActionPlanEditPlanModalComponent implements OnInit {
   /** Admin o creador del plan pueden eliminar. Viewer nunca. */
   canDeletePlan(): boolean {
     if (!this.currentUser) return false;
-    const role = this.currentUser.role?.name;
-    if (role === 'admin') return true;
-    if (role === 'viewer') return false;
+    const roleId = this.authService.getTokenPayload()?.role_id ?? null;
+    if (this.permissionService.hasPermissionOrRole(PERMS.ACTION_PLANS_DELETE_ANY, roleId, ROLE_IDS.ADMIN)) return true;
+    if (!this.permissionService.hasPermissionOrRole(PERMS.ACTION_PLANS_DELETE_OWN, roleId, ROLE_IDS.EDITOR, ROLE_IDS.MONITOR)) return false;
     return this.plan?.user_id != null && this.plan.user_id === this.currentUser.id;
   }
 

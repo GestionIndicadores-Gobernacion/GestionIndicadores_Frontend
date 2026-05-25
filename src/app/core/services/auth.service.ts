@@ -7,11 +7,14 @@ import { jwtDecode } from 'jwt-decode';
 
 import { LoginRequest, LoginResponse } from '../models/auth.model';
 import { ToastService } from './toast.service';
+import { PermissionService } from './permission.service';
 
 interface JwtPayload {
-  sub: number;
+  sub: string | number;
   role_id: number;
   exp: number;
+  permissions?: string[];
+  role?: string;
 }
 
 export type SessionExpiredReason = 'expired' | 'invalid' | 'manual';
@@ -24,12 +27,17 @@ export class AuthService {
   private api = `${environment.apiUrl}/auth`;
   private router = inject(Router);
   private toast = inject(ToastService);
+  private perms = inject(PermissionService);
 
   // Bandera única para evitar disparar múltiples toasts/redirects cuando
   // varias peticiones fallan en paralelo. Se libera en login() exitoso.
   private sessionExpiredHandled = false;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {
+    // Bootstrap desde localStorage en page reload: hidrata el set de
+    // permisos antes de que cualquier guard/directiva lo consulte.
+    this.perms.loadFromAccessToken(this.getAccessToken());
+  }
 
   // =====================================================
   // 1️⃣ LOGIN
@@ -38,6 +46,9 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.api}/login`, data).pipe(
       tap(res => {
         this.saveSession(res.access_token, res.refresh_token, res.user);
+        if (!this.perms.loadFromLoginUser(res.user as any)) {
+          this.perms.loadFromAccessToken(res.access_token);
+        }
         // Reset limpio: nuevo login → habilitar futuras detecciones.
         this.sessionExpiredHandled = false;
       })
@@ -132,6 +143,12 @@ export class AuthService {
     return !!this.getAccessToken() && !this.isTokenExpired();
   }
 
+  /**
+   * @deprecated Usar `PermissionService.hasPermissionOrRole(...)` en su lugar.
+   * Esta función queda durante shadow mode (Fase C) porque `adminGuard` y
+   * `viewerGuard` todavía la consumen. Se eliminará cuando se apague
+   * `PERM_SHADOW_MODE` en backend y se retire la compatibilidad por rol.
+   */
   hasRole(roleId: number): boolean {
     const payload = this.getTokenPayload();
     return payload?.role_id === roleId;
@@ -171,6 +188,7 @@ export class AuthService {
         if (res.refresh_token) {
           localStorage.setItem('refresh_token', res.refresh_token);
         }
+        this.perms.loadFromAccessToken(res.access_token);
       })
     );
   }
@@ -193,6 +211,7 @@ export class AuthService {
    * reaccionar (toast, mensaje en login, etc.).
    */
   logout(reason?: SessionExpiredReason): void {
+    this.perms.clear();
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');

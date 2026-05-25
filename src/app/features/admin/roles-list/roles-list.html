@@ -1,0 +1,190 @@
+<div class="min-h-screen" style="background:#F0F4FA;">
+
+  <!-- PAGE HEADER -->
+  <div class="px-4 sm:px-6 pt-7 pb-6 border-b" style="background:white;border-color:#D6E0F0;">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+
+      <div class="flex items-center gap-4">
+
+        <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"
+             style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);">
+          <lucide-icon name="shield-check" [size]="20" [strokeWidth]="1.8" color="white"></lucide-icon>
+        </div>
+
+        <div>
+          <h1 class="text-[20px] font-bold leading-none" style="color:#1B3A6B;">
+            Roles y permisos
+          </h1>
+          <p class="text-sm mt-1" style="color:#4A6A9B;">
+            Catálogo de roles del sistema y permisos asignados a cada uno
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+
+    <!-- SHADOW MODE BANNER -->
+    <app-shadow-mode-banner></app-shadow-mode-banner>
+
+    <!-- PAGE STATE -->
+    <app-page-state
+      [state]="pageState"
+      loadingMessage="Cargando roles..."
+      errorMessage="No se pudieron cargar los roles"
+      emptyMessage="No hay roles configurados"
+      emptyIcon="shield-check"
+      (retry)="loadRoles()">
+
+      <!-- TABLE BLOCK -->
+      <div *ngIf="roles.length > 0">
+
+        <!-- TOP BAR -->
+        <div class="h-[3px] w-full rounded-t-xl"
+             style="background:linear-gradient(90deg,#1B3A6B,#2d5fa8,#1B3A6B);"></div>
+
+        <div class="rounded-b-xl overflow-hidden border" style="border-color:#D6E0F0;background:white;">
+
+          <!-- HEADER -->
+          <div class="flex items-center justify-between gap-3 px-5 py-4 border-b"
+               style="border-color:#D6E0F0;background:#F8FAFD;">
+
+            <div class="flex items-center gap-3">
+
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                   style="background:#D6E4F7;">
+                <lucide-icon name="list" [size]="14" [strokeWidth]="2.2" color="#1B3A6B"></lucide-icon>
+              </div>
+
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-[1px]" style="color:#1B3A6B;">
+                  Roles del sistema
+                </span>
+                <p class="text-[10.5px] mt-0.5" style="color:#8A9DC0;">
+                  Vista de solo lectura — gestión disponible próximamente
+                </p>
+              </div>
+
+            </div>
+
+            <span class="text-[11px] font-semibold px-3 py-1 rounded-full"
+                  style="background:#D6E4F7;border:1px solid #B3CCE8;color:#1B3A6B;">
+              {{ roles.length }} {{ roles.length === 1 ? 'rol' : 'roles' }}
+            </span>
+
+          </div>
+
+          <!-- TABLE -->
+          <div class="overflow-x-auto">
+            <table class="w-full">
+
+              <thead>
+                <tr style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);">
+                  <th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.8px]"
+                      style="color:rgba(255,255,255,0.85)">
+                    Nombre
+                  </th>
+                  <th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.8px]"
+                      style="color:rgba(255,255,255,0.85)">
+                    Descripción
+                  </th>
+                  <th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.8px]"
+                      style="color:rgba(255,255,255,0.85)">
+                    Sistema
+                  </th>
+                  <th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.8px]"
+                      style="color:rgba(255,255,255,0.85)">
+                    # Permisos
+                  </th>
+                  <th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.8px]"
+                      style="color:rgba(255,255,255,0.85)">
+                    # Usuarios
+                  </th>
+                  <th class="px-5 py-3 text-right text-[10px] font-bold uppercase tracking-[0.8px]"
+                      style="color:rgba(255,255,255,0.85)">
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+
+                <tr *ngFor="let role of roles; let i = index"
+                    class="transition-colors duration-150 hover:bg-[#EDF3FC]"
+                    style="border-bottom:1px solid #EEF2F9"
+                    [style.background]="i % 2 === 0 ? 'white' : '#FAFCFF'"
+                    [attr.data-role-id]="role.id">
+
+                  <!-- NAME (con badge coloreado) -->
+                  <td class="px-5 py-3">
+                    <span class="px-2.5 py-1 text-[11px] font-semibold rounded-full" [ngClass]="{
+                      'bg-orange-100 text-orange-800': role.name === 'admin',
+                      'bg-blue-100 text-blue-800': role.name === 'editor',
+                      'bg-zinc-100 text-zinc-700': role.name === 'viewer',
+                      'bg-purple-100 text-purple-800': role.name === 'monitor',
+                      'bg-yellow-100 text-yellow-800':
+                        role.name !== 'admin' &&
+                        role.name !== 'editor' &&
+                        role.name !== 'viewer' &&
+                        role.name !== 'monitor'
+                    }">
+                      {{ role.name }}
+                    </span>
+                  </td>
+
+                  <!-- DESCRIPTION -->
+                  <td class="px-5 py-3 text-[12px]" style="color:#4A6A9B;">
+                    {{ describe(role) }}
+                  </td>
+
+                  <!-- IS SYSTEM -->
+                  <td class="px-5 py-3">
+                    <span *ngIf="role.is_system"
+                          class="px-2.5 py-1 text-[11px] font-semibold rounded-full"
+                          style="background:#E0E7FF;color:#3730A3;">
+                      Sistema
+                    </span>
+                    <span *ngIf="!role.is_system" style="color:#8A9DC0;" class="text-[11px]">—</span>
+                  </td>
+
+                  <!-- PERMISSION COUNT -->
+                  <td class="px-5 py-3 text-[12px] font-semibold" style="color:#1B3A6B;">
+                    {{ formatPermissionCount(role) }}
+                  </td>
+
+                  <!-- USER COUNT -->
+                  <td class="px-5 py-3 text-[12px] font-semibold" style="color:#1B3A6B;">
+                    {{ formatUserCount(role) }}
+                  </td>
+
+                  <!-- ACTIONS -->
+                  <td class="px-5 py-3">
+                    <div class="flex justify-end gap-1">
+                      <a [routerLink]="['/admin/roles', role.id]"
+                         class="inline-flex items-center gap-1.5 cursor-pointer px-2.5 py-1.5 text-[11px] font-bold rounded-lg border transition"
+                         style="background:#F0F4FA;color:#1B3A6B;border-color:#D6E0F0">
+                        <lucide-icon name="eye" [size]="12" [strokeWidth]="2.2" color="currentColor"></lucide-icon>
+                        Ver detalle
+                      </a>
+                    </div>
+                  </td>
+
+                </tr>
+
+              </tbody>
+
+            </table>
+          </div>
+
+        </div>
+
+      </div>
+
+    </app-page-state>
+
+  </div>
+
+</div>

@@ -1,0 +1,348 @@
+<!-- No se monta nada en el DOM cuando no hay target user. -->
+<ng-container *ngIf="isOpen() && targetUser as u">
+
+  <!-- BACKDROP -->
+  <div
+    class="fixed inset-0 z-50 transition-opacity duration-200"
+    style="background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(2px);"
+    (click)="onBackdropClick()"
+    data-testid="overrides-diff-modal-backdrop">
+  </div>
+
+  <!-- PANEL centrado -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+
+    <div
+      class="w-full max-w-[680px] max-h-[90vh] flex flex-col rounded-2xl shadow-2xl pointer-events-auto overflow-hidden"
+      style="background: white; border: 1px solid #D6E0F0;"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="overrides-diff-modal-title"
+      (click)="$event.stopPropagation()"
+      data-testid="overrides-diff-modal-panel">
+
+      <!-- HEADER -->
+      <header
+        class="flex items-start gap-3 px-6 py-5 border-b shrink-0"
+        style="background: linear-gradient(135deg, #1B3A6B, #2d5fa8); border-color: #D6E0F0;">
+
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+             style="background: rgba(255,255,255,0.15);">
+          <lucide-icon name="shield-check" [size]="20" [strokeWidth]="2" color="white"></lucide-icon>
+        </div>
+
+        <div class="min-w-0 flex-1">
+          <h2 id="overrides-diff-modal-title" class="text-[15px] font-bold text-white leading-tight">
+            Confirmar cambios de overrides
+          </h2>
+          <p class="text-[12px] mt-1 text-white/85 truncate">
+            Usuario: <strong>{{ displayName() }}</strong>
+          </p>
+        </div>
+
+      </header>
+
+      <!-- BODY scrollable -->
+      <div class="flex-1 overflow-y-auto px-6 py-5 space-y-4" style="background: #F0F4FA;">
+
+        <!-- SELF-EDIT BANNER -->
+        <div *ngIf="isSelfTarget"
+             class="flex items-start gap-3 px-4 py-3 rounded-xl border"
+             style="background: #EFF6FF; border-color: #BFDBFE;"
+             data-testid="overrides-diff-modal-self-banner">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+               style="background: #DBEAFE;">
+            <lucide-icon name="info" [size]="16" [strokeWidth]="2" color="#1E40AF"></lucide-icon>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[12px] font-bold leading-snug" style="color: #1E3A8A;">
+              Estás editando tus propios overrides
+            </p>
+            <p class="text-[11.5px] leading-snug mt-0.5" style="color: #1E40AF;">
+              Los cambios se aplicarán a tu sesión al próximo refresh (≤24h).
+            </p>
+          </div>
+        </div>
+
+        <!-- MAIN ADMIN BANNER -->
+        <div *ngIf="isMainAdminTarget"
+             class="flex items-start gap-3 px-4 py-3 rounded-xl border"
+             style="background: #FFEDD5; border-color: #FED7AA;"
+             data-testid="overrides-diff-modal-main-admin-banner">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+               style="background: #FED7AA;">
+            <lucide-icon name="shield-alert" [size]="16" [strokeWidth]="2" color="#9A3412"></lucide-icon>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[12px] font-bold leading-snug" style="color: #9A3412;">
+              Este usuario es el main_admin del sistema
+            </p>
+            <p class="text-[11.5px] leading-snug mt-0.5" style="color: #7C2D12;">
+              Las revocaciones de permisos críticos están bloqueadas por seguridad.
+            </p>
+          </div>
+        </div>
+
+        <!-- SHADOW MODE BANNER -->
+        <div *ngIf="shadowMode"
+             class="flex items-start gap-3 px-4 py-3 rounded-xl border"
+             style="background: #FEF3C7; border-color: #FDE68A;"
+             data-testid="overrides-diff-modal-shadow-banner">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+               style="background: #FDE68A;">
+            <lucide-icon name="triangle-alert" [size]="16" [strokeWidth]="2" color="#B45309"></lucide-icon>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[12px] font-bold leading-snug" style="color: #92400E;">
+              Modo paralelo activo
+            </p>
+            <p class="text-[11.5px] leading-snug mt-0.5" style="color: #78350F;">
+              Los overrides cambian el JWT y la UI, pero la autorización runtime sigue guiada por rol legacy. Validar paridad antes del sunset.
+            </p>
+          </div>
+        </div>
+
+        <!-- CRITICAL GRANT TO NON-ADMIN BANNER (rojo fuerte) -->
+        <div *ngIf="hasCriticalGrantToNonAdmin"
+             class="flex items-start gap-3 px-4 py-3 rounded-xl border"
+             style="background: #FEE2E2; border-color: #FECACA;"
+             data-testid="overrides-diff-modal-elevation-banner">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+               style="background: #FECACA;">
+            <lucide-icon name="shield-alert" [size]="16" [strokeWidth]="2" color="#B91C1C"></lucide-icon>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[12px] font-bold leading-snug" style="color: #991B1B;">
+              Privilegio elevado
+            </p>
+            <p class="text-[11.5px] leading-snug mt-0.5" style="color: #B91C1C;">
+              Estás otorgando permisos críticos a un usuario sin rol admin. Esto equivale a una escalación de privilegios. Confirma que es intencional.
+            </p>
+            <ul *ngIf="criticalGrantList.length > 0"
+                class="mt-2 flex flex-wrap gap-1.5"
+                data-testid="overrides-diff-modal-elevation-list">
+              <li *ngFor="let code of criticalGrantList"
+                  class="px-2 py-0.5 text-[11px] font-bold rounded"
+                  style="background: white; color: #991B1B; border: 1px solid #FECACA;">
+                {{ code }}
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- EMPTY EFFECTIVE BANNER -->
+        <div *ngIf="effectiveWouldBeEmpty"
+             class="flex items-start gap-3 px-4 py-3 rounded-xl border"
+             style="background: #FEE2E2; border-color: #FECACA;"
+             data-testid="overrides-diff-modal-empty-banner">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+               style="background: #FECACA;">
+            <lucide-icon name="ban" [size]="16" [strokeWidth]="2" color="#B91C1C"></lucide-icon>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[12px] font-bold leading-snug" style="color: #991B1B;">
+              Usuario sin permisos efectivos
+            </p>
+            <p class="text-[11.5px] leading-snug mt-0.5" style="color: #B91C1C;">
+              Este usuario quedará sin permisos efectivos tras la operación. ¿Confirmas?
+            </p>
+          </div>
+        </div>
+
+        <!-- ADDED GRANTS -->
+        <section class="rounded-xl border p-4 space-y-3"
+                 style="background: white; border-color: #D6E0F0;"
+                 data-testid="overrides-diff-modal-added-grants-section">
+
+          <header class="flex items-center gap-2">
+            <lucide-icon name="plus" [size]="14" [strokeWidth]="2" color="#15803D"></lucide-icon>
+            <h3 class="text-[12px] font-bold uppercase tracking-[0.7px]" style="color: #1B3A6B;">
+              Otorgados
+            </h3>
+            <span class="ml-auto text-[11px] font-bold px-2 py-0.5 rounded-full"
+                  style="background: #DCFCE7; color: #15803D; border: 1px solid #BBF7D0;"
+                  data-testid="overrides-diff-modal-added-grants-count">
+              +{{ addedGrants().length }}
+            </span>
+          </header>
+
+          <p *ngIf="!hasAddedGrants()"
+             class="text-[12px]"
+             style="color: #8A9DC0;"
+             data-testid="overrides-diff-modal-added-grants-empty">
+            Ninguno
+          </p>
+
+          <div *ngIf="hasAddedGrants()" class="flex flex-wrap gap-1.5">
+            <span *ngFor="let entry of addedGrants()"
+                  class="px-2.5 py-1 text-[11px] font-semibold rounded-full inline-flex items-center gap-1"
+                  style="background: #DCFCE7; color: #166534; border: 1px solid #BBF7D0;"
+                  data-testid="overrides-diff-modal-added-grant-chip">
+              <lucide-icon name="plus" [size]="10" [strokeWidth]="2.5" color="#15803D"></lucide-icon>
+              {{ entry.permission_code }}
+            </span>
+          </div>
+
+        </section>
+
+        <!-- ADDED REVOKES -->
+        <section class="rounded-xl border p-4 space-y-3"
+                 style="background: white; border-color: #D6E0F0;"
+                 data-testid="overrides-diff-modal-added-revokes-section">
+
+          <header class="flex items-center gap-2">
+            <lucide-icon name="minus" [size]="14" [strokeWidth]="2" color="#B91C1C"></lucide-icon>
+            <h3 class="text-[12px] font-bold uppercase tracking-[0.7px]" style="color: #1B3A6B;">
+              Revocados
+            </h3>
+            <span class="ml-auto text-[11px] font-bold px-2 py-0.5 rounded-full"
+                  style="background: #FEE2E2; color: #B91C1C; border: 1px solid #FECACA;"
+                  data-testid="overrides-diff-modal-added-revokes-count">
+              −{{ addedRevokes().length }}
+            </span>
+          </header>
+
+          <p *ngIf="!hasAddedRevokes()"
+             class="text-[12px]"
+             style="color: #8A9DC0;"
+             data-testid="overrides-diff-modal-added-revokes-empty">
+            Ninguno
+          </p>
+
+          <div *ngIf="hasAddedRevokes()" class="flex flex-wrap gap-1.5">
+            <span *ngFor="let entry of addedRevokes()"
+                  class="px-2.5 py-1 text-[11px] font-semibold rounded-full inline-flex items-center gap-1"
+                  style="background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA;"
+                  data-testid="overrides-diff-modal-added-revoke-chip">
+              <lucide-icon name="minus" [size]="10" [strokeWidth]="2.5" color="#B91C1C"></lucide-icon>
+              {{ entry.permission_code }}
+            </span>
+          </div>
+
+        </section>
+
+        <!-- REMOVED -->
+        <section class="rounded-xl border p-4 space-y-3"
+                 style="background: white; border-color: #D6E0F0;"
+                 data-testid="overrides-diff-modal-removed-section">
+
+          <header class="flex items-center gap-2">
+            <lucide-icon name="refresh-cw" [size]="14" [strokeWidth]="2" color="#4A6A9B"></lucide-icon>
+            <h3 class="text-[12px] font-bold uppercase tracking-[0.7px]" style="color: #1B3A6B;">
+              Removidos
+            </h3>
+            <span class="ml-auto text-[11px] font-bold px-2 py-0.5 rounded-full"
+                  style="background: #E5E7EB; color: #374151; border: 1px solid #D1D5DB;"
+                  data-testid="overrides-diff-modal-removed-count">
+              {{ removedItems().length }}
+            </span>
+          </header>
+
+          <p *ngIf="!hasRemoved()"
+             class="text-[12px]"
+             style="color: #8A9DC0;"
+             data-testid="overrides-diff-modal-removed-empty">
+            Ninguno
+          </p>
+
+          <div *ngIf="hasRemoved()" class="flex flex-wrap gap-1.5">
+            <span *ngFor="let entry of removedItems()"
+                  class="px-2.5 py-1 text-[11px] font-semibold rounded-full inline-flex items-center gap-1"
+                  style="background: #F3F4F6; color: #374151; border: 1px solid #D1D5DB;"
+                  [title]="'Override removido (' + entry.effect + ')'"
+                  data-testid="overrides-diff-modal-removed-chip">
+              {{ entry.permission_code }}
+              <span class="text-[10px]"
+                    [style.color]="entry.effect === 'grant' ? '#15803D' : '#B91C1C'">
+                ({{ entry.effect === 'grant' ? '+' : '−' }})
+              </span>
+            </span>
+          </div>
+
+        </section>
+
+        <!-- CHANGED -->
+        <section class="rounded-xl border p-4 space-y-3"
+                 style="background: white; border-color: #D6E0F0;"
+                 data-testid="overrides-diff-modal-changed-section">
+
+          <header class="flex items-center gap-2">
+            <lucide-icon name="refresh-cw" [size]="14" [strokeWidth]="2" color="#1E40AF"></lucide-icon>
+            <h3 class="text-[12px] font-bold uppercase tracking-[0.7px]" style="color: #1B3A6B;">
+              Cambiados
+            </h3>
+            <span class="ml-auto text-[11px] font-bold px-2 py-0.5 rounded-full"
+                  style="background: #DBEAFE; color: #1E40AF; border: 1px solid #BFDBFE;"
+                  data-testid="overrides-diff-modal-changed-count">
+              ±{{ changedItems().length }}
+            </span>
+          </header>
+
+          <p *ngIf="!hasChanged()"
+             class="text-[12px]"
+             style="color: #8A9DC0;"
+             data-testid="overrides-diff-modal-changed-empty">
+            Ninguno
+          </p>
+
+          <div *ngIf="hasChanged()" class="flex flex-wrap gap-1.5">
+            <span *ngFor="let change of changedItems()"
+                  class="px-2.5 py-1 text-[11px] font-semibold rounded-full inline-flex items-center gap-1"
+                  style="background: #EFF6FF; color: #1E3A8A; border: 1px solid #BFDBFE;"
+                  data-testid="overrides-diff-modal-changed-chip">
+              {{ change.permission_code }}: {{ change.from }} → {{ change.to }}
+            </span>
+          </div>
+
+        </section>
+
+        <!-- LÍNEA INFORMATIVA -->
+        <div class="px-4 py-3 rounded-xl border text-[12px] leading-snug"
+             style="background: #F8FAFD; border-color: #D6E0F0; color: #4A6A9B;"
+             data-testid="overrides-diff-modal-impact">
+          <lucide-icon name="info" [size]="14" [strokeWidth]="2" color="#4A6A9B"
+                       class="inline-block align-text-bottom mr-1"></lucide-icon>
+          Los cambios aplicarán al usuario en su próximo refresh de sesión (≤24h).
+        </div>
+
+      </div>
+
+      <!-- FOOTER -->
+      <footer class="border-t px-6 py-4 flex items-center justify-end gap-2 shrink-0"
+              style="background: white; border-color: #D6E0F0;">
+
+        <button
+          type="button"
+          [disabled]="saving"
+          (click)="onCancelClick()"
+          class="text-[12px] font-semibold px-4 py-2 rounded-xl border transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+          style="border-color: #D6E0F0; color: #1B3A6B; background: white;"
+          data-testid="overrides-diff-modal-cancel-btn">
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          [disabled]="saving"
+          (click)="onConfirmClick()"
+          class="text-[12px] font-bold px-4 py-2 rounded-xl text-white transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 inline-flex items-center gap-2"
+          style="background: linear-gradient(135deg, #1B3A6B, #2d5fa8);"
+          data-testid="overrides-diff-modal-confirm-btn">
+          <ng-container *ngIf="saving; else notSaving">
+            <span class="w-3 h-3 rounded-full border-2 border-white/40 border-t-white animate-spin"
+                  data-testid="overrides-diff-modal-saving-spinner"></span>
+            Guardando...
+          </ng-container>
+          <ng-template #notSaving>
+            <lucide-icon name="check" [size]="14" [strokeWidth]="2.5" color="white"></lucide-icon>
+            Confirmar cambios
+          </ng-template>
+        </button>
+
+      </footer>
+
+    </div>
+
+  </div>
+
+</ng-container>

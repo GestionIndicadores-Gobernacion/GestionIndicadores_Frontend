@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { adminGuard } from '../../core/guards/admin-guard';
 
 export const ACTION_PLANS_ROUTES: Routes = [
   {

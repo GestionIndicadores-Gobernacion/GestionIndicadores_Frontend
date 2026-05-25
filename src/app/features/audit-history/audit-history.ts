@@ -7,7 +7,13 @@ import { AuditLogModel } from '../action-plans/models/audit-log.model';
 import { AuditLogService } from '../action-plans/services/audit-log.service';
 import { UsersService } from '../user/services/users.service';
 import { Pagination } from '../../shared/components/pagination/pagination';
-import { PageState, PageStateComponent } from '../../shared/components/page-state/page-state';
+import { PageState } from '../../shared/components/page-state/page-state';
+import {
+  AuditDetailRolePermissions,
+  AuditDetailUserOverrides,
+  parseAuditDetail,
+  parseUserOverridesAuditDetail,
+} from './utils/parse-audit-detail';
 
 interface FilterState {
   search: string;
@@ -15,6 +21,14 @@ interface FilterState {
   entity: string;
   dateFrom: string;
   dateTo: string;
+}
+
+/** Opción explícita del dropdown de entidades, en el orden en que se renderiza. */
+interface EntityOption {
+  /** Valor enviado al backend / aplicado al filtro. */
+  value: string;
+  /** Etiqueta visible al usuario. */
+  label: string;
 }
 
 @Component({
@@ -30,9 +44,21 @@ export class AuditHistoryComponent implements OnInit {
   paginated: AuditLogModel[] = [];
   userMap: Record<number, string> = {};
 
+  /**
+   * Snapshot inmutable de las entidades desconocidas presentes en `logs`.
+   * Lo poblamos en `loadLogs()` (no como getter) para evitar que el template
+   * cree un array distinto en cada ciclo de change-detection — eso dispararía
+   * NG0103 (infinite change detection) cuando `extraEntityOptions` se usa con
+   * `*ngFor`.
+   */
+  extraEntityOptions: EntityOption[] = [];
+
   loading = true;
   loadError = false;
   timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  /** IDs de logs cuyo detalle está expandido (solo aplica a role_permissions). */
+  private expandedIds = new Set<number>();
 
   get pageState(): PageState {
     if (this.loading) return 'loading';
@@ -53,11 +79,26 @@ export class AuditHistoryComponent implements OnInit {
   readonly pageSize = 15;
   totalPages = 1;
 
-  /** Entidades conocidas con etiqueta legible */
+  /** Entidades conocidas con etiqueta legible. */
   readonly entityLabels: Record<string, string> = {
-    report:      'Reporte',
-    action_plan: 'Plan de acción',
+    report:                     'Reporte',
+    action_plan:                'Plan de acción',
+    role_permissions:           'Permisos de rol',
+    user_permission_overrides:  'Overrides',
   };
+
+  /**
+   * Opciones explícitas del select de entidades. Mantienen el orden
+   * canónico independiente de qué entities estén presentes en `logs`.
+   * Cualquier entity desconocida que aparezca en los logs se anexa al
+   * final via `extraEntityOptions` (fallback dinámico).
+   */
+  readonly entityOptions: EntityOption[] = [
+    { value: 'report',                    label: 'Reportes' },
+    { value: 'action_plan',               label: 'Planes de acción' },
+    { value: 'role_permissions',          label: 'Cambios de permisos por rol' },
+    { value: 'user_permission_overrides', label: 'Cambios de overrides por usuario' },
+  ];
 
   private destroyRef = inject(DestroyRef);
 
@@ -89,6 +130,7 @@ export class AuditHistoryComponent implements OnInit {
       .subscribe({
         next: logs => {
           this.logs = logs;
+          this.recomputeExtraEntityOptions();
           this.applyFilters();
           this.loading = false;
           this.cdr.detectChanges();
@@ -97,6 +139,7 @@ export class AuditHistoryComponent implements OnInit {
           this.logs = [];
           this.filtered = [];
           this.paginated = [];
+          this.extraEntityOptions = [];
           this.loadError = true;
           this.loading = false;
           this.cdr.detectChanges();
@@ -160,9 +203,55 @@ export class AuditHistoryComponent implements OnInit {
               this.filters.entity || this.filters.dateFrom || this.filters.dateTo);
   }
 
-  /** Entidades únicas presentes en los logs */
-  get availableEntities(): string[] {
-    return [...new Set(this.logs.map(l => l.entity))].sort();
+  /**
+   * Recalcula `extraEntityOptions` a partir de la lista actual de logs.
+   * Se ejecuta tras cargar los logs; el resultado es inmutable hasta el
+   * próximo reload, lo que evita ciclos de change-detection desde el template.
+   */
+  private recomputeExtraEntityOptions(): void {
+    const known = new Set(this.entityOptions.map(o => o.value));
+    const present = new Set(this.logs.map(l => l.entity));
+    this.extraEntityOptions = [...present]
+      .filter(e => !!e && !known.has(e))
+      .sort()
+      .map(e => ({ value: e, label: this.entityLabel(e) }));
+  }
+
+  // ─── Detalle expandible (role_permissions / user_permission_overrides) ─────
+
+  /** Devuelve el detalle tipado si el log es role_permissions con shape válida. */
+  rolePermDetail(log: AuditLogModel): AuditDetailRolePermissions | null {
+    return parseAuditDetail(log.entity, log.detail);
+  }
+
+  /** Devuelve el detalle tipado si el log es user_permission_overrides con shape válida. */
+  userOverridesDetail(log: AuditLogModel): AuditDetailUserOverrides | null {
+    return parseUserOverridesAuditDetail(log.entity, log.detail);
+  }
+
+  /**
+   * Filtra `added` por effect específico. Útil para separar los chips
+   * "grants" de "revokes" en la fila colapsada y en el detalle expandido.
+   */
+  filterByEffect(
+    items: AuditDetailUserOverrides['added'],
+    effect: 'grant' | 'revoke',
+  ): AuditDetailUserOverrides['added'] {
+    return items.filter(i => i.effect === effect);
+  }
+
+  /** Toggle del estado expandido de un log puntual. */
+  toggleExpanded(log: AuditLogModel): void {
+    if (this.expandedIds.has(log.id)) {
+      this.expandedIds.delete(log.id);
+    } else {
+      this.expandedIds.add(log.id);
+    }
+    this.cdr.detectChanges();
+  }
+
+  isExpanded(log: AuditLogModel): boolean {
+    return this.expandedIds.has(log.id);
   }
 
   // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -205,16 +294,20 @@ export class AuditHistoryComponent implements OnInit {
 
   entityIconName(entity: string): string {
     const map: Record<string, string> = {
-      report: 'file-text',
-      action_plan: 'clipboard-check',
+      report:                    'file-text',
+      action_plan:               'clipboard-check',
+      role_permissions:          'shield-check',
+      user_permission_overrides: 'user-cog',
     };
     return map[entity] ?? 'info';
   }
 
   entityBadgeClass(entity: string): string {
     const map: Record<string, string> = {
-      report:      'bg-indigo-50 text-indigo-700 border-indigo-200',
-      action_plan: 'bg-purple-50 text-purple-700 border-purple-200',
+      report:                    'bg-indigo-50 text-indigo-700 border-indigo-200',
+      action_plan:               'bg-purple-50 text-purple-700 border-purple-200',
+      role_permissions:          'bg-amber-50 text-amber-800 border-amber-200',
+      user_permission_overrides: 'bg-violet-50 text-violet-800 border-violet-200',
     };
     return map[entity] ?? 'bg-slate-50 text-slate-600 border-slate-200';
   }

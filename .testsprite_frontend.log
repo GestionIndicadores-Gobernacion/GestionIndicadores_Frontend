@@ -1,0 +1,42 @@
+
+> gestion-indicadores-frontend@0.0.0 start
+> ng serve
+
+[33m>[39m Building...
+[32m√[39m Building...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                [2m | [22m [1mRaw size[22m
+[32mscripts.js[39m         [2m | [22m[2mscripts[22m              [2m | [22m[36m188.03 kB[39m[2m | [22m
+[32mstyles.css[39m         [2m | [22m[2mstyles[22m               [2m | [22m[36m113.33 kB[39m[2m | [22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                 [2m | [22m[36m107.89 kB[39m[2m | [22m
+[32mchunk-F2CRVI4O.js[39m  [2m | [22m[2m-[22m                    [2m | [22m [36m10.36 kB[39m[2m | [22m
+[32mchunk-FAHQ3DDD.js[39m  [2m | [22m[2m-[22m                    [2m | [22m  [36m2.32 kB[39m[2m | [22m
+[32mchunk-HAGQDQAZ.js[39m  [2m | [22m[2m-[22m                    [2m | [22m  [36m2.14 kB[39m[2m | [22m
+[32mchunk-CZJLB7T5.js[39m  [2m | [22m[2m-[22m                    [2m | [22m  [36m1.08 kB[39m[2m | [22m
+[32mchunk-HYI4BI6T.js[39m  [2m | [22m[2m-[22m                    [2m | [22m[36m999 bytes[39m[2m | [22m
+[32mchunk-DHBX7NNB.js[39m  [2m | [22m[2m-[22m                    [2m | [22m[36m229 bytes[39m[2m | [22m
+
+[1m [22m                  [2m | [22m[1mInitial total[22m        [2m | [22m[1m426.37 kB[22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                [2m | [22m [1mRaw size[22m
+[32mchunk-EKE2Q6AV.js[39m  [2m | [22m[2mtable-viewer[22m         [2m | [22m[36m760.90 kB[39m[2m | [22m
+[32mchunk-ALAEG4LF.js[39m  [2m | [22m[2maction-plan-calendar[22m [2m | [22m[36m475.40 kB[39m[2m | [22m
+[32mchunk-6V5OGOFX.js[39m  [2m | [22m[2mhome-dashboard[22m       [2m | [22m[36m313.72 kB[39m[2m | [22m
+[32mchunk-CGQIBKLS.js[39m  [2m | [22m[2mreport-form[22m          [2m | [22m[36m307.32 kB[39m[2m | [22m
+[32mchunk-5OZIVFEW.js[39m  [2m | [22m[2mcomponente-form[22m      [2m | [22m[36m264.10 kB[39m[2m | [22m
+[32mchunk-FBVI77SR.js[39m  [2m | [22m[2mdatasets-list[22m        [2m | [22m[36m110.27 kB[39m[2m | [22m
+[32mchunk-FGNRF24B.js[39m  [2m | [22m[2mstrategy-form[22m        [2m | [22m [36m76.31 kB[39m[2m | [22m
+[32mchunk-IPCYHNXN.js[39m  [2m | [22m[2mcomponente-list[22m      [2m | [22m [36m71.57 kB[39m[2m | [22m
+[32mchunk-6CC4TZD2.js[39m  [2m | [22m[2mreports-list[22m         [2m | [22m [36m68.75 kB[39m[2m | [22m
+[32mchunk-OHAYHRP6.js[39m  [2m | [22m[2maction-plan-dashboard[22m[2m | [22m [36m65.80 kB[39m[2m | [22m
+[32mchunk-OO5O5TLX.js[39m  [2m | [22m[2mreport-detail[22m        [2m | [22m [36m60.08 kB[39m[2m | [22m
+[32mchunk-LKD43O3L.js[39m  [2m | [22m[2muser-form[22m            [2m | [22m [36m51.27 kB[39m[2m | [22m
+[32mchunk-QC4QG6HW.js[39m  [2m | [22m[2mmy-profile[22m           [2m | [22m [36m48.04 kB[39m[2m | [22m
+[32mchunk-4D3AUEVP.js[39m  [2m | [22m[2maudit-history[22m        [2m | [22m [36m45.31 kB[39m[2m | [22m
+[32mchunk-AHEFYQ7X.js[39m  [2m | [22m[2mstrategy-list[22m        [2m | [22m [36m42.36 kB[39m[2m | [22m
+[2m...and 23 more lazy chunks files. Use "--verbose" to show all the files.[22m
+
+Application bundle generation complete. [11.576 seconds] - 2026-05-23T17:30:26.011Z
+
+Watch mode enabled. Watching for file changes...
+NOTE: Raw file sizes do not reflect development server per-request transformations.
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m4200[22m/[39m

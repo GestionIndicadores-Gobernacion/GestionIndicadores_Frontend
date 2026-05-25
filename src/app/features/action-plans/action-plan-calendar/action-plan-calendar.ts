@@ -13,6 +13,9 @@ import { ActionPlanService } from '../../../features/action-plans/services/actio
 import { ComponentsService } from '../../../features/report/services/components.service';
 import { StrategiesService } from '../../../features/report/services/strategies.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { PermissionService } from '../../../core/services/permission.service';
+import { PERMS, ROLE_IDS } from '../../../core/constants/permissions';
 import { catchError, of } from 'rxjs';
 
 import { ActionPlanCreateModalComponent } from '../modals/action-plan-create-modal/action-plan-create-modal';
@@ -99,10 +102,12 @@ export class ActionPlanCalendarComponent implements OnInit {
    */
   canEditPlanBound = (plan: ActionPlanModel): boolean => {
     if (!this.currentUser) return false;
-    const role = this.currentUser.role?.name;
-    if (role === 'admin') return true;
-    if (role === 'viewer') return false;
-    return plan.user_id != null && plan.user_id === this.currentUser.id;
+    const roleId = this.authService.getTokenPayload()?.role_id ?? null;
+    if (this.permissionService.hasPermissionOrRole(PERMS.ACTION_PLANS_UPDATE_ANY, roleId, ROLE_IDS.ADMIN)) return true;
+    if (this.permissionService.hasPermissionOrRole(PERMS.ACTION_PLANS_UPDATE_OWN, roleId, ROLE_IDS.EDITOR, ROLE_IDS.MONITOR)) {
+      return plan.user_id != null && plan.user_id === this.currentUser.id;
+    }
+    return false;
   };
   /** Eliminar actividad: misma regla que editar plan (creador o admin). */
   canInteractWithPlan = (plan: ActionPlanModel): boolean => this.canEditPlanBound(plan);
@@ -114,9 +119,9 @@ export class ActionPlanCalendarComponent implements OnInit {
    */
   canReportActivity = (plan: ActionPlanModel): boolean => {
     if (!this.currentUser) return false;
-    const role = this.currentUser.role?.name;
-    if (role === 'admin') return true;
-    if (role === 'viewer') return false;
+    const roleId = this.authService.getTokenPayload()?.role_id ?? null;
+    if (this.permissionService.hasPermissionOrRole(PERMS.ACTION_PLANS_UPDATE_ANY, roleId, ROLE_IDS.ADMIN)) return true;
+    if (!this.permissionService.hasPermissionOrRole(PERMS.ACTION_PLANS_REPORT_ACTIVITY, roleId, ROLE_IDS.EDITOR, ROLE_IDS.MONITOR)) return false;
     const ids = new Set<number>(plan.responsible_user_ids ?? []);
     if (plan.responsible_user_id) ids.add(plan.responsible_user_id);
     return ids.has(this.currentUser.id);
@@ -161,13 +166,18 @@ export class ActionPlanCalendarComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private exportService: ActionPlanExportService,
     private route: ActivatedRoute,   // ← NUEVO
-    private router: Router           // ← NUEVO
+    private router: Router,          // ← NUEVO
+    private authService: AuthService,
+    private permissionService: PermissionService
   ) { }
 
   ngOnInit(): void {
     const user = JSON.parse(localStorage.getItem('user') ?? 'null');
     this.currentUser = user;                    // ← esta línea
-    this.canViewDashboard = user?.role?.name === 'admin' || user?.role?.name === 'monitor';
+    const roleId = this.authService.getTokenPayload()?.role_id ?? null;
+    this.canViewDashboard = this.permissionService.hasPermissionOrRole(
+      PERMS.ACTION_PLANS_DASHBOARD, roleId, ROLE_IDS.ADMIN, ROLE_IDS.MONITOR
+    );
     this.currentUserId = user?.id ?? null;
     this.loadStrategies();
     this.loadPlans();

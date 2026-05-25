@@ -1,0 +1,311 @@
+version: "2"
+type: frontend
+tech_stack:
+  - TypeScript 5.9
+  - Angular 21 (standalone components, lazy-loaded feature modules)
+  - RxJS 7.8
+  - Tailwind CSS v4 (via @tailwindcss/postcss y @tailwindcss/cli)
+  - Chart.js 4 + ng2-charts 10
+  - ApexCharts 5 + ngx-apexcharts
+  - Leaflet 1.9 (mapas)
+  - lucide-angular (iconos)
+  - ngx-toastr (toasts)
+  - sweetalert2 (modales)
+  - xlsx + file-saver (Excel I/O en cliente)
+  - jwt-decode (parseo de JWT)
+  - vitest (test runner devDep)
+routes:
+  - path: /auth/login
+    file: src/app/features/auth/login/login.ts
+    auth_required: false
+    description: Login con email + password. Bloqueado para usuarios ya autenticados via guestGuard.
+  - path: /dashboard
+    file: src/app/features/dashboard/home-dashboard/home-dashboard.ts
+    auth_required: true
+    description: Home dashboard tras login. Muestra KPIs y resumen general.
+  - path: /reports
+    file: src/app/features/report/reports/reports-list/reports-list.ts
+    auth_required: true
+    description: Listado de informes (reportes de avance de indicadores).
+  - path: /reports/create
+    file: src/app/features/report/reports/report-form/report-form.ts
+    auth_required: true
+    description: Crear nuevo informe. Bloqueado para rol viewer (viewerGuard).
+  - path: /reports/new
+    file: src/app/features/report/reports/report-form/report-form.ts
+    auth_required: true
+    description: Crear informe desde actividad (acepta query param activityId).
+  - path: /reports/:id
+    file: src/app/features/report/reports/report-detail/report-detail.ts
+    auth_required: true
+    description: Detalle de un informe específico.
+  - path: /reports/:id/edit
+    file: src/app/features/report/reports/report-form/report-form.ts
+    auth_required: true
+    description: Editar informe. viewerGuard.
+  - path: /reports/strategies
+    file: src/app/features/report/strategy/strategy-list/strategy-list.ts
+    auth_required: true
+    description: Listado de estrategias. Solo admin (adminGuard).
+  - path: /reports/strategies/create
+    file: src/app/features/report/strategy/strategy-form/strategy-form.ts
+    auth_required: true
+    description: Crear estrategia. Solo admin.
+  - path: /reports/strategies/:id/edit
+    file: src/app/features/report/strategy/strategy-form/strategy-form.ts
+    auth_required: true
+    description: Editar estrategia. Solo admin.
+  - path: /reports/strategies/dashboard
+    file: src/app/features/report/strategy/strategy-list/strategy-dashboard/strategy-dashboard.ts
+    auth_required: true
+    description: Dashboard agregado de estrategias. Solo admin.
+  - path: /reports/components
+    file: src/app/features/report/componentes/componente-list/componente-list.ts
+    auth_required: true
+    description: Listado de componentes. Solo admin.
+  - path: /reports/components/create
+    file: src/app/features/report/componentes/componente-form/componente-form.ts
+    auth_required: true
+    description: Crear componente. Solo admin.
+  - path: /reports/components/:id/edit
+    file: src/app/features/report/componentes/componente-form/componente-form.ts
+    auth_required: true
+    description: Editar componente. Solo admin.
+  - path: /datasets
+    file: src/app/features/datasets/datasets-list/datasets-list.ts
+    auth_required: true
+    description: Listado de datasets. Solo admin.
+  - path: /datasets/tables/:tableId/records
+    file: src/app/features/datasets/tables/table-viewer/table-viewer.ts
+    auth_required: true
+    description: Visor de registros de una tabla. Solo admin.
+  - path: /action-plans
+    file: src/app/features/action-plans/action-plans.routes.ts
+    auth_required: true
+    description: Redirige a /action-plans/calendar. Bloqueado para viewer.
+  - path: /action-plans/calendar
+    file: src/app/features/action-plans/action-plan-calendar/action-plan-calendar.ts
+    auth_required: true
+    description: Calendario de planes de acción con actividades.
+  - path: /action-plans/dashboard
+    file: src/app/features/action-plans/action-plan-dashboard/action-plan-dashboard.ts
+    auth_required: true
+    description: Dashboard por responsable de planes de acción.
+  - path: /users
+    file: src/app/features/user/users-list/users-list.ts
+    auth_required: true
+    description: Listado de usuarios. Solo admin.
+  - path: /users/create
+    file: src/app/features/user/user-form/user-form.ts
+    auth_required: true
+    description: Crear usuario. Solo admin.
+  - path: /users/:id/edit
+    file: src/app/features/user/user-form/user-form.ts
+    auth_required: true
+    description: Editar usuario. Solo admin.
+  - path: /users/me
+    file: src/app/features/user/my-profile/my-profile.ts
+    auth_required: true
+    description: Perfil propio. Bloqueado para viewer (viewerGuard).
+  - path: /audit-history
+    file: src/app/features/audit-history/audit-history.ts
+    auth_required: true
+    description: Historial de auditoría. Solo admin.
+features:
+  - name: Login y autenticación
+    description: Formulario email + password. Llama POST /api/auth/login (proxy a Flask), guarda access + refresh tokens, decodifica JWT con jwt-decode para extraer permisos y rol. guestGuard impide acceder a /auth/login si ya hay sesión; authGuard exige sesión en el resto.
+    files:
+      - src/app/features/auth/login/login.ts
+      - src/app/core/guards/auth-guard.ts
+      - src/app/core/guards/guest-guard.ts
+    entry_route: /auth/login
+    user_interactions:
+      - Escribir email en input
+      - Escribir contraseña en input
+      - Click en botón "Iniciar sesión"
+      - Ver toast de error en credenciales inválidas
+      - Ser redirigido a /dashboard al éxito
+    api_calls:
+      - method: POST
+        endpoint: /api/auth/login
+    auth_required: false
+  - name: Dashboard home y KPIs
+    description: Página tras login con KPIs principales y agregaciones por ubicación. Usa Chart.js y ApexCharts para gráficas; Leaflet para mapa por municipio.
+    files:
+      - src/app/features/dashboard/home-dashboard/home-dashboard.ts
+    entry_route: /dashboard
+    user_interactions:
+      - Visualizar tarjetas de KPI
+      - Interactuar con gráficas (hover/zoom)
+      - Filtrar por municipio en el mapa
+    api_calls:
+      - method: GET
+        endpoint: /api/kpis/
+      - method: GET
+        endpoint: /api/kpis/by-location
+    auth_required: true
+  - name: Gestión de informes (reports)
+    description: Listar/crear/editar/eliminar reportes de avance. Vista detalle y formulario con upload de archivos (evidencias). Crear desde actividad de plan de acción via query param activityId. viewerGuard bloquea creación/edición a rol viewer.
+    files:
+      - src/app/features/report/reports/reports-list/reports-list.ts
+      - src/app/features/report/reports/report-form/report-form.ts
+      - src/app/features/report/reports/report-detail/report-detail.ts
+    entry_route: /reports
+    user_interactions:
+      - Listar informes con paginación / filtros
+      - Click en "Crear informe" abre formulario
+      - Diligenciar campos del informe y adjuntar evidencia
+      - Click "Guardar" envía a backend
+      - Ver detalle de un informe
+      - Editar / eliminar informe propio
+    api_calls:
+      - method: GET
+        endpoint: /api/reports/
+      - method: POST
+        endpoint: /api/reports/
+      - method: PUT
+        endpoint: /api/reports/{id}
+      - method: DELETE
+        endpoint: /api/reports/{id}
+      - method: POST
+        endpoint: /api/files/upload
+    auth_required: true
+  - name: Estrategias y componentes (admin)
+    description: Submódulos dentro de /reports para gestionar estrategias y componentes. CRUD completo con formularios y dashboard agregado.
+    files:
+      - src/app/features/report/strategy/strategy-list/strategy-list.ts
+      - src/app/features/report/strategy/strategy-form/strategy-form.ts
+      - src/app/features/report/componentes/componente-list/componente-list.ts
+      - src/app/features/report/componentes/componente-form/componente-form.ts
+    entry_route: /reports/strategies
+    user_interactions:
+      - Admin lista estrategias
+      - Crear/editar estrategia
+      - Ver dashboard agregado de estrategias
+      - Crear/editar componentes ligados a estrategia
+    api_calls:
+      - method: GET
+        endpoint: /api/strategies/
+      - method: POST
+        endpoint: /api/strategies/
+      - method: GET
+        endpoint: /api/strategies/dashboard
+      - method: GET
+        endpoint: /api/components/
+      - method: POST
+        endpoint: /api/components/
+    auth_required: true
+  - name: Datasets — gestión y visor (admin)
+    description: Listado de datasets, visor de tablas y registros. Import Excel con preview y update via formulario; usa xlsx en cliente para preprocesar y file-saver para descargas. Solo admin.
+    files:
+      - src/app/features/datasets/datasets-list/datasets-list.ts
+      - src/app/features/datasets/tables/table-viewer/table-viewer.ts
+    entry_route: /datasets
+    user_interactions:
+      - Admin lista datasets con metadatos
+      - Sube Excel para crear/actualizar dataset
+      - Confirma preview antes de persistir
+      - Explora registros de una tabla
+      - Filtra por municipio
+    api_calls:
+      - method: GET
+        endpoint: /api/datasets/
+      - method: POST
+        endpoint: /api/datasets/import-excel/preview
+      - method: POST
+        endpoint: /api/datasets/import-excel
+      - method: PUT
+        endpoint: /api/datasets/{id}/update-excel
+      - method: GET
+        endpoint: /api/datasets/tables/{tableId}/dashboard
+    auth_required: true
+  - name: Planes de acción
+    description: Calendario interactivo con actividades; dashboard por responsable. Crear/editar/eliminar planes y actividades en modales (sweetalert2). Subir evidencia opcional dentro de ventana de 8 días para actividades en estado "Pendiente de Evidencia". Responsables y apoyos vienen del dataset PERSONAS PROMOTORES PYBA. Bloqueado para rol viewer.
+    files:
+      - src/app/features/action-plans/action-plan-calendar/action-plan-calendar.ts
+      - src/app/features/action-plans/action-plan-dashboard/action-plan-dashboard.ts
+      - src/app/features/action-plans/modals/
+    entry_route: /action-plans/calendar
+    user_interactions:
+      - Ver actividades en calendario
+      - Click en actividad abre modal de detalle
+      - Crear plan con actividades (modal)
+      - Asignar responsable y apoyos desde dataset de promotores
+      - Reportar avance / subir evidencia
+      - Ver dashboard agregado por responsable
+    api_calls:
+      - method: GET
+        endpoint: /api/action-plans/
+      - method: POST
+        endpoint: /api/action-plans/
+      - method: POST
+        endpoint: /api/action-plans/activities/{id}/report
+      - method: PUT
+        endpoint: /api/action-plans/activities/{id}/edit
+      - method: POST
+        endpoint: /api/action-plans/activities/{id}/evidence
+      - method: GET
+        endpoint: /api/action-plans/dashboard/users
+    auth_required: true
+  - name: Gestión de usuarios (admin)
+    description: CRUD de usuarios. Listado, creación y edición con asignación de rol y componentes. Solo admin.
+    files:
+      - src/app/features/user/users-list/users-list.ts
+      - src/app/features/user/user-form/user-form.ts
+    entry_route: /users
+    user_interactions:
+      - Listar usuarios
+      - Click "Crear usuario" abre formulario
+      - Asignar rol y componentes
+      - Editar / eliminar usuario
+    api_calls:
+      - method: GET
+        endpoint: /api/users/
+      - method: POST
+        endpoint: /api/users/
+      - method: PUT
+        endpoint: /api/users/{id}
+      - method: DELETE
+        endpoint: /api/users/{id}
+      - method: POST
+        endpoint: /api/users/{id}/components/{cid}
+    auth_required: true
+  - name: Perfil propio
+    description: Vista del usuario autenticado con sus datos y permisos. Bloqueado para viewer (rol 4).
+    files:
+      - src/app/features/user/my-profile/my-profile.ts
+    entry_route: /users/me
+    user_interactions:
+      - Ver datos personales y rol
+      - Ver lista de permisos actuales
+    api_calls:
+      - method: GET
+        endpoint: /api/users/me
+      - method: GET
+        endpoint: /api/users/me/permissions
+    auth_required: true
+  - name: Historial de auditoría (admin)
+    description: Lista paginada de eventos de auditoría con filtros. Solo admin.
+    files:
+      - src/app/features/audit-history/audit-history.ts
+    entry_route: /audit-history
+    user_interactions:
+      - Filtrar por usuario, fecha, módulo
+      - Paginar resultados
+    api_calls:
+      - method: GET
+        endpoint: /api/audit-logs/
+    auth_required: true
+known_limitations:
+  - issue: "El dev server (ng serve) es single-threaded; TestSprite recomienda build + serve estático"
+    location: "package.json scripts.start"
+    impact: "TestSprite ejecutará máximo 15 tests de alta prioridad en lugar de 30 al detectar modo development"
+  - issue: "Proxy /api → http://localhost:5000 vive en proxy.conf.json y aplica solo con npm start"
+    location: "proxy.conf.json"
+    impact: "Los tests del frontend dependen de que el backend también responda en :5000, de lo contrario las llamadas fetch fallan con 502/timeout"
+  - issue: "Hay tres roles con guards diferenciados (admin, viewer, guest); los tests automatizados deben loguearse con admin para máxima cobertura"
+    location: "src/app/core/guards/"
+    impact: "Con un usuario viewer no se podrá probar /datasets, /users, /audit-history ni /reports/strategies"
+  - issue: "Carga lazy de feature modules"
+    location: "src/app/app.routes.ts (loadChildren/loadComponent)"
+    impact: "Los tests deben esperar a que se resuelvan los imports dinámicos antes de interactuar (puede requerir waits explícitos)"

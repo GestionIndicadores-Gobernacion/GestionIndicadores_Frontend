@@ -29,19 +29,102 @@
         <div class="overflow-y-auto flex-1 px-6 py-6 space-y-6 bg-[#f7f9fc]">
             <ng-container *ngIf="!loading">
 
-                <!-- RESPONSABLE -->
-                <div class="flex flex-col gap-1.5">
-                    <label class="text-xs font-semibold text-[#1B3A6B]">Responsable del plan <span
-                            class="text-red-500">*</span></label>
-                    <select [(ngModel)]="form.responsible_user_id" class="text-sm border rounded-xl px-3 py-2.5 bg-[#F0F4FA] text-slate-800
-                     focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 focus:border-[#2d5fa8] transition"
-                        [class.border-red-300]="errors['responsible']" [class.border-d6e2f2]="!errors['responsible']">
-                        <option *ngIf="legacyResponsible" [ngValue]="null">
-                            {{ legacyResponsible }} (responsable anterior)
-                        </option>
-                        <option [ngValue]="null" disabled>Seleccionar responsable...</option>
-                        <option *ngFor="let u of users" [ngValue]="u.id">{{ userDisplayName(u) }}</option>
-                    </select>
+                <!-- RESPONSABLES (multi: users del sistema + personas del dataset Promotores PYBA) -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-xs font-semibold text-[#1B3A6B]">
+                        Responsables del plan <span class="text-red-500">*</span>
+                    </label>
+
+                    <!-- Chips de seleccionados -->
+                    <div *ngIf="form.responsible_user_ids.length || form.responsible_dataset_names.length"
+                         class="flex flex-wrap gap-1.5">
+                        <span *ngFor="let uid of form.responsible_user_ids; trackBy: trackByIndex"
+                              class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full"
+                              style="background:#D6E4F7;color:#1B3A6B;border:1px solid #B3CCE8;">
+                            {{ getUserName(uid) }}
+                            <button type="button" (click)="toggleResponsible(uid)"
+                                class="ml-0.5 rounded-full hover:bg-[#1B3A6B]/10 transition">
+                                <lucide-icon name="x" [size]="12" [strokeWidth]="2.5" color="currentColor"></lucide-icon>
+                            </button>
+                        </span>
+                        <span *ngFor="let n of form.responsible_dataset_names; trackBy: trackByIndex"
+                              class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full"
+                              style="background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;"
+                              title="Persona del dataset Promotores PYBA">
+                            {{ n }}
+                            <span class="text-[10px] font-medium opacity-70">PYBA</span>
+                            <button type="button" (click)="toggleDatasetResponsible(n)"
+                                class="ml-0.5 rounded-full hover:bg-amber-700/10 transition">
+                                <lucide-icon name="x" [size]="12" [strokeWidth]="2.5" color="currentColor"></lucide-icon>
+                            </button>
+                        </span>
+                    </div>
+
+                    <!-- Aviso legacy (responsables del string original que ya no se resuelven) -->
+                    <p *ngIf="legacyResponsibles.length" class="text-[11px] text-slate-500 italic">
+                        Responsable anterior sin resolver:
+                        <span class="font-medium">{{ legacyResponsibles.join(', ') }}</span>
+                        — agrégalo nuevamente desde las listas de abajo si lo necesitás.
+                    </p>
+
+                    <!-- Lista de users del sistema -->
+                    <div *ngIf="users.length" class="border rounded-xl overflow-hidden max-h-40 overflow-y-auto"
+                         [class.border-red-300]="errors['responsible']"
+                         style="border-color:#D6E0F0;">
+                        <div *ngFor="let u of users"
+                             (click)="toggleResponsible(u.id)"
+                             class="flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors"
+                             [style.background]="isResponsibleSelected(u.id) ? '#EEF5FF' : 'white'"
+                             style="border-bottom:1px solid #F0F4FA;">
+                            <div class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold"
+                                 [style.background]="isResponsibleSelected(u.id) ? '#1B3A6B' : '#D6E4F7'"
+                                 [style.color]="isResponsibleSelected(u.id) ? 'white' : '#1B3A6B'">
+                                {{ (u.first_name || '?').charAt(0).toUpperCase() }}
+                            </div>
+                            <span class="text-sm flex-1" style="color:#1B3A6B;">{{ u.first_name }} {{ u.last_name }}</span>
+                            <lucide-icon *ngIf="isResponsibleSelected(u.id)" name="check" [size]="16"
+                                [strokeWidth]="2.5" color="#059669" class="shrink-0"></lucide-icon>
+                        </div>
+                    </div>
+                    <p *ngIf="!users.length" class="text-[11px] text-slate-400 italic">
+                        No hay usuarios asignados a este componente.
+                    </p>
+
+                    <!-- Lista de personas del dataset PROMOTORES PYBA (sólo si aplica) -->
+                    <ng-container *ngIf="isPromotoresComponent">
+                        <label class="text-[11px] font-semibold text-[#92400E] mt-1">
+                            Personas del dataset Promotores PYBA
+                        </label>
+                        <p *ngIf="loadingDatasetPersons" class="text-[11px] text-slate-400 italic">
+                            Cargando dataset…
+                        </p>
+                        <p *ngIf="datasetPersonsError" class="text-[11px] text-red-500">
+                            {{ datasetPersonsError }}
+                        </p>
+                        <div *ngIf="!loadingDatasetPersons && datasetPersons.length"
+                             class="border rounded-xl overflow-hidden max-h-40 overflow-y-auto"
+                             style="border-color:#FDE68A;">
+                            <div *ngFor="let p of datasetPersons"
+                                 (click)="toggleDatasetResponsible(p.name)"
+                                 class="flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors"
+                                 [style.background]="isDatasetResponsibleSelected(p.name) ? '#FEF3C7' : 'white'"
+                                 style="border-bottom:1px solid #FEF6DE;">
+                                <div class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold"
+                                     [style.background]="isDatasetResponsibleSelected(p.name) ? '#92400E' : '#FDE68A'"
+                                     [style.color]="isDatasetResponsibleSelected(p.name) ? 'white' : '#92400E'">
+                                    {{ (p.name || '?').charAt(0).toUpperCase() }}
+                                </div>
+                                <span class="text-sm flex-1 truncate" style="color:#92400E;">{{ p.name }}</span>
+                                <lucide-icon *ngIf="isDatasetResponsibleSelected(p.name)" name="check" [size]="16"
+                                    [strokeWidth]="2.5" color="#059669" class="shrink-0"></lucide-icon>
+                            </div>
+                        </div>
+                        <p *ngIf="!loadingDatasetPersons && !datasetPersons.length && !datasetPersonsError"
+                           class="text-[11px] text-slate-400 italic">
+                            No hay personas registradas en el dataset.
+                        </p>
+                    </ng-container>
+
                     <p *ngIf="errors['responsible']" class="text-xs text-red-500">{{ errors['responsible'] }}</p>
                 </div>
 

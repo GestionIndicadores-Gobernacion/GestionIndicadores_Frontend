@@ -261,6 +261,17 @@
 
                     <div class="flex justify-end gap-1">
 
+                      <button *appCan="[USERS_READ_PERMISSIONS]; mode: 'any'; fallbackRole: ROLE_ADMIN"
+                        (click)="openPermissionsDrawer(user)"
+                        type="button"
+                        class="cursor-pointer px-2.5 py-1.5 text-[11px] font-bold rounded-lg border transition inline-flex items-center justify-center"
+                        style="background:#F0F4FA;color:#1B3A6B;border-color:#D6E0F0"
+                        title="Ver permisos efectivos"
+                        attr.aria-label="Ver permisos de {{ user.first_name }} {{ user.last_name }}"
+                        data-testid="open-permissions-drawer">
+                        <lucide-icon name="shield-check" [size]="12" [strokeWidth]="2.2" color="currentColor"></lucide-icon>
+                      </button>
+
                       <button [routerLink]="['/users', user.id, 'edit']"
                         class="cursor-pointer px-2.5 py-1.5 text-[11px] font-bold rounded-lg border transition"
                         style="background:#F0F4FA;color:#4A6A9B;border-color:#D6E0F0">
@@ -340,5 +351,13 @@
     </app-page-state>
 
   </div>
+
+  <!-- Drawer "Ver permisos efectivos" — lazy: sólo fetcha cuando drawerUserId
+       deja de ser null. No afecta performance del listado. -->
+  <app-user-permissions-drawer
+    [userId]="drawerUserId()"
+    [userDisplayName]="drawerUserName()"
+    (closed)="closePermissionsDrawer()">
+  </app-user-permissions-drawer>
 
 </div>
