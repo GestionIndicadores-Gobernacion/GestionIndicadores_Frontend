@@ -3,8 +3,7 @@ import { Component, DestroyRef, OnInit, ChangeDetectorRef, inject } from '@angul
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 
-import { AuthService } from '../../../core/services/auth.service';
-import { MenuService, MenuItem } from '../../../core/services/menu.service';
+import { MenuService } from '../../../core/services/menu.service';
 import { ReportsService } from '../../../features/report/services/reports.service';
 import { StrategiesService } from '../../../features/report/services/strategies.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -40,7 +39,6 @@ type RangePreset = 'year' | 'month' | '3months' | '6months' | 'custom';
 export class HomeDashboardComponent implements OnInit {
 
   // ── Navigation sections ──────────────────────────────────
-  roleId: number | null = null;
   sections: DashboardSectionVM[] = [];
 
   // ── Analytics panel ──────────────────────────────────────
@@ -82,15 +80,12 @@ export class HomeDashboardComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
 
   constructor(
-    private authService: AuthService,
     private menuService: MenuService,
     private reportsService: ReportsService,
     private strategiesService: StrategiesService,
     private toast: ToastService,
     private cd: ChangeDetectorRef,
   ) {
-    const user = this.authService.getUser();
-    this.roleId = user?.role?.id ?? null;
     this.sections = this.buildDashboardSections();
   }
 
@@ -339,19 +334,12 @@ export class HomeDashboardComponent implements OnInit {
   // NAVIGATION SECTIONS
   // =========================================================
 
-  private canShow(item: MenuItem): boolean {
-    if (item.disabled) return false;
-    if (!item.roles) return true;
-    if (!this.roleId) return false;
-    return item.roles.includes(this.roleId);
-  }
-
   private buildDashboardSections(): DashboardSectionVM[] {
     return this.menuService.getMenu()
       .filter(section => section.label !== 'Dashboard')
       .map(section => {
         if (!section.children) return null;
-        const visibleChildren = section.children.filter(c => this.canShow(c));
+        const visibleChildren = section.children.filter(c => this.menuService.canShow(c));
         if (!visibleChildren.length) return null;
         return {
           title: section.label,

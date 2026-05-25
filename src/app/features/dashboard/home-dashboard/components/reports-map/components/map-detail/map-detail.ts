@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { KpiOption, MunicipioSummary } from '../../reports-map.types';
+import { AuthService } from '../../../../../../../core/services/auth.service';
+import { PermissionService } from '../../../../../../../core/services/permission.service';
+import { PERMS, ROLE_IDS } from '../../../../../../../core/constants/permissions';
 
 @Component({
   selector: 'app-map-detail',
@@ -14,9 +17,16 @@ export class MapDetailComponent {
 
   isViewer = false;
 
-  constructor() {
-    const user = JSON.parse(localStorage.getItem('user') ?? 'null');
-    this.isViewer = user?.role?.name === 'viewer';
+  constructor(
+    private authService: AuthService,
+    private permissionService: PermissionService,
+  ) {
+    // Dual mode (Fase C): perm o rol; en C7 se quita el fallback de rol.
+    const payload = this.authService.getTokenPayload();
+    const roleId = payload?.role_id ?? null;
+    this.isViewer = !this.permissionService.hasPermissionOrRole(
+      PERMS.REPORTS_CREATE, roleId, ROLE_IDS.ADMIN, ROLE_IDS.EDITOR, ROLE_IDS.MONITOR
+    );
   }
 
   @Input() municipio!: MunicipioSummary;

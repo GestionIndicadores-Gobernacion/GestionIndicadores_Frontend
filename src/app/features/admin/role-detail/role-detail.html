@@ -1,0 +1,336 @@
+<div class="min-h-screen" style="background:#F0F4FA;">
+
+  <!-- PAGE HEADER -->
+  <div class="px-4 sm:px-6 pt-7 pb-6 border-b" style="background:white;border-color:#D6E0F0;">
+    <div class="max-w-5xl mx-auto">
+
+      <!-- Volver al listado -->
+      <div class="mb-3">
+        <a [routerLink]="['/admin/roles']"
+           class="inline-flex items-center gap-1.5 text-[12px] font-semibold cursor-pointer transition"
+           style="color:#4A6A9B;"
+           onmouseover="this.style.color='#1B3A6B'"
+           onmouseout="this.style.color='#4A6A9B'">
+          <lucide-icon name="arrow-left" [size]="14" [strokeWidth]="2.2" color="currentColor"></lucide-icon>
+          Volver al listado
+        </a>
+      </div>
+
+      <div class="flex flex-wrap items-start justify-between gap-3">
+
+        <div class="flex items-center gap-4">
+
+          <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"
+               style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);">
+            <lucide-icon name="lock" [size]="20" [strokeWidth]="1.8" color="white"></lucide-icon>
+          </div>
+
+          <div>
+
+            <div class="flex items-center gap-3">
+
+              <h1 class="text-[20px] font-bold leading-none" style="color:#1B3A6B;">
+                {{ role?.name || 'Rol' }}
+              </h1>
+
+              <span *ngIf="role"
+                    class="px-2.5 py-1 text-[11px] font-semibold rounded-full"
+                    [ngClass]="{
+                      'bg-orange-100 text-orange-800': role.name === 'admin',
+                      'bg-blue-100 text-blue-800': role.name === 'editor',
+                      'bg-zinc-100 text-zinc-700': role.name === 'viewer',
+                      'bg-purple-100 text-purple-800': role.name === 'monitor',
+                      'bg-yellow-100 text-yellow-800':
+                        role.name !== 'admin' &&
+                        role.name !== 'editor' &&
+                        role.name !== 'viewer' &&
+                        role.name !== 'monitor'
+                    }">
+                {{ role.name }}
+              </span>
+
+              <span *ngIf="role?.is_system"
+                    class="px-2.5 py-1 text-[11px] font-semibold rounded-full"
+                    style="background:#E0E7FF;color:#3730A3;">
+                Sistema
+              </span>
+
+            </div>
+
+            <p class="text-sm mt-2" style="color:#4A6A9B;">
+              <strong>{{ assignedCount }}</strong> de <strong>{{ catalogCount }}</strong>
+              permisos asignados ·
+              <strong>{{ formatUserCount() }}</strong> usuarios con este rol
+            </p>
+
+            <p *ngIf="isEditMode()"
+               class="text-[12px] mt-1.5 font-semibold inline-flex items-center gap-2"
+               style="color:#1B3A6B;"
+               data-testid="role-detail-edit-counter">
+              <span class="px-2 py-0.5 rounded-full"
+                    style="background:#DCFCE7;color:#15803D;border:1px solid #BBF7D0;">
+                +{{ diff().added.length }} agregados
+              </span>
+              <span class="px-2 py-0.5 rounded-full"
+                    style="background:#FEE2E2;color:#B91C1C;border:1px solid #FECACA;">
+                −{{ diff().removed.length }} removidos
+              </span>
+            </p>
+
+            <p *ngIf="role?.description" class="text-[12px] mt-1.5" style="color:#8A9DC0;">
+              {{ describe(role) }}
+            </p>
+
+          </div>
+
+        </div>
+
+        <!-- ACCIONES (header) -->
+        <div class="flex items-center gap-2 ml-auto">
+
+          <!-- READ-ONLY: botón Editar -->
+          <ng-container *ngIf="!isEditMode()">
+            <button *appCan="[PERMS.ROLES_MANAGE]; fallbackRole: ROLE_IDS.ADMIN"
+                    type="button"
+                    (click)="enterEditMode()"
+                    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-bold text-white shadow-sm cursor-pointer transition"
+                    style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);"
+                    data-testid="role-detail-edit-btn">
+              <lucide-icon name="pencil" [size]="14" [strokeWidth]="2.5" color="white"></lucide-icon>
+              Editar
+            </button>
+          </ng-container>
+
+          <!-- EDIT MODE: botones Cancelar + Guardar -->
+          <ng-container *ngIf="isEditMode()">
+
+            <button type="button"
+                    (click)="cancelEdit()"
+                    [disabled]="saving()"
+                    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold border cursor-pointer transition disabled:cursor-not-allowed disabled:opacity-60"
+                    style="border-color:#D6E0F0;color:#1B3A6B;background:white;"
+                    data-testid="role-detail-cancel-btn">
+              Cancelar
+            </button>
+
+            <button type="button"
+                    (click)="openDiffModal()"
+                    [disabled]="!dirty() || saving()"
+                    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-bold text-white shadow-sm cursor-pointer transition disabled:cursor-not-allowed disabled:opacity-50"
+                    style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);"
+                    data-testid="role-detail-save-btn">
+              <lucide-icon name="save" [size]="14" [strokeWidth]="2.5" color="white"></lucide-icon>
+              Guardar cambios
+            </button>
+
+          </ng-container>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+
+    <!-- SHADOW MODE BANNER -->
+    <app-shadow-mode-banner></app-shadow-mode-banner>
+
+    <!-- SELF-EDIT BANNER (visible siempre que aplique, no solo en edit mode) -->
+    <div *ngIf="isSelfRole()"
+         class="flex items-start gap-3 px-4 py-3 rounded-xl border"
+         style="background:#EFF6FF;border-color:#BFDBFE;"
+         data-testid="role-detail-self-edit-banner">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+           style="background:#DBEAFE;">
+        <lucide-icon name="info" [size]="16" [strokeWidth]="2" color="#1E40AF"></lucide-icon>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-[12px] font-bold leading-snug" style="color:#1E3A8A;">
+          Estás editando tu propio rol
+        </p>
+        <p class="text-[11.5px] leading-snug mt-0.5" style="color:#1E40AF;">
+          Los cambios afectarán tu sesión al próximo refresh.
+        </p>
+      </div>
+    </div>
+
+    <!-- UNSAVED-CHANGES BANNER (solo en edit mode con cambios) -->
+    <div *ngIf="isEditMode() && dirty()"
+         class="flex items-start gap-3 px-4 py-3 rounded-xl border"
+         style="background:#FFFBEB;border-color:#FCD34D;"
+         data-testid="role-detail-dirty-banner">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+           style="background:#FEF3C7;">
+        <lucide-icon name="triangle-alert" [size]="16" [strokeWidth]="2" color="#B45309"></lucide-icon>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-[12px] font-bold leading-snug" style="color:#92400E;">
+          Cambios sin guardar
+        </p>
+        <p class="text-[11.5px] leading-snug mt-0.5" style="color:#78350F;">
+          Hay {{ diff().added.length }} {{ diff().added.length === 1 ? 'adición' : 'adiciones' }} y
+          {{ diff().removed.length }} {{ diff().removed.length === 1 ? 'remoción' : 'remociones' }} pendientes.
+        </p>
+      </div>
+    </div>
+
+    <!-- PAGE STATE -->
+    <app-page-state
+      [state]="pageState"
+      loadingMessage="Cargando detalle del rol..."
+      errorMessage="No se pudo cargar el detalle del rol"
+      emptyMessage="Rol sin información"
+      emptyIcon="lock"
+      (retry)="role && load(role.id)">
+
+      <!-- SECCIONES POR MÓDULO -->
+      <ng-container *ngFor="let section of sections">
+
+        <section [attr.data-module]="section.key">
+
+          <div class="h-[3px] w-full rounded-t-xl"
+               style="background:linear-gradient(90deg,#1B3A6B,#2d5fa8,#1B3A6B);"></div>
+
+          <div class="rounded-b-xl overflow-hidden border" style="border-color:#D6E0F0;background:white;">
+
+            <!-- Header de módulo -->
+            <div class="flex items-center justify-between gap-3 px-5 py-4 border-b"
+                 style="border-color:#D6E0F0;background:#F8FAFD;">
+
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                     style="background:#D6E4F7;">
+                  <lucide-icon name="layers" [size]="14" [strokeWidth]="2.2" color="#1B3A6B"></lucide-icon>
+                </div>
+                <div>
+                  <span class="text-[11px] font-bold uppercase tracking-[1px]" style="color:#1B3A6B;">
+                    {{ section.label }}
+                  </span>
+                  <p class="text-[10.5px] mt-0.5" style="color:#8A9DC0;">
+                    {{ section.permissions.length }}
+                    {{ section.permissions.length === 1 ? 'permiso' : 'permisos' }} en este módulo
+                  </p>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Grid de permisos -->
+            <div class="p-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+
+                <div *ngFor="let p of section.permissions"
+                       role="checkbox"
+                       [attr.aria-checked]="isAssigned(p.code)"
+                       [attr.aria-disabled]="isCheckboxDisabled(p)"
+                       [attr.aria-label]="p.code"
+                       [attr.tabindex]="isCheckboxDisabled(p) ? -1 : 0"
+                       class="flex items-start gap-3 px-4 py-3 rounded-xl border transition-all duration-150"
+                       [class.cursor-not-allowed]="isCheckboxDisabled(p)"
+                       [class.cursor-pointer]="!isCheckboxDisabled(p)"
+                       [attr.data-perm-code]="p.code"
+                       [attr.data-marked-add]="isMarkedToAdd(p.code) ? 'true' : null"
+                       [attr.data-marked-remove]="isMarkedToRemove(p.code) ? 'true' : null"
+                       [attr.data-locked-critical]="isLockedCritical(p) ? 'true' : null"
+                       [attr.title]="tooltipForChecked(p)"
+                       (click)="togglePerm(p.code, $event)"
+                       (keydown.enter)="togglePerm(p.code, $event)"
+                       (keydown.space)="togglePerm(p.code, $event)"
+                       [style.background]="isMarkedToAdd(p.code) ? '#DCFCE7'
+                         : isMarkedToRemove(p.code) ? '#FEE2E2'
+                         : isAssigned(p.code) ? '#EEF5FF' : '#F8FAFD'"
+                       [style.borderColor]="isMarkedToAdd(p.code) ? '#15803D'
+                         : isMarkedToRemove(p.code) ? '#B91C1C'
+                         : isAssigned(p.code) ? '#1B3A6B' : '#D6E0F0'"
+                       [style.opacity]="isMarkedToRemove(p.code) ? '0.7' : '1'">
+
+                  <!-- Checkbox custom (visual) -->
+                  <div class="w-4 h-4 rounded flex items-center justify-center shrink-0 transition-all duration-150 mt-0.5"
+                       [style.background]="isAssigned(p.code) ? (isMarkedToAdd(p.code) ? '#15803D' : '#1B3A6B') : 'white'"
+                       [style.border]="isMarkedToAdd(p.code) ? '2px solid #15803D'
+                         : isMarkedToRemove(p.code) ? '2px solid #B91C1C'
+                         : isAssigned(p.code) ? '2px solid #1B3A6B' : '2px solid #B3CCE8'"
+                       [style.opacity]="isAssigned(p.code) ? '1' : '0.85'">
+                    <lucide-icon *ngIf="isAssigned(p.code)"
+                                 name="check" [size]="10" [strokeWidth]="2.5"
+                                 color="white"></lucide-icon>
+                  </div>
+
+                  <!-- Input oculto para preservar compatibilidad de tests
+                       legacy que buscan por type=checkbox. El div padre tiene
+                       role="checkbox" + aria-checked para A11y; el click
+                       handler vive en el div, no aquí — eso evita el
+                       doble-disparo que el wrapper <label> generaba. -->
+                  <input type="checkbox"
+                         class="sr-only"
+                         tabindex="-1"
+                         aria-hidden="true"
+                         [disabled]="isCheckboxDisabled(p)"
+                         [attr.aria-label]="p.code"
+                         [attr.data-perm-code]="p.code"
+                         [checked]="isAssigned(p.code)" />
+
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[12px] font-semibold leading-snug select-none inline-flex items-center gap-1.5"
+                       [class.line-through]="isMarkedToRemove(p.code)"
+                       [style.color]="isMarkedToAdd(p.code) ? '#15803D'
+                         : isMarkedToRemove(p.code) ? '#991B1B'
+                         : isAssigned(p.code) ? '#1B3A6B' : '#4A6A9B'">
+                      {{ p.code }}
+
+                      <!-- Badge de crítico (visible siempre que aplique) -->
+                      <span *ngIf="isLockedCritical(p)"
+                            class="px-1.5 py-0.5 text-[9.5px] font-bold rounded uppercase tracking-wide inline-flex items-center gap-1"
+                            style="background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;"
+                            data-testid="role-detail-critical-badge">
+                        <lucide-icon name="shield-alert" [size]="9" [strokeWidth]="2.5" color="#92400E"></lucide-icon>
+                        Crítico
+                      </span>
+                    </p>
+                    <p *ngIf="p.description"
+                       class="text-[11px] leading-snug mt-0.5"
+                       style="color:#8A9DC0;">
+                      {{ p.description }}
+                    </p>
+                  </div>
+
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+      </ng-container>
+
+      <!-- Si no hay catálogo aún (edge case raro) -->
+      <div *ngIf="sections.length === 0"
+           class="flex flex-col items-center justify-center gap-3 py-12 px-4 text-center"
+           style="color:#7C94BD;">
+        <div class="w-11 h-11 rounded-2xl flex items-center justify-center" style="background:#F0F4FA;">
+          <lucide-icon name="inbox" [size]="20" [strokeWidth]="1.8" color="#4A6A9B"></lucide-icon>
+        </div>
+        <p class="text-sm font-semibold" style="color:#1B3A6B;">El catálogo de permisos está vacío</p>
+      </div>
+
+    </app-page-state>
+
+  </div>
+
+  <!-- DIFF MODAL -->
+  <app-role-permissions-diff-modal
+    [role]="roleForModal()"
+    [diff]="diff()"
+    [totalUsers]="role?.user_count ?? 0"
+    [shadowMode]="SHADOW_MODE_ENABLED"
+    [isSelfRole]="isSelfRole()"
+    [saving]="saving()"
+    (confirm)="applyDiff()"
+    (cancel)="closeDiffModal()">
+  </app-role-permissions-diff-modal>
+
+</div>

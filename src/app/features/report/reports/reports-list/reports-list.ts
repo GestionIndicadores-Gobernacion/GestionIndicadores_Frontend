@@ -15,6 +15,9 @@ import { ReportsTableComponent } from './components/reports-table/reports-table'
 import { ComponentsService } from '../../../../features/report/services/components.service';
 import { LucideAngularModule } from 'lucide-angular';
 import { PageState, PageStateComponent } from '../../../../shared/components/page-state/page-state';
+import { PermissionService } from '../../../../core/services/permission.service';
+import { PERMS, ROLE_IDS } from '../../../../core/constants/permissions';
+import { CanDirective } from '../../../../shared/directives/can';
 
 @Component({
   selector: 'app-reports-list',
@@ -25,6 +28,7 @@ import { PageState, PageStateComponent } from '../../../../shared/components/pag
     ReportsTableComponent,
     LucideAngularModule,
     PageStateComponent,
+    CanDirective,
   ],
   templateUrl: './reports-list.html',
   styleUrl: './reports-list.css',
@@ -42,6 +46,9 @@ export class ReportsListComponent implements OnInit {
   currentUserId: number | null = null;
   isAdmin = false;
   isViewer = false;
+
+  readonly PERMS = PERMS;
+  readonly ROLE_IDS = ROLE_IDS;
 
   get pageState(): PageState {
     if (this.loading) return 'loading';
@@ -64,6 +71,7 @@ export class ReportsListComponent implements OnInit {
     private strategiesService: StrategiesService,
     private componentsService: ComponentsService,
     private authService: AuthService,
+    private permissionService: PermissionService,
     private toast: ToastService,
     private cd: ChangeDetectorRef,
     private route: ActivatedRoute,
@@ -76,8 +84,16 @@ export class ReportsListComponent implements OnInit {
     // login() y solo cambia con login/logout, así que es consistente.
     const user = this.authService.getUser();
     this.currentUserId = user?.id ?? null;
-    this.isAdmin       = user?.role?.name === 'admin';
-    this.isViewer      = user?.role?.name === 'viewer';
+
+    // Dual mode (Fase C): perm o rol; en C7 se quita el fallback.
+    const payload = this.authService.getTokenPayload();
+    const roleId = payload?.role_id ?? null;
+    this.isAdmin = this.permissionService.hasPermissionOrRole(
+      PERMS.REPORTS_UPDATE_ANY, roleId, ROLE_IDS.ADMIN
+    );
+    this.isViewer = !this.permissionService.hasPermissionOrRole(
+      PERMS.REPORTS_CREATE, roleId, ROLE_IDS.ADMIN, ROLE_IDS.EDITOR, ROLE_IDS.MONITOR
+    );
 
     this.loadData();
 
