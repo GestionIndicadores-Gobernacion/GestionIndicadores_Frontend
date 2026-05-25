@@ -84,6 +84,18 @@ export const routes: Routes = [
             .then(m => m.ACTION_PLANS_ROUTES),
       },
 
+      // ADMINISTRACIÓN — Roles y permisos (admin + monitor durante shadow mode)
+      {
+        path: 'admin',
+        canActivate: [permGuard({
+          perms: [PERMS.ROLES_READ],
+          fallbackRoles: [ROLE_IDS.ADMIN, ROLE_IDS.MONITOR],
+        })],
+        loadChildren: () =>
+          import('./features/admin/admin.routes')
+            .then(m => m.ADMIN_ROUTES),
+      },
+
       // USUARIOS (SOLO ADMIN)
       {
         path: 'users',

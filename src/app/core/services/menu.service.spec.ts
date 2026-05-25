@@ -83,18 +83,27 @@ describe('MenuService - estructura', () => {
     ({ service } = setup(ROLE_IDS.ADMIN));
   });
 
-  it('getMenu() retorna 6 items top-level con labels esperados', () => {
+  it('getMenu() retorna 7 items top-level con labels esperados', () => {
     const menu = service.getMenu();
     const labels = menu.map(i => i.label);
-    expect(menu.length).toBe(6);
+    expect(menu.length).toBe(7);
     expect(labels).toEqual([
       'Dashboard',
       'Reportes PYBA',
       'Bases de datos',
       'Planes de acción',
+      'Administración',
       'Usuarios',
       'Historial',
     ]);
+  });
+
+  it('Administración tiene 1 child: Roles y permisos', () => {
+    const menu = service.getMenu();
+    const admin = findByLabel(menu, 'Administración');
+    expect(admin).toBeTruthy();
+    const childLabels = (admin!.children ?? []).map(c => c.label);
+    expect(childLabels).toEqual(['Roles y permisos']);
   });
 
   it('cada item top-level tiene icono asignado', () => {
@@ -138,6 +147,8 @@ describe('MenuService - visibilidad por rol (perms vacíos, decisión sólo por 
       'Gestión de Base de Datos y Tablas',
       'Planes de acción',
       'Calendario',
+      'Administración',
+      'Roles y permisos',
       'Usuarios',
       'Historial',
     ]);
@@ -155,7 +166,7 @@ describe('MenuService - visibilidad por rol (perms vacíos, decisión sólo por 
     ]);
   });
 
-  it('monitor (4) ve Dashboard, Reportes PYBA (Reportes) y Planes de acción (Calendario)', () => {
+  it('monitor (4) ve Dashboard, Reportes PYBA + Planes de acción + Administración (read-only)', () => {
     const { service } = setup(ROLE_IDS.MONITOR, []);
     const visible = collectVisibleLabels(service, service.getMenu());
     expect(visible).toEqual([
@@ -164,6 +175,8 @@ describe('MenuService - visibilidad por rol (perms vacíos, decisión sólo por 
       'Reportes',
       'Planes de acción',
       'Calendario',
+      'Administración',
+      'Roles y permisos',
     ]);
   });
 

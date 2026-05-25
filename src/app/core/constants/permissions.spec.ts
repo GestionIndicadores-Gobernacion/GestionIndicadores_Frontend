@@ -13,6 +13,7 @@ const BACKEND_PERMISSION_CODES_SNAPSHOT: readonly string[] = [
   'users.manage',
   'users.assign_components',
   'users.manage_permissions',
+  'users.read_permissions',
   'roles.read',
   'roles.manage',
   'audit.read',
@@ -46,8 +47,8 @@ describe('permissions catalog', () => {
       expect(new Set(ALL_PERMISSION_CODES).size).toBe(ALL_PERMISSION_CODES.length);
     });
 
-    it('tiene exactamente 30 permisos', () => {
-      expect(ALL_PERMISSION_CODES.length).toBe(30);
+    it('tiene exactamente 31 permisos', () => {
+      expect(ALL_PERMISSION_CODES.length).toBe(31);
     });
 
     it('cada code respeta el formato <modulo>.<accion> en minúsculas', () => {
@@ -84,8 +85,8 @@ describe('permissions catalog', () => {
   });
 
   describe('paridad con backend (catalog.py)', () => {
-    it('snapshot del backend tiene 30 codes', () => {
-      expect(BACKEND_PERMISSION_CODES_SNAPSHOT.length).toBe(30);
+    it('snapshot del backend tiene 31 codes', () => {
+      expect(BACKEND_PERMISSION_CODES_SNAPSHOT.length).toBe(31);
     });
 
     it('ALL_PERMISSION_CODES coincide exactamente con el snapshot del backend', () => {

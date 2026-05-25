@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy, effect } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { Subscription, filter } from 'rxjs';
 import { LucideAngularModule } from 'lucide-angular';
 import { SidebarService } from '../../../core/services/sidebar.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { MenuService, MenuItem } from '../../../core/services/menu.service';
+import { PermissionService } from '../../../core/services/permission.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -56,6 +57,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
     private router: Router,
     private authService: AuthService,
     private menuService: MenuService,
+    private permissionService: PermissionService,
+    private cdr: ChangeDetectorRef,
   ) {
     // Igualar el estado local al del servicio ANTES del primer render.
     // El servicio ya decidió el valor según viewport en su construcción.
@@ -74,6 +77,16 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
     // ===== MENU =====
     this.menu = this.menuService.getMenu();
+
+    // Reactividad ante cambios de permisos (ej. self-edit en role-detail /
+    // overrides). `canShow()` lee del PermissionService, pero el template
+    // sólo se re-evalúa si CD corre. Atamos el signal `version()` a un
+    // `markForCheck()` explícito para garantizar el re-render incluso si
+    // este componente migra a OnPush en el futuro.
+    effect(() => {
+      this.permissionService.version();
+      this.cdr.markForCheck();
+    });
   }
 
   ngOnInit() {

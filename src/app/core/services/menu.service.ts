@@ -97,6 +97,22 @@ export class MenuService {
       },
 
       {
+        label: 'Administración',
+        icon: 'shield-check',
+        roles: [3, 4],  // admin + monitor durante shadow mode
+        perms: [PERMS.ROLES_READ],
+        children: [
+          {
+            label: 'Roles y permisos',
+            route: 'admin/roles',
+            icon: 'lock',
+            roles: [3, 4],
+            perms: [PERMS.ROLES_READ],
+          },
+        ],
+      },
+
+      {
         label: 'Usuarios',
         route: 'users',
         icon: 'users',

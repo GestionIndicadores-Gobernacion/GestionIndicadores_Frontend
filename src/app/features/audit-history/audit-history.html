@@ -58,15 +58,18 @@
                             </span>
                         </div>
 
-                        <!-- Módulo -->
+                        <!-- Entidad -->
                         <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-bold uppercase tracking-[1px] text-[#1B3A6B]">Módulo</label>
+                            <label class="text-[10.5px] font-bold uppercase tracking-[1px] text-[#1B3A6B]">Entidad</label>
                             <select [(ngModel)]="filters.entity" (ngModelChange)="applyFilters()"
+                                data-testid="entity-filter"
                                 class="text-[12px] rounded-xl px-3 py-2 outline-none transition-all"
                                 style="background:#F0F4FA; border:1.5px solid #D6E0F0; color:#1B3A6B;"
                                 onfocus="this.style.borderColor='#1B3A6B'" onblur="this.style.borderColor='#D6E0F0'">
-                                <option value="">Todos los módulos</option>
-                                <option *ngFor="let e of availableEntities" [value]="e">{{ entityLabel(e) }}</option>
+                                <option value="">Todas las entidades</option>
+                                <option *ngFor="let opt of entityOptions" [value]="opt.value">{{ opt.label }}</option>
+                                <!-- Fallback dinámico para entidades desconocidas presentes en logs -->
+                                <option *ngFor="let opt of extraEntityOptions" [value]="opt.value">{{ opt.label }}</option>
                             </select>
                         </div>
 
@@ -142,58 +145,335 @@
                     <div class="hidden sm:grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 px-5 py-3 border-b text-[10.5px] font-bold uppercase tracking-[1px]"
                         style="border-color:#EEF2F9; background:#F8FAFD; color:#8A9DC0;">
                         <span>Usuario</span>
-                        <span>Módulo</span>
+                        <span>Entidad</span>
                         <span>Acción</span>
                         <span>Registro</span>
                         <span>Fecha</span>
                     </div>
 
-                    <div *ngFor="let log of paginated; let i = index"
-                        class="flex flex-col sm:grid sm:grid-cols-[2fr_1fr_1fr_1fr_auto] sm:items-center gap-2 sm:gap-4 px-5 py-3.5 transition-colors hover:bg-[#F8FAFD]"
-                        [style.background]="i % 2 === 0 ? 'white' : '#FAFCFF'"
-                        style="border-bottom:1px solid #EEF2F9;">
+                    <ng-container *ngFor="let log of paginated; let i = index">
 
-                        <!-- Usuario + ícono de acción -->
-                        <div class="flex items-center gap-2.5">
-                            <div class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center border"
-                                [ngClass]="actionBadgeClass(log.action)">
-                                <lucide-icon [name]="actionIconName(log.action)" [size]="14" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                        <!-- ─── Fila principal ─── -->
+                        <div [attr.data-log-id]="log.id"
+                            [attr.data-entity]="log.entity"
+                            class="flex flex-col sm:grid sm:grid-cols-[2fr_1fr_1fr_1fr_auto] sm:items-center gap-2 sm:gap-4 px-5 py-3.5 transition-colors hover:bg-[#F8FAFD]"
+                            [style.background]="i % 2 === 0 ? 'white' : '#FAFCFF'"
+                            style="border-bottom:1px solid #EEF2F9;">
+
+                            <!-- Usuario + ícono de acción + texto principal -->
+                            <div class="flex items-center gap-2.5">
+                                <div class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center border"
+                                    [ngClass]="actionBadgeClass(log.action)">
+                                    <lucide-icon [name]="actionIconName(log.action)" [size]="14" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                                </div>
+
+                                <!-- Render especial: role_permissions ─────────────────────────── -->
+                                <ng-container *ngIf="rolePermDetail(log) as rpd; else overridesTitleBranch">
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-[12px] font-bold truncate" style="color:#1B3A6B;"
+                                            [title]="userName(log.user_id) + ' editó el rol ' + rpd.role.name">
+                                            {{ userName(log.user_id) }}
+                                            <span style="color:#4A6A9B;font-weight:500;">editó el rol</span>
+                                            <span class="font-bold" style="color:#1B3A6B;">{{ rpd.role.name }}</span>
+                                        </p>
+
+                                        <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                                            <!-- Chip +N permisos (verde) -->
+                                            <span class="inline-flex items-center gap-1 text-[10.5px] font-semibold px-1.5 py-0.5 rounded-md border"
+                                                style="background:#DCFCE7; color:#15803D; border-color:#86EFAC;">
+                                                +{{ rpd.added.length }} {{ rpd.added.length === 1 ? 'permiso' : 'permisos' }}
+                                            </span>
+                                            <!-- Chip -N permisos (rojo) -->
+                                            <span class="inline-flex items-center gap-1 text-[10.5px] font-semibold px-1.5 py-0.5 rounded-md border"
+                                                style="background:#FEE2E2; color:#B91C1C; border-color:#FCA5A5;">
+                                                −{{ rpd.removed.length }} {{ rpd.removed.length === 1 ? 'permiso' : 'permisos' }}
+                                            </span>
+                                            <!-- Badge fase paralela -->
+                                            <span *ngIf="rpd.shadow_mode_active"
+                                                class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-md border"
+                                                style="background:#FEF3C7; color:#92400E; border-color:#FCD34D;"
+                                                title="Cambio registrado durante la fase paralela; aún no es autoritativo">
+                                                <lucide-icon name="shield-alert" [size]="10" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                                                fase paralela
+                                            </span>
+                                            <!-- Botón ver detalle -->
+                                            <button type="button"
+                                                (click)="toggleExpanded(log)"
+                                                [attr.data-testid]="'expand-' + log.id"
+                                                class="inline-flex items-center gap-1 text-[10.5px] font-semibold px-1.5 py-0.5 rounded-md border transition-all"
+                                                style="background:white; color:#1B3A6B; border-color:#D6E0F0;"
+                                                onmouseover="this.style.background='#F0F4FA'"
+                                                onmouseout="this.style.background='white'">
+                                                {{ isExpanded(log) ? 'Ocultar detalle' : 'Ver detalle' }}
+                                                <lucide-icon
+                                                    [name]="isExpanded(log) ? 'chevron-up' : 'chevron-down'"
+                                                    [size]="11" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </ng-container>
+
+                                <!-- Render especial: user_permission_overrides ────────────────── -->
+                                <ng-template #overridesTitleBranch>
+                                    <ng-container *ngIf="userOverridesDetail(log) as upd; else genericTitle">
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-[12px] font-bold truncate" style="color:#1B3A6B;"
+                                                [title]="userName(log.user_id) + ' editó overrides de ' + upd.target_user.email">
+                                                {{ userName(log.user_id) }}
+                                                <span style="color:#4A6A9B;font-weight:500;">editó overrides de</span>
+                                                <span class="font-bold" style="color:#1B3A6B;">{{ upd.target_user.email }}</span>
+                                            </p>
+
+                                            <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                                                <!-- Chip +A grants (verde) -->
+                                                <span class="inline-flex items-center gap-1 text-[10.5px] font-semibold px-1.5 py-0.5 rounded-md border"
+                                                    style="background:#DCFCE7; color:#15803D; border-color:#86EFAC;"
+                                                    [attr.data-testid]="'upd-grants-chip-' + log.id">
+                                                    +{{ filterByEffect(upd.added, 'grant').length }} {{ filterByEffect(upd.added, 'grant').length === 1 ? 'grant' : 'grants' }}
+                                                </span>
+                                                <!-- Chip -B revokes (rojo) -->
+                                                <span class="inline-flex items-center gap-1 text-[10.5px] font-semibold px-1.5 py-0.5 rounded-md border"
+                                                    style="background:#FEE2E2; color:#B91C1C; border-color:#FCA5A5;"
+                                                    [attr.data-testid]="'upd-revokes-chip-' + log.id">
+                                                    −{{ filterByEffect(upd.added, 'revoke').length }} {{ filterByEffect(upd.added, 'revoke').length === 1 ? 'revoke' : 'revokes' }}
+                                                </span>
+                                                <!-- Chip ±C cambios (azul) -->
+                                                <span class="inline-flex items-center gap-1 text-[10.5px] font-semibold px-1.5 py-0.5 rounded-md border"
+                                                    style="background:#DBEAFE; color:#1D4ED8; border-color:#93C5FD;"
+                                                    [attr.data-testid]="'upd-changed-chip-' + log.id">
+                                                    ±{{ upd.changed.length }} {{ upd.changed.length === 1 ? 'cambio' : 'cambios' }}
+                                                </span>
+                                                <!-- Badge fase paralela -->
+                                                <span *ngIf="upd.shadow_mode_active"
+                                                    class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-md border"
+                                                    style="background:#FEF3C7; color:#92400E; border-color:#FCD34D;"
+                                                    title="Cambio registrado durante la fase paralela; aún no es autoritativo">
+                                                    <lucide-icon name="shield-alert" [size]="10" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                                                    fase paralela
+                                                </span>
+                                                <!-- Botón ver detalle -->
+                                                <button type="button"
+                                                    (click)="toggleExpanded(log)"
+                                                    [attr.data-testid]="'expand-' + log.id"
+                                                    class="inline-flex items-center gap-1 text-[10.5px] font-semibold px-1.5 py-0.5 rounded-md border transition-all"
+                                                    style="background:white; color:#1B3A6B; border-color:#D6E0F0;"
+                                                    onmouseover="this.style.background='#F0F4FA'"
+                                                    onmouseout="this.style.background='white'">
+                                                    {{ isExpanded(log) ? 'Ocultar detalle' : 'Ver detalle' }}
+                                                    <lucide-icon
+                                                        [name]="isExpanded(log) ? 'chevron-up' : 'chevron-down'"
+                                                        [size]="11" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </ng-container>
+                                </ng-template>
+
+                                <!-- Render genérico (report / action_plan / desconocido) ──────── -->
+                                <ng-template #genericTitle>
+                                    <div class="min-w-0">
+                                        <p class="text-[12px] font-bold truncate" style="color:#1B3A6B;">
+                                            {{ userName(log.user_id) }}
+                                        </p>
+                                        <p *ngIf="log.detail" class="text-[11px] italic truncate" style="color:#8A9DC0;"
+                                            [title]="log.detail">
+                                            {{ log.detail }}
+                                        </p>
+                                    </div>
+                                </ng-template>
                             </div>
-                            <div class="min-w-0">
-                                <p class="text-[12px] font-bold truncate" style="color:#1B3A6B;">
-                                    {{ userName(log.user_id) }}
-                                </p>
-                                <p *ngIf="log.detail" class="text-[11px] italic truncate" style="color:#8A9DC0;"
-                                    [title]="log.detail">
-                                    {{ log.detail }}
-                                </p>
+
+                            <!-- Entidad -->
+                            <span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md border self-start sm:self-auto w-max"
+                                [ngClass]="entityBadgeClass(log.entity)">
+                                <lucide-icon [name]="entityIconName(log.entity)" [size]="11" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                                {{ entityLabel(log.entity) }}
+                            </span>
+
+                            <!-- Acción -->
+                            <span class="text-[11px] font-bold px-2 py-0.5 rounded-md border self-start sm:self-auto w-max"
+                                [ngClass]="actionBadgeClass(log.action)">
+                                {{ actionLabel(log.action) }}
+                            </span>
+
+                            <!-- ID del registro -->
+                            <span class="text-[12px] font-medium" style="color:#4A6A9B;">
+                                #{{ log.entity_id }}
+                            </span>
+
+                            <!-- Fecha -->
+                            <span class="text-[11px] whitespace-nowrap" style="color:#8A9DC0;">
+                                {{ log.created_at | date:'dd/MM/yyyy HH:mm' : timezone }}
+                            </span>
+
+                        </div>
+
+                        <!-- ─── Fila expandida: detalle de role_permissions ─── -->
+                        <div *ngIf="rolePermDetail(log) as rpd"
+                            [hidden]="!isExpanded(log)"
+                            [attr.data-testid]="'detail-' + log.id"
+                            class="px-5 py-4"
+                            style="background:#FAFCFF; border-bottom:1px solid #EEF2F9;">
+                            <div class="grid sm:grid-cols-2 gap-4">
+
+                                <!-- Añadidos -->
+                                <div>
+                                    <p class="text-[10.5px] font-bold uppercase tracking-[1px] mb-1.5 flex items-center gap-1.5"
+                                        style="color:#15803D;">
+                                        <lucide-icon name="circle-check" [size]="12" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                                        Permisos añadidos ({{ rpd.added.length }})
+                                    </p>
+                                    <div *ngIf="rpd.added.length === 0" class="text-[11px] italic" style="color:#8A9DC0;">
+                                        Sin permisos añadidos.
+                                    </div>
+                                    <ul *ngIf="rpd.added.length > 0" class="flex flex-wrap gap-1.5">
+                                        <li *ngFor="let code of rpd.added"
+                                            class="inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-md border"
+                                            style="background:#DCFCE7; color:#15803D; border-color:#86EFAC;">
+                                            <lucide-icon name="tag" [size]="10" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                                            {{ code }}
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <!-- Removidos -->
+                                <div>
+                                    <p class="text-[10.5px] font-bold uppercase tracking-[1px] mb-1.5 flex items-center gap-1.5"
+                                        style="color:#B91C1C;">
+                                        <lucide-icon name="circle-x" [size]="12" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                                        Permisos removidos ({{ rpd.removed.length }})
+                                    </p>
+                                    <div *ngIf="rpd.removed.length === 0" class="text-[11px] italic" style="color:#8A9DC0;">
+                                        Sin permisos removidos.
+                                    </div>
+                                    <ul *ngIf="rpd.removed.length > 0" class="flex flex-wrap gap-1.5">
+                                        <li *ngFor="let code of rpd.removed"
+                                            class="inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-md border"
+                                            style="background:#FEE2E2; color:#B91C1C; border-color:#FCA5A5;">
+                                            <lucide-icon name="tag" [size]="10" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                                            {{ code }}
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Counter -->
+                            <div class="mt-3 flex flex-wrap items-center gap-3 text-[11px]" style="color:#4A6A9B;">
+                                <span class="inline-flex items-center gap-1">
+                                    <lucide-icon name="shield-check" [size]="11" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                                    <strong style="color:#1B3A6B;">Antes:</strong> {{ rpd.before_count }}
+                                </span>
+                                <span style="color:#C4D6EE;">→</span>
+                                <span class="inline-flex items-center gap-1">
+                                    <strong style="color:#1B3A6B;">Después:</strong> {{ rpd.after_count }}
+                                </span>
                             </div>
                         </div>
 
-                        <!-- Módulo -->
-                        <span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md border self-start sm:self-auto w-max"
-                            [ngClass]="entityBadgeClass(log.entity)">
-                            <lucide-icon [name]="entityIconName(log.entity)" [size]="11" [strokeWidth]="2" color="currentColor"></lucide-icon>
-                            {{ entityLabel(log.entity) }}
-                        </span>
+                        <!-- ─── Fila expandida: detalle de user_permission_overrides ─── -->
+                        <div *ngIf="userOverridesDetail(log) as upd"
+                            [hidden]="!isExpanded(log)"
+                            [attr.data-testid]="'detail-' + log.id"
+                            class="px-5 py-4"
+                            style="background:#FAFCFF; border-bottom:1px solid #EEF2F9;">
 
-                        <!-- Acción -->
-                        <span class="text-[11px] font-bold px-2 py-0.5 rounded-md border self-start sm:self-auto w-max"
-                            [ngClass]="actionBadgeClass(log.action)">
-                            {{ actionLabel(log.action) }}
-                        </span>
+                            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
-                        <!-- ID del registro -->
-                        <span class="text-[12px] font-medium" style="color:#4A6A9B;">
-                            #{{ log.entity_id }}
-                        </span>
+                                <!-- Otorgados (added con effect=grant) -->
+                                <div>
+                                    <p class="text-[10.5px] font-bold uppercase tracking-[1px] mb-1.5 flex items-center gap-1.5"
+                                        style="color:#15803D;">
+                                        <lucide-icon name="circle-check" [size]="12" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                                        Otorgados ({{ filterByEffect(upd.added, 'grant').length }})
+                                    </p>
+                                    <div *ngIf="filterByEffect(upd.added, 'grant').length === 0" class="text-[11px] italic" style="color:#8A9DC0;">
+                                        Sin nuevos grants.
+                                    </div>
+                                    <ul *ngIf="filterByEffect(upd.added, 'grant').length > 0" class="flex flex-wrap gap-1.5">
+                                        <li *ngFor="let item of filterByEffect(upd.added, 'grant')"
+                                            class="inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-md border"
+                                            style="background:#DCFCE7; color:#15803D; border-color:#86EFAC;">
+                                            <lucide-icon name="tag" [size]="10" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                                            {{ item.permission_code }}
+                                        </li>
+                                    </ul>
+                                </div>
 
-                        <!-- Fecha -->
-                        <span class="text-[11px] whitespace-nowrap" style="color:#8A9DC0;">
-                            {{ log.created_at | date:'dd/MM/yyyy HH:mm' : timezone }}
-                        </span>
+                                <!-- Revocados (added con effect=revoke) -->
+                                <div>
+                                    <p class="text-[10.5px] font-bold uppercase tracking-[1px] mb-1.5 flex items-center gap-1.5"
+                                        style="color:#B91C1C;">
+                                        <lucide-icon name="circle-x" [size]="12" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                                        Revocados ({{ filterByEffect(upd.added, 'revoke').length }})
+                                    </p>
+                                    <div *ngIf="filterByEffect(upd.added, 'revoke').length === 0" class="text-[11px] italic" style="color:#8A9DC0;">
+                                        Sin nuevos revokes.
+                                    </div>
+                                    <ul *ngIf="filterByEffect(upd.added, 'revoke').length > 0" class="flex flex-wrap gap-1.5">
+                                        <li *ngFor="let item of filterByEffect(upd.added, 'revoke')"
+                                            class="inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-md border"
+                                            style="background:#FEE2E2; color:#B91C1C; border-color:#FCA5A5;">
+                                            <lucide-icon name="tag" [size]="10" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                                            {{ item.permission_code }}
+                                        </li>
+                                    </ul>
+                                </div>
 
-                    </div>
+                                <!-- Cambiados (changed: from → to) -->
+                                <div>
+                                    <p class="text-[10.5px] font-bold uppercase tracking-[1px] mb-1.5 flex items-center gap-1.5"
+                                        style="color:#1D4ED8;">
+                                        <lucide-icon name="refresh-cw" [size]="12" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                                        Cambiados ({{ upd.changed.length }})
+                                    </p>
+                                    <div *ngIf="upd.changed.length === 0" class="text-[11px] italic" style="color:#8A9DC0;">
+                                        Sin cambios de effect.
+                                    </div>
+                                    <ul *ngIf="upd.changed.length > 0" class="flex flex-wrap gap-1.5">
+                                        <li *ngFor="let change of upd.changed"
+                                            class="inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-md border"
+                                            style="background:#DBEAFE; color:#1D4ED8; border-color:#93C5FD;"
+                                            [title]="change.permission_code + ': ' + change.from + ' → ' + change.to">
+                                            <lucide-icon name="tag" [size]="10" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                                            <span>{{ change.permission_code }}:</span>
+                                            <span style="opacity:0.85;">{{ change.from }} → {{ change.to }}</span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <!-- Removidos (removed: ya no aplica el override) -->
+                                <div>
+                                    <p class="text-[10.5px] font-bold uppercase tracking-[1px] mb-1.5 flex items-center gap-1.5"
+                                        style="color:#4A6A9B;">
+                                        <lucide-icon name="ban" [size]="12" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                                        Removidos ({{ upd.removed.length }})
+                                    </p>
+                                    <div *ngIf="upd.removed.length === 0" class="text-[11px] italic" style="color:#8A9DC0;">
+                                        Sin overrides removidos.
+                                    </div>
+                                    <ul *ngIf="upd.removed.length > 0" class="flex flex-wrap gap-1.5">
+                                        <li *ngFor="let item of upd.removed"
+                                            class="inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-md border"
+                                            style="background:#F1F5F9; color:#475569; border-color:#CBD5E1;"
+                                            [title]="item.permission_code + ' (era ' + item.effect + ')'">
+                                            <lucide-icon name="tag" [size]="10" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                                            <span>{{ item.permission_code }}</span>
+                                            <span style="opacity:0.75;">({{ item.effect }})</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Línea informativa: aplicado a -->
+                            <div class="mt-3 flex flex-wrap items-center gap-2 text-[11px]" style="color:#4A6A9B;">
+                                <lucide-icon name="user-check" [size]="11" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                                <span><strong style="color:#1B3A6B;">Aplicado a:</strong> {{ upd.target_user.email }}</span>
+                                <span style="color:#C4D6EE;">·</span>
+                                <span>Usuario #{{ upd.target_user.id }}</span>
+                            </div>
+                        </div>
+
+                    </ng-container>
 
                 </div>
 

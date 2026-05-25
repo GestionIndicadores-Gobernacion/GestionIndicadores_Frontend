@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -9,11 +9,22 @@ import { UserModel } from '../../../features/user/models/user.model';
 import { UsersService } from '../../../features/user/services/users.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { PageState, PageStateComponent } from '../../../shared/components/page-state/page-state';
+import { CanDirective } from '../../../shared/directives/can';
+import { PERMS, ROLE_IDS } from '../../../core/constants/permissions';
+import { UserPermissionsDrawerComponent } from '../components/user-permissions-drawer/user-permissions-drawer';
 
 @Component({
   selector: 'app-users-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, LucideAngularModule, PageStateComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    LucideAngularModule,
+    PageStateComponent,
+    CanDirective,
+    UserPermissionsDrawerComponent,
+  ],
   templateUrl: './users-list.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -32,6 +43,17 @@ export class UsersListComponent implements OnInit {
 
   sortColumn: keyof UserModel | '' = '';
   sortDirection: 'asc' | 'desc' = 'asc';
+
+  // Estado del drawer "Ver permisos". Vive en signals para que el template
+  // se actualice sin disparar `cdr.markForCheck()` y para que sea fácil
+  // testear sin mockear ChangeDetectorRef. El drawer hace fetch lazy:
+  // mientras `drawerUserId()` sea null, el componente no llama al backend.
+  readonly drawerUserId = signal<number | null>(null);
+  readonly drawerUserName = signal<string>('');
+
+  // Constantes expuestas al template para gating con *appCan.
+  readonly USERS_READ_PERMISSIONS = PERMS.USERS_READ_PERMISSIONS;
+  readonly ROLE_ADMIN = ROLE_IDS.ADMIN;
 
   /** Estado agregado para <app-page-state>. */
   get pageState(): PageState {
@@ -152,5 +174,21 @@ export class UsersListComponent implements OnInit {
     // Preferir flag del backend (cuando esté disponible). Fallback al
     // email canónico para compatibilidad con backends que aún no lo emiten.
     return user.is_main_admin ?? user.email === 'admin@gobernacion.gov.co';
+  }
+
+  /**
+   * Abre el drawer "Ver permisos" para el usuario indicado. Sólo setea
+   * señales — el fetch al backend ocurre dentro del drawer cuando recibe
+   * `userId`. Esto garantiza que el listado nunca pre-cargue permisos.
+   */
+  openPermissionsDrawer(user: UserModel): void {
+    this.drawerUserId.set(user.id);
+    this.drawerUserName.set(`${user.first_name} ${user.last_name}`.trim());
+  }
+
+  /** Cierra el drawer y resetea su estado. */
+  closePermissionsDrawer(): void {
+    this.drawerUserId.set(null);
+    this.drawerUserName.set('');
   }
 }

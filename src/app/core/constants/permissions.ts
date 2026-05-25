@@ -23,6 +23,7 @@ export const PERMS = {
   USERS_MANAGE:               'users.manage',
   USERS_ASSIGN_COMPONENTS:    'users.assign_components',
   USERS_MANAGE_PERMISSIONS:   'users.manage_permissions',
+  USERS_READ_PERMISSIONS:     'users.read_permissions',
 
   // roles
   ROLES_READ:                 'roles.read',

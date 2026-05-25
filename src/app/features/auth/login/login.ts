@@ -76,8 +76,12 @@ export class LoginComponent implements OnInit {
           this.loading = false;
         },
         error: (err) => {
-          this.errorMessage = err.error?.msg || 'Credenciales incorrectas';
-          this.toast.error(this.errorMessage);
+          if (err.status === 429) {
+            this.errorMessage = 'Demasiados intentos. Espera un momento antes de volver a intentar.';
+          } else {
+            this.errorMessage = err.error?.msg || 'Credenciales incorrectas';
+            this.toast.error(this.errorMessage);
+          }
           this.loading = false;
         }
       });

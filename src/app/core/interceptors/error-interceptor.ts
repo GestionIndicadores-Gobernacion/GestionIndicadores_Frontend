@@ -34,6 +34,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         message = 'No hay conexión con el servidor.';
       } else if (error.status === 403) {
         message = 'No tienes permisos para realizar esta acción.';
+      } else if (error.status === 429) {
+        message = 'Demasiados intentos. Espera un momento antes de volver a intentar.';
       }
 
       toast.error(message);
