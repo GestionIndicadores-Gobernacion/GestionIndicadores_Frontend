@@ -8,16 +8,23 @@ import { getIndicatorDisplayName } from '../../../../core/data/indicator-display
 import { ReportModel } from '../../../../features/report/models/report.model';
 import { ReportsService } from '../../../../features/report/services/reports.service';
 import { PageState, PageStateComponent } from '../../../../shared/components/page-state/page-state';
+import { AuthService } from '../../../../core/services/auth.service';
+import { PermissionService } from '../../../../core/services/permission.service';
+import { PERMS, ROLE_IDS } from '../../../../core/constants/permissions';
+import { CanDirective } from '../../../../shared/directives/can';
 
 @Component({
   selector: 'app-report-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule, PageStateComponent],
+  imports: [CommonModule, RouterModule, LucideAngularModule, PageStateComponent, CanDirective],
   templateUrl: './report-detail.html',
   styleUrl: './report-detail.css',
 })
 export class ReportDetailComponent implements OnInit {
   isViewer = false;
+
+  readonly PERMS = PERMS;
+  readonly ROLE_IDS = ROLE_IDS;
   report: ReportModel | null = null;
   loading = true;
   error = false;
@@ -49,11 +56,17 @@ export class ReportDetailComponent implements OnInit {
     private router: Router,
     private reportsService: ReportsService,
     private cd: ChangeDetectorRef,
+    private authService: AuthService,
+    private permissionService: PermissionService,
   ) { }
 
   ngOnInit(): void {
-    const user = JSON.parse(localStorage.getItem('user') ?? 'null');
-    this.isViewer = user?.role?.name === 'viewer';
+    // Dual mode (Fase C): perm o rol; en C7 se quita el fallback.
+    const payload = this.authService.getTokenPayload();
+    const roleId = payload?.role_id ?? null;
+    this.isViewer = !this.permissionService.hasPermissionOrRole(
+      PERMS.REPORTS_CREATE, roleId, ROLE_IDS.ADMIN, ROLE_IDS.EDITOR, ROLE_IDS.MONITOR
+    );
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.reportsService.getById(id)
       .pipe(takeUntilDestroyed(this.destroyRef))

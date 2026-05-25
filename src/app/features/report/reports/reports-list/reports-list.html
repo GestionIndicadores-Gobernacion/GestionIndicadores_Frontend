@@ -17,7 +17,7 @@
                     </p>
                 </div>
             </div>
-            <a *ngIf="!isViewer" [routerLink]="['create']"
+            <a *appCan="[PERMS.REPORTS_CREATE]; fallbackRole: [ROLE_IDS.EDITOR, ROLE_IDS.ADMIN, ROLE_IDS.MONITOR]" [routerLink]="['create']"
                 class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-bold transition-all duration-150 shadow-sm cursor-pointer"
                 style="background: linear-gradient(135deg, #1B3A6B 0%, #2d5fa8 100%); color: white;"
                 onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">

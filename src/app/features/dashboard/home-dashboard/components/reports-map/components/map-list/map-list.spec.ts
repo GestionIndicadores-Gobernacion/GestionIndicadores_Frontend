@@ -1,12 +1,18 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
 import { KpiOption, MunicipioSummary } from '../../reports-map.types';
+
+// Pre-existing scaffold (not from C1/C2): este archivo era una copia
+// accidental del componente sin el import de LucideAngularModule, lo que
+// rompía la compilación de la suite de tests entera. Se agrega el import
+// para destrabar; el archivo no tiene tests reales.
 
 @Component({
   selector: 'app-map-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule],
   templateUrl: './map-list.html',
 })
 export class MapListComponent {

@@ -5,16 +5,7 @@ import { Subscription, filter } from 'rxjs';
 import { LucideAngularModule } from 'lucide-angular';
 import { SidebarService } from '../../../core/services/sidebar.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { MenuService } from '../../../core/services/menu.service';
-
-interface MenuItem {
-  label: string;
-  route?: string;
-  disabled?: boolean;
-  roles?: number[];
-  icon?: string;
-  children?: MenuItem[];
-}
+import { MenuService, MenuItem } from '../../../core/services/menu.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -39,7 +30,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
   // ===============================
   // USER INFO
   // ===============================
-  roleId: number | null = null;
   userName = '';
   userEmail = '';
   profileImageUrl: string | null = null;
@@ -80,7 +70,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.profileImageUrl = user.profile_image_url;
       this.userInitial = this.userName.charAt(0).toUpperCase();
       this.roleLabel = user.role?.name ?? '';
-      this.roleId = user.role?.id ?? null;
     }
 
     // ===== MENU =====
@@ -150,15 +139,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
   // ===============================
   // PERMISSIONS
   // ===============================
+  // Delegan en MenuService para no duplicar la lógica perm + rol (modo dual).
   canShow(item: MenuItem): boolean {
-    if (!item.roles) return true;
-    if (!this.roleId) return false;
-    return item.roles.includes(this.roleId);
+    return this.menuService.canShow(item);
   }
 
   hasVisibleChildren(item: MenuItem): boolean {
-    if (!item.children) return false;
-    return item.children.some(child => this.canShow(child));
+    return this.menuService.hasVisibleChildren(item);
   }
 
   // ===============================

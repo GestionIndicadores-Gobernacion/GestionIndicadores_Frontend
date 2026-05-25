@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
 import {
   ActionPlanActivityModel,
@@ -9,6 +9,9 @@ import {
 } from '../../../features/action-plans/models/action-plan.model';
 import { FormsModule } from '@angular/forms';
 import { Pagination } from '../../../shared/components/pagination/pagination';
+import { AuthService } from '../../../core/services/auth.service';
+import { PermissionService } from '../../../core/services/permission.service';
+import { PERMS, ROLE_IDS } from '../../../core/constants/permissions';
 
 interface AgendaItem {
   date: Date;
@@ -28,6 +31,9 @@ type SortField = 'date' | 'status' | 'name';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ActionPlanListComponent {
+
+  private authService = inject(AuthService);
+  private permissionService = inject(PermissionService);
 
   @Input() currentUserId?: number | null;
   @Input() isAdmin = false;
@@ -214,9 +220,9 @@ export class ActionPlanListComponent {
   /** Eliminar actividad: admin override o creador del plan. */
   canModify(plan: ActionPlanModel): boolean {
     if (!this.currentUser) return false;
-    const role = this.currentUser.role?.name;
-    if (role === 'admin') return true;
-    if (role === 'viewer') return false;
+    const roleId = this.authService.getTokenPayload()?.role_id ?? null;
+    if (this.permissionService.hasPermissionOrRole(PERMS.ACTION_PLANS_UPDATE_ANY, roleId, ROLE_IDS.ADMIN)) return true;
+    if (!this.permissionService.hasPermissionOrRole(PERMS.ACTION_PLANS_UPDATE_OWN, roleId, ROLE_IDS.EDITOR, ROLE_IDS.MONITOR)) return false;
     return plan.user_id != null && plan.user_id === this.currentUser.id;
   }
   

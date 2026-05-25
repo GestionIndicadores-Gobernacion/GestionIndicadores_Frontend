@@ -149,6 +149,8 @@ export class UsersListComponent implements OnInit {
   }
 
   isMainAdmin(user: UserModel): boolean {
-    return user.email === 'admin@gobernacion.gov.co';
+    // Preferir flag del backend (cuando esté disponible). Fallback al
+    // email canónico para compatibilidad con backends que aún no lo emiten.
+    return user.is_main_admin ?? user.email === 'admin@gobernacion.gov.co';
   }
 }

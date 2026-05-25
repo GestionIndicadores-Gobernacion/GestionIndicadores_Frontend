@@ -12,6 +12,9 @@ import { ComponentsService } from '../../../../../../features/report/services/co
 import { UsersService } from '../../../../../../features/user/services/users.service';
 import { ActivityFormData, ActionPlanActivityFormComponent } from '../../action-plan-activity-form/action-plan-activity-form';
 import { MUNICIPIOS_VALLE } from '../../../../../../core/data/municipios';
+import { AuthService } from '../../../../../../core/services/auth.service';
+import { PermissionService } from '../../../../../../core/services/permission.service';
+import { PERMS, ROLE_IDS } from '../../../../../../core/constants/permissions';
 import { LucideAngularModule } from 'lucide-angular';
 
 
@@ -75,7 +78,9 @@ export class ActionPlanEditPlanModalComponent implements OnInit {
     private actionPlanService: ActionPlanService,
     private componentsService: ComponentsService,
     private usersService: UsersService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService,
+    private permissionService: PermissionService
   ) { }
 
   ngOnInit(): void {
@@ -238,9 +243,9 @@ export class ActionPlanEditPlanModalComponent implements OnInit {
   /** Admin o creador del plan pueden eliminar. Viewer nunca. */
   canDeletePlan(): boolean {
     if (!this.currentUser) return false;
-    const role = this.currentUser.role?.name;
-    if (role === 'admin') return true;
-    if (role === 'viewer') return false;
+    const roleId = this.authService.getTokenPayload()?.role_id ?? null;
+    if (this.permissionService.hasPermissionOrRole(PERMS.ACTION_PLANS_DELETE_ANY, roleId, ROLE_IDS.ADMIN)) return true;
+    if (!this.permissionService.hasPermissionOrRole(PERMS.ACTION_PLANS_DELETE_OWN, roleId, ROLE_IDS.EDITOR, ROLE_IDS.MONITOR)) return false;
     return this.plan?.user_id != null && this.plan.user_id === this.currentUser.id;
   }
 

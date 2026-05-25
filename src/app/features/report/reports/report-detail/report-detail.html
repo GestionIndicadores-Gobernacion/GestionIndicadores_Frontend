@@ -17,14 +17,16 @@
                     <span *ngIf="report" style="color:#8A9DC0;font-weight:500;">#{{ report.id }}</span>
                 </h1>
             </div>
-            <a *ngIf="!isViewer && report?.evidence_link && isValidUrl(report!.evidence_link!)"
-                [href]="report!.evidence_link" target="_blank" rel="noopener"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-bold transition shrink-0"
-                style="background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;"
-                onmouseover="this.style.background='#DBEAFE'" onmouseout="this.style.background='#EFF6FF'">
-                <lucide-icon name="external-link" [size]="14" [strokeWidth]="2" color="currentColor"></lucide-icon>
-                Ver evidencia
-            </a>
+            <ng-container *appCan="[PERMS.REPORTS_CREATE]; fallbackRole: [ROLE_IDS.EDITOR, ROLE_IDS.ADMIN, ROLE_IDS.MONITOR]">
+                <a *ngIf="report?.evidence_link && isValidUrl(report!.evidence_link!)"
+                    [href]="report!.evidence_link" target="_blank" rel="noopener"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-bold transition shrink-0"
+                    style="background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;"
+                    onmouseover="this.style.background='#DBEAFE'" onmouseout="this.style.background='#EFF6FF'">
+                    <lucide-icon name="external-link" [size]="14" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                    Ver evidencia
+                </a>
+            </ng-container>
         </div>
     </div>
 
