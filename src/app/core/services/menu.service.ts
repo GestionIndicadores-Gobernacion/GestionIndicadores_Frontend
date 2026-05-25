@@ -99,15 +99,15 @@ export class MenuService {
       {
         label: 'Administración',
         icon: 'shield-check',
-        roles: [3, 4],  // admin + monitor durante shadow mode
-        perms: [PERMS.ROLES_READ],
+        roles: [3],  // solo admin; el perm requerido es ROLES_MANAGE para que
+        perms: [PERMS.ROLES_MANAGE],  // entrar implique poder gestionar.
         children: [
           {
             label: 'Roles y permisos',
             route: 'admin/roles',
             icon: 'lock',
-            roles: [3, 4],
-            perms: [PERMS.ROLES_READ],
+            roles: [3],
+            perms: [PERMS.ROLES_MANAGE],
           },
         ],
       },

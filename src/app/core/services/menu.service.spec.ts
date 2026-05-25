@@ -166,7 +166,7 @@ describe('MenuService - visibilidad por rol (perms vacíos, decisión sólo por 
     ]);
   });
 
-  it('monitor (4) ve Dashboard, Reportes PYBA + Planes de acción + Administración (read-only)', () => {
+  it('monitor (4) ve Dashboard, Reportes PYBA + Planes de acción (sin Administración)', () => {
     const { service } = setup(ROLE_IDS.MONITOR, []);
     const visible = collectVisibleLabels(service, service.getMenu());
     expect(visible).toEqual([
@@ -175,8 +175,6 @@ describe('MenuService - visibilidad por rol (perms vacíos, decisión sólo por 
       'Reportes',
       'Planes de acción',
       'Calendario',
-      'Administración',
-      'Roles y permisos',
     ]);
   });
 

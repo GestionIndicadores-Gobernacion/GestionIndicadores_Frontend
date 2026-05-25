@@ -80,12 +80,12 @@ describe('ADMIN_ROUTES — estructura', () => {
 
 // ─── Guard de /admin en app.routes.ts ─────────────────────────────
 
-describe('/admin — paridad por rol (shadow mode: admin + monitor permitidos)', () => {
+describe('/admin — paridad por rol (solo admin)', () => {
   const guard = () => findAdminGuard();
 
   const cases: Array<[string, number, boolean]> = [
     ['admin',   ROLE_IDS.ADMIN,   true],
-    ['monitor', ROLE_IDS.MONITOR, true],
+    ['monitor', ROLE_IDS.MONITOR, false],
     ['editor',  ROLE_IDS.EDITOR,  false],
     ['viewer',  ROLE_IDS.VIEWER,  false],
   ];
