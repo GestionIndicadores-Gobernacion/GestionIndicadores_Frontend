@@ -1,0 +1,22 @@
+<div *ngIf="shouldRender"
+     class="flex items-start gap-3 px-4 py-3 rounded-xl border"
+     style="background:#FFFBEB;border-color:#FCD34D;"
+     data-testid="shadow-mode-banner">
+
+  <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+       style="background:#FEF3C7;">
+    <lucide-icon name="triangle-alert" [size]="16" [strokeWidth]="2"
+                 color="#B45309"></lucide-icon>
+  </div>
+
+  <div class="flex-1 min-w-0">
+    <p class="text-[12px] font-bold leading-snug" style="color:#92400E;">
+      Modo paralelo activo
+    </p>
+    <p class="text-[11.5px] leading-snug mt-0.5" style="color:#78350F;">
+      Los cambios de permisos aún no son autoritativos. Las decisiones se
+      toman por rol mientras dure la migración.
+    </p>
+  </div>
+
+</div>

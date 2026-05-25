@@ -1,0 +1,1476 @@
+[
+  {
+    "id": "TC001",
+    "title": "User logs in and reaches the dashboard",
+    "description": "An authenticated user can sign in successfully and land on the main dashboard with the expected summary content visible.",
+    "category": "Login y autenticación",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the dashboard is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify KPI summary content is visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC002",
+    "title": "Admin creates a report from the reports list",
+    "description": "An authenticated admin can start from the reports list, open the create flow, save a new report, and see it appear in report details.",
+    "category": "Gestión de informes",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the reports section"
+      },
+      {
+        "type": "action",
+        "description": "Open the report creation flow"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the required report fields with valid values"
+      },
+      {
+        "type": "action",
+        "description": "Submit the report form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the report detail view is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the newly created report is visible in the detail view"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC003",
+    "title": "Access dashboard after login",
+    "description": "An admin can log in and land on the main dashboard with key KPIs and map content visible.",
+    "category": "Dashboard",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify dashboard KPI information is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the dashboard map is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC004",
+    "title": "Import a dataset with preview confirmation",
+    "description": "An admin can upload a dataset file, review the preview, confirm the import, and see the dataset listed afterward.",
+    "category": "Datasets — gestión y visor",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to open the datasets page"
+      },
+      {
+        "type": "action",
+        "description": "Upload a valid Excel file for import"
+      },
+      {
+        "type": "action",
+        "description": "Review the import preview"
+      },
+      {
+        "type": "action",
+        "description": "Confirm the import"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the imported dataset appears in the list"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC005",
+    "title": "Create a user",
+    "description": "An admin can create a user from the users page and see the user appear in the list afterward.",
+    "category": "Usuarios y auditoría",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to open the users page"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to create a user"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the user name with a unique value"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the user email with a unique value"
+      },
+      {
+        "type": "action",
+        "description": "Assign a role to the user"
+      },
+      {
+        "type": "action",
+        "description": "Save the user"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the new user appears in the list"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC006",
+    "title": "Create a strategy",
+    "description": "An admin can create a new strategy from the strategy list and see it appear in the list afterward.",
+    "category": "Estrategias y componentes",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to open the strategy list"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to create a new strategy"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the strategy name with a unique value"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the strategy description with a valid value"
+      },
+      {
+        "type": "action",
+        "description": "Save the strategy"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the new strategy appears in the list"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC007",
+    "title": "Admin edits an existing report",
+    "description": "An authenticated admin can open an existing report, update its data, save changes, and see the updated report detail afterward.",
+    "category": "Gestión de informes",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the reports section"
+      },
+      {
+        "type": "action",
+        "description": "Open an existing report"
+      },
+      {
+        "type": "action",
+        "description": "Open the report edit flow"
+      },
+      {
+        "type": "action",
+        "description": "Update the report fields with valid changes"
+      },
+      {
+        "type": "action",
+        "description": "Submit the report form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the report detail view is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the updated report content is visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC008",
+    "title": "Report activity progress with evidence",
+    "description": "An authenticated user can report progress for an activity, attach evidence, and see the activity move forward with the saved report.",
+    "category": "Planes de acción",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to open the action plans calendar"
+      },
+      {
+        "type": "action",
+        "description": "Open an activity from the calendar"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to report progress"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the progress details with valid values"
+      },
+      {
+        "type": "action",
+        "description": "Attach evidence for the activity"
+      },
+      {
+        "type": "action",
+        "description": "Save the progress report"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the activity shows the updated progress state"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC009",
+    "title": "Crear un usuario nuevo",
+    "description": "Verifies that an admin can create a user with role and component assignments and see the new user reflected in the list.",
+    "category": "Gestión de usuarios",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to the users area"
+      },
+      {
+        "type": "action",
+        "description": "Open the user creation form"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the user name field with Test User A"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the user email field with a unique valid email"
+      },
+      {
+        "type": "action",
+        "description": "Select an appropriate user role"
+      },
+      {
+        "type": "action",
+        "description": "Select one or more components for the user"
+      },
+      {
+        "type": "action",
+        "description": "Save the user"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the new user appears in the user list"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC010",
+    "title": "Update an existing dataset",
+    "description": "An admin can upload a replacement Excel file for an existing dataset, review the change preview, confirm the update, and see the dataset refreshed.",
+    "category": "Datasets — gestión y visor",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to open the datasets page"
+      },
+      {
+        "type": "action",
+        "description": "Select an existing dataset"
+      },
+      {
+        "type": "action",
+        "description": "Upload a valid Excel file for update"
+      },
+      {
+        "type": "action",
+        "description": "Review the update preview"
+      },
+      {
+        "type": "action",
+        "description": "Confirm the update"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the dataset reflects the updated data"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC011",
+    "title": "Admin reviews dashboard KPIs and map data",
+    "description": "An authenticated admin can open the dashboard and see the KPI cards and location-based summary content used for monitoring.",
+    "category": "Dashboard home y KPIs",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the dashboard is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify KPI cards are visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify map-based summary content is visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC012",
+    "title": "Create a plan from the activity calendar",
+    "description": "An authenticated user can open an activity from the calendar, create a plan, assign participants, and see the plan saved.",
+    "category": "Planes de acción",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to open the action plans calendar"
+      },
+      {
+        "type": "action",
+        "description": "Open an activity from the calendar"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to create a plan"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the plan details with valid values"
+      },
+      {
+        "type": "action",
+        "description": "Assign a responsible person and supporting participants"
+      },
+      {
+        "type": "action",
+        "description": "Save the plan"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the new plan is displayed for the activity"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC013",
+    "title": "Admin creates a report from an activity context",
+    "description": "An authenticated admin can start a new report from an activity context, complete the form, and reach the saved report detail.",
+    "category": "Gestión de informes",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the report creation flow from an activity context"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the required report fields with valid values"
+      },
+      {
+        "type": "action",
+        "description": "Submit the report form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the report detail view is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the report was created from an activity context"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC014",
+    "title": "Edit a strategy",
+    "description": "An admin can open an existing strategy, update its details, and see the changes reflected after saving.",
+    "category": "Estrategias y componentes",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to open the strategy list"
+      },
+      {
+        "type": "action",
+        "description": "Open an existing strategy for editing"
+      },
+      {
+        "type": "action",
+        "description": "Modify the strategy name with a unique value"
+      },
+      {
+        "type": "action",
+        "description": "Modify the strategy description with a valid value"
+      },
+      {
+        "type": "action",
+        "description": "Save the strategy"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the updated strategy details are displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC015",
+    "title": "Editar un usuario existente",
+    "description": "Verifies that an admin can open an existing user, update their details, and see the changes saved.",
+    "category": "Gestión de usuarios",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to the users area"
+      },
+      {
+        "type": "action",
+        "description": "Open a user for editing"
+      },
+      {
+        "type": "action",
+        "description": "Update the user name field with a new value"
+      },
+      {
+        "type": "action",
+        "description": "Save the user changes"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the updated user data is shown"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC016",
+    "title": "Edit a user role",
+    "description": "An admin can edit an existing user and save a changed role assignment that is reflected in the user list.",
+    "category": "Usuarios y auditoría",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to open the users page"
+      },
+      {
+        "type": "action",
+        "description": "Open an existing user for editing"
+      },
+      {
+        "type": "action",
+        "description": "Change the assigned role"
+      },
+      {
+        "type": "action",
+        "description": "Save the user"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the updated role is displayed for the user"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC017",
+    "title": "Admin manages strategic structure from the strategy areas",
+    "description": "An authenticated admin can create or edit strategic structures and then view the aggregated strategy dashboard.",
+    "category": "Gestión de informes",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the strategy management section"
+      },
+      {
+        "type": "action",
+        "description": "Create or edit a strategy with valid values"
+      },
+      {
+        "type": "action",
+        "description": "Open the component management section"
+      },
+      {
+        "type": "action",
+        "description": "Create or edit a component with valid values"
+      },
+      {
+        "type": "action",
+        "description": "Open the strategy dashboard"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify strategy aggregation content is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify strategy and component management content is visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC018",
+    "title": "Create a component",
+    "description": "An admin can create a new component from the component list and see it appear after saving.",
+    "category": "Estrategias y componentes",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to open the component list"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to create a new component"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the component name with a unique value"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the component description with a valid value"
+      },
+      {
+        "type": "action",
+        "description": "Save the component"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the new component appears in the list"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC019",
+    "title": "Listar usuarios",
+    "description": "Verifies that an admin can open the users area and see the current user list.",
+    "category": "Gestión de usuarios",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to the users area"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the user list is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC020",
+    "title": "Admin lists reports with filtering and pagination",
+    "description": "An authenticated admin can browse the reports list, apply a filter, and move through paginated results while keeping the list visible.",
+    "category": "Gestión de informes",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the reports section"
+      },
+      {
+        "type": "action",
+        "description": "Apply a report filter"
+      },
+      {
+        "type": "action",
+        "description": "Go to the next page of reports"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the reports list is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify filtered and paginated report results are visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC021",
+    "title": "Asignar componentes a un usuario",
+    "description": "Verifies that an admin can assign components to an existing user and save the assignment.",
+    "category": "Gestión de usuarios",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to the users area"
+      },
+      {
+        "type": "action",
+        "description": "Open a user for editing"
+      },
+      {
+        "type": "action",
+        "description": "Change the assigned components"
+      },
+      {
+        "type": "action",
+        "description": "Save the user changes"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the assigned components are shown on the user record"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC022",
+    "title": "View the strategy dashboard",
+    "description": "An admin can open the strategy dashboard and review the consolidated KPI information.",
+    "category": "Estrategias y componentes",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to open the strategy dashboard"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify consolidated strategy indicators are displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC023",
+    "title": "View the action plan dashboard by responsible person",
+    "description": "An authenticated user can open the action plan dashboard and review the aggregated indicators by responsible person.",
+    "category": "Planes de acción",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to open the action plan dashboard"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify aggregated responsible-person indicators are displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC024",
+    "title": "Admin opens report details from the list",
+    "description": "An authenticated admin can select a report from the list and view its detail page with the report information visible.",
+    "category": "Gestión de informes",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the reports section"
+      },
+      {
+        "type": "action",
+        "description": "Open a report from the list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the report detail view is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify report information is visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC025",
+    "title": "Edit a component",
+    "description": "An admin can update an existing component and see the saved changes in the component list.",
+    "category": "Estrategias y componentes",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to open the component list"
+      },
+      {
+        "type": "action",
+        "description": "Open an existing component for editing"
+      },
+      {
+        "type": "action",
+        "description": "Modify the component name with a unique value"
+      },
+      {
+        "type": "action",
+        "description": "Modify the component description with a valid value"
+      },
+      {
+        "type": "action",
+        "description": "Save the component"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the updated component details are displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC026",
+    "title": "Ver perfil propio y permisos",
+    "description": "Verifies that an authenticated user can open their profile and review personal data, role, and permissions.",
+    "category": "Perfil propio",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the own profile page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify personal data and role are displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the permissions list is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC027",
+    "title": "Filter table records by municipality",
+    "description": "An admin can open a table viewer, filter the records by municipality, and see the results narrowed to the selected location.",
+    "category": "Datasets — gestión y visor",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to open the datasets page"
+      },
+      {
+        "type": "action",
+        "description": "Open a table viewer for an available table"
+      },
+      {
+        "type": "action",
+        "description": "Select a municipality filter value"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the table records are filtered to the selected municipality"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC028",
+    "title": "Filter audit history entries",
+    "description": "An admin can open audit history, apply user and date filters, and see the event list narrowed accordingly.",
+    "category": "Usuarios y auditoría",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to open audit history"
+      },
+      {
+        "type": "action",
+        "description": "Select a user filter value"
+      },
+      {
+        "type": "action",
+        "description": "Select a date filter value"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the audit event list is filtered"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC029",
+    "title": "Revisar eventos de auditoría",
+    "description": "Verifies that an admin can open audit history and browse the event list with pagination.",
+    "category": "Historial de auditoría",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to audit history"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to the event list"
+      },
+      {
+        "type": "action",
+        "description": "Go to the next page of events"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify audit events are displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a different page of events is shown"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC030",
+    "title": "Review the current profile permissions",
+    "description": "An authenticated user can open their profile page and see their current permissions information.",
+    "category": "Usuarios y auditoría",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to open the profile page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the profile permissions information is displayed"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC031",
+    "title": "Admin filters dashboard by municipality",
+    "description": "An authenticated admin can filter dashboard data by municipality and see the visible summary update accordingly.",
+    "category": "Dashboard home y KPIs",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Filter the dashboard by a municipality"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the dashboard remains displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the location-based summary reflects the selected municipality"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC032",
+    "title": "Filtrar auditoría por usuario, fecha y módulo",
+    "description": "Verifies that an admin can narrow audit history using user, date, and module filters and see the filtered results.",
+    "category": "Historial de auditoría",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to audit history"
+      },
+      {
+        "type": "action",
+        "description": "Apply a user filter"
+      },
+      {
+        "type": "action",
+        "description": "Apply a date filter"
+      },
+      {
+        "type": "action",
+        "description": "Apply a module filter"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the event list is filtered"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC033",
+    "title": "Abrir mi perfil desde acceso autenticado",
+    "description": "Verifies that an authenticated user can reach the profile page from the application and see their own account information.",
+    "category": "Perfil propio",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the own profile page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the profile page is displayed"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC034",
+    "title": "User sees an error for invalid login",
+    "description": "An invalid email and password combination shows a visible login error and does not grant access.",
+    "category": "Login y autenticación",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with invalid@example.com"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with invalid-password"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a login error toast is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the dashboard is not displayed"
+      }
+    ],
+    "priority": "Medium"
+  }
+]

@@ -1,0 +1,19 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:4200",
+  "loginUser": "admin@gobernacion.gov.co",
+  "loginPassword": "Gob2025*",
+  "executionArgs": {
+    "projectName": "GestionIndicadores_Frontend",
+    "projectPath": "C:/Users/usuario/Desktop/Programacion/IndicadoresPYBA/Software/GestionIndicadores_Frontend",
+    "testIds": [],
+    "additionalInstruction": "Angular 21 SPA en http://localhost:4200 (dev server con proxy a Flask en :5000). Usuario admin para tests: admin@gobernacion.gov.co / Gob2025*. La URL de login es /auth/login. Los demás roles disponibles si se necesitan: editor@gobernacion.gov.co / Gob2025* y viewer@gobernacion.gov.co / Gob2025*. Algunas rutas son admin-only (adminGuard): /users, /datasets, /audit-history, /reports/strategies, /reports/components. /action-plans y /users/me son bloqueadas para rol viewer. Considera esperas explícitas para lazy-loaded routes. Toasts vienen de ngx-toastr; modales de sweetalert2 (selector .swal2-popup). El proxy /api → http://localhost:5000 es necesario para que las llamadas funcionen.",
+    "serverMode": "development",
+    "envs": {
+      "API_KEY": "sk-user-L15Rh6hP6TuwMNhctlunVjQpA3Vj1MdWXM7SuQB_QHhylJd4lEYv3UnjpWps_SfPDuvoqevuLH6_LapjGpVF446gUAWxYFYPXGxjlcn6Eq8ZXhcZ9KPzxTvvZaCtIwJQnp8"
+    }
+  },
+  "serverPort": 55374
+}

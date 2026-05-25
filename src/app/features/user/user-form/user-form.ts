@@ -40,6 +40,7 @@ export class UserFormComponent implements OnInit {
   };
 
   private destroyRef = inject(DestroyRef);
+  private loadedIsMainAdmin = false;
 
   constructor(
     public router: Router,
@@ -69,7 +70,8 @@ export class UserFormComponent implements OnInit {
   // ── Helpers ──────────────────────────────────────────────────────────
 
   isMainAdmin(): boolean {
-    return this.isEdit && this.form.email === 'admin@gobernacion.gov.co';
+    if (!this.isEdit) return false;
+    return this.loadedIsMainAdmin || this.form.email === 'admin@gobernacion.gov.co';
   }
 
   /** El admin tiene acceso a todo, no necesita asignaciones */
@@ -131,6 +133,7 @@ export class UserFormComponent implements OnInit {
           role_id: user.role?.id || null,
           profile_image_url: user.profile_image_url || ''
         };
+        this.loadedIsMainAdmin = !!user.is_main_admin;
         // Precargar componentes asignados
         this.selectedComponentIds = (user.component_assignments || []).map(a => a.component_id);
         this.loading = false;

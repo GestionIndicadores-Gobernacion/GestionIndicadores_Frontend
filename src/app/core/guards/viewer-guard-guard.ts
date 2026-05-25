@@ -3,6 +3,11 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
+/**
+ * @deprecated Migrar a `permGuard` con perms específicos del recurso
+ * cuando exista paridad de permisos para "lectura escrita básica".
+ * Por ahora bloquea el rol viewer; sigue activo durante shadow mode.
+ */
 export const viewerGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);

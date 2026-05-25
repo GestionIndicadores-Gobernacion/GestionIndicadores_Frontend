@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
-import { adminGuard } from '../../../core/guards/admin-guard';
 import { viewerGuard } from '../../../core/guards/viewer-guard-guard';
+import { permGuard } from '../../../core/guards/perm-guard';
+import { PERMS, ROLE_IDS } from '../../../core/constants/permissions';
 
 export const REPORTS_ROUTES: Routes = [
 
@@ -30,24 +31,26 @@ export const REPORTS_ROUTES: Routes = [
         .then(m => m.ReportFormComponent),
   },
 
-  // 🔽 SUBMÓDULOS — solo admin
+  // 🔽 SUBMÓDULOS — protegidos por permiso específico (fallback rol admin)
   {
-    path: '',
-    canActivateChild: [adminGuard],
-    children: [
-      {
-        path: 'strategies',
-        loadChildren: () =>
-          import('../strategy/strategy.routes')
-            .then(m => m.STRATEGY_ROUTES),
-      },
-      {
-        path: 'components',
-        loadChildren: () =>
-          import('../componentes/componentes.routes')
-            .then(m => m.COMPONENTS_ROUTES),
-      },
-    ],
+    path: 'strategies',
+    canActivate: [permGuard({
+      perms: [PERMS.STRATEGIES_MANAGE],
+      fallbackRoles: [ROLE_IDS.ADMIN],
+    })],
+    loadChildren: () =>
+      import('../strategy/strategy.routes')
+        .then(m => m.STRATEGY_ROUTES),
+  },
+  {
+    path: 'components',
+    canActivate: [permGuard({
+      perms: [PERMS.COMPONENTS_MANAGE],
+      fallbackRoles: [ROLE_IDS.ADMIN],
+    })],
+    loadChildren: () =>
+      import('../componentes/componentes.routes')
+        .then(m => m.COMPONENTS_ROUTES),
   },
 
   // ✏️ EDITAR

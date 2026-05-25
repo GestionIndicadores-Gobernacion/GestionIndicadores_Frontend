@@ -12,6 +12,8 @@ import { ComponentsService } from '../../../../features/report/services/componen
 import { StrategiesService } from '../../../../features/report/services/strategies.service';
 import { UsersService } from '../../../../features/user/services/users.service';
 import { DatasetService } from '../../../../features/datasets/services/datasets.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { PermissionService } from '../../../../core/services/permission.service';
 import { ActivityFormData, ActionPlanActivityFormComponent, SupportStaffEntry } from './action-plan-activity-form/action-plan-activity-form';
 import { MUNICIPIOS_VALLE } from '../../../../core/data/municipios';
 import { LucideAngularModule } from 'lucide-angular';
@@ -82,6 +84,8 @@ export class ActionPlanCreateModalComponent implements OnInit {
     };
 
   private destroyRef = inject(DestroyRef);
+  private authService = inject(AuthService);
+  private permissionService = inject(PermissionService);
 
   constructor(
     private actionPlanService: ActionPlanService,
@@ -102,23 +106,20 @@ export class ActionPlanCreateModalComponent implements OnInit {
       components: this.componentsService.getAll(),
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: ({ strategies, components }) => {
-        const role = this.currentUser?.role?.name;
+        const roleId = this.authService.getTokenPayload()?.role_id ?? null;
 
-        if (role === 'editor') {
+        if (this.permissionService.bypassesComponentScope(roleId)) {
+          // Admin / monitor: sin restricción de scoping.
+          this.strategies = strategies;
+          this.components = components;
+        } else {
+          // Editor (y cualquier otro rol restringido): sólo asignados.
           const assigned: number[] = (this.currentUser?.component_assignments ?? [])
             .map((c: any) => c.component_id);
-
-          // Solo componentes asignados
           const allowedComponents = components.filter(c => assigned.includes(c.id));
-
-          // Solo estrategias que tengan al menos un componente asignado
           const allowedStrategyIds = new Set(allowedComponents.map(c => c.strategy_id));
           this.strategies = strategies.filter(s => allowedStrategyIds.has(s.id));
           this.components = allowedComponents;
-        } else {
-          // Admin/monitor ven todo
-          this.strategies = strategies;
-          this.components = components;
         }
 
         this.loading = false;

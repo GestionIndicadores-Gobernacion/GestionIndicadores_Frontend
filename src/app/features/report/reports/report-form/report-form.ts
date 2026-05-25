@@ -23,6 +23,8 @@ import { ComponentsService } from '../../../../features/report/services/componen
 import { ReportsService } from '../../../../features/report/services/reports.service';
 import { StrategiesService } from '../../../../features/report/services/strategies.service';
 import { ToastService } from '../../../../core/services/toast.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { PermissionService } from '../../../../core/services/permission.service';
 import { ReportIndicatorsFormComponent } from './report-indicators-form/report-indicators-form';
 import { ActionPlanService } from '../../../../features/action-plans/services/action-plan.service';
 
@@ -77,6 +79,8 @@ export class ReportFormComponent implements OnInit {
   prefillLoading = false;
 
   private destroyRef = inject(DestroyRef);
+  private authService = inject(AuthService);
+  private permissionService = inject(PermissionService);
 
   constructor(
     private route: ActivatedRoute,
@@ -112,30 +116,30 @@ export class ReportFormComponent implements OnInit {
     return [];
   }
 
+  // Scoping (no autorización): admin/monitor ven todo; editor (y cualquier
+  // otro rol restringido, p.ej. viewer) ven solo sus `component_assignments`.
+  // Cambio menor vs. comportamiento previo: antes viewer/roles desconocidos
+  // caían al return-all del default; ahora se filtran por assignments
+  // (típicamente vacío → ven nada). Viewer no debería llegar al form.
   private filterComponentsByRole(components: ComponentModel[]): ComponentModel[] {
-    const role = this.currentUser?.role?.name;
-    if (role === 'admin' || role === 'monitor') return components;
-    if (role === 'editor') {
-      const assigned = (this.currentUser?.component_assignments ?? []).map((c: any) => c.component_id);
-      return components.filter(c => assigned.includes(c.id));
-    }
-    return components;
+    const roleId = this.authService.getTokenPayload()?.role_id ?? null;
+    if (this.permissionService.bypassesComponentScope(roleId)) return components;
+    const assigned = (this.currentUser?.component_assignments ?? []).map((c: any) => c.component_id);
+    return components.filter(c => assigned.includes(c.id));
   }
 
+  // Mismo criterio de scoping: solo estrategias que tengan al menos un
+  // componente asignado al usuario (salvo admin/monitor que bypassean).
   private filterStrategiesByRole(strategies: StrategyModel[]): StrategyModel[] {
-    const role = this.currentUser?.role?.name;
-    if (role === 'admin' || role === 'monitor') return strategies;
-    if (role === 'editor') {
-      const assigned = (this.currentUser?.component_assignments ?? []).map((c: any) => c.component_id);
-      // Solo estrategias que tengan al menos un componente asignado al usuario
-      const allowedStrategyIds = new Set(
-        this.allComponents
-          .filter(c => assigned.includes(c.id))
-          .map(c => c.strategy_id)
-      );
-      return strategies.filter(s => allowedStrategyIds.has(s.id));
-    }
-    return strategies;
+    const roleId = this.authService.getTokenPayload()?.role_id ?? null;
+    if (this.permissionService.bypassesComponentScope(roleId)) return strategies;
+    const assigned = (this.currentUser?.component_assignments ?? []).map((c: any) => c.component_id);
+    const allowedStrategyIds = new Set(
+      this.allComponents
+        .filter(c => assigned.includes(c.id))
+        .map(c => c.strategy_id)
+    );
+    return strategies.filter(s => allowedStrategyIds.has(s.id));
   }
 
   loadBaseData(activityId: number | null = null): void {
