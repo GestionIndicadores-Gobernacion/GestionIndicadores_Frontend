@@ -1,7 +1,9 @@
-/* Carga diferida del CSS de Leaflet con el componente (no entra al bundle
- * inicial porque el componente está lazy-loaded vía el ruteo / dynamic
- * import del JS). */
-@import 'leaflet/dist/leaflet.css';
+/* El CSS de Leaflet se importa globalmente en src/styles.css. Si se
+ * importa aquí (component-scoped) la ViewEncapsulation.Emulated lo
+ * scopea con `[_ngcontent-…]` y las reglas críticas — sobre todo
+ * `.leaflet-pane > svg path.leaflet-interactive { pointer-events: auto }`
+ * — no aplican al DOM que Leaflet crea dinámicamente, dejando los
+ * polígonos sin hover ni click. */
 
 :host {
   display: block;

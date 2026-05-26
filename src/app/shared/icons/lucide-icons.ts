@@ -29,7 +29,7 @@ import {
   TrendingUp, Clipboard, ClipboardCheck, Shield, ShieldCheck, Lock,
   User, UserPlus, UserCheck, UserCog, CircleUser,
   Mail, Phone, Globe, Building, AtSign,
-  FileText, FileSpreadsheet, FileSearch, FilePlus, FolderOpen, Folder, ScrollText,
+  FileText, FileSpreadsheet, FileSearch, FilePlus, FileX, FolderOpen, Folder, ScrollText,
   ChartColumn, ChartPie, ChartLine, ChartBar, ChartArea,
   Paperclip, Link as LinkIcon, Tag, Hash, Gauge, Sparkles,
 
@@ -58,7 +58,7 @@ export const LUCIDE_ICON_SET = {
   TrendingUp, Clipboard, ClipboardCheck, Shield, ShieldCheck, Lock,
   User, UserPlus, UserCheck, UserCog, CircleUser,
   Mail, Phone, Globe, Building, AtSign,
-  FileText, FileSpreadsheet, FileSearch, FilePlus, FolderOpen, Folder, ScrollText,
+  FileText, FileSpreadsheet, FileSearch, FilePlus, FileX, FolderOpen, Folder, ScrollText,
   ChartColumn, ChartPie, ChartLine, ChartBar, ChartArea,
   Paperclip, Link: LinkIcon, Tag, Hash, Gauge, Sparkles,
   Settings, Cog, Pin, GripVertical, Grid2x2,
