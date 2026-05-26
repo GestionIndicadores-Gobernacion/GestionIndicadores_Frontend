@@ -1,0 +1,283 @@
+<!-- shared/components/support-button/support-button.html -->
+
+<!-- BOTÓN FLOTANTE (FAB) -->
+<button
+  type="button"
+  (click)="toggle()"
+  [attr.aria-label]="isOpen ? 'Cerrar soporte' : 'Soporte y reportes'"
+  class="support-fab"
+  [class.support-fab--open]="isOpen">
+  <span class="support-fab__pulse" *ngIf="!isOpen && unreadCount === 0"></span>
+  <lucide-icon
+    [name]="isOpen ? 'x' : 'life-buoy'"
+    [size]="22"
+    [strokeWidth]="2"
+    color="#ffffff">
+  </lucide-icon>
+  <span class="support-fab__label" *ngIf="!isOpen">¿Necesitas ayuda?</span>
+  <span class="support-fab__badge" *ngIf="!isOpen && unreadCount > 0">
+    {{ unreadCount > 9 ? '9+' : unreadCount }}
+  </span>
+</button>
+
+<!-- BACKDROP + PANEL -->
+<div class="support-overlay" *ngIf="isOpen" (click)="close()"></div>
+
+<div class="support-panel" *ngIf="isOpen" role="dialog" aria-modal="true" aria-labelledby="support-title">
+
+  <!-- HEADER -->
+  <div class="support-panel__header">
+    <div class="flex items-center gap-2">
+      <button
+        *ngIf="view === 'chat'"
+        type="button"
+        class="support-panel__back"
+        (click)="exitChat()"
+        aria-label="Volver a la lista">
+        <lucide-icon name="arrow-left" [size]="16" [strokeWidth]="2" color="#1B3A6B"></lucide-icon>
+      </button>
+      <div class="support-panel__icon" *ngIf="view === 'tabs'">
+        <lucide-icon name="life-buoy" [size]="18" [strokeWidth]="2" color="#ffffff"></lucide-icon>
+      </div>
+      <div>
+        <div id="support-title" class="support-panel__title">
+          <ng-container *ngIf="view === 'tabs'">Centro de soporte</ng-container>
+          <ng-container *ngIf="view === 'chat'">
+            Reporte #{{ activeTicket?.id }}
+          </ng-container>
+        </div>
+        <div class="support-panel__subtitle" *ngIf="view === 'tabs'">
+          Reporta fallos y revisa el estado de tus reportes
+        </div>
+        <div class="support-panel__subtitle" *ngIf="view === 'chat' && activeTicket">
+          <span class="support-status-chip" [attr.data-status]="activeTicket.status">
+            {{ statusLabel(activeTicket.status) }}
+          </span>
+        </div>
+      </div>
+    </div>
+    <button
+      type="button"
+      class="support-panel__close"
+      (click)="close()"
+      [disabled]="isSending"
+      aria-label="Cerrar">
+      <lucide-icon name="x" [size]="18" [strokeWidth]="2" color="#1B3A6B"></lucide-icon>
+    </button>
+  </div>
+
+  <!-- TABS (solo en vista 'tabs') -->
+  <div class="support-tabs" *ngIf="view === 'tabs'">
+    <button
+      type="button"
+      class="support-tab"
+      [class.support-tab--active]="tab === 'new'"
+      (click)="switchTab('new')">
+      <lucide-icon name="plus" [size]="14" [strokeWidth]="2" color="currentColor"></lucide-icon>
+      Nuevo reporte
+    </button>
+    <button
+      type="button"
+      class="support-tab"
+      [class.support-tab--active]="tab === 'mine'"
+      (click)="switchTab('mine')">
+      <lucide-icon name="inbox" [size]="14" [strokeWidth]="2" color="currentColor"></lucide-icon>
+      Mis reportes
+      <span class="support-tab__badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+    </button>
+  </div>
+
+  <!-- ═════════════════════════════════════════════════════════
+       VIEW: TABS → NEW
+       ═════════════════════════════════════════════════════════ -->
+  <div class="support-panel__body" *ngIf="view === 'tabs' && tab === 'new'">
+
+    <label class="support-label" for="support-message">
+      Descripción del problema
+      <span class="support-label__hint">{{ charCount }}/{{ maxLen }}</span>
+    </label>
+    <textarea
+      id="support-message"
+      class="support-textarea"
+      [(ngModel)]="message"
+      [disabled]="isSending"
+      [maxlength]="maxLen"
+      rows="5"
+      placeholder="Ejemplo: Al intentar editar el indicador 24 me aparece un error 500. Ocurrió a las 10:30am."></textarea>
+
+    <div class="support-help" *ngIf="charCount > 0 && charCount < minLen">
+      Escribe al menos {{ minLen }} caracteres para que podamos ayudarte mejor.
+    </div>
+
+    <!-- Captura -->
+    <div class="support-attach">
+      <div class="support-attach__label">
+        <lucide-icon name="paperclip" [size]="14" [strokeWidth]="2" color="#4A6A9B"></lucide-icon>
+        <span>Adjuntar captura (opcional)</span>
+      </div>
+
+      <input
+        #fileInput
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        (change)="onFileSelected($event)"
+        class="hidden"
+        [disabled]="isSending"
+      />
+
+      <div *ngIf="!screenshotDataUrl" class="support-attach__drop" (click)="fileInput.click()">
+        <lucide-icon name="image-plus" [size]="18" [strokeWidth]="1.8" color="#2d5fa8"></lucide-icon>
+        <span>Selecciona una imagen (PNG, JPG, WEBP — hasta 4 MB)</span>
+      </div>
+
+      <div *ngIf="screenshotDataUrl" class="support-attach__preview">
+        <img [src]="screenshotDataUrl" alt="Captura adjunta" />
+        <div class="support-attach__preview-info">
+          <div class="support-attach__filename">{{ screenshotName }}</div>
+          <button type="button" class="support-attach__remove" (click)="removeScreenshot()" [disabled]="isSending">
+            <lucide-icon name="trash-2" [size]="14" [strokeWidth]="2" color="#dc2626"></lucide-icon>
+            Quitar
+          </button>
+        </div>
+      </div>
+
+      <div class="support-help support-help--error" *ngIf="screenshotError">
+        {{ screenshotError }}
+      </div>
+    </div>
+
+    <div class="support-meta">
+      <lucide-icon name="info" [size]="12" [strokeWidth]="2" color="#4A6A9B"></lucide-icon>
+      <span>Se adjuntará tu nombre, rol y la página actual. Podrás seguir el reporte y conversar con el administrador desde la pestaña "Mis reportes".</span>
+    </div>
+  </div>
+
+  <!-- Footer del form nuevo -->
+  <div class="support-panel__footer" *ngIf="view === 'tabs' && tab === 'new'">
+    <button
+      type="button"
+      class="support-btn support-btn--ghost"
+      (click)="close()"
+      [disabled]="isSending">
+      Cancelar
+    </button>
+    <button
+      type="button"
+      class="support-btn support-btn--primary"
+      (click)="submit()"
+      [disabled]="!canSubmit">
+      <lucide-icon *ngIf="!isSending" name="send" [size]="14" [strokeWidth]="2" color="#ffffff"></lucide-icon>
+      <span *ngIf="isSending" class="support-btn__spinner"></span>
+      {{ isSending ? 'Enviando…' : 'Enviar reporte' }}
+    </button>
+  </div>
+
+  <!-- ═════════════════════════════════════════════════════════
+       VIEW: TABS → MINE (lista de tickets)
+       ═════════════════════════════════════════════════════════ -->
+  <div class="support-panel__body" *ngIf="view === 'tabs' && tab === 'mine'">
+
+    <div *ngIf="isLoadingTickets && tickets.length === 0" class="support-empty">
+      <div class="support-spinner-lg"></div>
+      <div>Cargando tus reportes…</div>
+    </div>
+
+    <div *ngIf="!isLoadingTickets && tickets.length === 0" class="support-empty">
+      <lucide-icon name="inbox" [size]="32" [strokeWidth]="1.4" color="#B0BDD0"></lucide-icon>
+      <div class="support-empty__title">Aún no has enviado reportes</div>
+      <div class="support-empty__hint">Crea uno desde la pestaña "Nuevo reporte".</div>
+    </div>
+
+    <div class="support-tickets" *ngIf="tickets.length > 0">
+      <button
+        *ngFor="let t of tickets; trackBy: trackById"
+        type="button"
+        class="support-ticket"
+        (click)="openTicket(t.id)">
+        <div class="support-ticket__top">
+          <span class="support-status-chip" [attr.data-status]="t.status">
+            {{ statusLabel(t.status) }}
+          </span>
+          <span class="support-ticket__id">#{{ t.id }}</span>
+          <span class="support-ticket__date">{{ t.updated_at | date:'short' }}</span>
+        </div>
+        <div class="support-ticket__title">{{ t.title }}</div>
+        <div class="support-ticket__preview" *ngIf="t.last_message_preview">
+          {{ t.last_message_preview }}
+        </div>
+        <div class="support-ticket__footer">
+          <span *ngIf="t.unread_admin_replies > 0" class="support-ticket__unread">
+            <lucide-icon name="circle" [size]="6" [strokeWidth]="0" color="#dc2626"></lucide-icon>
+            {{ t.unread_admin_replies }} nueva{{ t.unread_admin_replies === 1 ? '' : 's' }}
+          </span>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═════════════════════════════════════════════════════════
+       VIEW: CHAT
+       ═════════════════════════════════════════════════════════ -->
+  <ng-container *ngIf="view === 'chat'">
+
+    <div *ngIf="isLoadingTicket" class="support-empty">
+      <div class="support-spinner-lg"></div>
+      <div>Cargando conversación…</div>
+    </div>
+
+    <ng-container *ngIf="!isLoadingTicket && activeTicket">
+
+      <div #chatScroll class="support-chat__scroll">
+        <div class="support-chat__title">{{ activeTicket.title }}</div>
+        <div *ngIf="activeTicket.current_url" class="support-chat__context">
+          <lucide-icon name="external-link" [size]="11" [strokeWidth]="2" color="#4A6A9B"></lucide-icon>
+          {{ activeTicket.current_url }}
+        </div>
+
+        <div class="support-chat__messages">
+          <div
+            *ngFor="let m of activeTicket.messages; trackBy: trackById"
+            class="support-msg"
+            [class.support-msg--admin]="m.is_admin_reply"
+            [class.support-msg--mine]="!m.is_admin_reply">
+            <div class="support-msg__bubble">
+              <div class="support-msg__author">
+                <span *ngIf="m.is_admin_reply">Administrador</span>
+                <span *ngIf="!m.is_admin_reply">{{ m.author?.first_name }} {{ m.author?.last_name }}</span>
+              </div>
+              <div class="support-msg__body">{{ m.body }}</div>
+              <div class="support-msg__time">{{ m.created_at | date:'short' }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reply -->
+      <div class="support-chat__reply" *ngIf="activeTicket.status !== 'cerrado'">
+        <textarea
+          class="support-textarea support-textarea--reply"
+          [(ngModel)]="replyBody"
+          [disabled]="isReplying"
+          [maxlength]="maxLen"
+          rows="2"
+          placeholder="Escribe tu mensaje..."
+          (keydown.enter)="$event.preventDefault(); sendReply()"></textarea>
+        <button
+          type="button"
+          class="support-btn support-btn--primary support-btn--icon"
+          (click)="sendReply()"
+          [disabled]="isReplying || !replyBody.trim()">
+          <lucide-icon *ngIf="!isReplying" name="send" [size]="14" [strokeWidth]="2" color="#ffffff"></lucide-icon>
+          <span *ngIf="isReplying" class="support-btn__spinner"></span>
+        </button>
+      </div>
+
+      <div class="support-chat__closed" *ngIf="activeTicket.status === 'cerrado'">
+        <lucide-icon name="ban" [size]="14" [strokeWidth]="2" color="#4A6A9B"></lucide-icon>
+        Este reporte está cerrado y no admite más mensajes.
+      </div>
+
+    </ng-container>
+  </ng-container>
+
+</div>

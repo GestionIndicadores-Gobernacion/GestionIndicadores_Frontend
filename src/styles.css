@@ -18,3 +18,10 @@ button {
     outline: none !important;
     outline-offset: 0 !important;
 }
+
+/* SweetAlert2: subir el contenedor por encima de los modales propios
+ * (botón flotante de soporte usa z-index 9999) para que los toasts no
+ * queden tapados cuando se disparan con un modal abierto. */
+.swal2-container {
+    z-index: 99999 !important;
+}

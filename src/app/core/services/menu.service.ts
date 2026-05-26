@@ -127,6 +127,13 @@ export class MenuService {
         roles: [3],
         perms: [PERMS.AUDIT_READ],
       },
+
+      {
+        label: 'Soporte',
+        route: 'support',
+        icon: 'life-buoy',
+        roles: [3],
+      },
     ];
   }
 
