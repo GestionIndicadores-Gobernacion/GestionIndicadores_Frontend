@@ -4,7 +4,6 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 import { LUCIDE_ICONS, LucideIconProvider } from 'lucide-angular';
-import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth-interceptor';
@@ -23,13 +22,11 @@ export const appConfig: ApplicationConfig = {
         errorInterceptor,     // 2️⃣ luego maneja errores globales
       ])
     ),
-    // ng2-charts 10 es la versión compatible con Angular 21. Sustituye al
-    // `NgChartsModule` de v5: `BaseChartDirective` es standalone y los
-    // registerables de Chart.js se inyectan vía `NG_CHARTS_CONFIGURATION`
-    // (token consumido por la propia directiva en su constructor).
-    // `withDefaultRegisterables()` registra los controllers/escalas/plugins
-    // por defecto — sin esto los `<canvas baseChart>` no pintan en absoluto.
-    provideCharts(withDefaultRegisterables()),
+    // ng2-charts NO se provee aquí en root: `provideCharts(withDefaultRegisterables())`
+    // arrastra todos los controllers/escalas/plugins de chart.js al bundle inicial
+    // aunque las gráficas solo se usan en rutas lazy del dashboard. Por eso se
+    // provee a nivel de ruta lazy en `DASHBOARD_LAYOUT_ROUTES`, manteniendo
+    // chart.js fuera del initial bundle.
     { provide: LOCALE_ID, useValue: 'es' },
     {
       provide: LUCIDE_ICONS,
