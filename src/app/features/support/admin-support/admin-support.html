@@ -1,0 +1,184 @@
+<div class="admin-support">
+
+  <!-- HEADER -->
+  <div class="admin-support__header">
+    <div>
+      <h1 class="admin-support__title">
+        <lucide-icon name="life-buoy" [size]="22" [strokeWidth]="2" color="#1B3A6B"></lucide-icon>
+        Centro de soporte
+      </h1>
+      <p class="admin-support__subtitle">
+        Atiende los reportes de los usuarios y gestiona el estado de cada caso.
+      </p>
+    </div>
+    <button class="admin-support__refresh" (click)="refreshList()" [disabled]="isLoading">
+      <lucide-icon name="refresh-cw" [size]="14" [strokeWidth]="2" color="#1B3A6B"></lucide-icon>
+      Actualizar
+    </button>
+  </div>
+
+  <!-- FILTROS -->
+  <div class="admin-support__filters">
+    <button
+      class="filter-chip"
+      [class.filter-chip--active]="statusFilter === ''"
+      (click)="applyFilter('')">
+      Todos
+    </button>
+    <button
+      *ngFor="let s of statusOptions"
+      class="filter-chip"
+      [attr.data-status]="s.value"
+      [class.filter-chip--active]="statusFilter === s.value"
+      (click)="applyFilter(s.value)">
+      {{ s.label }}
+    </button>
+  </div>
+
+  <!-- LAYOUT 2 columnas -->
+  <div class="admin-support__layout">
+
+    <!-- LISTA -->
+    <aside class="admin-support__list">
+      <div *ngIf="isLoading && tickets.length === 0" class="admin-support__empty">
+        <div class="admin-support__spinner"></div>
+        Cargando tickets…
+      </div>
+
+      <div *ngIf="!isLoading && tickets.length === 0" class="admin-support__empty">
+        <lucide-icon name="inbox" [size]="32" [strokeWidth]="1.4" color="#B0BDD0"></lucide-icon>
+        Sin tickets para este filtro.
+      </div>
+
+      <button
+        *ngFor="let t of tickets; trackBy: trackById"
+        type="button"
+        class="ticket-row"
+        [class.ticket-row--active]="selected?.id === t.id"
+        (click)="openTicket(t.id)">
+        <div class="ticket-row__top">
+          <span class="status-chip" [attr.data-status]="t.status">{{ statusLabel(t.status) }}</span>
+          <span class="ticket-row__id">#{{ t.id }}</span>
+          <span class="ticket-row__date">{{ t.updated_at | date:'short' }}</span>
+        </div>
+        <div class="ticket-row__title">{{ t.title }}</div>
+        <div class="ticket-row__author" *ngIf="t.author">
+          <lucide-icon name="user" [size]="11" [strokeWidth]="2" color="#4A6A9B"></lucide-icon>
+          {{ t.author.first_name }} {{ t.author.last_name }} · {{ t.author.email }}
+        </div>
+        <div class="ticket-row__preview" *ngIf="t.last_message_preview">
+          {{ t.last_message_preview }}
+        </div>
+      </button>
+    </aside>
+
+    <!-- DETALLE / CHAT -->
+    <section class="admin-support__detail">
+
+      <div *ngIf="!selected && !isLoadingDetail" class="admin-support__empty">
+        <lucide-icon name="inbox" [size]="40" [strokeWidth]="1.2" color="#B0BDD0"></lucide-icon>
+        <div class="admin-support__empty-title">Selecciona un ticket</div>
+        <div class="admin-support__empty-hint">Elige un caso de la lista para ver la conversación.</div>
+      </div>
+
+      <div *ngIf="isLoadingDetail" class="admin-support__empty">
+        <div class="admin-support__spinner"></div>
+        Cargando conversación…
+      </div>
+
+      <ng-container *ngIf="selected && !isLoadingDetail">
+        <!-- Header detalle -->
+        <header class="detail-header">
+          <div class="detail-header__top">
+            <div>
+              <div class="detail-header__id">Reporte #{{ selected.id }}</div>
+              <h2 class="detail-header__title">{{ selected.title }}</h2>
+            </div>
+            <button class="detail-header__close" (click)="closeDetail()" aria-label="Cerrar">
+              <lucide-icon name="x" [size]="18" [strokeWidth]="2" color="#1B3A6B"></lucide-icon>
+            </button>
+          </div>
+
+          <div class="detail-header__meta" *ngIf="selected.author">
+            <span><lucide-icon name="user" [size]="12" [strokeWidth]="2" color="#4A6A9B"></lucide-icon>
+              {{ selected.author.first_name }} {{ selected.author.last_name }}
+            </span>
+            <span><lucide-icon name="mail" [size]="12" [strokeWidth]="2" color="#4A6A9B"></lucide-icon>
+              {{ selected.author.email }}
+            </span>
+            <span *ngIf="selected.author.role"><lucide-icon name="shield-check" [size]="12" [strokeWidth]="2" color="#4A6A9B"></lucide-icon>
+              {{ selected.author.role }}
+            </span>
+            <span><lucide-icon name="calendar" [size]="12" [strokeWidth]="2" color="#4A6A9B"></lucide-icon>
+              {{ selected.created_at | date:'short' }}
+            </span>
+          </div>
+
+          <div class="detail-header__url" *ngIf="selected.current_url">
+            <lucide-icon name="external-link" [size]="12" [strokeWidth]="2" color="#4A6A9B"></lucide-icon>
+            {{ selected.current_url }}
+          </div>
+
+          <div class="detail-header__status">
+            <span class="detail-header__status-label">Estado:</span>
+            <div class="status-selector">
+              <button
+                *ngFor="let s of statusOptions"
+                type="button"
+                class="status-option"
+                [attr.data-status]="s.value"
+                [class.status-option--active]="selected.status === s.value"
+                [disabled]="isUpdatingStatus"
+                (click)="changeStatus(s.value)">
+                {{ s.label }}
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <!-- Mensajes -->
+        <div #chatScroll class="detail-messages">
+          <div
+            *ngFor="let m of selected.messages; trackBy: trackById"
+            class="chat-msg"
+            [class.chat-msg--mine]="m.is_admin_reply"
+            [class.chat-msg--theirs]="!m.is_admin_reply">
+            <div class="chat-bubble">
+              <div class="chat-bubble__author">
+                <span *ngIf="m.is_admin_reply">Tú (Administrador)</span>
+                <span *ngIf="!m.is_admin_reply">{{ m.author?.first_name }} {{ m.author?.last_name }}</span>
+              </div>
+              <div class="chat-bubble__body">{{ m.body }}</div>
+              <div class="chat-bubble__time">{{ m.created_at | date:'short' }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reply -->
+        <div class="detail-reply" *ngIf="selected.status !== 'cerrado'">
+          <textarea
+            class="detail-reply__textarea"
+            [(ngModel)]="replyBody"
+            [disabled]="isReplying"
+            rows="2"
+            placeholder="Escribe una respuesta para el usuario..."
+            (keydown.enter)="$event.preventDefault(); sendReply()"></textarea>
+          <button
+            class="detail-reply__btn"
+            (click)="sendReply()"
+            [disabled]="isReplying || !replyBody.trim()">
+            <lucide-icon *ngIf="!isReplying" name="send" [size]="14" [strokeWidth]="2" color="#ffffff"></lucide-icon>
+            <span *ngIf="isReplying" class="detail-reply__spinner"></span>
+            Responder
+          </button>
+        </div>
+
+        <div *ngIf="selected.status === 'cerrado'" class="detail-closed">
+          <lucide-icon name="ban" [size]="14" [strokeWidth]="2" color="#4A6A9B"></lucide-icon>
+          Este reporte está cerrado y no admite más mensajes.
+        </div>
+      </ng-container>
+
+    </section>
+  </div>
+</div>
