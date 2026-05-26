@@ -97,6 +97,19 @@ export class ActionPlanCalendarGridComponent {
     this.hover.emit({ ...flat, x: rect.left, y: rect.top });
   }
 
+  /**
+   * Tap a nivel de celda: en móvil es el gesto principal para ver las
+   * actividades de un día (la celda es muy pequeña para listarlas). En
+   * desktop también funciona si el click cae fuera de un card — los
+   * cards llevan `stopPropagation` para no disparar también esto.
+   * Ignoramos días fuera del mes y días sin actividades.
+   */
+  onCellTap(day: CalendarDay): void {
+    if (!day.isCurrentMonth) return;
+    if (this.countActivitiesInDay(day) === 0) return;
+    this.openAgenda.emit(day);
+  }
+
   trackByPlan(_: number, plan: ActionPlanModel): number { return plan.id; }
   trackByObjective(_: number, obj: ActionPlanObjectiveModel): number { return obj.id ?? 0; }
   trackByActivity(_: number, act: ActionPlanActivityModel): number { return act.id ?? 0; }

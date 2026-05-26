@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuditLogModel } from '../action-plans/models/audit-log.model';
 import { AuditLogService } from '../action-plans/services/audit-log.service';
@@ -34,7 +35,7 @@ interface EntityOption {
 @Component({
   selector: 'app-audit-history',
   standalone: true,
-  imports: [CommonModule, FormsModule, Pagination, LucideAngularModule],
+  imports: [CommonModule, FormsModule, RouterModule, Pagination, LucideAngularModule],
   templateUrl: './audit-history.html',
 })
 export class AuditHistoryComponent implements OnInit {
@@ -300,6 +301,26 @@ export class AuditHistoryComponent implements OnInit {
       user_permission_overrides: 'user-cog',
     };
     return map[entity] ?? 'info';
+  }
+
+  /**
+   * Ruta de destino para el registro auditado, o `null` si la entidad no
+   * tiene pantalla navegable. El template usa `null` para renderizar el ID
+   * como texto plano.
+   */
+  recordLink(log: AuditLogModel): any[] | null {
+    switch (log.entity) {
+      case 'report':                    return ['/reports', log.entity_id];
+      case 'action_plan':               return ['/action-plans/calendar'];
+      case 'role_permissions':          return ['/admin/roles', log.entity_id];
+      case 'user_permission_overrides': return ['/users', log.entity_id, 'edit'];
+      default:                          return null;
+    }
+  }
+
+  /** Query params asociados al destino de `recordLink`. */
+  recordQueryParams(log: AuditLogModel): Record<string, any> | null {
+    return log.entity === 'action_plan' ? { planId: log.entity_id } : null;
   }
 
   entityBadgeClass(entity: string): string {

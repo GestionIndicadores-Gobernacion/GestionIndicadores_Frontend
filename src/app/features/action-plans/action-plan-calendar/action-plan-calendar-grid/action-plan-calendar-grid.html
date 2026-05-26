@@ -1,7 +1,7 @@
 <!-- CABECERA DÍAS -->
 <div class="grid grid-cols-7 border-b border-[#EBF0FA] bg-[#F8FAFD]">
     <div *ngFor="let day of WEEKDAYS"
-        class="py-3 text-center text-[10.5px] font-bold uppercase tracking-[1px] text-[#4A6A9B]">
+        class="py-2 sm:py-3 text-center text-[10px] sm:text-[10.5px] font-bold uppercase tracking-[1px] text-[#4A6A9B]">
         <span class="sm:hidden">{{ day[0] }}</span>
         <span class="hidden sm:inline">{{ day }}</span>
     </div>
@@ -11,15 +11,17 @@
 <!-- GRID -->
 <div class="grid grid-cols-7 divide-x divide-y divide-[#EBF0FA] border-b border-[#EBF0FA]">
     <div *ngFor="let day of calendarDays; trackBy: trackByDay"
-        class="h-[72px] sm:h-[155px] p-0.5 sm:p-2 flex flex-col gap-0.5 overflow-hidden"
-        [class.bg-[#F8FAFD]]="!day.isCurrentMonth" [class.bg-white]="day.isCurrentMonth">
+        class="min-h-[72px] sm:h-[155px] p-1 sm:p-2 flex flex-col gap-0.5 overflow-hidden transition-colors active:bg-[#EDF3FC]"
+        [class.bg-[#F8FAFD]]="!day.isCurrentMonth" [class.bg-white]="day.isCurrentMonth"
+        [style.cursor]="day.isCurrentMonth && countActivitiesInDay(day) > 0 ? 'pointer' : 'default'"
+        (click)="onCellTap(day)">
 
-        <!-- Número -->
-        <div class="flex items-center justify-between px-0.5 sm:px-0 mb-0.5">
+        <!-- Número + badge contador (desktop) -->
+        <div class="flex items-center justify-between sm:px-0 mb-0.5">
             <span
-                class="text-[10px] sm:text-xs font-bold w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center rounded-full"
+                class="text-[11px] sm:text-xs font-bold w-6 h-6 sm:w-6 sm:h-6 flex items-center justify-center rounded-full"
                 [ngClass]="day.isToday
-          ? 'bg-gradient-to-br from-[#1B3A6B] to-[#2d5fa8] text-white'
+          ? 'bg-gradient-to-br from-[#1B3A6B] to-[#2d5fa8] text-white shadow-sm'
           : day.isCurrentMonth ? 'text-[#1B3A6B]' : 'text-[#B3CCE8]'">
                 {{ day.date.getDate() }}
             </span>
@@ -30,31 +32,21 @@
             </span>
         </div>
 
-        <!-- Mobile: dots de colores (máx 3 visibles) -->
-        <div class="sm:hidden flex flex-col gap-0.5 px-0.5">
-            <ng-container *ngFor="let flat of getFlatActivitiesForDay(day).slice(0, 3); trackBy: trackByFlat">
-                <div class="flex items-center gap-1"
-                    [class.cursor-pointer]="canOpen(flat.plan, flat.activity)"
-                    [class.cursor-default]="!canOpen(flat.plan, flat.activity)"
-                    [class.opacity-70]="!canOpen(flat.plan, flat.activity)"
-                    (click)="canOpen(flat.plan, flat.activity) && report.emit({ plan: flat.plan, objective: flat.obj, activity: flat.activity, event: $event })">
-                    <span class="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                        [ngClass]="statusDot(flat.activity.status!, flat.activity.generates_report)"></span>
-                    <span class="text-[9px] font-medium truncate leading-tight" [ngClass]="{
-              'text-emerald-700': flat.activity.status === 'Realizado',
-              'text-purple-700': flat.activity.status === 'En Ejecución' && flat.activity.generates_report,
-              'text-blue-700': flat.activity.status === 'En Ejecución' && !flat.activity.generates_report,
-              'text-red-700': flat.activity.status === 'Pendiente',
-              'text-amber-700': flat.activity.status === 'Pendiente de Evidencia'
-            }">
-                        {{ flat.activity.name }}
-                    </span>
-                </div>
-            </ng-container>
-            <!-- +más móvil -->
-            <span *ngIf="countActivitiesInDay(day) > 3 && day.isCurrentMonth" (click)="openAgenda.emit(day)"
-                class="text-[9px] font-bold text-[#2d5fa8] cursor-pointer pl-2.5">
-                +{{ countActivitiesInDay(day) - 3 }} más
+        <!-- Mobile: barras horizontales apiladas (1 por actividad).
+             Cada barra es de ancho completo de la celda y 6px de alto —
+             mucho más visibles que dots y no requieren ser tappables
+             porque TODA la celda es el tap-target (`onCellTap` abre la
+             agenda del día con los detalles). -->
+        <div class="sm:hidden flex flex-col gap-1 mt-1"
+            *ngIf="day.isCurrentMonth && countActivitiesInDay(day) > 0">
+            <span *ngFor="let flat of getFlatActivitiesForDay(day).slice(0, 3); trackBy: trackByFlat"
+                class="block h-1.5 rounded w-full"
+                [ngClass]="statusDot(flat.activity.status!, flat.activity.generates_report)"></span>
+            <!-- Overflow legible -->
+            <span *ngIf="countActivitiesInDay(day) > 3"
+                class="text-[10.5px] font-bold leading-none mt-0.5 text-center"
+                style="color:#2d5fa8;">
+                +{{ countActivitiesInDay(day) - 3 }}
             </span>
         </div>
 
@@ -65,7 +57,7 @@
                 [class.cursor-pointer]="canOpen(flat.plan, flat.activity)"
                 [class.cursor-default]="!canOpen(flat.plan, flat.activity)"
                 [class.opacity-70]="!canOpen(flat.plan, flat.activity)"
-                (click)="canOpen(flat.plan, flat.activity) && report.emit({ plan: flat.plan, objective: flat.obj, activity: flat.activity, event: $event })"
+                (click)="$event.stopPropagation(); canOpen(flat.plan, flat.activity) && report.emit({ plan: flat.plan, objective: flat.obj, activity: flat.activity, event: $event })"
                 (mouseenter)="showTooltip({ plan: flat.plan, objective: flat.obj, activity: flat.activity }, $event)"
                 (mouseleave)="hover.emit(null)">
 
@@ -89,7 +81,9 @@
         </ng-container>
 
         <!-- +más desktop -->
-        <span *ngIf="countActivitiesInDay(day) > 3 && day.isCurrentMonth" (click)="openAgenda.emit(day)" class="hidden sm:block text-[10px] font-bold text-center py-0.5 rounded-md cursor-pointer
+        <span *ngIf="countActivitiesInDay(day) > 3 && day.isCurrentMonth"
+            (click)="$event.stopPropagation(); openAgenda.emit(day)"
+            class="hidden sm:block text-[10px] font-bold text-center py-0.5 rounded-md cursor-pointer
              bg-[#EBF0FA] text-[#2d5fa8] border border-[#D6E0F0] hover:bg-[#D6E4F7] transition mt-auto shrink-0">
             +{{ countActivitiesInDay(day) - 3 }} más
         </span>

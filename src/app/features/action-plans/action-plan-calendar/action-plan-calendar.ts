@@ -12,6 +12,8 @@ import { StrategyModel } from '../../../features/report/models/strategy.model';
 import { ActionPlanService } from '../../../features/action-plans/services/action-plan.service';
 import { ComponentsService } from '../../../features/report/services/components.service';
 import { StrategiesService } from '../../../features/report/services/strategies.service';
+import { UsersService } from '../../../features/user/services/users.service';
+import { UserResponse } from '../../../features/user/models/user.model';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { PermissionService } from '../../../core/services/permission.service';
@@ -95,6 +97,19 @@ export class ActionPlanCalendarComponent implements OnInit {
   filterMyPlans = false;
   currentUserId: number | null = null;
 
+  // ── Filtros añadidos ──────────────────────────────────────────────
+  /** Búsqueda libre por nombre de actividad. */
+  searchTerm = '';
+  /** Usuarios seleccionados para filtrar por responsable. Vacío = sin filtro. */
+  selectedResponsibleIds: number[] = [];
+  /** 'all' | 'yes' | 'no'. Filtra actividades por si generan reporte vinculado. */
+  generatesReportFilter: 'all' | 'yes' | 'no' = 'all';
+  /** Rango de fecha de entrega (YYYY-MM-DD). null = sin tope por ese lado. */
+  deliveryDateFrom: string | null = null;
+  deliveryDateTo: string | null = null;
+  /** Lista de usuarios cargada del backend para alimentar el multi-select. */
+  allUsers: UserResponse[] = [];
+
   currentUser: any = null;
   /**
    * Editar/eliminar plan o sus actividades: admin override, o creador del plan.
@@ -161,6 +176,7 @@ export class ActionPlanCalendarComponent implements OnInit {
     private actionPlanService: ActionPlanService,
     private strategiesService: StrategiesService,
     private componentsService: ComponentsService,
+    private usersService: UsersService,
     private toast: ToastService,
     private ngZone: NgZone,
     private cdr: ChangeDetectorRef,
@@ -181,6 +197,57 @@ export class ActionPlanCalendarComponent implements OnInit {
     this.currentUserId = user?.id ?? null;
     this.loadStrategies();
     this.loadPlans();
+    this.loadUsers();
+  }
+
+  private loadUsers(): void {
+    // Lista para alimentar el filtro multi-select de responsables. Si
+    // falla, el filtro queda inutilizable pero el calendar sigue
+    // funcionando — no es crítico.
+    this.usersService.getAll()
+      .pipe(catchError(() => of([])), takeUntilDestroyed(this.destroyRef))
+      .subscribe(users => {
+        this.allUsers = users ?? [];
+        this.cdr.detectChanges();
+      });
+  }
+
+  // ── Handlers de filtros nuevos ────────────────────────────────────
+
+  onSearchChange(term: string): void { this.searchTerm = term; this.cdr.detectChanges(); }
+  onResponsibleIdsChange(ids: number[]): void { this.selectedResponsibleIds = ids; this.cdr.detectChanges(); }
+  onGeneratesReportChange(f: 'all' | 'yes' | 'no'): void { this.generatesReportFilter = f; this.cdr.detectChanges(); }
+  onDeliveryDateFromChange(d: string | null): void { this.deliveryDateFrom = d; this.cdr.detectChanges(); }
+  onDeliveryDateToChange(d: string | null): void { this.deliveryDateTo = d; this.cdr.detectChanges(); }
+
+  clearAllFilters(): void {
+    this.selectedStrategyId = null;
+    this.selectedComponentId = null;
+    this.filteredComponents = [];
+    this.activeStatusFilter = 'all';
+    this.filterByBoss = false;
+    this.filterMyPlans = false;
+    this.searchTerm = '';
+    this.selectedResponsibleIds = [];
+    this.generatesReportFilter = 'all';
+    this.deliveryDateFrom = null;
+    this.deliveryDateTo = null;
+    this.selectedDayFilter = null;
+    this.loadPlans();   // estrategia/componente afectan la query del backend
+  }
+
+  /** True si hay al menos un filtro activo (excluyendo el día). */
+  get hasActiveFilters(): boolean {
+    return this.selectedStrategyId !== null
+        || this.selectedComponentId !== null
+        || this.activeStatusFilter !== 'all'
+        || this.filterByBoss
+        || this.filterMyPlans
+        || !!this.searchTerm
+        || this.selectedResponsibleIds.length > 0
+        || this.generatesReportFilter !== 'all'
+        || !!this.deliveryDateFrom
+        || !!this.deliveryDateTo;
   }
 
   exportPlans(): void {
@@ -273,20 +340,34 @@ export class ActionPlanCalendarComponent implements OnInit {
   }
 
   private openPlanFromNotification(planId: number): void {
-    const plan = this.plans.find(p => p.id === planId);
-    if (!plan) return;
-    // Navegar al mes de la primera actividad pendiente del plan
-    const firstActivity = (plan.plan_objectives ?? [])
-      .flatMap(o => o.activities ?? [])
-      .find(a => a.status !== 'Realizado');
-    if (firstActivity?.delivery_date) {
-      const d = new Date(firstActivity.delivery_date + 'T00:00:00');
-      this.currentDate = new Date(d.getFullYear(), d.getMonth(), 1);
-      this.buildCalendar();
-    }
-    // Activar filtro "mis planes" para que el plan sea visible
-    this.filterMyPlans = true;
-    this.cdr.detectChanges();
+    // Fetch directo por id — no depender de `this.plans`, que está
+    // filtrado por mes y puede no contener el plan target.
+    this.actionPlanService.getById(planId)
+      .pipe(catchError(() => of(null)), takeUntilDestroyed(this.destroyRef))
+      .subscribe(plan => {
+        if (!plan) {
+          this.toast.error('No se pudo encontrar el plan de acción.');
+          return;
+        }
+
+        // Navegar el calendar al mes de la primera actividad pendiente
+        // (o cualquier actividad si todas están realizadas) para que el
+        // contexto detrás del modal sea coherente.
+        const activities = (plan.plan_objectives ?? []).flatMap(o => o.activities ?? []);
+        const firstActivity = activities.find(a => a.status !== 'Realizado') ?? activities[0];
+        if (firstActivity?.delivery_date) {
+          const d = new Date(firstActivity.delivery_date + 'T00:00:00');
+          const target = new Date(d.getFullYear(), d.getMonth(), 1);
+          if (target.getTime() !== this.currentDate.getTime()) {
+            this.currentDate = target;
+            this.loadPlans();
+          }
+        }
+
+        this.planToEdit = plan;
+        this.showEditPlanModal = true;
+        this.cdr.detectChanges();
+      });
   }
 
   private openReportModalForActivity(activityId: number, evidenceUrl: string): void {
@@ -358,19 +439,67 @@ export class ActionPlanCalendarComponent implements OnInit {
 
   get displayPlans(): ActionPlanModel[] {
     let result = this.plans;
+
+    // ── Filtros a nivel de plan ─────────────────────────────────────
     if (this.filterMyPlans && this.currentUserId)
       result = result.filter(p =>
         p.responsible_user_id === this.currentUserId ||
         (p.responsible_user_ids ?? []).includes(this.currentUserId!)
       );
-    if (this.activeStatusFilter !== 'all')
-      result = result.map(p => ({ ...p, plan_objectives: (p.plan_objectives ?? []).map(o => ({ ...o, activities: (o.activities ?? []).filter(a => a.status === this.activeStatusFilter) })).filter(o => o.activities.length > 0) })).filter(p => p.plan_objectives.length > 0);
-    if (this.filterByBoss)
-      result = result.map(p => ({ ...p, plan_objectives: (p.plan_objectives ?? []).map(o => ({ ...o, activities: (o.activities ?? []).filter(a => a.requires_boss_assistance) })).filter(o => o.activities.length > 0) })).filter(p => p.plan_objectives.length > 0);
-    if (this.selectedDayFilter) {
-      const { y, m, d } = this.parseDateOnly(this.selectedDayFilter.toISOString().split('T')[0]);
-      result = result.map(p => ({ ...p, plan_objectives: (p.plan_objectives ?? []).map(o => ({ ...o, activities: (o.activities ?? []).filter(a => { const p2 = this.parseDateOnly(a.delivery_date); return p2.y === y && p2.m === m && p2.d === d; }) })).filter(o => o.activities.length > 0) })).filter(p => p.plan_objectives.length > 0);
+
+    if (this.selectedResponsibleIds.length > 0) {
+      const ids = new Set(this.selectedResponsibleIds);
+      result = result.filter(p => {
+        if (p.responsible_user_id != null && ids.has(p.responsible_user_id)) return true;
+        return (p.responsible_user_ids ?? []).some(id => ids.has(id));
+      });
     }
+
+    // ── Filtros a nivel de actividad (recortan el árbol) ────────────
+    const term = this.searchTerm.trim().toLowerCase();
+    const dateFrom = this.deliveryDateFrom;
+    const dateTo = this.deliveryDateTo;
+
+    const needsActivityFilter =
+      this.activeStatusFilter !== 'all'
+      || this.filterByBoss
+      || this.selectedDayFilter
+      || this.generatesReportFilter !== 'all'
+      || !!term
+      || !!dateFrom
+      || !!dateTo;
+
+    if (needsActivityFilter) {
+      const dayCmp = this.selectedDayFilter
+        ? this.parseDateOnly(this.selectedDayFilter.toISOString().split('T')[0])
+        : null;
+
+      result = result
+        .map(p => ({
+          ...p,
+          plan_objectives: (p.plan_objectives ?? [])
+            .map(o => ({
+              ...o,
+              activities: (o.activities ?? []).filter(a => {
+                if (this.activeStatusFilter !== 'all' && a.status !== this.activeStatusFilter) return false;
+                if (this.filterByBoss && !a.requires_boss_assistance) return false;
+                if (this.generatesReportFilter === 'yes' && !a.generates_report) return false;
+                if (this.generatesReportFilter === 'no' && a.generates_report) return false;
+                if (term && !(a.name ?? '').toLowerCase().includes(term)) return false;
+                if (dayCmp) {
+                  const p2 = this.parseDateOnly(a.delivery_date);
+                  if (p2.y !== dayCmp.y || p2.m !== dayCmp.m || p2.d !== dayCmp.d) return false;
+                }
+                if (dateFrom && a.delivery_date < dateFrom) return false;
+                if (dateTo && a.delivery_date > dateTo) return false;
+                return true;
+              }),
+            }))
+            .filter(o => o.activities.length > 0),
+        }))
+        .filter(p => p.plan_objectives.length > 0);
+    }
+
     return result;
   }
 

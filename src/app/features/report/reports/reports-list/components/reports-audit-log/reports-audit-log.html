@@ -115,7 +115,10 @@
   </div>
 
   <!-- Paginación -->
-  <app-pagination *ngIf="filtered.length > pageSize" [currentPage]="currentPage" [totalPages]="totalPages"
+  <app-pagination *ngIf="filtered.length > pageSize"
+    [currentPage]="currentPage" [totalPages]="totalPages"
+    [pageSize]="pageSize" [totalItems]="filtered.length"
+    itemLabel="eventos"
     (pageChange)="onPageChange($event)">
   </app-pagination>
 

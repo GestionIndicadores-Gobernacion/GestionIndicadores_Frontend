@@ -135,6 +135,15 @@ export class ReportsExplorerComponent implements OnChanges {
     }
   }
 
+  /** Último año (desde `allReports`) en que el componente tiene reportes, o null. */
+  private findLatestYearWithReports(componentId: number): number | null {
+    const years = this.allReports
+      .filter(r => r.component_id === componentId)
+      .map(r => new Date(r.report_date).getFullYear())
+      .filter(y => Number.isFinite(y));
+    return years.length ? Math.max(...years) : null;
+  }
+
   onChartBarClick(event: BarClickEvent): void {
     const params = new URLSearchParams();
     if (event.componentId) params.set('component', String(event.componentId));
@@ -144,7 +153,7 @@ export class ReportsExplorerComponent implements OnChanges {
     window.open(`/reports?${params.toString()}`, '_blank');
   }
 
-  private loadComponentData(id: number): void {
+  private loadComponentData(id: number, isAutoFallback = false): void {
     this.loadingComponent = true;
     this.showAllIndicators = false;
     this.indicatorsAggregate = null;
@@ -164,6 +173,22 @@ export class ReportsExplorerComponent implements OnChanges {
     .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
       next: ({ aggregate, indicators }) => {
+        // Si el componente no tiene reportes en `selectedYear`, saltar
+        // una sola vez al último año donde sí los tiene. Evita la
+        // pantalla "Este componente aún no tiene registros" cuando la
+        // realidad es que sí los tiene pero en otro año. El flag
+        // `isAutoFallback` previene bucles si la retentativa también
+        // vuelve vacía.
+        const noData = (aggregate?.total_reports ?? 0) === 0;
+        if (noData && !isAutoFallback) {
+          const latest = this.findLatestYearWithReports(id);
+          if (latest !== null && latest !== this.selectedYear) {
+            this.selectedYear = latest;          // local — no se emite al padre
+            this.loadComponentData(id, true);
+            return;
+          }
+        }
+
         this.componentAggregate = aggregate;
         this.indicatorsAggregate = indicators;
         this.loadingComponent = false;

@@ -202,11 +202,11 @@
 
     <!-- PAGINATION -->
 
-    <div class="flex justify-end">
-
-        <app-pagination [currentPage]="page" [totalPages]="totalPages" (pageChange)="changePage($event)">
-        </app-pagination>
-
-    </div>
+    <app-pagination
+        [currentPage]="page" [totalPages]="totalPages"
+        [pageSize]="pageSize" [totalItems]="filteredItems.length"
+        itemLabel="planes"
+        (pageChange)="changePage($event)">
+    </app-pagination>
 
 </div>

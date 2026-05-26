@@ -9,6 +9,7 @@ import { UserModel } from '../../../features/user/models/user.model';
 import { UsersService } from '../../../features/user/services/users.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { PageState, PageStateComponent } from '../../../shared/components/page-state/page-state';
+import { Pagination } from '../../../shared/components/pagination/pagination';
 import { CanDirective } from '../../../shared/directives/can';
 import { PERMS, ROLE_IDS } from '../../../core/constants/permissions';
 import { UserPermissionsDrawerComponent } from '../components/user-permissions-drawer/user-permissions-drawer';
@@ -22,6 +23,7 @@ import { UserPermissionsDrawerComponent } from '../components/user-permissions-d
     RouterModule,
     LucideAngularModule,
     PageStateComponent,
+    Pagination,
     CanDirective,
     UserPermissionsDrawerComponent,
   ],
@@ -29,8 +31,6 @@ import { UserPermissionsDrawerComponent } from '../components/user-permissions-d
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UsersListComponent implements OnInit {
-
-  Math = Math;
 
   currentPage = 1;
   pageSize = 10;
@@ -41,7 +41,7 @@ export class UsersListComponent implements OnInit {
   loadError = false;
   search = '';
 
-  sortColumn: keyof UserModel | '' = '';
+  sortColumn: keyof UserModel | 'role' | '' = 'first_name';
   sortDirection: 'asc' | 'desc' = 'asc';
 
   // Estado del drawer "Ver permisos". Vive en signals para que el template
@@ -113,9 +113,15 @@ export class UsersListComponent implements OnInit {
   get sortedUsers(): UserModel[] {
     if (!this.sortColumn) return this.filteredUsers;
 
-    return [...this.filteredUsers].sort((a: any, b: any) => {
-      const valA = (a[this.sortColumn] ?? '').toString().toLowerCase();
-      const valB = (b[this.sortColumn] ?? '').toString().toLowerCase();
+    const col = this.sortColumn;
+    const extract = (u: UserModel): string =>
+      col === 'role'
+        ? (u.role?.name ?? '').toLowerCase()
+        : ((u as any)[col] ?? '').toString().toLowerCase();
+
+    return [...this.filteredUsers].sort((a, b) => {
+      const valA = extract(a);
+      const valB = extract(b);
 
       if (valA < valB) return this.sortDirection === 'asc' ? -1 : 1;
       if (valA > valB) return this.sortDirection === 'asc' ? 1 : -1;
@@ -132,7 +138,7 @@ export class UsersListComponent implements OnInit {
     return Math.ceil(this.sortedUsers.length / this.pageSize);
   }
 
-  sortBy(column: keyof UserModel) {
+  sortBy(column: keyof UserModel | 'role') {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
