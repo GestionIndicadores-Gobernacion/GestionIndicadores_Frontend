@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import * as XLSX from 'xlsx';
+import type * as XLSXType from 'xlsx';
 import { ActionPlanModel } from '../models/action-plan.model';
 import { ComponentModel } from '../../report/models/component.model';
 import { StrategyModel } from '../../report/models/strategy.model';
@@ -7,21 +7,23 @@ import { StrategyModel } from '../../report/models/strategy.model';
 @Injectable({ providedIn: 'root' })
 export class ActionPlanExportService {
 
-  export(
+  async export(
     plans: ActionPlanModel[],
     strategies: StrategyModel[] = [],
     components: ComponentModel[] = [],
     filename = 'planes_de_accion'
-  ): void {
+  ): Promise<void> {
+    const XLSX = await import('xlsx');
     const wb = XLSX.utils.book_new();
-    this.buildMainSheet(wb, plans, strategies, components);
-    this.buildSummarySheet(wb, plans);
+    this.buildMainSheet(XLSX, wb, plans, strategies, components);
+    this.buildSummarySheet(XLSX, wb, plans);
     const date = new Date().toISOString().split('T')[0];
     XLSX.writeFile(wb, `${filename}_${date}.xlsx`);
   }
 
   private buildMainSheet(
-    wb: XLSX.WorkBook,
+    XLSX: typeof XLSXType,
+    wb: XLSXType.WorkBook,
     plans: ActionPlanModel[],
     strategies: StrategyModel[],
     components: ComponentModel[]
@@ -114,7 +116,7 @@ export class ActionPlanExportService {
     XLSX.utils.book_append_sheet(wb, ws, 'Actividades');
   }
 
-  private buildSummarySheet(wb: XLSX.WorkBook, plans: ActionPlanModel[]): void {
+  private buildSummarySheet(XLSX: typeof XLSXType, wb: XLSXType.WorkBook, plans: ActionPlanModel[]): void {
     const totalActivities = plans.reduce((t, p) =>
       t + (p.plan_objectives ?? []).reduce((t2, o) => t2 + (o.activities ?? []).length, 0), 0);
     const done = plans.reduce((t, p) =>
