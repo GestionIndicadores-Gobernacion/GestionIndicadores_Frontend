@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
 import { AfterViewInit, ChangeDetectorRef, Component, DestroyRef, EventEmitter, Input, NgZone, OnChanges, OnDestroy, Output, SimpleChanges, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import * as L from 'leaflet';
+import type * as L from 'leaflet';
 import { normalizeMunicipio, VALLE_CENTROIDS } from '../../../../../core/data/valle-geo.data';
 import { ReportModel } from '../../../../../features/report/models/report.model';
 import {
@@ -34,6 +34,9 @@ function geoNameToMunicipioKey(geoName: string): string {
   styleUrl: './reports-map.css',
 })
 export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy {
+
+  /** Runtime Leaflet module, loaded lazily via dynamic import. */
+  private L: typeof import('leaflet') | null = null;
 
   @Input() reports: ReportModel[] = [];
   @Input() allReports: ReportModel[] = [];
@@ -67,7 +70,7 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
 
   constructor(private cdr: ChangeDetectorRef, private zone: NgZone, private kpiService: ReportsKpiService) { }
 
-  ngAfterViewInit(): void { this.zone.runOutsideAngular(() => setTimeout(() => this.initMap(), 100)); }
+  ngAfterViewInit(): void { this.zone.runOutsideAngular(() => setTimeout(() => { void this.initMap(); }, 100)); }
   ngOnChanges(c: SimpleChanges): void {
     if (c['reports'] || c['componentMap'] || c['selectedYear'] || c['dateFrom'] || c['dateTo']) {
       this.fetchLocationKpis();
@@ -248,9 +251,12 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     this.selectedLayer = null;
   }
 
-  private initMap(): void {
+  private async initMap(): Promise<void> {
     const container = document.getElementById(this.MAP_ID);
     if (!container) return;
+    // Carga diferida de Leaflet: el chunk no entra al bundle inicial.
+    this.L = await import('leaflet');
+    const L = this.L;
     this.map = L.map(this.MAP_ID, {
       center: [3.8, -76.5],
       zoom: 8,
@@ -279,7 +285,8 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   }
 
   private renderGeoJson(): void {
-    if (!this.mapInitialized || !this.geoJsonData) return;
+    if (!this.mapInitialized || !this.geoJsonData || !this.L) return;
+    const L = this.L;
 
     if (this.geoJsonLayer) {
       this.map.removeLayer(this.geoJsonLayer);
