@@ -13,6 +13,10 @@ import { ImportDatasetModalComponent } from './import-dataset-modal/import-datas
 import { UpdateDatasetModalComponent } from './update-dataset-modal/update-dataset-modal';
 import { LucideAngularModule } from 'lucide-angular';
 import { PageState, PageStateComponent } from '../../../shared/components/page-state/page-state';
+import { CanDirective } from '../../../shared/directives/can';
+import { PERMS, ROLE_IDS } from '../../../core/constants/permissions';
+import { PermissionService } from '../../../core/services/permission.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-datasets-list',
@@ -26,11 +30,15 @@ import { PageState, PageStateComponent } from '../../../shared/components/page-s
     Pagination,
     LucideAngularModule,
     PageStateComponent,
+    CanDirective,
   ],
   templateUrl: './datasets-list.html',
   styleUrls: ['./datasets-list.css']
 })
 export class DatasetsListComponent implements OnInit {
+
+  readonly PERMS = PERMS;
+  readonly ROLE_IDS = ROLE_IDS;
 
   datasets: Dataset[] = [];
   filteredDatasets: Dataset[] = [];
@@ -65,8 +73,20 @@ export class DatasetsListComponent implements OnInit {
     private datasetService: DatasetService,
     private tableService: TableService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private permissionService: PermissionService,
+    private authService: AuthService,
   ) { }
+
+  get emptyHint(): string {
+    const roleId = this.authService.getTokenPayload()?.role_id ?? null;
+    const canManage = this.permissionService.hasPermissionOrRole(
+      PERMS.DATASETS_MANAGE, roleId, ROLE_IDS.ADMIN,
+    );
+    return canManage
+      ? 'Usa el botón Importar Excel para registrar el primero'
+      : 'Contacta a un administrador para registrar el primero';
+  }
 
   ngOnInit(): void {
     this.loadDatasets();

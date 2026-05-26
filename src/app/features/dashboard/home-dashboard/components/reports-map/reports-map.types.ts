@@ -42,14 +42,6 @@ export interface KpiOption {
   bg: string;
 }
 
-export interface MapStyle {
-  id: string;
-  label: string;
-  icon: string;
-  url: string;
-  attribution: string;
-}
-
 export const KPI_OPTIONS: KpiOption[] = [
   { id: 'asistencias', label: 'Asistencias', color: '#0891b2', bg: '#ECFEFF' },
   { id: 'denuncias', label: 'Denuncias', color: '#dc2626', bg: '#FEF2F2' },
@@ -57,11 +49,4 @@ export const KPI_OPTIONS: KpiOption[] = [
   { id: 'refugios', label: 'Refugios', color: '#7c3aed', bg: '#F5F3FF' },
   { id: 'ninos', label: 'Niños sensib.', color: '#db2777', bg: '#FDF2F8' },
   { id: 'emprendedores', label: 'Emprendedores', color: '#65a30d', bg: '#F7FEE7' },
-];
-
-export const MAP_STYLES: MapStyle[] = [
-  { id: 'light', label: 'Claro', icon: '☀️', url: 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', attribution: '© OpenStreetMap © CARTO' },
-  { id: 'dark', label: 'Oscuro', icon: '🌑', url: 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', attribution: '© OpenStreetMap © CARTO' },
-  { id: 'satellite', label: 'Satélite', icon: '🛰️', url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', attribution: '© Esri, Maxar' },
-  { id: 'topo', label: 'Topográfico', icon: '⛰️', url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', attribution: '© Esri, HERE' },
 ];

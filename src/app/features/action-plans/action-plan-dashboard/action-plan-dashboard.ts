@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { ActionPlanService } from '../../../features/action-plans/services/action-plan.service';
@@ -29,6 +29,8 @@ export interface UserDashboard {
   activities_without_report: number;
   activities: ActivityDetail[];
   expanded?: boolean;
+  /** Página actual del detalle expandido. Cada fila pagina independiente. */
+  detailPage?: number;
 }
 
 export interface ActivityDetail {
@@ -70,15 +72,19 @@ export class ActionPlanDashboardComponent implements OnInit {
   currentPage = 1;
   pageSize = 10;
 
-  sortCol: string = '';
-  sortDir: 'asc' | 'desc' = 'asc'
+  /** Tamaño de página del detalle de actividades por responsable. */
+  readonly detailPageSize = 10;
+
+  sortCol: string = 'completion';
+  sortDir: 'asc' | 'desc' = 'desc'
 
   private destroyRef = inject(DestroyRef);
 
   constructor(
     private actionPlanService: ActionPlanService,
     private toast: ToastService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router,
   ) { }
 
   ngOnInit(): void {
@@ -171,7 +177,74 @@ export class ActionPlanDashboardComponent implements OnInit {
 
   toggleUser(user: UserDashboard): void {
     user.expanded = !user.expanded;
+    if (user.expanded && !user.detailPage) user.detailPage = 1;
     this.cdr.detectChanges();
+  }
+
+  /** Slice paginado de las actividades del responsable, según `detailPage`. */
+  activitiesPage(user: UserDashboard): ActivityDetail[] {
+    const page = user.detailPage ?? 1;
+    const start = (page - 1) * this.detailPageSize;
+    return user.activities.slice(start, start + this.detailPageSize);
+  }
+
+  activitiesTotalPages(user: UserDashboard): number {
+    return Math.ceil((user.activities?.length ?? 0) / this.detailPageSize) || 1;
+  }
+
+  onDetailPageChange(user: UserDashboard, page: number): void {
+    user.detailPage = page;
+    this.cdr.detectChanges();
+  }
+
+  /**
+   * Una actividad es "reportable" desde aquí cuando aún no se ha cerrado
+   * (Realizado). La guarda real de quién puede reportar vive en el modal
+   * del calendar (`canReportActivity` / backend); este flag solo controla
+   * si el botón se muestra.
+   */
+  isReportable(act: ActivityDetail): boolean {
+    return act.status === 'Pendiente'
+        || act.status === 'En Ejecución'
+        || act.status === 'Pendiente de Evidencia';
+  }
+
+  /**
+   * Caso especial: actividad cerrada (Realizado) que genera un reporte
+   * vinculado, pero el reporte aún no se ha creado. Aquí el flujo no es
+   * reportar la actividad sino *crear* el reporte asociado.
+   */
+  needsLinkedReport(act: ActivityDetail): boolean {
+    return act.status === 'Realizado'
+        && !!act.generates_report
+        && !act.has_linked_report;
+  }
+
+  /** Hay alguna acción "Reportar / Crear reporte" disponible. */
+  hasReportAction(act: ActivityDetail): boolean {
+    return this.isReportable(act) || this.needsLinkedReport(act);
+  }
+
+  reportButtonLabel(act: ActivityDetail): string {
+    return this.needsLinkedReport(act) ? 'Crear reporte' : 'Reportar';
+  }
+
+  /**
+   * Despacha la acción según el caso:
+   *  - actividad cerrada sin reporte → /reports/new?activityId=...
+   *    (formulario de creación de reporte prellenado con la actividad).
+   *  - resto → /action-plans/calendar?reportActivity=... (modal de reporte).
+   */
+  goToReport(act: ActivityDetail): void {
+    if (this.needsLinkedReport(act)) {
+      this.router.navigate(['/reports/new'], {
+        queryParams: { activityId: act.id },
+      });
+      return;
+    }
+    this.router.navigate(['/action-plans/calendar'], {
+      queryParams: { reportActivity: act.id },
+    });
   }
 
   completionRate(user: UserDashboard): number {

@@ -2,9 +2,13 @@
     <div class="h-[3px] bg-gradient-to-r from-[#1B3A6B] via-[#2d5fa8] to-[#1B3A6B]"></div>
     <div class="px-4 sm:px-5 py-3 sm:py-4 flex flex-col gap-3 sm:gap-4">
 
-        <!-- Selects -->
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-end gap-2 sm:gap-4">
-            <div class="flex flex-col gap-1 w-full sm:w-auto sm:min-w-[220px]">
+        <!-- Inputs en grid responsivo: 1 col en móvil, 2 cols en sm,
+             distribución 12-col en lg+ (estrategia / componente / búsqueda /
+             responsables / fechas) para que nada se apriete ni desborde. -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2 sm:gap-3">
+
+            <!-- Estrategia -->
+            <div class="flex flex-col gap-1 lg:col-span-3">
                 <label class="text-[10.5px] font-bold uppercase tracking-[1px] text-[#1B3A6B]">Estrategia</label>
                 <select (change)="onStrategyChange($event)" class="text-sm rounded-xl px-3 py-2 w-full bg-[#F0F4FA] border border-[#D6E0F0] text-[#1B3A6B]
                  focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20 transition">
@@ -13,7 +17,8 @@
                 </select>
             </div>
 
-            <div class="flex flex-col gap-1 w-full sm:w-auto sm:min-w-[220px]">
+            <!-- Componente -->
+            <div class="flex flex-col gap-1 lg:col-span-3">
                 <label class="text-[10.5px] font-bold uppercase tracking-[1px] text-[#1B3A6B]">Componente</label>
                 <select (change)="onComponentChange($event)" [disabled]="!selectedStrategyId" class="text-sm rounded-xl px-3 py-2 w-full bg-[#F0F4FA] border border-[#D6E0F0] text-[#1B3A6B]
                  focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20
@@ -22,6 +27,81 @@
                     <option *ngFor="let c of filteredComponents" [value]="c.id">{{ c.name }}</option>
                 </select>
             </div>
+
+            <!-- Búsqueda por nombre de actividad -->
+            <div class="flex flex-col gap-1 lg:col-span-3">
+                <label class="text-[10.5px] font-bold uppercase tracking-[1px] text-[#1B3A6B]">
+                    Buscar actividad
+                </label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none inline-flex">
+                        <lucide-icon name="search" [size]="13" [strokeWidth]="2" color="#8A9DC0"></lucide-icon>
+                    </span>
+                    <input type="text"
+                        [ngModel]="searchTerm" (ngModelChange)="searchChange.emit($event)"
+                        placeholder="Nombre de la actividad..."
+                        class="w-full text-sm rounded-xl pl-9 pr-3 py-2 bg-[#F0F4FA] border border-[#D6E0F0] text-[#1B3A6B]
+                               focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20 outline-none transition" />
+                </div>
+            </div>
+
+            <!-- Responsables -->
+            <div class="flex flex-col gap-1 lg:col-span-3">
+                <label class="text-[10.5px] font-bold uppercase tracking-[1px] text-[#1B3A6B]">
+                    Responsables
+                </label>
+                <select (change)="onAddResponsible($event)"
+                    [disabled]="availableUsers.length === 0"
+                    class="text-sm rounded-xl px-3 py-2 w-full bg-[#F0F4FA] border border-[#D6E0F0] text-[#1B3A6B]
+                           focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20
+                           disabled:opacity-40 disabled:cursor-not-allowed transition">
+                    <option value="">
+                        {{ availableUsers.length === 0 && selectedUsers.length > 0
+                            ? 'Todos los responsables seleccionados'
+                            : 'Agregar responsable...' }}
+                    </option>
+                    <option *ngFor="let u of availableUsers" [value]="u.id">
+                        {{ userDisplayName(u) }}
+                    </option>
+                </select>
+            </div>
+
+            <!-- Rango de fecha de entrega — en lg comparten fila propia (col-span 6) -->
+            <div class="flex flex-col gap-1 lg:col-span-3">
+                <label class="text-[10.5px] font-bold uppercase tracking-[1px] text-[#1B3A6B]">
+                    Entrega desde
+                </label>
+                <input type="date"
+                    [ngModel]="deliveryDateFrom" (ngModelChange)="deliveryDateFromChange.emit($event || null)"
+                    class="w-full text-sm rounded-xl px-3 py-2 bg-[#F0F4FA] border border-[#D6E0F0] text-[#1B3A6B]
+                           focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20 outline-none transition" />
+            </div>
+            <div class="flex flex-col gap-1 lg:col-span-3">
+                <label class="text-[10.5px] font-bold uppercase tracking-[1px] text-[#1B3A6B]">
+                    Hasta
+                </label>
+                <input type="date"
+                    [ngModel]="deliveryDateTo" (ngModelChange)="deliveryDateToChange.emit($event || null)"
+                    class="w-full text-sm rounded-xl px-3 py-2 bg-[#F0F4FA] border border-[#D6E0F0] text-[#1B3A6B]
+                           focus:border-[#2d5fa8] focus:ring-2 focus:ring-[#2d5fa8]/20 outline-none transition" />
+            </div>
+
+        </div>
+
+        <!-- Chips de responsables seleccionados -->
+        <div *ngIf="selectedUsers.length > 0" class="flex flex-wrap gap-1.5">
+            <span *ngFor="let u of selectedUsers"
+                class="inline-flex items-center gap-1.5 text-[11px] font-semibold pl-2.5 pr-1 py-1 rounded-full border max-w-full"
+                style="background:#EDF3FC;color:#1B3A6B;border-color:#C4D6EE;">
+                <lucide-icon name="user" [size]="11" [strokeWidth]="2" color="currentColor" class="shrink-0"></lucide-icon>
+                <span class="truncate">{{ userDisplayName(u) }}</span>
+                <button type="button" (click)="onRemoveResponsible(u.id)"
+                    class="w-4 h-4 rounded-full flex items-center justify-center hover:brightness-110 transition shrink-0"
+                    style="background:#1B3A6B;color:white;"
+                    [attr.aria-label]="'Quitar ' + userDisplayName(u)">
+                    <lucide-icon name="x" [size]="9" [strokeWidth]="2.5" color="currentColor"></lucide-icon>
+                </button>
+            </span>
         </div>
 
         <!-- Quick filters — scroll horizontal en móvil -->
@@ -98,6 +178,44 @@
                 <lucide-icon name="user" [size]="12" [strokeWidth]="2" color="currentColor"></lucide-icon>
                 <span class="hidden xs:inline">Mis planes</span>
                 <span class="xs:hidden">Mis planes asignados</span>
+            </button>
+
+            <!-- Toggle de generates_report (3 estados: todos / sí / no) -->
+            <div class="flex rounded-lg border overflow-hidden shrink-0" style="border-color:#D6E0F0;">
+                <button type="button" (click)="generatesReportChange.emit('all')"
+                    class="px-2 py-1 text-[11px] font-bold transition"
+                    [style.background]="generatesReportFilter === 'all' ? '#1B3A6B' : 'white'"
+                    [style.color]="generatesReportFilter === 'all' ? 'white' : '#4A6A9B'">
+                    Todas
+                </button>
+                <button type="button" (click)="generatesReportChange.emit('yes')"
+                    class="px-2 py-1 text-[11px] font-bold border-l transition flex items-center gap-1"
+                    style="border-color:#D6E0F0;"
+                    [style.background]="generatesReportFilter === 'yes' ? '#059669' : 'white'"
+                    [style.color]="generatesReportFilter === 'yes' ? 'white' : '#047857'"
+                    title="Solo actividades que generan reporte vinculado">
+                    <lucide-icon name="file-plus" [size]="11" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                    Genera
+                </button>
+                <button type="button" (click)="generatesReportChange.emit('no')"
+                    class="px-2 py-1 text-[11px] font-bold border-l transition"
+                    style="border-color:#D6E0F0;"
+                    [style.background]="generatesReportFilter === 'no' ? '#3f3f46' : 'white'"
+                    [style.color]="generatesReportFilter === 'no' ? 'white' : '#52525b'"
+                    title="Solo actividades sin reporte vinculado">
+                    Sin
+                </button>
+            </div>
+
+            <!-- Limpiar todos los filtros -->
+            <button *ngIf="hasActiveFilters" (click)="clearAll.emit()"
+                class="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs font-semibold rounded-lg border transition shrink-0"
+                style="background:white;color:#dc2626;border-color:#FECACA;"
+                onmouseover="this.style.background='#FEF2F2'"
+                onmouseout="this.style.background='white'">
+                <lucide-icon name="x" [size]="12" [strokeWidth]="2.2" color="currentColor"></lucide-icon>
+                <span class="hidden xs:inline">Limpiar filtros</span>
+                <span class="xs:hidden">Limpiar</span>
             </button>
 
             <!-- Badges de estado -->
