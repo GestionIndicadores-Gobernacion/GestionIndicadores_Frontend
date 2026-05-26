@@ -79,15 +79,24 @@
 
             </div>
 
-            <div *ngIf="indicatorTotal !== null" class="text-sm font-bold text-[#2D5FA8]">
+            <!-- Total clickeable — abre /reports filtrado por componente + año. -->
+            <button *ngIf="indicatorTotal !== null"
+                type="button"
+                (click)="onTotalClick()"
+                class="inline-flex items-center gap-1 text-sm font-bold rounded-lg px-2.5 py-1 transition cursor-pointer border"
+                style="background:#EDF3FC;color:#2D5FA8;border-color:#C4D6EE;"
+                onmouseover="this.style.background='#D6E4F7'"
+                onmouseout="this.style.background='#EDF3FC'"
+                title="Ver reportes de este componente">
 
                 {{ indicatorTotal | number }}
 
-                <span class="text-xs font-medium text-[#6B87B2] ml-1">
-                    total
-                </span>
+                <span class="text-xs font-medium" style="color:#6B87B2;">total</span>
 
-            </div>
+                <lucide-icon name="external-link" [size]="11" [strokeWidth]="2"
+                    color="currentColor" class="opacity-70"></lucide-icon>
+
+            </button>
 
         </div>
 

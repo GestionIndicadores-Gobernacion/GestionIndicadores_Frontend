@@ -67,14 +67,14 @@ export class MenuService {
         label: 'Bases de datos',
         icon: 'database',
         roles: [3],
-        perms: [PERMS.DATASETS_MANAGE],
+        perms: [PERMS.DATASETS_READ, PERMS.DATASETS_MANAGE],
         children: [
           {
             label: 'Gestión de Base de Datos y Tablas',
             route: 'datasets',
             icon: 'table',
             roles: [3],
-            perms: [PERMS.DATASETS_MANAGE],
+            perms: [PERMS.DATASETS_READ, PERMS.DATASETS_MANAGE],
           },
         ],
       },

@@ -120,21 +120,26 @@ export class StrategyDashboardComponent implements OnInit, OnChanges {
     return this.strategies.length - this.visibleStrategies.length;
   }
 
-  private getMaxValue(): number {
-    return Math.max(
-      ...this.visibleStrategies.map(x => Math.max(
-        x.progress?.current_year_actual ?? 0,
-        x.progress?.current_year_goal ?? 0
-      )), 1
-    );
-  }
-
+  /**
+   * Largo del relleno de la barra: % de cumplimiento de la propia
+   * estrategia (real / meta), tope visual 100%. Antes esto se normalizaba
+   * contra el máximo global de TODAS las estrategias visibles, lo que
+   * hacía que un 100% real renderizara como 20% de la barra cuando otra
+   * estrategia tenía una meta mucho mayor.
+   */
   getBarPercent(s: StrategyModel): number {
-    return Math.min(((s.progress?.current_year_actual ?? 0) / this.getMaxValue()) * 100, 100);
+    return Math.min(this.getPercent(s), 100);
   }
 
-  getGoalPercent(s: StrategyModel): number {
-    return Math.min(((s.progress?.current_year_goal ?? 0) / this.getMaxValue()) * 100, 100);
+  /** % crudo (puede exceder 100). Usado para el badge "+X%" cuando hay sobrecumplimiento. */
+  getRawPercent(s: StrategyModel): number {
+    return this.getPercent(s);
+  }
+
+  /** Diferencia sobre 100 (sobrecumplimiento). 0 si no aplica. */
+  getOverflowPercent(s: StrategyModel): number {
+    const p = this.getPercent(s);
+    return p > 100 ? p - 100 : 0;
   }
 
   getPercent(s: StrategyModel): number { return s.progress?.percent ?? 0; }

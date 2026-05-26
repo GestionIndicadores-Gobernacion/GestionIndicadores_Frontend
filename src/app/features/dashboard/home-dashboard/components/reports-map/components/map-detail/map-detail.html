@@ -1,4 +1,6 @@
-<div class="absolute right-3 top-12 bottom-3 w-64 z-[999] flex flex-col overflow-hidden"
+<div class="absolute z-[999] flex flex-col overflow-hidden
+            left-3 right-3 bottom-3 top-auto max-h-[55vh]
+            md:left-auto md:right-3 md:top-12 md:bottom-3 md:w-64 md:max-h-none"
     style="background:rgba(255,255,255,0.97);border:1.5px solid #D6E0F0;border-radius:16px;backdrop-filter:blur(12px);box-shadow:0 8px 32px rgba(0,0,0,0.12);">
 
     <!-- Header -->
@@ -87,7 +89,18 @@
             </div>
         </div>
 
-        <p *ngIf="municipio.indicators.length === 0 && municipio.indicatorsByComponent.length === 0"
+        <div *ngIf="municipio.totalReports === 0"
+            class="flex flex-col items-center gap-2 py-8 text-center">
+            <div class="w-10 h-10 rounded-2xl flex items-center justify-center" style="background:#F0F4FA;">
+                <lucide-icon name="file-x" [size]="18" color="#8A9DC0" [strokeWidth]="1.8"></lucide-icon>
+            </div>
+            <p class="text-[12px] font-semibold" style="color:#4A6A9B;">Sin reportes registrados</p>
+            <p class="text-[10.5px] leading-snug px-2" style="color:#B0BDD0;">
+                Este municipio aún no tiene reportes en el período seleccionado.
+            </p>
+        </div>
+
+        <p *ngIf="municipio.totalReports > 0 && municipio.indicators.length === 0 && municipio.indicatorsByComponent.length === 0"
             class="text-[11px] text-center py-6" style="color:#8A9DC0;">
             Sin indicadores
         </p>

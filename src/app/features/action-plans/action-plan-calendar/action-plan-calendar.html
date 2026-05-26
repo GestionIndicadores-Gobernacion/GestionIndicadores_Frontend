@@ -55,10 +55,24 @@
         <app-action-plan-filters [strategies]="strategies" [filteredComponents]="filteredComponents"
             [selectedStrategyId]="selectedStrategyId" [activeStatusFilter]="activeStatusFilter"
             [filterByBoss]="filterByBoss" [filterMyPlans]="filterMyPlans" [filteredPlansCount]="filteredPlansCount"
-            [selectedDayFilter]="selectedDayFilter" (strategyChange)="onStrategyChange($event)"
+            [selectedDayFilter]="selectedDayFilter"
+            [searchTerm]="searchTerm"
+            [users]="allUsers"
+            [selectedResponsibleIds]="selectedResponsibleIds"
+            [generatesReportFilter]="generatesReportFilter"
+            [deliveryDateFrom]="deliveryDateFrom"
+            [deliveryDateTo]="deliveryDateTo"
+            [hasActiveFilters]="hasActiveFilters"
+            (strategyChange)="onStrategyChange($event)"
             (componentChange)="onComponentChange($event)" (statusChange)="onStatusFilterChange($event)"
             (bossChange)="onBossFilterChange($event)" (myPlansChange)="onMyPlansFilterChange($event)"
-            (clearDayFilter)="clearDayFilter()">
+            (clearDayFilter)="clearDayFilter()"
+            (searchChange)="onSearchChange($event)"
+            (responsibleIdsChange)="onResponsibleIdsChange($event)"
+            (generatesReportChange)="onGeneratesReportChange($event)"
+            (deliveryDateFromChange)="onDeliveryDateFromChange($event)"
+            (deliveryDateToChange)="onDeliveryDateToChange($event)"
+            (clearAll)="clearAllFilters()">
         </app-action-plan-filters>
 
         <!-- CALENDARIO -->

@@ -1,8 +1,8 @@
-<div class="min-h-screen">
+<div class="min-h-screen" style="background:#F0F4FA;">
 
     <!-- PAGE HEADER -->
-    <div class="px-4 sm:px-6 pt-7 pb-6">
-        <div class="flex flex-wrap items-center justify-between gap-4">
+    <div class="px-4 sm:px-6 pt-7 pb-6 border-b" style="background:white;border-color:#D6E0F0;">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-4">
                 <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"
                     style="background: linear-gradient(135deg, #1B3A6B, #2d5fa8);">
@@ -41,45 +41,12 @@
 
             <ng-container *ngIf="reports.length > 0">
 
-                <!-- TABLA -->
-                <div class="space-y-0" #tableSection>
-                    <div class="h-[3px] w-full rounded-t-xl"
-                        style="background: linear-gradient(90deg, #1B3A6B 0%, #2d5fa8 50%, #1B3A6B 100%);"></div>
-
-                    <div class="rounded-b-xl overflow-hidden border" style="border-color: #D6E0F0; background: white;">
-
-                        <div class="flex items-center justify-between gap-3 px-5 py-4 border-b"
-                            style="border-color: #D6E0F0; background: #F8FAFD;">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                                    style="background: #D6E4F7;">
-                                    <lucide-icon name="list" [size]="14" [strokeWidth]="2.2" color="#1B3A6B"></lucide-icon>
-                                </div>
-                                <div>
-                                    <span class="text-[11px] font-bold uppercase tracking-[1px]"
-                                        style="color: #1B3A6B;">
-                                        Registros
-                                    </span>
-                                    <p class="text-[10.5px] mt-0.5" style="color: #8A9DC0;">
-                                        Administración y edición de reportes
-                                    </p>
-                                </div>
-                            </div>
-                            <span class="text-[11px] font-semibold px-3 py-1 rounded-full"
-                                style="background: #D6E4F7; border: 1px solid #B3CCE8; color: #1B3A6B;">
-                                {{ reports.length }} {{ reports.length === 1 ? 'reporte' : 'reportes' }}
-                            </span>
-                        </div>
-
-                        <div class="p-5">
-                            <app-reports-table [reports]="reports" [strategyMap]="strategyMap"
-                                [componentMap]="componentMap" [currentUserId]="currentUserId" [isViewer]="isViewer" [isAdmin]="isAdmin"
-                                [chartFilter]="chartFilter" (delete)="deleteReport($event)"
-                                (clearFilter)="clearChartFilter()">
-                            </app-reports-table>
-                        </div>
-
-                    </div>
+                <div #tableSection>
+                    <app-reports-table [reports]="reports" [strategyMap]="strategyMap"
+                        [componentMap]="componentMap" [currentUserId]="currentUserId" [isViewer]="isViewer" [isAdmin]="isAdmin"
+                        [chartFilter]="chartFilter" (delete)="deleteReport($event)"
+                        (clearFilter)="clearChartFilter()">
+                    </app-reports-table>
                 </div>
 
             </ng-container>

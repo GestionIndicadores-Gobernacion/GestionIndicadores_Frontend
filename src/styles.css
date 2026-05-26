@@ -7,3 +7,14 @@
 button {
     cursor: pointer;
 }
+
+/* Quitar el rectángulo de focus que Chrome pinta sobre los <path> del SVG
+ * de Leaflet al hacer click en un municipio. La regla está global porque
+ * Leaflet crea los paths fuera del scope de ViewEncapsulation. */
+.leaflet-container *:focus,
+.leaflet-container *:focus-visible,
+.leaflet-interactive,
+.leaflet-interactive:focus {
+    outline: none !important;
+    outline-offset: 0 !important;
+}

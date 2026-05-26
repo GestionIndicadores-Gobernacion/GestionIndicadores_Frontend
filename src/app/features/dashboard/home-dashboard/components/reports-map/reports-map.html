@@ -1,8 +1,8 @@
 <!-- reports-map.html -->
-<div class="relative w-full" style="min-height:580px;">
+<div class="relative w-full min-h-[500px] md:min-h-[880px]">
 
-    <div [id]="MAP_ID" class="absolute inset-0 w-full h-full"
-        style="min-height:580px;z-index:0;border-radius:0 0 12px 12px;"></div>
+    <div [id]="MAP_ID" class="absolute inset-0 w-full h-full min-h-[500px] md:min-h-[880px]"
+        style="z-index:0;border-radius:0 0 12px 12px;"></div>
 
     <app-map-toolbar [selectedKpi]="selectedKpi" [selectedYear]="selectedYear" [availableYears]="availableYears"
         (kpiChange)="onKpiChange($event)" (yearChange)="onYearChange($event)">

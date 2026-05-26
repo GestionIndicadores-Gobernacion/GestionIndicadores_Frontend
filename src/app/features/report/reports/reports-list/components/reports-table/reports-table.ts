@@ -44,7 +44,7 @@ export class ReportsTableComponent implements OnChanges {
   searchTerm = '';
 
   // SORT
-  sortColumn: keyof ReportModel | 'strategy_name' = 'report_date';
+  sortColumn: keyof ReportModel | 'strategy_name' = 'created_at';
   sortDirection: 'asc' | 'desc' = 'desc';
 
   // PAGINATION

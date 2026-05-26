@@ -89,15 +89,16 @@
                 Avance real vs meta programada por estrategia
               </p>
             </div>
-            <!-- leyenda -->
+            <!-- leyenda — la barra representa % de cumplimiento (real/meta),
+                 saturada en 100%. El sobrecumplimiento se muestra como chip. -->
             <div class="flex items-center gap-5">
               <div class="flex items-center gap-2">
                 <div class="w-8 h-2.5 rounded-full" style="background:linear-gradient(90deg,#16a34a,#22c55e);"></div>
-                <span class="text-[10px] font-semibold" style="color:#4A6A9B;">Real</span>
+                <span class="text-[10px] font-semibold" style="color:#4A6A9B;">Cumplimiento</span>
               </div>
               <div class="flex items-center gap-2">
-                <div class="w-8 h-2.5 rounded-full border-2" style="border-color:#1B3A6B;background:transparent;"></div>
-                <span class="text-[10px] font-semibold" style="color:#4A6A9B;">Meta</span>
+                <div class="w-2 h-2.5 rounded-sm" style="background:#1B3A6B;"></div>
+                <span class="text-[10px] font-semibold" style="color:#4A6A9B;">Meta = 100%</span>
               </div>
             </div>
           </div>
@@ -127,22 +128,31 @@
                     </span>
                   </div>
                 </div>
-                <!-- porcentaje -->
-                <div class="shrink-0 text-right">
+                <!-- porcentaje + chip de sobrecumplimiento -->
+                <div class="shrink-0 text-right flex items-baseline gap-1.5 justify-end">
                   <span class="text-[22px] font-bold leading-none" [style.color]="getProgressColor(getPercent(s))">
                     {{ getPercent(s) | number:'1.0-1' }}%
+                  </span>
+                  <span *ngIf="getOverflowPercent(s) > 0"
+                    class="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                    style="background:#DCFCE7;color:#15803D;border:1px solid #86EFAC;"
+                    title="Sobrecumplimiento sobre la meta">
+                    +{{ getOverflowPercent(s) | number:'1.0-0' }}%
                   </span>
                 </div>
               </div>
 
-              <!-- barra -->
-              <div class="relative h-5 rounded-full overflow-hidden" style="background:#EEF2F9;">
+              <!-- barra de cumplimiento (0–100% saturado). El extremo
+                   derecho ES la meta; no hace falta un marcador separado. -->
+              <div class="relative h-5 rounded-full overflow-hidden"
+                   style="background:#EEF2F9;box-shadow:inset 0 1px 2px rgba(27,58,107,0.06);">
                 <div class="absolute left-0 top-0 h-full rounded-full transition-all duration-700"
-                  [style.width.%]="getBarPercent(s)" [style.background]="getProgressBarColor(getPercent(s))">
+                  [style.width.%]="getBarPercent(s)"
+                  [style.background]="getProgressBarColor(getPercent(s))">
                 </div>
-                <div class="absolute top-0 bottom-0 w-[2px] transition-all duration-700"
-                  [style.left.%]="getGoalPercent(s)" style="background:#1B3A6B;opacity:0.5;">
-                </div>
+                <!-- Tope de la meta — siempre en el extremo derecho. -->
+                <div class="absolute top-0 bottom-0 right-0 w-[3px]"
+                  style="background:#1B3A6B;opacity:0.55;"></div>
               </div>
 
               <!-- valores bajo barra -->

@@ -297,9 +297,23 @@
                             </span>
 
                             <!-- ID del registro -->
-                            <span class="text-[12px] font-medium" style="color:#4A6A9B;">
-                                #{{ log.entity_id }}
-                            </span>
+                            <ng-container *ngIf="recordLink(log) as link; else plainId">
+                                <a [routerLink]="link"
+                                    [queryParams]="recordQueryParams(log)"
+                                    class="inline-flex items-center gap-1 text-[12px] font-semibold rounded-md px-1.5 py-0.5 transition self-start sm:self-auto w-max"
+                                    style="color:#1B3A6B; background:#EDF3FC; border:1px solid #C4D6EE;"
+                                    onmouseover="this.style.background='#D6E4F7'"
+                                    onmouseout="this.style.background='#EDF3FC'"
+                                    title="Ir al registro">
+                                    #{{ log.entity_id }}
+                                    <lucide-icon name="external-link" [size]="10" [strokeWidth]="2" color="currentColor" class="opacity-70"></lucide-icon>
+                                </a>
+                            </ng-container>
+                            <ng-template #plainId>
+                                <span class="text-[12px] font-medium" style="color:#4A6A9B;">
+                                    #{{ log.entity_id }}
+                                </span>
+                            </ng-template>
 
                             <!-- Fecha -->
                             <span class="text-[11px] whitespace-nowrap" style="color:#8A9DC0;">
@@ -478,11 +492,12 @@
                 </div>
 
                 <!-- PAGINACIÓN -->
-                <div *ngIf="filtered.length > pageSize" class="flex justify-end">
-                    <app-pagination [currentPage]="currentPage" [totalPages]="totalPages"
-                        (pageChange)="onPageChange($event)">
-                    </app-pagination>
-                </div>
+                <app-pagination *ngIf="filtered.length > pageSize"
+                    [currentPage]="currentPage" [totalPages]="totalPages"
+                    [pageSize]="pageSize" [totalItems]="filtered.length"
+                    itemLabel="eventos"
+                    (pageChange)="onPageChange($event)">
+                </app-pagination>
 
             </ng-container>
 
