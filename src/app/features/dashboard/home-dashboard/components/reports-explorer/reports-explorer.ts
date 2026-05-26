@@ -60,6 +60,14 @@ export class ReportsExplorerComponent implements OnChanges {
   indicatorsAggregate: ComponentIndicatorsAggregate | null = null;
   showAllIndicators = false;
 
+  /**
+   * Año efectivo usado internamente para queries y el binding al chart.
+   * Se mantiene separado del @Input() selectedYear para no mutar el
+   * input (anti-patrón que dispara NG0100 cuando el auto-fallback
+   * cambia el año durante un ciclo de detección).
+   */
+  effectiveYear: number = new Date().getFullYear();
+
   get indicators(): IndicatorDetail[] {
     const config = this.selectedComponentId
       ? (COMPONENT_EXPLORER_CONFIG[this.selectedComponentId] ?? DEFAULT_EXPLORER_CONFIG)
@@ -108,6 +116,10 @@ export class ReportsExplorerComponent implements OnChanges {
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['selectedYear']) {
+      this.effectiveYear = changes['selectedYear'].currentValue;
+    }
+
     if (changes['components']) {
       if (!changes['components'].firstChange) {
         this.selectedComponentId = null;
@@ -148,24 +160,25 @@ export class ReportsExplorerComponent implements OnChanges {
     const params = new URLSearchParams();
     if (event.componentId) params.set('component', String(event.componentId));
     if (event.label) params.set('label', event.label);
-    params.set('year', String(this.selectedYear));
+    params.set('year', String(this.effectiveYear));
 
     window.open(`/reports?${params.toString()}`, '_blank');
   }
 
-  private loadComponentData(id: number, isAutoFallback = false): void {
+  private loadComponentData(id: number, isAutoFallback = false, yearOverride?: number): void {
+    const queryYear = yearOverride ?? this.effectiveYear;
     this.loadingComponent = true;
     this.showAllIndicators = false;
     this.indicatorsAggregate = null;
 
     forkJoin({
       aggregate: this.reportsService.aggregateByComponent(
-        id, this.selectedYear,
+        id, queryYear,
         this.dateFrom ?? undefined,
         this.dateTo ?? undefined
       ),
       indicators: this.reportsService.aggregateIndicatorsByComponent(
-        id, this.selectedYear,
+        id, queryYear,
         this.dateFrom ?? undefined,
         this.dateTo ?? undefined
       )
@@ -173,7 +186,7 @@ export class ReportsExplorerComponent implements OnChanges {
     .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
       next: ({ aggregate, indicators }) => {
-        // Si el componente no tiene reportes en `selectedYear`, saltar
+        // Si el componente no tiene reportes en `queryYear`, saltar
         // una sola vez al último año donde sí los tiene. Evita la
         // pantalla "Este componente aún no tiene registros" cuando la
         // realidad es que sí los tiene pero en otro año. El flag
@@ -182,9 +195,17 @@ export class ReportsExplorerComponent implements OnChanges {
         const noData = (aggregate?.total_reports ?? 0) === 0;
         if (noData && !isAutoFallback) {
           const latest = this.findLatestYearWithReports(id);
-          if (latest !== null && latest !== this.selectedYear) {
-            this.selectedYear = latest;          // local — no se emite al padre
-            this.loadComponentData(id, true);
+          if (latest !== null && latest !== queryYear) {
+            // Diferimos la mutación a un microtask para que no caiga
+            // dentro del ciclo de CD actual (la HTTP subscribe puede
+            // ejecutarse dentro del tick de zone.js que verifica
+            // los bindings → NG0100 "Expression has changed after it
+            // was checked"). El siguiente tick re-ejecuta el load
+            // con el año correcto fuera del ciclo verificado.
+            Promise.resolve().then(() => {
+              this.effectiveYear = latest;
+              this.loadComponentData(id, true, latest);
+            });
             return;
           }
         }
@@ -206,7 +227,7 @@ export class ReportsExplorerComponent implements OnChanges {
   }
 
   onYearChange(year: number): void {
-    this.selectedYear = year;
+    this.effectiveYear = year;
     this.yearChange.emit(year);
 
     if (this.selectedComponentId) {
