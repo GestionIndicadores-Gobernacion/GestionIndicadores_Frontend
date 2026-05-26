@@ -1,3 +1,8 @@
+/* Carga diferida del CSS de Leaflet con el componente (no entra al bundle
+ * inicial porque el componente está lazy-loaded vía el ruteo / dynamic
+ * import del JS). */
+@import 'leaflet/dist/leaflet.css';
+
 :host {
   display: block;
   height: 100%;
