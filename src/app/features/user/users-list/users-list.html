@@ -168,9 +168,21 @@
 
 
 
-                  <th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.8px]"
-                    style="color:rgba(255,255,255,0.85)">
-                    Rol
+                  <th (click)="sortBy('role')" class="px-5 py-3 text-left cursor-pointer select-none"
+                    onmouseover="this.style.background='rgba(255,255,255,0.08)'"
+                    onmouseout="this.style.background='transparent'">
+
+                    <div class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.8px]"
+                      style="color:rgba(255,255,255,0.85)">
+
+                      Rol
+
+                      <lucide-icon *ngIf="sortColumn === 'role'"
+                        [name]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'"
+                        [size]="12" [strokeWidth]="2.5" color="currentColor"></lucide-icon>
+
+                    </div>
+
                   </th>
 
                   <th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.8px]"

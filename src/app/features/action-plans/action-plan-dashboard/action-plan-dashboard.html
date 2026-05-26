@@ -280,10 +280,12 @@
                                                             style="color:#4A6A9B;">Evidencia</th>
                                                         <th class="px-4 py-2 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
                                                             style="color:#4A6A9B;">Reporte</th>
+                                                        <th class="px-4 py-2 text-center text-[10px] font-bold uppercase tracking-[0.8px]"
+                                                            style="color:#4A6A9B;">Acción</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr *ngFor="let act of user.activities; let j = index"
+                                                    <tr *ngFor="let act of activitiesPage(user); let j = index"
                                                         style="border-top:1px solid #EEF2F9;"
                                                         [style.background]="j % 2 === 0 ? 'white' : '#FAFCFF'">
                                                         <td class="px-4 py-2.5 text-[12px]"
@@ -335,9 +337,44 @@
                                                                 <span class="text-[11px]" style="color:#8A9DC0;">—</span>
                                                             </ng-template>
                                                         </td>
+
+                                                        <!-- Acción "Reportar / Crear reporte":
+                                                             - Pendiente / En Ejecución / Pendiente de Evidencia → abre
+                                                               el modal de reporte en el calendar.
+                                                             - Realizado sin reporte vinculado → abre el formulario de
+                                                               creación de reporte prellenado con la actividad.
+                                                             El permiso real (responsable / admin) lo valida la pantalla
+                                                             destino. -->
+                                                        <td class="px-4 py-2.5 text-center">
+                                                            <button *ngIf="hasReportAction(act)"
+                                                                (click)="goToReport(act)"
+                                                                class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold rounded-lg border transition cursor-pointer"
+                                                                [style.background]="needsLinkedReport(act) ? '#FEF3C7' : '#EDF3FC'"
+                                                                [style.color]="needsLinkedReport(act) ? '#92400E' : '#1B3A6B'"
+                                                                [style.borderColor]="needsLinkedReport(act) ? '#FCD34D' : '#C4D6EE'"
+                                                                [title]="needsLinkedReport(act) ? 'Crear el reporte vinculado a esta actividad' : 'Ir al calendario y reportar esta actividad'">
+                                                                <lucide-icon
+                                                                    [name]="needsLinkedReport(act) ? 'file-plus' : 'clipboard-check'"
+                                                                    [size]="11" [strokeWidth]="2.2" color="currentColor"></lucide-icon>
+                                                                {{ reportButtonLabel(act) }}
+                                                            </button>
+                                                            <span *ngIf="!hasReportAction(act)" class="text-[11px]"
+                                                                style="color:#8A9DC0;">—</span>
+                                                        </td>
                                                     </tr>
                                                 </tbody>
                                             </table>
+
+                                            <!-- Paginación interna del detalle: solo aparece si la
+                                                 lista de actividades excede el tamaño de página. -->
+                                            <app-pagination *ngIf="user.activities.length > detailPageSize"
+                                                [currentPage]="user.detailPage ?? 1"
+                                                [totalPages]="activitiesTotalPages(user)"
+                                                [pageSize]="detailPageSize"
+                                                [totalItems]="user.activities.length"
+                                                itemLabel="actividades"
+                                                (pageChange)="onDetailPageChange(user, $event)">
+                                            </app-pagination>
                                         </div>
                                     </td>
                                 </tr>

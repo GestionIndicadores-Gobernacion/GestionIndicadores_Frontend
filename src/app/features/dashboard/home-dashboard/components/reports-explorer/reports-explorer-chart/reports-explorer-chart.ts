@@ -59,6 +59,21 @@ export class ReportsExplorerChartComponent implements OnChanges {
     this.buildChart();
   }
 
+  /**
+   * El usuario hizo click en el total del indicador. Reutilizamos el
+   * mismo canal que el click sobre una barra, pero sin `label` (sin
+   * filtro mensual/categórico) para que el destino muestre todos los
+   * reportes del componente en el año actual.
+   */
+  onTotalClick(): void {
+    this.barClick.emit({
+      label: '',
+      datasetLabel: this.selectedIndicator?.indicator_name ?? '',
+      componentId: this.componentId,
+      indicatorId: this.selectedIndicator?.indicator_id ?? null,
+    });
+  }
+
   get indicatorTotal(): number | null {
     const datasets = this.chartData?.datasets;
     if (!datasets || !datasets.length) return null;
