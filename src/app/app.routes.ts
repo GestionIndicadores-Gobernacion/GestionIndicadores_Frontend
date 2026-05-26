@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 
+import { adminGuard } from './core/guards/admin-guard';
 import { authGuard } from './core/guards/auth-guard';
 import { guestGuard } from './core/guards/guest-guard';
 import { permGuard } from './core/guards/perm-guard';
@@ -112,6 +113,15 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/audit-history/audit-history.routes')
             .then(m => m.AUDIT_HISTORY_ROUTES),
+      },
+
+      // SOPORTE — Centro de tickets (SOLO ADMIN)
+      {
+        path: 'support',
+        canActivate: [adminGuard],
+        loadChildren: () =>
+          import('./features/support/support.routes')
+            .then(m => m.SUPPORT_ROUTES),
       },
 
       {

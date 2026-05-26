@@ -5,6 +5,8 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { LucideAngularModule } from 'lucide-angular';
 import { Notification, NotificationService } from '../../../core/services/notification.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { SupportPanelService } from '../../../core/services/support-panel.service';
 
 @Component({
   selector: 'app-notification-bell',
@@ -24,6 +26,8 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     private notifService: NotificationService,
     private elRef: ElementRef,
     private router: Router,
+    private supportPanel: SupportPanelService,
+    private auth: AuthService,
   ) { }
 
   ngOnInit(): void {
@@ -58,6 +62,15 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
       this.router.navigate(['/action-plans/calendar'], {
         queryParams: { reportActivity: notif.entity_id }
       });
+    } else if (notif.category === 'support_reply' && notif.entity_id) {
+      // Si el receptor es admin, lo enviamos a la página /support con el
+      // ticket abierto; cualquier otro rol abre el ticket en el FAB.
+      this.isOpen = false;
+      if (this.auth.hasRole(3)) {
+        this.router.navigate(['/support'], { queryParams: { ticketId: notif.entity_id } });
+      } else {
+        this.supportPanel.requestOpenTicket(notif.entity_id);
+      }
     }
   }
 
