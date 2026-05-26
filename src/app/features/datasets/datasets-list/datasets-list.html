@@ -1,8 +1,8 @@
-<div class="min-h-screen">
+<div class="min-h-screen" style="background:#F0F4FA;">
 
     <!-- PAGE HEADER -->
-    <div class="px-4 sm:px-6 pt-7 pb-6">
-        <div class="flex flex-wrap items-center justify-between gap-4">
+    <div class="px-4 sm:px-6 pt-7 pb-6 border-b" style="background:white;border-color:#D6E0F0;">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
 
             <div class="flex items-center gap-4">
                 <div class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"
@@ -15,7 +15,8 @@
                 </div>
             </div>
 
-            <button (click)="openImportModal()" [disabled]="loading"
+            <button *appCan="[PERMS.DATASETS_MANAGE]; fallbackRole: ROLE_IDS.ADMIN"
+                (click)="openImportModal()" [disabled]="loading"
                 class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-bold shadow-sm cursor-pointer transition-all duration-150"
                 style="background:linear-gradient(135deg,#1B3A6B,#2d5fa8);color:white;"
                 onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">
@@ -29,12 +30,29 @@
     <!-- CONTENT -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
 
+        <!-- SEARCH -->
+        <div class="flex flex-wrap items-center justify-between gap-4">
+
+            <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none inline-flex">
+                    <lucide-icon name="search" [size]="14" [strokeWidth]="2" color="#8A9DC0"></lucide-icon>
+                </span>
+                <input type="text" placeholder="Buscar dataset..." [(ngModel)]="searchTerm"
+                    (input)="onSearch()"
+                    class="text-[12px] rounded-xl pl-9 pr-4 py-2 outline-none transition-all duration-150 w-72"
+                    style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B"
+                    onfocus="this.style.borderColor='#1B3A6B';this.style.background='#fff';this.style.boxShadow='0 0 0 3px rgba(27,58,107,0.08)'"
+                    onblur="this.style.borderColor='#D6E0F0';this.style.background='#F0F4FA';this.style.boxShadow='none'" />
+            </div>
+
+        </div>
+
         <app-page-state
             [state]="pageState"
             loadingMessage="Cargando datasets..."
             errorMessage="No se pudieron cargar los datasets"
             emptyMessage="Sin datasets registrados"
-            emptyHint="Usa el botón Importar Excel para registrar el primero"
+            [emptyHint]="emptyHint"
             emptyIcon="database"
             (retry)="loadDatasets()">
 
@@ -69,31 +87,6 @@
                             {{ filteredDatasets.length }}
                             {{ filteredDatasets.length === 1 ? 'dataset' : 'datasets' }}
                         </span>
-                    </div>
-
-                    <!-- LIST HEADER -->
-                    <div class="flex items-center justify-between gap-3 px-5 py-4 border-b"
-                        style="border-color:#D6E0F0;background:white;">
-                        <div>
-                            <h3 class="text-[13px] font-bold" style="color:#1B3A6B;">Listado de datasets</h3>
-                            <p class="text-[11px] mt-0.5" style="color:#8A9DC0;">
-                                {{ filteredDatasets.length }}
-                                {{ filteredDatasets.length === 1 ? 'dataset' : 'datasets' }}
-                            </p>
-                        </div>
-
-                        <!-- SEARCH -->
-                        <div class="relative">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none inline-flex">
-                                <lucide-icon name="search" [size]="13" [strokeWidth]="2" color="#9CA3AF"></lucide-icon>
-                            </span>
-                            <input type="text" placeholder="Buscar dataset..." [(ngModel)]="searchTerm"
-                                (input)="onSearch()"
-                                class="text-[12px] rounded-xl pl-9 pr-4 py-2 outline-none transition-all duration-150 w-56"
-                                style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B"
-                                onfocus="this.style.borderColor='#1B3A6B';this.style.background='#fff';this.style.boxShadow='0 0 0 3px rgba(27,58,107,0.08)'"
-                                onblur="this.style.borderColor='#D6E0F0';this.style.background='#F0F4FA';this.style.boxShadow='none'" />
-                        </div>
                     </div>
 
                     <!-- TABLE -->
@@ -175,7 +168,8 @@
                                         Dashboard
                                     </th>
 
-                                    <th class="px-4 py-3 text-right text-[10px] font-bold uppercase tracking-[0.8px]"
+                                    <th *appCan="[PERMS.DATASETS_MANAGE]; fallbackRole: ROLE_IDS.ADMIN"
+                                        class="px-4 py-3 text-right text-[10px] font-bold uppercase tracking-[0.8px]"
                                         style="color:rgba(255,255,255,0.85);">
                                         Acciones
                                     </th>
@@ -232,7 +226,7 @@
                                     </td>
 
                                     <!-- ACCIONES -->
-                                    <td class="px-4 py-3">
+                                    <td *appCan="[PERMS.DATASETS_MANAGE]; fallbackRole: ROLE_IDS.ADMIN" class="px-4 py-3">
                                         <div class="flex justify-end gap-1">
                                             <button (click)="openUpdateModal(d)" *ngIf="d.active"
                                                 class="cursor-pointer px-2.5 py-1.5 text-[11px] font-bold rounded-lg border transition"
@@ -253,13 +247,16 @@
                         </table>
                     </div>
 
+                    <!-- PAGINATION -->
+                    <app-pagination
+                        [currentPage]="currentPage" [totalPages]="totalPages"
+                        [pageSize]="pageSize" [totalItems]="filteredDatasets.length"
+                        itemLabel="datasets"
+                        (pageChange)="onPageChange($event)">
+                    </app-pagination>
+
                 </div>
             </div>
-
-            <!-- PAGINATION -->
-            <app-pagination *ngIf="filteredDatasets.length > 0"
-                            [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
-            </app-pagination>
 
         </app-page-state>
 

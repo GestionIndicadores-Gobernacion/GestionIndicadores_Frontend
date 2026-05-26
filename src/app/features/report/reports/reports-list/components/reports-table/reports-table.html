@@ -1,4 +1,4 @@
-<div class="space-y-4">
+<div class="space-y-6">
 
   <!-- Banner filtro activo -->
   <div *ngIf="chartFilter.componentId !== null || chartFilter.label"
@@ -13,50 +13,63 @@
       onmouseover="this.style.color='#1B3A6B'" onmouseout="this.style.color='#4A6A9B'">✕</button>
   </div>
 
-  <!-- Título -->
-  <div class="flex flex-wrap items-center justify-between gap-3">
+  <!-- SEARCH + TOGGLE -->
+  <div class="flex flex-wrap items-center justify-between gap-4">
 
-    <div>
-      <h3 class="text-[13px] font-bold" style="color:#1B3A6B;">Listado de reportes</h3>
-      <p class="text-[11px] mt-0.5" style="color:#8A9DC0;">
-        {{ filteredReports.length }} {{ filteredReports.length === 1 ? 'reporte' : 'reportes' }}
-      </p>
+    <div class="relative">
+      <span class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none inline-flex">
+        <lucide-icon name="search" [size]="14" [strokeWidth]="2" color="#8A9DC0"></lucide-icon>
+      </span>
+
+      <input type="text" placeholder="Buscar reportes..." [(ngModel)]="searchTerm" (input)="applyAll()"
+        class="text-[12px] rounded-xl pl-9 pr-4 py-2 outline-none transition-all duration-150 w-72"
+        style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B"
+        onfocus="this.style.borderColor='#1B3A6B';this.style.background='#fff';this.style.boxShadow='0 0 0 3px rgba(27,58,107,0.08)'"
+        onblur="this.style.borderColor='#D6E0F0';this.style.background='#F0F4FA';this.style.boxShadow='none'" />
     </div>
 
-    <div class="flex items-center gap-2">
-
-      <!-- Toggle -->
-      <div class="flex rounded-lg overflow-hidden border" style="border-color:#D6E0F0;">
-        <button (click)="setViewMode('all')" class="px-3 py-2 text-[11px] font-semibold transition-all duration-150"
-          [style.background]="viewMode==='all' ? '#1B3A6B' : '#F0F4FA'"
-          [style.color]="viewMode==='all' ? 'white' : '#4A6A9B'">
-          Todos
-        </button>
-        <button (click)="setViewMode('mine')" class="px-3 py-2 text-[11px] font-semibold transition-all duration-150"
-          [style.background]="viewMode==='mine' ? '#1B3A6B' : '#F0F4FA'"
-          [style.color]="viewMode==='mine' ? 'white' : '#4A6A9B'">
-          Mis reportes
-        </button>
-      </div>
-
-      <!-- Búsqueda -->
-      <div class="relative">
-        <span class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none inline-flex">
-          <lucide-icon name="search" [size]="13" [strokeWidth]="2" color="#9CA3AF"></lucide-icon>
-        </span>
-
-        <input type="text" placeholder="Buscar reportes..." [(ngModel)]="searchTerm" (input)="applyAll()"
-          class="text-[12px] rounded-xl pl-9 pr-4 py-2 outline-none transition-all duration-150 w-56"
-          style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B"
-          onfocus="this.style.borderColor='#1B3A6B';this.style.background='#fff';this.style.boxShadow='0 0 0 3px rgba(27,58,107,0.08)'"
-          onblur="this.style.borderColor='#D6E0F0';this.style.background='#F0F4FA';this.style.boxShadow='none'" />
-      </div>
-
+    <div class="flex rounded-lg overflow-hidden border" style="border-color:#D6E0F0;">
+      <button (click)="setViewMode('all')" class="px-3 py-2 text-[11px] font-semibold transition-all duration-150"
+        [style.background]="viewMode==='all' ? '#1B3A6B' : '#F0F4FA'"
+        [style.color]="viewMode==='all' ? 'white' : '#4A6A9B'">
+        Todos
+      </button>
+      <button (click)="setViewMode('mine')" class="px-3 py-2 text-[11px] font-semibold transition-all duration-150"
+        [style.background]="viewMode==='mine' ? '#1B3A6B' : '#F0F4FA'"
+        [style.color]="viewMode==='mine' ? 'white' : '#4A6A9B'">
+        Mis reportes
+      </button>
     </div>
+
   </div>
 
-  <!-- Tabla -->
-  <div class="rounded-xl overflow-hidden border" style="border-color:#D6E0F0;">
+  <!-- TABLE BLOCK -->
+  <div class="space-y-0">
+
+    <div class="h-[3px] w-full rounded-t-xl" style="background:linear-gradient(90deg,#1B3A6B,#2d5fa8,#1B3A6B);"></div>
+
+    <div class="rounded-b-xl overflow-hidden border" style="border-color:#D6E0F0;background:white;">
+
+      <!-- BLOCK HEADER -->
+      <div class="flex items-center justify-between gap-3 px-5 py-4 border-b"
+        style="border-color:#D6E0F0;background:#F8FAFD;">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style="background:#D6E4F7;">
+            <lucide-icon name="list" [size]="14" [strokeWidth]="2.2" color="#1B3A6B"></lucide-icon>
+          </div>
+          <div>
+            <span class="text-[11px] font-bold uppercase tracking-[1px]" style="color:#1B3A6B;">
+              Registros
+            </span>
+            <p class="text-[10.5px] mt-0.5" style="color:#8A9DC0;">Administración y edición de reportes</p>
+          </div>
+        </div>
+        <span class="text-[11px] font-semibold px-3 py-1 rounded-full"
+          style="background:#D6E4F7;border:1px solid #B3CCE8;color:#1B3A6B;">
+          {{ filteredReports.length }} {{ filteredReports.length === 1 ? 'reporte' : 'reportes' }}
+        </span>
+      </div>
+
     <div class="overflow-x-auto">
 
       <table *ngIf="paginatedReports.length > 0" class="w-full">
@@ -276,10 +289,17 @@
       </div>
 
     </div>
-  </div>
 
-  <app-pagination *ngIf="paginatedReports.length > 0" [currentPage]="currentPage" [totalPages]="totalPages"
-    (pageChange)="onPageChange($event)">
-  </app-pagination>
+      <!-- PAGINATION -->
+      <app-pagination
+        [currentPage]="currentPage" [totalPages]="totalPages"
+        [pageSize]="pageSize" [totalItems]="filteredReports.length"
+        itemLabel="reportes"
+        (pageChange)="onPageChange($event)">
+      </app-pagination>
+
+    </div>
+
+  </div>
 
 </div>

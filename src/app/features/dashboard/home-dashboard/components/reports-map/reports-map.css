@@ -14,6 +14,23 @@
   width: 100% !important;
   font-family: inherit;
   border-radius: 0;
+  /* Sin tile layer; usamos el bg del card del dashboard como fondo del mapa. */
+  background: #F8FAFD !important;
+}
+
+/* Eliminar el rectángulo de focus del SVG al hacer click en un municipio.
+ * Leaflet crea los <path> dinámicamente, así que las reglas locales del
+ * componente no los alcanzan por el scope de ViewEncapsulation: usamos
+ * ::ng-deep para perforar la encapsulación y !important para ganarle a
+ * cualquier estilo global (Tailwind, browser default). */
+:host ::ng-deep .leaflet-container *:focus,
+:host ::ng-deep .leaflet-container *:focus-visible,
+:host ::ng-deep .leaflet-interactive,
+:host ::ng-deep .leaflet-interactive:focus,
+:host ::ng-deep .leaflet-container svg path,
+:host ::ng-deep .leaflet-container svg path:focus {
+  outline: none !important;
+  outline-offset: 0 !important;
 }
 
 /* Tooltip personalizado */

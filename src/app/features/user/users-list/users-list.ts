@@ -9,6 +9,7 @@ import { UserModel } from '../../../features/user/models/user.model';
 import { UsersService } from '../../../features/user/services/users.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { PageState, PageStateComponent } from '../../../shared/components/page-state/page-state';
+import { Pagination } from '../../../shared/components/pagination/pagination';
 import { CanDirective } from '../../../shared/directives/can';
 import { PERMS, ROLE_IDS } from '../../../core/constants/permissions';
 import { UserPermissionsDrawerComponent } from '../components/user-permissions-drawer/user-permissions-drawer';
@@ -22,6 +23,7 @@ import { UserPermissionsDrawerComponent } from '../components/user-permissions-d
     RouterModule,
     LucideAngularModule,
     PageStateComponent,
+    Pagination,
     CanDirective,
     UserPermissionsDrawerComponent,
   ],
@@ -29,8 +31,6 @@ import { UserPermissionsDrawerComponent } from '../components/user-permissions-d
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UsersListComponent implements OnInit {
-
-  Math = Math;
 
   currentPage = 1;
   pageSize = 10;

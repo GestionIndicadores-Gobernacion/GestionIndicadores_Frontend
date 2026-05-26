@@ -354,11 +354,12 @@
                 </div>
 
                 <!-- PAGINACIÓN -->
-                <div class="border-t px-5 py-3" style="border-color:#D6E0F0;">
-                    <app-pagination [currentPage]="currentPage" [totalPages]="totalPages"
-                        (pageChange)="onPageChange($event)">
-                    </app-pagination>
-                </div>
+                <app-pagination
+                    [currentPage]="currentPage" [totalPages]="totalPages"
+                    [pageSize]="pageSize" [totalItems]="users.length"
+                    itemLabel="responsables"
+                    (pageChange)="onPageChange($event)">
+                </app-pagination>
 
             </div>
 

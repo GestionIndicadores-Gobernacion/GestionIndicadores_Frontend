@@ -1,25 +1,31 @@
-<div *ngIf="totalPages > 1" class="flex items-center justify-center gap-3 py-4">
+<div *ngIf="totalPages > 1" class="border-t px-5 py-4 flex items-center justify-between gap-3 flex-wrap"
+    style="border-color:#D6E0F0;">
 
-    <!-- Previous Button -->
-    <button (click)="prev()" [disabled]="currentPage === 1" class="inline-flex items-center justify-center w-8 h-8 text-sm font-medium
-           text-zinc-700 bg-white border border-zinc-200 rounded-lg
-           hover:bg-zinc-50 hover:border-zinc-300 transition-colors duration-150
-           disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer" title="Página anterior">
-        <lucide-icon name="chevron-left" [size]="16" [strokeWidth]="2" color="currentColor"></lucide-icon>
-    </button>
+    <p *ngIf="showCounter" class="text-[12px]" style="color:#4A6A9B;">
+        Mostrando {{ rangeStart }} a {{ rangeEnd }} de {{ totalItems }} {{ itemLabel }}
+    </p>
+    <span *ngIf="!showCounter"></span>
 
-    <!-- Page Info -->
-    <span class="text-sm text-zinc-600">
-        Página <span class="font-medium text-zinc-900">{{ currentPage }}</span> de <span
-            class="font-medium text-zinc-900">{{ totalPages }}</span>
-    </span>
+    <div class="flex items-center gap-2">
 
-    <!-- Next Button -->
-    <button (click)="next()" [disabled]="currentPage === totalPages" class="inline-flex items-center justify-center w-8 h-8 text-sm font-medium
-           text-zinc-700 bg-white border border-zinc-200 rounded-lg
-           hover:bg-zinc-50 hover:border-zinc-300 transition-colors duration-150
-           disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer" title="Página siguiente">
-        <lucide-icon name="chevron-right" [size]="16" [strokeWidth]="2" color="currentColor"></lucide-icon>
-    </button>
+        <button [disabled]="currentPage === 1" (click)="prev()"
+            class="px-3 py-1.5 text-[12px] font-semibold rounded-lg border cursor-pointer transition disabled:cursor-not-allowed"
+            style="background:#F0F4FA;color:#4A6A9B;border-color:#D6E0F0"
+            [class.opacity-40]="currentPage === 1">
+            Anterior
+        </button>
+
+        <span class="text-[12px]" style="color:#1B3A6B;">
+            Página {{ currentPage }} de {{ totalPages }}
+        </span>
+
+        <button [disabled]="currentPage === totalPages" (click)="next()"
+            class="px-3 py-1.5 text-[12px] font-semibold rounded-lg border cursor-pointer transition disabled:cursor-not-allowed"
+            style="background:#F0F4FA;color:#4A6A9B;border-color:#D6E0F0"
+            [class.opacity-40]="currentPage === totalPages">
+            Siguiente
+        </button>
+
+    </div>
 
 </div>

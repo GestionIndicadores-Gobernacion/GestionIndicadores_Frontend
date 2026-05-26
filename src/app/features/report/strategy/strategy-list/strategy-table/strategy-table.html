@@ -1,4 +1,20 @@
-<div class="space-y-0">
+<div class="space-y-6">
+
+    <!-- SEARCH -->
+    <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none inline-flex">
+                <lucide-icon name="search" [size]="14" [strokeWidth]="2" color="#8A9DC0"></lucide-icon>
+            </span>
+            <input type="text" placeholder="Buscar estrategia..." [(ngModel)]="searchTerm" (input)="onSearch()"
+                class="text-[12px] rounded-xl pl-9 pr-4 py-2 outline-none transition-all duration-150 w-72"
+                style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B"
+                onfocus="this.style.borderColor='#1B3A6B';this.style.background='#fff';this.style.boxShadow='0 0 0 3px rgba(27,58,107,0.08)'"
+                onblur="this.style.borderColor='#D6E0F0';this.style.background='#F0F4FA';this.style.boxShadow='none'" />
+        </div>
+    </div>
+
+  <div class="space-y-0">
 
     <div class="h-[3px] w-full rounded-t-xl" style="background:linear-gradient(90deg,#1B3A6B,#2d5fa8,#1B3A6B);"></div>
 
@@ -22,33 +38,10 @@
 
             <span class="text-[11px] font-semibold px-3 py-1 rounded-full"
                 style="background:#D6E4F7;border:1px solid #B3CCE8;color:#1B3A6B;">
-                {{ filteredStrategies.length }}
-                {{ filteredStrategies.length === 1 ? 'estrategia' : 'estrategias' }}
+                {{ sortedStrategies.length }}
+                {{ sortedStrategies.length === 1 ? 'estrategia' : 'estrategias' }}
             </span>
 
-        </div>
-
-        <!-- SEARCH -->
-        <div class="flex items-center justify-between gap-3 px-5 py-4 border-b"
-            style="border-color:#D6E0F0;background:white;">
-            <div>
-                <h3 class="text-[13px] font-bold" style="color:#1B3A6B;">Listado de estrategias</h3>
-                <p class="text-[11px] mt-0.5" style="color:#8A9DC0;">
-                    {{ filteredStrategies.length }}
-                    {{ filteredStrategies.length === 1 ? 'estrategia' : 'estrategias' }}
-                </p>
-            </div>
-
-            <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none inline-flex">
-                    <lucide-icon name="search" [size]="13" [strokeWidth]="2" color="#9CA3AF"></lucide-icon>
-                </span>
-                <input type="text" placeholder="Buscar estrategia..." [(ngModel)]="searchTerm" (input)="onSearch()"
-                    class="text-[12px] rounded-xl pl-9 pr-4 py-2 outline-none transition-all duration-150 w-56"
-                    style="background:#F0F4FA;border:1.5px solid #D6E0F0;color:#1B3A6B"
-                    onfocus="this.style.borderColor='#1B3A6B';this.style.background='#fff';this.style.boxShadow='0 0 0 3px rgba(27,58,107,0.08)'"
-                    onblur="this.style.borderColor='#D6E0F0';this.style.background='#F0F4FA';this.style.boxShadow='none'" />
-            </div>
         </div>
 
         <!-- TABLE -->
@@ -164,10 +157,16 @@
             </table>
         </div>
 
+        <!-- PAGINATION -->
+        <app-pagination
+            [currentPage]="currentPage" [totalPages]="totalPages"
+            [pageSize]="pageSize" [totalItems]="sortedStrategies.length"
+            itemLabel="estrategias"
+            (pageChange)="onPageChange($event)">
+        </app-pagination>
+
     </div>
 
-    <!-- PAGINATION -->
-    <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
-    </app-pagination>
+  </div>
 
 </div>

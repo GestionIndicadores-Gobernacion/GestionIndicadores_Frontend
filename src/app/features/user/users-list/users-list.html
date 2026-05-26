@@ -306,43 +306,14 @@
 
 
           <!-- PAGINATION -->
-          <div *ngIf="totalPages > 1" class="border-t px-5 py-4 flex items-center justify-between"
-            style="border-color:#D6E0F0;">
-
-            <p class="text-[12px]" style="color:#4A6A9B;">
-
-              Mostrando {{ (currentPage - 1) * pageSize + 1 }}
-              a {{ Math.min(currentPage * pageSize, sortedUsers.length) }}
-              de {{ sortedUsers.length }} usuarios
-
-            </p>
-
-            <div class="flex items-center gap-2">
-
-              <button [disabled]="currentPage === 1" (click)="currentPage = currentPage - 1"
-                class="px-3 py-1.5 text-[12px] font-semibold rounded-lg border cursor-pointer transition"
-                style="background:#F0F4FA;color:#4A6A9B;border-color:#D6E0F0" [class.opacity-40]="currentPage === 1">
-
-                Anterior
-
-              </button>
-
-              <span class="text-[12px]" style="color:#1B3A6B;">
-                Página {{ currentPage }} de {{ totalPages }}
-              </span>
-
-              <button [disabled]="currentPage === totalPages" (click)="currentPage = currentPage + 1"
-                class="px-3 py-1.5 text-[12px] font-semibold rounded-lg border cursor-pointer transition"
-                style="background:#F0F4FA;color:#4A6A9B;border-color:#D6E0F0"
-                [class.opacity-40]="currentPage === totalPages">
-
-                Siguiente
-
-              </button>
-
-            </div>
-
-          </div>
+          <app-pagination
+            [currentPage]="currentPage"
+            [totalPages]="totalPages"
+            [pageSize]="pageSize"
+            [totalItems]="sortedUsers.length"
+            itemLabel="usuarios"
+            (pageChange)="currentPage = $event">
+          </app-pagination>
 
         </div>
 

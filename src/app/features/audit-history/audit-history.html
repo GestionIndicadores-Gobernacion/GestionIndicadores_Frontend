@@ -478,11 +478,12 @@
                 </div>
 
                 <!-- PAGINACIÓN -->
-                <div *ngIf="filtered.length > pageSize" class="flex justify-end">
-                    <app-pagination [currentPage]="currentPage" [totalPages]="totalPages"
-                        (pageChange)="onPageChange($event)">
-                    </app-pagination>
-                </div>
+                <app-pagination *ngIf="filtered.length > pageSize"
+                    [currentPage]="currentPage" [totalPages]="totalPages"
+                    [pageSize]="pageSize" [totalItems]="filtered.length"
+                    itemLabel="eventos"
+                    (pageChange)="onPageChange($event)">
+                </app-pagination>
 
             </ng-container>
 

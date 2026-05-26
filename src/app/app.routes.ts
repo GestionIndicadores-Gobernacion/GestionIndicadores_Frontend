@@ -71,7 +71,7 @@ export const routes: Routes = [
       },
       {
         path: 'datasets',
-        canActivate: [permGuard({ perms: [PERMS.DATASETS_MANAGE], fallbackRoles: [ROLE_IDS.ADMIN] })],
+        canActivate: [permGuard({ perms: [PERMS.DATASETS_READ, PERMS.DATASETS_MANAGE], fallbackRoles: [ROLE_IDS.ADMIN] })],
         loadChildren: () =>
           import('./features/datasets/datasets.routes')
             .then(m => m.DATASETS_ROUTES),

@@ -213,8 +213,11 @@ describe('permGuard', () => {
       });
     });
 
-    describe('/datasets — perms=[DATASETS_MANAGE], fallback=[ADMIN]', () => {
-      const opts = { perms: [PERMS.DATASETS_MANAGE], fallbackRoles: [ROLE_IDS.ADMIN] } as const;
+    describe('/datasets — perms=[DATASETS_READ, DATASETS_MANAGE], fallback=[ADMIN]', () => {
+      const opts = {
+        perms: [PERMS.DATASETS_READ, PERMS.DATASETS_MANAGE],
+        fallbackRoles: [ROLE_IDS.ADMIN],
+      } as const;
 
       it('admin pasa', () => {
         const auth = makeAuthMock({ roleId: ROLE_IDS.ADMIN });
@@ -228,7 +231,19 @@ describe('permGuard', () => {
         expect(result).toBe(true);
       });
 
-      it('monitor sin DATASETS_MANAGE es bloqueado', () => {
+      it('monitor con DATASETS_READ pasa', () => {
+        const auth = makeAuthMock({ roleId: ROLE_IDS.MONITOR });
+        const router = makeRouter();
+        const perms = makePermsMock([PERMS.DATASETS_READ]);
+        const result = runGuard(permGuard(opts), [
+          { provide: AuthService, useValue: auth },
+          { provide: Router, useValue: router },
+          { provide: PermissionService, useValue: perms },
+        ]);
+        expect(result).toBe(true);
+      });
+
+      it('monitor sin perms de datasets es bloqueado', () => {
         const auth = makeAuthMock({ roleId: ROLE_IDS.MONITOR });
         const router = makeRouter();
         const perms = makePermsMock([]);
