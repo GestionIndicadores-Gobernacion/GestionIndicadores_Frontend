@@ -255,7 +255,12 @@ export class ReportsMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     const container = document.getElementById(this.MAP_ID);
     if (!container) return;
     // Carga diferida de Leaflet: el chunk no entra al bundle inicial.
-    this.L = await import('leaflet');
+    // En producción esbuild devuelve la forma ESM con namespace
+    // `{ default: L }` y sin spread de los named exports al top-level,
+    // así que `mod.map` queda undefined. Tomamos `mod.default` cuando
+    // expone `map()`; si no, caemos al objeto plano (dev/otros bundlers).
+    const mod = await import('leaflet') as any;
+    this.L = (mod?.default && typeof mod.default.map === 'function' ? mod.default : mod) as typeof import('leaflet');
     const L = this.L;
     this.map = L.map(this.MAP_ID, {
       center: [3.8, -76.5],
