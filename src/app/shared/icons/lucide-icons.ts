@@ -42,6 +42,7 @@ import {
   Heart, Smile,
   Package, Dog, Cat, Trees,
   ShieldAlert, Megaphone, Image, Video,
+  LifeBuoy, ImagePlus,
 } from 'lucide-angular';
 
 export const LUCIDE_ICON_SET = {
@@ -68,4 +69,5 @@ export const LUCIDE_ICON_SET = {
   Heart, Smile,
   Package, Dog, Cat, Trees,
   ShieldAlert, Megaphone, Image, Video,
+  LifeBuoy, ImagePlus,
 };

@@ -5,6 +5,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import { SidebarComponent } from './sidebar/sidebar';
 import { SidebarService } from '../../core/services/sidebar.service';
 import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell';
+import { SupportButtonComponent } from '../../shared/components/support-button/support-button';
 
 @Component({
   selector: 'app-dashboard-layout',
@@ -14,6 +15,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
     RouterOutlet,
     SidebarComponent,
     NotificationBellComponent,
+    SupportButtonComponent,
     LucideAngularModule,
   ],
   templateUrl: './dashboard-layout.html',
