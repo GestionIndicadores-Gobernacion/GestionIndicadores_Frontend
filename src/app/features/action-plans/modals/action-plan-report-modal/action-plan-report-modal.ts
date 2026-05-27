@@ -10,6 +10,8 @@ import {
   ActionPlanObjectiveModel
 } from '../../../../features/action-plans/models/action-plan.model';
 import { ActionPlanService } from '../../../../features/action-plans/services/action-plan.service';
+import { PermissionService } from '../../../../core/services/permission.service';
+import { PERMS } from '../../../../core/constants/permissions';
 
 @Component({
   selector: 'app-action-plan-report-modal',
@@ -39,7 +41,8 @@ export class ActionPlanReportModalComponent implements OnInit {
 
   constructor(
     private actionPlanService: ActionPlanService,
-    private router: Router
+    private router: Router,
+    private permissionService: PermissionService,
   ) { }
 
   ngOnInit(): void {
@@ -109,14 +112,21 @@ export class ActionPlanReportModalComponent implements OnInit {
     return !!this.activity.linked_report_id;
   }
 
-  /** True si el usuario actual puede agregar/editar evidencia */
+  /**
+   * True si el usuario actual puede agregar/editar evidencia.
+   *
+   * Regla: es responsable del plan O tiene el permiso explícito
+   * `ACTION_PLANS_ADD_EVIDENCE` (override granular administrable desde la
+   * UI). Sin el permiso, ni admin puede — el override ya no es por rol.
+   */
   get canManageEvidence(): boolean {
     if (!this.currentUserId) return true; // sin info, asumir que puede
     const responsibleIds: number[] = this.plan.responsible_user_ids ?? [];
     if (this.plan.responsible_user_id) {
       responsibleIds.push(this.plan.responsible_user_id);
     }
-    return responsibleIds.includes(this.currentUserId);
+    if (responsibleIds.includes(this.currentUserId)) return true;
+    return this.permissionService.hasPermission(PERMS.ACTION_PLANS_ADD_EVIDENCE);
   }
 
   goToCreateReport(): void {

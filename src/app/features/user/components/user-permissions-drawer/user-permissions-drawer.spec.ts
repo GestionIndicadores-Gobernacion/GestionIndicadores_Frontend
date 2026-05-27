@@ -125,6 +125,8 @@ function makeToastMock() {
     error: vi.fn(),
     warning: vi.fn(),
     info: vi.fn(),
+    // Por defecto: confirma. Los tests que necesiten cancelación lo overridean.
+    confirm: vi.fn().mockResolvedValue({ isConfirmed: true } as { isConfirmed: boolean }),
   };
 }
 
@@ -283,7 +285,7 @@ describe('UserPermissionsDrawerComponent - agrupación y chips', () => {
 
     // users debe tener exactamente 2 codes ordenados alfabéticamente.
     const usersGroup = groups.find(g => g.module === 'users')!;
-    expect(usersGroup.codes).toEqual(['users.manage', 'users.read']);
+    expect(usersGroup.items.map(i => i.code)).toEqual(['users.manage', 'users.read']);
 
     // moduleLabel en español.
     expect(usersGroup.moduleLabel).toBe('Usuarios');
@@ -638,33 +640,35 @@ describe('UserPermissionsDrawerComponent - D3 edit mode', () => {
 
   // ─── clearAllOverrides ────────────────────────────────────────────
 
-  it('clearAllOverrides pide confirm y limpia todos', () => {
+  it('clearAllOverrides pide confirm y limpia todos', async () => {
     // En el fixture: 'datasets.read' es grant (no en role) y
     // 'reports.delete_any' es revoke (tampoco en role). Tras limpiar,
     // ambos quedan en 'not_assigned' (sin override + no en role).
+    const toast = makeToastMock();
+    toast.confirm.mockResolvedValue({ isConfirmed: true });
     const svc = makeServiceMock();
-    const c = buildComponent(svc);
+    const c = buildComponent(svc, { toastMock: toast });
     c.userId = 42;
     c.enterEditMode();
 
-    const spy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     c.clearAllOverrides();
-    expect(spy).toHaveBeenCalled();
+    await Promise.resolve();
+    expect(toast.confirm).toHaveBeenCalled();
     expect(c.getStateForPerm('datasets.read')).toBe('not_assigned');
     expect(c.getStateForPerm('reports.delete_any')).toBe('not_assigned');
-    spy.mockRestore();
   });
 
-  it('clearAllOverrides respeta cancelación del confirm', () => {
+  it('clearAllOverrides respeta cancelación del confirm', async () => {
+    const toast = makeToastMock();
+    toast.confirm.mockResolvedValue({ isConfirmed: false });
     const svc = makeServiceMock();
-    const c = buildComponent(svc);
+    const c = buildComponent(svc, { toastMock: toast });
     c.userId = 42;
     c.enterEditMode();
 
-    const spy = vi.spyOn(window, 'confirm').mockReturnValue(false);
     c.clearAllOverrides();
+    await Promise.resolve();
     expect(c.getStateForPerm('datasets.read')).toBe('grant'); // sin cambios
-    spy.mockRestore();
   });
 
   // ─── diff y dirty ─────────────────────────────────────────────────
@@ -747,20 +751,21 @@ describe('UserPermissionsDrawerComponent - D3 edit mode', () => {
   // ─── cancelEdit ───────────────────────────────────────────────────
 
   it('cancelEdit sin dirty no pide confirm y vuelve a read-only', () => {
+    const toast = makeToastMock();
     const svc = makeServiceMock();
-    const c = buildComponent(svc);
+    const c = buildComponent(svc, { toastMock: toast });
     c.userId = 42;
     c.enterEditMode();
     expect(c.isEditMode()).toBe(true);
 
-    const spy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     c.cancelEdit();
-    expect(spy).not.toHaveBeenCalled();
+    expect(toast.confirm).not.toHaveBeenCalled();
     expect(c.isEditMode()).toBe(false);
-    spy.mockRestore();
   });
 
-  it('cancelEdit con dirty=true pide confirm', () => {
+  it('cancelEdit con dirty=true pide confirm', async () => {
+    const toast = makeToastMock();
+    toast.confirm.mockResolvedValueOnce({ isConfirmed: false });
     const svc = makeServiceMock({
       view: makeView({
         user: { id: 42, email: 'a@b.co', role: { id: 2, name: 'editor' } },
@@ -770,24 +775,24 @@ describe('UserPermissionsDrawerComponent - D3 edit mode', () => {
         effective: ['users.read'],
       }),
     });
-    const c = buildComponent(svc);
+    const c = buildComponent(svc, { toastMock: toast });
     c.userId = 42;
     c.enterEditMode();
     c.cyclePerm('audit.read');
     expect(c.dirty()).toBe(true);
 
-    const spy = vi.spyOn(window, 'confirm').mockReturnValue(false);
     c.cancelEdit();
-    expect(spy).toHaveBeenCalled();
+    await Promise.resolve();
+    expect(toast.confirm).toHaveBeenCalled();
     // No descartó: sigue en edit mode con cambios
     expect(c.isEditMode()).toBe(true);
     expect(c.dirty()).toBe(true);
 
-    spy.mockReturnValue(true);
+    toast.confirm.mockResolvedValueOnce({ isConfirmed: true });
     c.cancelEdit();
+    await Promise.resolve();
     expect(c.isEditMode()).toBe(false);
     expect(c.dirty()).toBe(false);
-    spy.mockRestore();
   });
 
   // ─── openDiffModal / closeDiffModal ──────────────────────────────

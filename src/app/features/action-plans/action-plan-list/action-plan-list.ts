@@ -40,7 +40,11 @@ export class ActionPlanListComponent {
   @Input() plans: ActionPlanModel[] = [];
   @Input() currentUser: any = null;
   @Input() canEditPlan: (plan: ActionPlanModel) => boolean = () => false;
-  /** Solo responsables del plan pueden reportar (admin override). */
+  /**
+   * Responsables del plan pueden reportar. Override granular vía permiso
+   * `ACTION_PLANS_REPORT_ACTIVITY` (administrable desde la UI). Sin ese
+   * permiso, ni admin reporta planes ajenos.
+   */
   @Input() canReport: (plan: ActionPlanModel) => boolean = () => false;
 
   @Output() report = new EventEmitter<{ plan: ActionPlanModel; objective: ActionPlanObjectiveModel; activity: ActionPlanActivityModel; event: Event }>();
@@ -217,12 +221,20 @@ export class ActionPlanListComponent {
     this.delete.emit({ activityId, event });
   }
 
-  /** Eliminar actividad: admin override o creador del plan. */
+  /**
+   * Eliminar actividad: mismas reglas que editar el plan.
+   *
+   * Política: por defecto solo el creador. Override granular vía
+   * `PERM_ACTION_PLANS_UPDATE_ANY` — el permiso es la única vía de override,
+   * independiente del rol. Admin sin el permiso NO puede modificar planes
+   * ajenos; un usuario no-admin con el permiso sí. Viewer bloqueado.
+   * (Paridad con calendar.canEditPlanBound y backend `_can_edit_plan`.)
+   */
   canModify(plan: ActionPlanModel): boolean {
     if (!this.currentUser) return false;
     const roleId = this.authService.getTokenPayload()?.role_id ?? null;
-    if (this.permissionService.hasPermissionOrRole(PERMS.ACTION_PLANS_UPDATE_ANY, roleId, ROLE_IDS.ADMIN)) return true;
-    if (!this.permissionService.hasPermissionOrRole(PERMS.ACTION_PLANS_UPDATE_OWN, roleId, ROLE_IDS.EDITOR, ROLE_IDS.MONITOR)) return false;
+    if (roleId === ROLE_IDS.VIEWER) return false;
+    if (this.permissionService.hasPermission(PERMS.ACTION_PLANS_UPDATE_ANY)) return true;
     return plan.user_id != null && plan.user_id === this.currentUser.id;
   }
   
