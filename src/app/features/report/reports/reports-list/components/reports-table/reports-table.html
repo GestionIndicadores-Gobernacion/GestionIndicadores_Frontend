@@ -254,13 +254,13 @@
                   Ver
                 </a>
 
-                <button *ngIf="canModify(report)" [routerLink]="[report.id,'edit']"
+                <button *ngIf="canEdit(report)" [routerLink]="[report.id,'edit']"
                   class="cursor-pointer px-2.5 py-1.5 text-[11px] font-bold rounded-lg border transition"
                   style="background:#F0F4FA;color:#4A6A9B;border-color:#D6E0F0">
                   Editar
                 </button>
 
-                <button *ngIf="canModify(report)" (click)="onDelete(report.id)"
+                <button *ngIf="canDelete(report)" (click)="onDelete(report.id)"
                   class="cursor-pointer px-2.5 py-1.5 text-[11px] font-bold rounded-lg border transition"
                   style="background:#FEF2F2;color:#dc2626;border-color:#FECACA">
                   Eliminar

@@ -423,12 +423,18 @@ export class ActionPlanEditPlanModalComponent implements OnInit {
   // ELIMINAR PLAN / ACTIVIDADES
   // ─────────────────────────────────────────────
 
-  /** Admin o creador del plan pueden eliminar. Viewer nunca. */
+  /**
+   * Eliminar plan.
+   *
+   * Política: por defecto solo el creador. Override granular vía
+   * `PERM_ACTION_PLANS_DELETE_ANY` — el permiso es la única vía de override.
+   * Admin sin el permiso NO puede eliminar planes ajenos. Viewer nunca.
+   */
   canDeletePlan(): boolean {
     if (!this.currentUser) return false;
     const roleId = this.authService.getTokenPayload()?.role_id ?? null;
-    if (this.permissionService.hasPermissionOrRole(PERMS.ACTION_PLANS_DELETE_ANY, roleId, ROLE_IDS.ADMIN)) return true;
-    if (!this.permissionService.hasPermissionOrRole(PERMS.ACTION_PLANS_DELETE_OWN, roleId, ROLE_IDS.EDITOR, ROLE_IDS.MONITOR)) return false;
+    if (roleId === ROLE_IDS.VIEWER) return false;
+    if (this.permissionService.hasPermission(PERMS.ACTION_PLANS_DELETE_ANY)) return true;
     return this.plan?.user_id != null && this.plan.user_id === this.currentUser.id;
   }
 

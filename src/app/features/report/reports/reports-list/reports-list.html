@@ -43,7 +43,8 @@
 
                 <div #tableSection>
                     <app-reports-table [reports]="reports" [strategyMap]="strategyMap"
-                        [componentMap]="componentMap" [currentUserId]="currentUserId" [isViewer]="isViewer" [isAdmin]="isAdmin"
+                        [componentMap]="componentMap" [currentUserId]="currentUserId" [isViewer]="isViewer"
+                        [canEditAny]="canEditAny" [canDeleteAny]="canDeleteAny"
                         [chartFilter]="chartFilter" (delete)="deleteReport($event)"
                         (clearFilter)="clearChartFilter()">
                     </app-reports-table>

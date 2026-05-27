@@ -1,9 +1,9 @@
 /**
  * Suite de paridad de autorización del dominio Action Plans tras la
- * migración de `role?.name === 'admin' | 'viewer'` a
- * `PermissionService.hasPermissionOrRole`.
+ * migración a overrides granulares por permiso (admin ya NO obtiene
+ * bypass por rol; solo el permiso explícito da override).
  *
- * Cubre los 5 predicados que ahora dependen del modo dual permiso+rol:
+ * Cubre los 5 predicados:
  *   - ActionPlanCalendarComponent.canEditPlanBound
  *   - ActionPlanCalendarComponent.canReportActivity
  *   - ActionPlanCalendarComponent.canViewDashboard (asignado en ngOnInit)
@@ -82,6 +82,7 @@ const NOOP = () => undefined;
 const stubActionPlanSvc: any = { getAll: () => ({ pipe: () => ({ subscribe: NOOP }) }) };
 const stubStrategiesSvc: any = { getAll: () => ({ pipe: () => ({ subscribe: NOOP }) }) };
 const stubComponentsSvc: any = { getAll: () => ({ pipe: () => ({ subscribe: NOOP }) }) };
+const stubUsersSvc: any = { getAll: () => ({ pipe: () => ({ subscribe: NOOP }) }) };
 const stubToast: any = { success: NOOP, error: NOOP, confirm: () => Promise.resolve({ isConfirmed: false }) };
 const stubNgZone = { run: (fn: any) => fn() } as unknown as NgZone;
 const stubCdr = { detectChanges: NOOP } as unknown as ChangeDetectorRef;
@@ -104,6 +105,7 @@ function makeCalendar(
         stubActionPlanSvc,
         stubStrategiesSvc,
         stubComponentsSvc,
+        stubUsersSvc,
         stubToast,
         stubNgZone,
         stubCdr,
@@ -151,54 +153,64 @@ function makeEditPlanModal(
 }
 
 // ── canEditPlanBound ───────────────────────────────────────────────
+// Nueva regla: `is_owner OR has_permission(UPDATE_ANY)`. Viewer bloqueado.
+// El rol ya NO da override por sí solo — solo el permiso explícito sí.
 
 describe('ActionPlanCalendarComponent.canEditPlanBound', () => {
   const ME = makeUser(42);
   const OTHER = 99;
 
   it('returns false when there is no currentUser', () => {
-    const c = makeCalendar(null, ROLE_IDS.ADMIN);
+    const c = makeCalendar(null, ROLE_IDS.ADMIN, [PERMS.ACTION_PLANS_UPDATE_ANY]);
     expect(c.canEditPlanBound(makePlan(ME.id))).toBe(false);
   });
 
-  it('admin + own plan → true', () => {
-    const c = makeCalendar(ME, ROLE_IDS.ADMIN);
-    expect(c.canEditPlanBound(makePlan(ME.id))).toBe(true);
+  it('viewer → false aún siendo dueño o teniendo el permiso', () => {
+    const cOwn = makeCalendar(ME, ROLE_IDS.VIEWER);
+    expect(cOwn.canEditPlanBound(makePlan(ME.id))).toBe(false);
+    const cPerm = makeCalendar(ME, ROLE_IDS.VIEWER, [PERMS.ACTION_PLANS_UPDATE_ANY]);
+    expect(cPerm.canEditPlanBound(makePlan(OTHER))).toBe(false);
   });
 
-  it('admin + foreign plan → true (override)', () => {
-    const c = makeCalendar(ME, ROLE_IDS.ADMIN);
+  it('admin SIN permiso explícito → solo si es dueño', () => {
+    const c = makeCalendar(ME, ROLE_IDS.ADMIN);  // permsSet vacío
+    expect(c.canEditPlanBound(makePlan(ME.id))).toBe(true);
+    expect(c.canEditPlanBound(makePlan(OTHER))).toBe(false);
+  });
+
+  it('admin CON permiso → override total', () => {
+    const c = makeCalendar(ME, ROLE_IDS.ADMIN, [PERMS.ACTION_PLANS_UPDATE_ANY]);
     expect(c.canEditPlanBound(makePlan(OTHER))).toBe(true);
   });
 
-  it('viewer + own plan → false', () => {
-    const c = makeCalendar(ME, ROLE_IDS.VIEWER);
-    expect(c.canEditPlanBound(makePlan(ME.id))).toBe(false);
-  });
-
-  it('viewer + foreign plan → false', () => {
-    const c = makeCalendar(ME, ROLE_IDS.VIEWER);
-    expect(c.canEditPlanBound(makePlan(OTHER))).toBe(false);
-  });
-
-  it('editor + own plan → true', () => {
+  it('editor sin permiso, own → true (ownership)', () => {
     const c = makeCalendar(ME, ROLE_IDS.EDITOR);
     expect(c.canEditPlanBound(makePlan(ME.id))).toBe(true);
   });
 
-  it('editor + foreign plan → false', () => {
+  it('editor sin permiso, ajeno → false', () => {
     const c = makeCalendar(ME, ROLE_IDS.EDITOR);
     expect(c.canEditPlanBound(makePlan(OTHER))).toBe(false);
   });
 
-  it('monitor + own plan → true', () => {
+  it('editor CON permiso, ajeno → true (override granular)', () => {
+    const c = makeCalendar(ME, ROLE_IDS.EDITOR, [PERMS.ACTION_PLANS_UPDATE_ANY]);
+    expect(c.canEditPlanBound(makePlan(OTHER))).toBe(true);
+  });
+
+  it('monitor sin permiso, own → true (ownership)', () => {
     const c = makeCalendar(ME, ROLE_IDS.MONITOR);
     expect(c.canEditPlanBound(makePlan(ME.id))).toBe(true);
   });
 
-  it('monitor + foreign plan → false', () => {
+  it('monitor sin permiso, ajeno → false', () => {
     const c = makeCalendar(ME, ROLE_IDS.MONITOR);
     expect(c.canEditPlanBound(makePlan(OTHER))).toBe(false);
+  });
+
+  it('monitor CON permiso, ajeno → true (override granular)', () => {
+    const c = makeCalendar(ME, ROLE_IDS.MONITOR, [PERMS.ACTION_PLANS_UPDATE_ANY]);
+    expect(c.canEditPlanBound(makePlan(OTHER))).toBe(true);
   });
 
   it('canInteractWithPlan es alias literal de canEditPlanBound', () => {
@@ -209,59 +221,74 @@ describe('ActionPlanCalendarComponent.canEditPlanBound', () => {
     expect(c.canInteractWithPlan(ajeno)).toBe(c.canEditPlanBound(ajeno));
   });
 
-  // Dual-mode: rol desconocido pero el permiso explícito rescata.
-  it('rol desconocido (null) + UPDATE_ANY en set → true (perm rescata)', () => {
-    const c = makeCalendar(ME, null, [PERMS.ACTION_PLANS_UPDATE_ANY]);
-    expect(c.canEditPlanBound(makePlan(OTHER))).toBe(true);
-  });
-
-  it('rol desconocido (null) + UPDATE_OWN en set + own → true', () => {
+  it('UPDATE_OWN ya no se chequea — la decisión es ownership puro', () => {
+    // Antes UPDATE_OWN era requerido; ahora basta con ser dueño.
     const c = makeCalendar(ME, null, [PERMS.ACTION_PLANS_UPDATE_OWN]);
     expect(c.canEditPlanBound(makePlan(ME.id))).toBe(true);
     expect(c.canEditPlanBound(makePlan(OTHER))).toBe(false);
   });
+
+  it('rol desconocido + UPDATE_ANY → true sin importar ownership', () => {
+    const c = makeCalendar(ME, null, [PERMS.ACTION_PLANS_UPDATE_ANY]);
+    expect(c.canEditPlanBound(makePlan(OTHER))).toBe(true);
+  });
 });
 
 // ── canReportActivity ──────────────────────────────────────────────
+// Nueva regla: `is_responsible OR has_permission(REPORT_ACTIVITY)`.
+// El rol ya NO da override por sí solo — solo el permiso explícito sí.
 
 describe('ActionPlanCalendarComponent.canReportActivity', () => {
   const ME = makeUser(42);
   const OTHER = 99;
 
   it('sin currentUser → false', () => {
-    const c = makeCalendar(null, ROLE_IDS.ADMIN);
+    const c = makeCalendar(null, ROLE_IDS.ADMIN, [PERMS.ACTION_PLANS_REPORT_ACTIVITY]);
     expect(c.canReportActivity(makePlan(ME.id, [ME.id]))).toBe(false);
   });
 
-  it('admin → true sin importar responsibles', () => {
-    const c = makeCalendar(ME, ROLE_IDS.ADMIN);
+  it('viewer → false aún siendo responsable o teniendo el permiso', () => {
+    const cResp = makeCalendar(ME, ROLE_IDS.VIEWER);
+    expect(cResp.canReportActivity(makePlan(ME.id, [ME.id]))).toBe(false);
+    const cPerm = makeCalendar(ME, ROLE_IDS.VIEWER, [PERMS.ACTION_PLANS_REPORT_ACTIVITY]);
+    expect(cPerm.canReportActivity(makePlan(OTHER, [OTHER]))).toBe(false);
+  });
+
+  it('admin SIN permiso explícito → solo si es responsable', () => {
+    const c = makeCalendar(ME, ROLE_IDS.ADMIN);  // permsSet vacío
+    expect(c.canReportActivity(makePlan(OTHER, [OTHER]))).toBe(false);
+    expect(c.canReportActivity(makePlan(OTHER, [ME.id]))).toBe(true);
+  });
+
+  it('admin CON permiso → override total', () => {
+    const c = makeCalendar(ME, ROLE_IDS.ADMIN, [PERMS.ACTION_PLANS_REPORT_ACTIVITY]);
     expect(c.canReportActivity(makePlan(OTHER, [OTHER]))).toBe(true);
     expect(c.canReportActivity(makePlan(OTHER, []))).toBe(true);
   });
 
-  it('viewer → false aún siendo "responsable"', () => {
-    const c = makeCalendar(ME, ROLE_IDS.VIEWER);
-    expect(c.canReportActivity(makePlan(ME.id, [ME.id]))).toBe(false);
-  });
-
-  it('editor en responsibles → true', () => {
+  it('responsable sin permiso → true (regla base)', () => {
     const c = makeCalendar(ME, ROLE_IDS.EDITOR);
     expect(c.canReportActivity(makePlan(OTHER, [ME.id]))).toBe(true);
   });
 
-  it('editor fuera de responsibles → false', () => {
+  it('editor sin permiso, fuera de responsibles → false', () => {
     const c = makeCalendar(ME, ROLE_IDS.EDITOR);
     expect(c.canReportActivity(makePlan(OTHER, [OTHER]))).toBe(false);
   });
 
-  it('monitor en responsibles → true', () => {
-    const c = makeCalendar(ME, ROLE_IDS.MONITOR);
-    expect(c.canReportActivity(makePlan(OTHER, [ME.id]))).toBe(true);
+  it('editor CON permiso, fuera de responsibles → true (override granular)', () => {
+    const c = makeCalendar(ME, ROLE_IDS.EDITOR, [PERMS.ACTION_PLANS_REPORT_ACTIVITY]);
+    expect(c.canReportActivity(makePlan(OTHER, [OTHER]))).toBe(true);
   });
 
-  it('monitor fuera de responsibles → false', () => {
+  it('monitor sin permiso, fuera de responsibles → false', () => {
     const c = makeCalendar(ME, ROLE_IDS.MONITOR);
     expect(c.canReportActivity(makePlan(OTHER, [OTHER]))).toBe(false);
+  });
+
+  it('monitor CON permiso, fuera de responsibles → true (override granular)', () => {
+    const c = makeCalendar(ME, ROLE_IDS.MONITOR, [PERMS.ACTION_PLANS_REPORT_ACTIVITY]);
+    expect(c.canReportActivity(makePlan(OTHER, [OTHER]))).toBe(true);
   });
 
   it('responsable_user_id legacy también cuenta (sin lista)', () => {
@@ -275,16 +302,16 @@ describe('ActionPlanCalendarComponent.canReportActivity', () => {
     expect(c.canReportActivity(plan as any)).toBe(true);
   });
 
-  // Dual-mode
-  it('rol desconocido + UPDATE_ANY en set → true', () => {
+  it('UPDATE_ANY ya no da override implícito sobre reportar', () => {
+    // Antes UPDATE_ANY hacía bypass; ahora solo REPORT_ACTIVITY es el override.
     const c = makeCalendar(ME, null, [PERMS.ACTION_PLANS_UPDATE_ANY]);
-    expect(c.canReportActivity(makePlan(OTHER, [OTHER]))).toBe(true);
+    expect(c.canReportActivity(makePlan(OTHER, [OTHER]))).toBe(false);
   });
 
-  it('rol desconocido + REPORT_ACTIVITY en set + responsable → true', () => {
+  it('rol desconocido + REPORT_ACTIVITY en set → true sin importar responsibles', () => {
     const c = makeCalendar(ME, null, [PERMS.ACTION_PLANS_REPORT_ACTIVITY]);
     expect(c.canReportActivity(makePlan(OTHER, [ME.id]))).toBe(true);
-    expect(c.canReportActivity(makePlan(OTHER, [OTHER]))).toBe(false);
+    expect(c.canReportActivity(makePlan(OTHER, [OTHER]))).toBe(true);
   });
 });
 
@@ -331,63 +358,71 @@ describe('ActionPlanCalendarComponent canViewDashboard derivation', () => {
 });
 
 // ── canModify (action-plan-list) ───────────────────────────────────
+// Misma regla que canEditPlanBound: `is_owner OR has_permission(UPDATE_ANY)`.
 
 describe('ActionPlanListComponent.canModify', () => {
   const ME = makeUser(42);
   const OTHER = 99;
 
   it('sin currentUser → false', () => {
-    const c = makeList(null, ROLE_IDS.ADMIN);
+    const c = makeList(null, ROLE_IDS.ADMIN, [PERMS.ACTION_PLANS_UPDATE_ANY]);
     expect(c.canModify(makePlan(ME.id))).toBe(false);
   });
 
-  it('admin + own → true', () => {
-    const c = makeList(ME, ROLE_IDS.ADMIN);
-    expect(c.canModify(makePlan(ME.id))).toBe(true);
+  it('viewer → false aún siendo dueño o teniendo el permiso', () => {
+    const cOwn = makeList(ME, ROLE_IDS.VIEWER);
+    expect(cOwn.canModify(makePlan(ME.id))).toBe(false);
+    const cPerm = makeList(ME, ROLE_IDS.VIEWER, [PERMS.ACTION_PLANS_UPDATE_ANY]);
+    expect(cPerm.canModify(makePlan(OTHER))).toBe(false);
   });
 
-  it('admin + ajeno → true (override)', () => {
-    const c = makeList(ME, ROLE_IDS.ADMIN);
+  it('admin SIN permiso explícito → solo si es dueño', () => {
+    const c = makeList(ME, ROLE_IDS.ADMIN);  // permsSet vacío
+    expect(c.canModify(makePlan(ME.id))).toBe(true);
+    expect(c.canModify(makePlan(OTHER))).toBe(false);
+  });
+
+  it('admin CON permiso → override total', () => {
+    const c = makeList(ME, ROLE_IDS.ADMIN, [PERMS.ACTION_PLANS_UPDATE_ANY]);
     expect(c.canModify(makePlan(OTHER))).toBe(true);
   });
 
-  it('viewer + own → false', () => {
-    const c = makeList(ME, ROLE_IDS.VIEWER);
-    expect(c.canModify(makePlan(ME.id))).toBe(false);
-  });
-
-  it('viewer + ajeno → false', () => {
-    const c = makeList(ME, ROLE_IDS.VIEWER);
-    expect(c.canModify(makePlan(OTHER))).toBe(false);
-  });
-
-  it('editor + own → true', () => {
+  it('editor sin permiso, own → true (ownership)', () => {
     const c = makeList(ME, ROLE_IDS.EDITOR);
     expect(c.canModify(makePlan(ME.id))).toBe(true);
   });
 
-  it('editor + ajeno → false', () => {
+  it('editor sin permiso, ajeno → false', () => {
     const c = makeList(ME, ROLE_IDS.EDITOR);
     expect(c.canModify(makePlan(OTHER))).toBe(false);
   });
 
-  it('monitor + own → true', () => {
+  it('editor CON permiso, ajeno → true (override granular)', () => {
+    const c = makeList(ME, ROLE_IDS.EDITOR, [PERMS.ACTION_PLANS_UPDATE_ANY]);
+    expect(c.canModify(makePlan(OTHER))).toBe(true);
+  });
+
+  it('monitor sin permiso, own → true (ownership)', () => {
     const c = makeList(ME, ROLE_IDS.MONITOR);
     expect(c.canModify(makePlan(ME.id))).toBe(true);
   });
 
-  it('monitor + ajeno → false', () => {
+  it('monitor sin permiso, ajeno → false', () => {
     const c = makeList(ME, ROLE_IDS.MONITOR);
     expect(c.canModify(makePlan(OTHER))).toBe(false);
   });
 
-  // Dual-mode
-  it('rol desconocido + UPDATE_ANY → true', () => {
+  it('monitor CON permiso, ajeno → true (override granular)', () => {
+    const c = makeList(ME, ROLE_IDS.MONITOR, [PERMS.ACTION_PLANS_UPDATE_ANY]);
+    expect(c.canModify(makePlan(OTHER))).toBe(true);
+  });
+
+  it('rol desconocido + UPDATE_ANY → true sin importar ownership', () => {
     const c = makeList(ME, null, [PERMS.ACTION_PLANS_UPDATE_ANY]);
     expect(c.canModify(makePlan(OTHER))).toBe(true);
   });
 
-  it('rol desconocido + UPDATE_OWN → true sólo en propio', () => {
+  it('UPDATE_OWN ya no se chequea — la decisión es ownership puro', () => {
     const c = makeList(ME, null, [PERMS.ACTION_PLANS_UPDATE_OWN]);
     expect(c.canModify(makePlan(ME.id))).toBe(true);
     expect(c.canModify(makePlan(OTHER))).toBe(false);
@@ -395,65 +430,84 @@ describe('ActionPlanListComponent.canModify', () => {
 });
 
 // ── canDeletePlan ──────────────────────────────────────────────────
+// Regla: `is_owner OR has_permission(DELETE_ANY)`. Viewer bloqueado.
 
 describe('ActionPlanEditPlanModalComponent.canDeletePlan', () => {
   const ME = makeUser(42);
   const OTHER = 99;
 
   it('sin currentUser → false', () => {
-    const c = makeEditPlanModal(null, ROLE_IDS.ADMIN, makePlan(ME.id));
+    const c = makeEditPlanModal(null, ROLE_IDS.ADMIN, makePlan(ME.id), [
+      PERMS.ACTION_PLANS_DELETE_ANY,
+    ]);
     expect(c.canDeletePlan()).toBe(false);
   });
 
-  it('admin + own → true', () => {
-    const c = makeEditPlanModal(ME, ROLE_IDS.ADMIN, makePlan(ME.id));
+  it('viewer → false aún siendo dueño o teniendo el permiso', () => {
+    const cOwn = makeEditPlanModal(ME, ROLE_IDS.VIEWER, makePlan(ME.id));
+    expect(cOwn.canDeletePlan()).toBe(false);
+    const cPerm = makeEditPlanModal(ME, ROLE_IDS.VIEWER, makePlan(OTHER), [
+      PERMS.ACTION_PLANS_DELETE_ANY,
+    ]);
+    expect(cPerm.canDeletePlan()).toBe(false);
+  });
+
+  it('admin SIN permiso explícito → solo si es dueño', () => {
+    const cOwn = makeEditPlanModal(ME, ROLE_IDS.ADMIN, makePlan(ME.id));  // permsSet vacío
+    expect(cOwn.canDeletePlan()).toBe(true);
+    const cAjeno = makeEditPlanModal(ME, ROLE_IDS.ADMIN, makePlan(OTHER));
+    expect(cAjeno.canDeletePlan()).toBe(false);
+  });
+
+  it('admin CON permiso → override total', () => {
+    const c = makeEditPlanModal(ME, ROLE_IDS.ADMIN, makePlan(OTHER), [
+      PERMS.ACTION_PLANS_DELETE_ANY,
+    ]);
     expect(c.canDeletePlan()).toBe(true);
   });
 
-  it('admin + ajeno → true (override)', () => {
-    const c = makeEditPlanModal(ME, ROLE_IDS.ADMIN, makePlan(OTHER));
-    expect(c.canDeletePlan()).toBe(true);
-  });
-
-  it('viewer + own → false', () => {
-    const c = makeEditPlanModal(ME, ROLE_IDS.VIEWER, makePlan(ME.id));
-    expect(c.canDeletePlan()).toBe(false);
-  });
-
-  it('viewer + ajeno → false', () => {
-    const c = makeEditPlanModal(ME, ROLE_IDS.VIEWER, makePlan(OTHER));
-    expect(c.canDeletePlan()).toBe(false);
-  });
-
-  it('editor + own → true', () => {
+  it('editor sin permiso, own → true (ownership)', () => {
     const c = makeEditPlanModal(ME, ROLE_IDS.EDITOR, makePlan(ME.id));
     expect(c.canDeletePlan()).toBe(true);
   });
 
-  it('editor + ajeno → false', () => {
+  it('editor sin permiso, ajeno → false', () => {
     const c = makeEditPlanModal(ME, ROLE_IDS.EDITOR, makePlan(OTHER));
     expect(c.canDeletePlan()).toBe(false);
   });
 
-  it('monitor + own → true', () => {
+  it('editor CON permiso, ajeno → true (override granular)', () => {
+    const c = makeEditPlanModal(ME, ROLE_IDS.EDITOR, makePlan(OTHER), [
+      PERMS.ACTION_PLANS_DELETE_ANY,
+    ]);
+    expect(c.canDeletePlan()).toBe(true);
+  });
+
+  it('monitor sin permiso, own → true (ownership)', () => {
     const c = makeEditPlanModal(ME, ROLE_IDS.MONITOR, makePlan(ME.id));
     expect(c.canDeletePlan()).toBe(true);
   });
 
-  it('monitor + ajeno → false', () => {
+  it('monitor sin permiso, ajeno → false', () => {
     const c = makeEditPlanModal(ME, ROLE_IDS.MONITOR, makePlan(OTHER));
     expect(c.canDeletePlan()).toBe(false);
   });
 
-  // Dual-mode
-  it('rol desconocido + DELETE_ANY → true', () => {
+  it('monitor CON permiso, ajeno → true (override granular)', () => {
+    const c = makeEditPlanModal(ME, ROLE_IDS.MONITOR, makePlan(OTHER), [
+      PERMS.ACTION_PLANS_DELETE_ANY,
+    ]);
+    expect(c.canDeletePlan()).toBe(true);
+  });
+
+  it('rol desconocido + DELETE_ANY → true sin importar ownership', () => {
     const c = makeEditPlanModal(ME, null, makePlan(OTHER), [
       PERMS.ACTION_PLANS_DELETE_ANY,
     ]);
     expect(c.canDeletePlan()).toBe(true);
   });
 
-  it('rol desconocido + DELETE_OWN → true sólo en propio', () => {
+  it('DELETE_OWN ya no se chequea — la decisión es ownership puro', () => {
     const cOwn = makeEditPlanModal(ME, null, makePlan(ME.id), [
       PERMS.ACTION_PLANS_DELETE_OWN,
     ]);

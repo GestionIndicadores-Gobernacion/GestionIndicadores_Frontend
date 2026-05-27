@@ -13,7 +13,7 @@ import {
   ChevronsLeft, ChevronsRight, X, LogIn, LogOut, House, Table, List,
 
   // Acciones comunes
-  Search, Plus, Pencil, Trash2, Eye, EyeOff, Download, Upload, FileUp, FileDown,
+  Search, Plus, Minus, Pencil, Trash2, Eye, EyeOff, Download, Upload, FileUp, FileDown,
   Save, Copy, RefreshCw, ExternalLink, ListFilter, SlidersHorizontal,
   ArrowLeft, ArrowRight, ArrowUpFromLine, ArrowDownToLine, Import, Ban,
 
@@ -48,7 +48,7 @@ import {
 export const LUCIDE_ICON_SET = {
   LayoutDashboard, ClipboardList, Database, ListTodo, List, Users, History, Menu,
   ChevronsLeft, ChevronsRight, X, LogIn, LogOut, House, Table,
-  Search, Plus, Pencil, Trash2, Eye, EyeOff, Download, Upload, FileUp, FileDown,
+  Search, Plus, Minus, Pencil, Trash2, Eye, EyeOff, Download, Upload, FileUp, FileDown,
   Save, Copy, RefreshCw, ExternalLink, ListFilter, SlidersHorizontal,
   ArrowLeft, ArrowRight, ArrowUpFromLine, ArrowDownToLine, Import, Ban,
   ChevronRight, ChevronDown, ChevronLeft, ChevronUp,
