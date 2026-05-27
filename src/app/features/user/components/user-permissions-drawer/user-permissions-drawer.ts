@@ -62,10 +62,15 @@ import { UserOverridesDiffModalComponent } from '../user-overrides-diff-modal/us
 
 type DrawerState = 'idle' | 'loading' | 'error' | 'content';
 
+interface PermItem {
+  code: string;
+  description: string;
+}
+
 interface GroupedEntry {
   module: string;
   moduleLabel: string;
-  codes: string[];
+  items: PermItem[];
 }
 
 interface OverrideChip {
@@ -228,6 +233,15 @@ export class UserPermissionsDrawerComponent implements OnDestroy {
     const v = this.view();
     return v ? this.groupByModule(v.from_role) : [];
   });
+
+  /**
+   * True cuando el usuario no tiene overrides manuales — caso típico de
+   * un admin recién creado. Permite mostrar un resumen compacto y amistoso
+   * en lugar de tres tarjetas "Sin grants/Sin revokes/Permisos efectivos".
+   */
+  readonly hasNoManualOverrides = computed<boolean>(
+    () => this.grantChips().length === 0 && this.revokeChips().length === 0,
+  );
 
   readonly grantChips = computed(() => {
     const view = this.view();
@@ -429,11 +443,17 @@ export class UserPermissionsDrawerComponent implements OnDestroy {
   onCloseClick(): void {
     if (this.saving()) return;
     if (this.isEditMode() && this.dirty()) {
-      const ok = typeof window === 'undefined'
-        ? true
-        : window.confirm('¿Descartar los cambios sin guardar?');
-      if (!ok) return;
-      this.exitEditModeWithoutConfirm();
+      this.toast.confirm(
+        'Descartar cambios',
+        'Tenés cambios sin guardar. ¿Querés descartarlos y cerrar?',
+        'Sí, descartar',
+        'Volver',
+      ).then(result => {
+        if (!result.isConfirmed) return;
+        this.exitEditModeWithoutConfirm();
+        this.closed.emit();
+      });
+      return;
     }
     this.closed.emit();
   }
@@ -503,13 +523,19 @@ export class UserPermissionsDrawerComponent implements OnDestroy {
 
   cancelEdit(): void {
     if (!this.isEditMode()) return;
-    if (this.dirty()) {
-      const ok = typeof window === 'undefined'
-        ? true
-        : window.confirm('¿Descartar los cambios sin guardar?');
-      if (!ok) return;
+    if (!this.dirty()) {
+      this.exitEditModeWithoutConfirm();
+      return;
     }
-    this.exitEditModeWithoutConfirm();
+    this.toast.confirm(
+      'Descartar cambios',
+      'Vas a perder los cambios pendientes. ¿Continuar?',
+      'Sí, descartar',
+      'Volver',
+    ).then(result => {
+      if (!result.isConfirmed) return;
+      this.exitEditModeWithoutConfirm();
+    });
   }
 
   private exitEditModeWithoutConfirm(): void {
@@ -628,17 +654,20 @@ export class UserPermissionsDrawerComponent implements OnDestroy {
   clearAllOverrides(): void {
     if (!this.isEditMode() || this.saving()) return;
     if (this.effectiveOverrides().size === 0) return;
-    const ok = typeof window === 'undefined'
-      ? true
-      : window.confirm('¿Quitar todos los overrides del usuario?');
-    if (!ok) return;
 
-    // Marca cada code con override actual como `null` en selectedOverrides.
-    const next = new Map<string, OverrideEffect | null>();
-    for (const code of this.originalOverrides().keys()) {
-      next.set(code, null);
-    }
-    this.selectedOverrides.set(next);
+    this.toast.confirm(
+      'Quitar todos los overrides',
+      'Se removerán todos los grants y revokes manuales del usuario. ¿Continuar?',
+      'Sí, quitar',
+      'Cancelar',
+    ).then(result => {
+      if (!result.isConfirmed) return;
+      const next = new Map<string, OverrideEffect | null>();
+      for (const code of this.originalOverrides().keys()) {
+        next.set(code, null);
+      }
+      this.selectedOverrides.set(next);
+    });
   }
 
   // ─── Diff modal ────────────────────────────────────────────────────────
@@ -852,6 +881,8 @@ export class UserPermissionsDrawerComponent implements OnDestroy {
       if (!catalogOrder.has(m)) catalogOrder.set(m, idx);
     });
 
+    const descByCode = new Map(this.catalog().map(p => [p.code, p.description] as const));
+
     return [...buckets.entries()]
       .sort(([a], [b]) => {
         const ai = catalogOrder.get(a) ?? Number.MAX_SAFE_INTEGER;
@@ -861,7 +892,10 @@ export class UserPermissionsDrawerComponent implements OnDestroy {
       .map(([module, codes]) => ({
         module,
         moduleLabel: MODULE_LABELS[module] ?? module,
-        codes: [...codes].sort(),
+        items: [...codes].sort().map(code => ({
+          code,
+          description: descByCode.get(code) ?? '',
+        })),
       }));
   }
 

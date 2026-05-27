@@ -112,34 +112,38 @@ export class ActionPlanCalendarComponent implements OnInit {
 
   currentUser: any = null;
   /**
-   * Editar/eliminar plan o sus actividades: admin override, o creador del plan.
-   * Monitor y editor solo pueden modificar lo que ellos crearon.
+   * Editar plan o sus actividades.
+   *
+   * Política: por defecto solo el creador. Override granular vía
+   * `PERM_ACTION_PLANS_UPDATE_ANY` — el permiso es la única vía de override,
+   * independiente del rol. Admin sin el permiso NO puede editar planes
+   * ajenos; un usuario no-admin con el permiso sí. Viewer bloqueado.
    */
   canEditPlanBound = (plan: ActionPlanModel): boolean => {
     if (!this.currentUser) return false;
     const roleId = this.authService.getTokenPayload()?.role_id ?? null;
-    if (this.permissionService.hasPermissionOrRole(PERMS.ACTION_PLANS_UPDATE_ANY, roleId, ROLE_IDS.ADMIN)) return true;
-    if (this.permissionService.hasPermissionOrRole(PERMS.ACTION_PLANS_UPDATE_OWN, roleId, ROLE_IDS.EDITOR, ROLE_IDS.MONITOR)) {
-      return plan.user_id != null && plan.user_id === this.currentUser.id;
-    }
-    return false;
+    if (roleId === ROLE_IDS.VIEWER) return false;
+    if (this.permissionService.hasPermission(PERMS.ACTION_PLANS_UPDATE_ANY)) return true;
+    return plan.user_id != null && plan.user_id === this.currentUser.id;
   };
   /** Eliminar actividad: misma regla que editar plan (creador o admin). */
   canInteractWithPlan = (plan: ActionPlanModel): boolean => this.canEditPlanBound(plan);
 
   /**
-   * Reportar una actividad es exclusivo del responsable asignado del
-   * plan. Admin mantiene override total. Editor/Monitor no pueden
-   * reportar planes ajenos aunque tengan acceso al componente.
+   * Reportar una actividad: por defecto SOLO el responsable asignado al
+   * plan. Override granular vía `PERM_ACTION_PLANS_REPORT_ACTIVITY` —
+   * el permiso es la única vía de override, independiente del rol.
+   * Admin sin el permiso NO puede; un usuario no-admin con el permiso sí.
+   * Viewer está bloqueado siempre (paridad con backend `_can_report_activity`).
    */
   canReportActivity = (plan: ActionPlanModel): boolean => {
     if (!this.currentUser) return false;
     const roleId = this.authService.getTokenPayload()?.role_id ?? null;
-    if (this.permissionService.hasPermissionOrRole(PERMS.ACTION_PLANS_UPDATE_ANY, roleId, ROLE_IDS.ADMIN)) return true;
-    if (!this.permissionService.hasPermissionOrRole(PERMS.ACTION_PLANS_REPORT_ACTIVITY, roleId, ROLE_IDS.EDITOR, ROLE_IDS.MONITOR)) return false;
+    if (roleId === ROLE_IDS.VIEWER) return false;
     const ids = new Set<number>(plan.responsible_user_ids ?? []);
     if (plan.responsible_user_id) ids.add(plan.responsible_user_id);
-    return ids.has(this.currentUser.id);
+    if (ids.has(this.currentUser.id)) return true;
+    return this.permissionService.hasPermission(PERMS.ACTION_PLANS_REPORT_ACTIVITY);
   };
 
   /**

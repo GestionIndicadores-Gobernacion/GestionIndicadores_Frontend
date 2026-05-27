@@ -27,7 +27,10 @@ export class ReportsTableComponent implements OnChanges {
   @Input() strategyMap: Record<number, string> = {};
   @Input() componentMap: Record<number, string> = {};
   @Input() currentUserId: number | null = null;
-  @Input() isAdmin = false;
+  /** Override granular: usuario con `PERM_REPORTS_UPDATE_ANY` puede editar reportes ajenos. */
+  @Input() canEditAny = false;
+  /** Override granular: usuario con `PERM_REPORTS_DELETE_ANY` puede eliminar reportes ajenos. */
+  @Input() canDeleteAny = false;
   @Input() chartFilter: { componentId: number | null; label: string | null; year: number | null } = {
     componentId: null,
     label: null,
@@ -70,9 +73,16 @@ export class ReportsTableComponent implements OnChanges {
     this.applyAll();
   }
 
-  canModify(report: ReportModel): boolean {
-    if (this.isViewer) return false;  // ← primero
-    if (this.isAdmin) return true;
+  canEdit(report: ReportModel): boolean {
+    if (this.isViewer) return false;
+    if (this.canEditAny) return true;
+    if (report.user_id === null || report.user_id === undefined) return false;
+    return report.user_id === this.currentUserId;
+  }
+
+  canDelete(report: ReportModel): boolean {
+    if (this.isViewer) return false;
+    if (this.canDeleteAny) return true;
     if (report.user_id === null || report.user_id === undefined) return false;
     return report.user_id === this.currentUserId;
   }
@@ -138,8 +148,13 @@ export class ReportsTableComponent implements OnChanges {
     this.currentPage = 1;
   }
 
+  /**
+   * Ownership puro — usado por el filtro "Mis reportes". El rol admin
+   * ya NO da bypass: si admin quiere ver todos los reportes, usa el
+   * filtro "Todos". Mantener esta función literal evita la contradicción
+   * con el resto del refactor RBAC (override viene SOLO del permiso).
+   */
   isOwner(report: ReportModel): boolean {
-    if (this.isAdmin) return true;
     return report.user_id === this.currentUserId;
   }
 
