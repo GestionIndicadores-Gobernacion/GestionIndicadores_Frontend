@@ -70,7 +70,8 @@ function makeComponentsServiceStub() {
 }
 
 // Construye el componente con los mocks. Al estar `ngOnInit` controlado,
-// los flags `isAdmin` / `isViewer` se recalculan llamando al hook.
+// los flags `canEditAny` / `canDeleteAny` / `isViewer` se recalculan
+// llamando al hook.
 function buildComponent(roleId: number | null, perms: string[] = []) {
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({});
@@ -91,60 +92,92 @@ function buildComponent(roleId: number | null, perms: string[] = []) {
   return { comp, auth, permission };
 }
 
-// ─── Matriz por rol (paridad pre/post migración) ──────────────────────────
+// ─── Matriz por rol ───────────────────────────────────────────────────────
+// Regla post-migración: canEditAny/canDeleteAny vienen SOLO del permiso
+// explícito (sin fallback de rol). isViewer mantiene fallback porque
+// "puede crear" sigue siendo una capacidad de rol.
 
-describe('ReportsListComponent - isAdmin / isViewer (matriz por rol)', () => {
+describe('ReportsListComponent - canEditAny / canDeleteAny / isViewer (matriz por rol)', () => {
 
-  it('admin (roleId=3, perms vacíos) → isAdmin=true, isViewer=false', () => {
+  it('admin (perms vacíos) → canEditAny=false, canDeleteAny=false, isViewer=false', () => {
+    // Admin sin el permiso explícito ya no obtiene override. La capacidad
+    // "crear reportes" sí la da el rol, por eso isViewer=false.
     const { comp } = buildComponent(ROLE_IDS.ADMIN, []);
     comp.ngOnInit();
-    expect(comp.isAdmin).toBe(true);
+    expect(comp.canEditAny).toBe(false);
+    expect(comp.canDeleteAny).toBe(false);
     expect(comp.isViewer).toBe(false);
   });
 
-  it('editor (roleId=2, perms vacíos) → isAdmin=false, isViewer=false', () => {
+  it('editor (perms vacíos) → canEditAny=false, canDeleteAny=false, isViewer=false', () => {
     const { comp } = buildComponent(ROLE_IDS.EDITOR, []);
     comp.ngOnInit();
-    expect(comp.isAdmin).toBe(false);
+    expect(comp.canEditAny).toBe(false);
+    expect(comp.canDeleteAny).toBe(false);
     expect(comp.isViewer).toBe(false);
   });
 
-  it('monitor (roleId=4, perms vacíos) → isAdmin=false, isViewer=false', () => {
+  it('monitor (perms vacíos) → canEditAny=false, canDeleteAny=false, isViewer=false', () => {
     const { comp } = buildComponent(ROLE_IDS.MONITOR, []);
     comp.ngOnInit();
-    expect(comp.isAdmin).toBe(false);
+    expect(comp.canEditAny).toBe(false);
+    expect(comp.canDeleteAny).toBe(false);
     expect(comp.isViewer).toBe(false);
   });
 
-  it('viewer (roleId=1, perms vacíos) → isAdmin=false, isViewer=true', () => {
+  it('viewer (perms vacíos) → canEditAny=false, canDeleteAny=false, isViewer=true', () => {
     const { comp } = buildComponent(ROLE_IDS.VIEWER, []);
     comp.ngOnInit();
-    expect(comp.isAdmin).toBe(false);
+    expect(comp.canEditAny).toBe(false);
+    expect(comp.canDeleteAny).toBe(false);
     expect(comp.isViewer).toBe(true);
+  });
+
+  it('admin CON REPORTS_UPDATE_ANY → canEditAny=true', () => {
+    const { comp } = buildComponent(ROLE_IDS.ADMIN, [PERMS.REPORTS_UPDATE_ANY]);
+    comp.ngOnInit();
+    expect(comp.canEditAny).toBe(true);
+    expect(comp.canDeleteAny).toBe(false);
+  });
+
+  it('admin CON REPORTS_DELETE_ANY → canDeleteAny=true', () => {
+    const { comp } = buildComponent(ROLE_IDS.ADMIN, [PERMS.REPORTS_DELETE_ANY]);
+    comp.ngOnInit();
+    expect(comp.canEditAny).toBe(false);
+    expect(comp.canDeleteAny).toBe(true);
   });
 
 });
 
 // ─── Dual mode: permisos rescatan roles desconocidos ───────────────────────
+// canEditAny/canDeleteAny solo escuchan al permiso, así que rol desconocido
+// + permiso explícito siempre rescata.
 
-describe('ReportsListComponent - dual mode (perm rescata)', () => {
+describe('ReportsListComponent - override granular y dual mode', () => {
 
-  it('roleId=99 (desconocido) + PERMS.REPORTS_UPDATE_ANY en el set → isAdmin=true', () => {
+  it('roleId=99 + REPORTS_UPDATE_ANY → canEditAny=true (perm es la única vía)', () => {
     const { comp } = buildComponent(99, [PERMS.REPORTS_UPDATE_ANY]);
     comp.ngOnInit();
-    expect(comp.isAdmin).toBe(true);
+    expect(comp.canEditAny).toBe(true);
   });
 
-  it('roleId=99 (desconocido) + PERMS.REPORTS_CREATE en el set → isViewer=false', () => {
+  it('roleId=99 + REPORTS_DELETE_ANY → canDeleteAny=true', () => {
+    const { comp } = buildComponent(99, [PERMS.REPORTS_DELETE_ANY]);
+    comp.ngOnInit();
+    expect(comp.canDeleteAny).toBe(true);
+  });
+
+  it('roleId=99 + REPORTS_CREATE → isViewer=false (sigue siendo dual)', () => {
     const { comp } = buildComponent(99, [PERMS.REPORTS_CREATE]);
     comp.ngOnInit();
     expect(comp.isViewer).toBe(false);
   });
 
-  it('roleId=99 (desconocido) sin perms relevantes → isAdmin=false, isViewer=true', () => {
+  it('roleId=99 sin perms relevantes → canEditAny=false, canDeleteAny=false, isViewer=true', () => {
     const { comp } = buildComponent(99, []);
     comp.ngOnInit();
-    expect(comp.isAdmin).toBe(false);
+    expect(comp.canEditAny).toBe(false);
+    expect(comp.canDeleteAny).toBe(false);
     expect(comp.isViewer).toBe(true);
   });
 

@@ -3,16 +3,16 @@
 
   <!-- BACKDROP: click cierra el panel (excepto si edit+dirty / saving) -->
   <div
-    class="fixed inset-0 z-50 transition-opacity duration-200"
-    style="background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(2px);"
+    class="fixed inset-0 transition-opacity duration-200"
+    style="background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(2px); z-index: 10000;"
     (click)="onBackdropClick()"
     data-testid="drawer-backdrop">
   </div>
 
   <!-- PANEL: stopPropagation para que clicks dentro no cierren -->
   <aside
-    class="fixed top-0 right-0 z-50 h-full w-full max-w-[680px] shadow-2xl flex flex-col transition-transform duration-300"
-    style="background: #F0F4FA; transform: translateX(0);"
+    class="fixed top-0 right-0 h-full w-full max-w-[680px] shadow-2xl flex flex-col transition-transform duration-300"
+    style="background: #F0F4FA; transform: translateX(0); z-index: 10001;"
     (click)="$event.stopPropagation()"
     role="dialog"
     aria-modal="true"
@@ -21,34 +21,40 @@
 
     <!-- HEADER -->
     <header
-      class="flex flex-col gap-3 px-6 py-5 border-b"
+      class="flex flex-col gap-5 px-6 pt-5 pb-4 border-b"
       style="background: linear-gradient(135deg, #1B3A6B, #2d5fa8); border-color: #D6E0F0;">
 
       <div class="flex items-start justify-between gap-3">
 
         <div class="flex items-start gap-3 min-w-0">
-          <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+          <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
                style="background: rgba(255,255,255,0.15);">
-            <lucide-icon name="shield-check" [size]="20" [strokeWidth]="2" color="white"></lucide-icon>
+            <lucide-icon name="shield-check" [size]="22" [strokeWidth]="2" color="white"></lucide-icon>
           </div>
           <div class="min-w-0">
-            <h2 id="permissions-drawer-title" class="text-[15px] font-bold text-white leading-tight">
-              Permisos efectivos
-            </h2>
-            <p class="text-[12px] mt-1 text-white/85 truncate">
-              {{ userDisplayName || (view()?.user?.email ?? '') }}
+            <p class="text-[10px] font-bold uppercase tracking-[1.4px] text-white/70 leading-tight">
+              Permisos del usuario
             </p>
-            <div *ngIf="userRoleName()" class="mt-2 inline-flex flex-wrap gap-1.5">
-              <span class="px-2.5 py-1 text-[11px] font-semibold rounded-full"
+            <h2 id="permissions-drawer-title"
+                class="text-[15px] font-bold text-white leading-tight mt-1 truncate"
+                [title]="userDisplayName || (view()?.user?.email ?? '')">
+              {{ userDisplayName || (view()?.user?.email ?? '') }}
+            </h2>
+            <div *ngIf="userRoleName()" class="mt-2 inline-flex flex-wrap items-center gap-1.5">
+              <span class="text-[10.5px] text-white/70 font-semibold">Rol:</span>
+              <span class="px-2.5 py-0.5 text-[11px] font-bold rounded-full inline-flex items-center gap-1"
                     [ngClass]="roleBadgeClasses(userRoleName())">
+                <lucide-icon name="user-check" [size]="10" [strokeWidth]="2.5"
+                             [color]="userRoleName() === 'admin' ? '#9A3412' : '#1B3A6B'"></lucide-icon>
                 {{ userRoleName() }}
               </span>
               <span *ngIf="isMainAdminTarget()"
-                    class="px-2.5 py-1 text-[11px] font-semibold rounded-full inline-flex items-center gap-1"
+                    class="px-2.5 py-0.5 text-[11px] font-bold rounded-full inline-flex items-center gap-1"
                     style="background: #FFEDD5; color: #9A3412; border: 1px solid #FED7AA;"
-                    data-testid="drawer-main-admin-badge">
+                    data-testid="drawer-main-admin-badge"
+                    title="Administrador principal del sistema">
                 <lucide-icon name="shield-alert" [size]="11" [strokeWidth]="2.5" color="#9A3412"></lucide-icon>
-                main_admin
+                Admin principal
               </span>
             </div>
           </div>
@@ -66,31 +72,50 @@
 
       <!-- ACCIONES (header) -->
       <div *ngIf="state() === 'content'"
-           class="flex items-center justify-between gap-2 flex-wrap">
+           class="flex items-center justify-between gap-3 flex-wrap pt-3"
+           style="border-top: 1px solid rgba(255,255,255,0.15);">
 
         <!-- Resumen counts (siempre visible) -->
-        <p class="text-[11.5px] text-white/85 leading-snug"
-           data-testid="drawer-summary-counts">
-          <strong class="text-white">{{ effectiveCount() }}</strong>
-          <span class="text-white/70"> / {{ catalogTotal }} efectivos</span>
-          <span class="text-white/40 mx-1">·</span>
-          <strong class="text-white">{{ liveGrantsCount() }}</strong>
-          <span class="text-white/70"> grants</span>
-          <span class="text-white/40 mx-1">·</span>
-          <strong class="text-white">{{ liveRevokesCount() }}</strong>
-          <span class="text-white/70"> revokes</span>
+        <p class="text-[11.5px] text-white/90 leading-snug inline-flex items-center gap-2 flex-wrap"
+           data-testid="drawer-summary-counts"
+           title="Permisos efectivos · ajustes personalizados sobre el rol">
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full"
+                style="background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.25);">
+            <lucide-icon name="shield-check" [size]="11" [strokeWidth]="2.4" color="white"></lucide-icon>
+            <strong class="text-white">{{ effectiveCount() }} / {{ catalogTotal }}</strong>
+            <span class="text-white/80">permisos activos</span>
+          </span>
+          <ng-container *ngIf="liveGrantsCount() > 0">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full"
+                  style="background: rgba(34,197,94,0.25); border: 1px solid rgba(187,247,208,0.4);"
+                  title="Permisos otorgados manualmente sobre el rol">
+              <lucide-icon name="plus" [size]="10" [strokeWidth]="2.5" color="#BBF7D0"></lucide-icon>
+              <strong class="text-white">{{ liveGrantsCount() }}</strong>
+              <span class="text-white/80">otorgados</span>
+            </span>
+          </ng-container>
+          <ng-container *ngIf="liveRevokesCount() > 0">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full"
+                  style="background: rgba(239,68,68,0.25); border: 1px solid rgba(254,202,202,0.4);"
+                  title="Permisos del rol revocados manualmente">
+              <lucide-icon name="minus" [size]="10" [strokeWidth]="2.5" color="#FECACA"></lucide-icon>
+              <strong class="text-white">{{ liveRevokesCount() }}</strong>
+              <span class="text-white/80">revocados</span>
+            </span>
+          </ng-container>
         </p>
 
-        <!-- READ-ONLY: botón Editar overrides -->
+        <!-- READ-ONLY: botón Personalizar permisos -->
         <ng-container *ngIf="!isEditMode()">
           <button *appCan="[PERMS.USERS_MANAGE_PERMISSIONS]; fallbackRole: ROLE_IDS.ADMIN"
                   type="button"
                   (click)="enterEditMode()"
                   class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-[11.5px] font-bold cursor-pointer transition"
                   style="background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.25);"
+                  title="Otorgar o revocar permisos puntuales por encima del rol"
                   data-testid="drawer-edit-btn">
             <lucide-icon name="pencil" [size]="12" [strokeWidth]="2.5" color="white"></lucide-icon>
-            Editar overrides
+            Personalizar permisos
           </button>
         </ng-container>
 
@@ -104,9 +129,10 @@
                     [disabled]="saving() || liveGrantsCount() + liveRevokesCount() === 0"
                     class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold cursor-pointer transition disabled:cursor-not-allowed disabled:opacity-50"
                     style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.25);"
+                    title="Volver al comportamiento estándar del rol (sin ajustes personalizados)"
                     data-testid="drawer-clear-overrides-btn">
               <lucide-icon name="ban" [size]="12" [strokeWidth]="2.5" color="white"></lucide-icon>
-              Quitar todos
+              Quitar ajustes
             </button>
 
             <button type="button"
@@ -138,17 +164,23 @@
       <p *ngIf="isEditMode() && dirty()"
          class="text-[11.5px] font-semibold flex items-center gap-2 flex-wrap"
          data-testid="drawer-diff-counter">
-        <span class="px-2 py-0.5 rounded-full"
-              style="background: #DCFCE7; color: #15803D; border: 1px solid #BBF7D0;">
-          +{{ diff().added.length }} grants/revokes
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full"
+              style="background: #DCFCE7; color: #15803D; border: 1px solid #BBF7D0;"
+              title="Permisos que vas a otorgar o revocar como ajuste personalizado">
+          <lucide-icon name="plus" [size]="10" [strokeWidth]="2.5" color="#15803D"></lucide-icon>
+          {{ diff().added.length }} nuevo{{ diff().added.length === 1 ? '' : 's' }}
         </span>
-        <span class="px-2 py-0.5 rounded-full"
-              style="background: #FEE2E2; color: #B91C1C; border: 1px solid #FECACA;">
-          −{{ diff().removed.length }} removidos
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full"
+              style="background: #FEE2E2; color: #B91C1C; border: 1px solid #FECACA;"
+              title="Ajustes personalizados que vas a quitar (vuelven al comportamiento del rol)">
+          <lucide-icon name="ban" [size]="10" [strokeWidth]="2.5" color="#B91C1C"></lucide-icon>
+          {{ diff().removed.length }} quitado{{ diff().removed.length === 1 ? '' : 's' }}
         </span>
-        <span class="px-2 py-0.5 rounded-full"
-              style="background: #DBEAFE; color: #1E40AF; border: 1px solid #BFDBFE;">
-          ±{{ diff().changed.length }} cambios
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full"
+              style="background: #DBEAFE; color: #1E40AF; border: 1px solid #BFDBFE;"
+              title="Permisos cuyo ajuste cambió (otorgado ↔ revocado)">
+          <lucide-icon name="refresh-cw" [size]="10" [strokeWidth]="2.5" color="#1E40AF"></lucide-icon>
+          {{ diff().changed.length }} modificado{{ diff().changed.length === 1 ? '' : 's' }}
         </span>
       </p>
 
@@ -236,143 +268,167 @@
 
         </ng-container>
 
-        <!-- READ-ONLY: bloque resumen tradicional -->
+        <!-- READ-ONLY: vista amistosa para inspección -->
         <ng-container *ngIf="!isEditMode()">
 
-          <!-- Heredados del rol -->
-          <section
-            class="rounded-xl border p-4 space-y-3"
-            style="background: white; border-color: #D6E0F0;">
-            <header class="flex items-center gap-2">
-              <lucide-icon name="tag" [size]="14" [strokeWidth]="2" color="#1B3A6B"></lucide-icon>
-              <h3 class="text-[12px] font-bold uppercase tracking-[0.7px]" style="color: #1B3A6B;">
-                Permisos heredados del rol
-              </h3>
-              <span class="ml-auto text-[11px] font-semibold" style="color: #4A6A9B;">
-                {{ v.from_role.length }}
-              </span>
-            </header>
-
-            <p *ngIf="!fromRoleGrouped().length"
-               class="text-[12px]"
-               style="color: #8A9DC0;">
-              Este rol no tiene permisos asignados.
-            </p>
-
-            <div *ngFor="let group of fromRoleGrouped()" class="space-y-1.5">
-              <p class="text-[10.5px] font-semibold uppercase tracking-wide"
-                 style="color: #4A6A9B;">
-                {{ group.moduleLabel }}
-              </p>
-              <div class="flex flex-wrap gap-1.5">
-                <span *ngFor="let code of group.codes"
-                      class="px-2.5 py-1 text-[11px] font-semibold rounded-full"
-                      style="background: #F0F4FA; color: #1B3A6B; border: 1px solid #D6E0F0;">
-                  {{ code }}
-                </span>
-              </div>
+          <!-- Caja explicativa cuando NO hay overrides (caso típico de admin) -->
+          <div *ngIf="hasNoManualOverrides()"
+               class="rounded-xl border px-4 py-3 flex items-start gap-3"
+               style="background: #EFF6FF; border-color: #BFDBFE;"
+               data-testid="drawer-clean-role-banner">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                 style="background: #DBEAFE;">
+              <lucide-icon name="info" [size]="16" [strokeWidth]="2" color="#1E40AF"></lucide-icon>
             </div>
-          </section>
+            <div class="text-[12px] leading-snug" style="color: #1E3A8A;">
+              <strong>Este usuario tiene los permisos estándar del rol</strong>
+              <span class="font-bold">"{{ userRoleName() }}"</span>, sin ajustes personalizados.
+              <span class="block mt-1 text-[11.5px]" style="color: #1E40AF;">
+                Si necesitás otorgar o quitar permisos puntuales, usá <strong>Editar overrides</strong>.
+              </span>
+            </div>
+          </div>
 
-          <!-- Otorgados manualmente -->
-          <section
+          <!-- Otorgados manualmente (solo si hay) -->
+          <section *ngIf="grantChips().length > 0"
             class="rounded-xl border p-4 space-y-3"
-            style="background: white; border-color: #D6E0F0;">
+            style="background: white; border-color: #BBF7D0;"
+            data-testid="drawer-grants-section">
             <header class="flex items-center gap-2">
-              <lucide-icon name="circle-check" [size]="14" [strokeWidth]="2" color="#15803D"></lucide-icon>
-              <h3 class="text-[12px] font-bold uppercase tracking-[0.7px]" style="color: #1B3A6B;">
+              <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                   style="background: #DCFCE7;">
+                <lucide-icon name="plus" [size]="14" [strokeWidth]="2.4" color="#15803D"></lucide-icon>
+              </div>
+              <h3 class="text-[12px] font-bold uppercase tracking-[0.7px]" style="color: #166534;">
                 Otorgados manualmente
               </h3>
-              <span class="ml-auto text-[11px] font-semibold" style="color: #4A6A9B;">
-                {{ grantChips().length }}
+              <span class="ml-auto text-[11px] font-bold px-2 py-0.5 rounded-full"
+                    style="background: #DCFCE7; color: #15803D; border: 1px solid #BBF7D0;">
+                +{{ grantChips().length }}
               </span>
             </header>
 
-            <p *ngIf="!grantChips().length"
-               class="text-[12px]"
-               style="color: #8A9DC0;">
-              Sin grants manuales.
+            <p class="text-[11.5px] leading-snug" style="color: #4A6A9B;">
+              Permisos extra que se le otorgaron a este usuario por encima de los del rol.
             </p>
 
-            <div *ngIf="grantChips().length" class="flex flex-wrap gap-1.5">
+            <div class="flex flex-wrap gap-1.5">
               <span *ngFor="let chip of grantChips()"
-                    class="px-2.5 py-1 text-[11px] font-semibold rounded-full"
+                    class="px-2.5 py-1 text-[11px] font-semibold rounded-full inline-flex items-center gap-1"
                     style="background: #DCFCE7; color: #166534; border: 1px solid #BBF7D0;"
                     [title]="chip.tooltip"
                     data-testid="grant-chip">
+                <lucide-icon name="plus" [size]="10" [strokeWidth]="2.5" color="#15803D"></lucide-icon>
                 {{ chip.code }}
               </span>
             </div>
           </section>
 
-          <!-- Revocados manualmente -->
-          <section
+          <!-- Revocados manualmente (solo si hay) -->
+          <section *ngIf="revokeChips().length > 0"
             class="rounded-xl border p-4 space-y-3"
-            style="background: white; border-color: #D6E0F0;">
+            style="background: white; border-color: #FECACA;"
+            data-testid="drawer-revokes-section">
             <header class="flex items-center gap-2">
-              <lucide-icon name="circle-x" [size]="14" [strokeWidth]="2" color="#B91C1C"></lucide-icon>
-              <h3 class="text-[12px] font-bold uppercase tracking-[0.7px]" style="color: #1B3A6B;">
+              <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                   style="background: #FEE2E2;">
+                <lucide-icon name="minus" [size]="14" [strokeWidth]="2.4" color="#B91C1C"></lucide-icon>
+              </div>
+              <h3 class="text-[12px] font-bold uppercase tracking-[0.7px]" style="color: #991B1B;">
                 Revocados manualmente
               </h3>
-              <span class="ml-auto text-[11px] font-semibold" style="color: #4A6A9B;">
-                {{ revokeChips().length }}
+              <span class="ml-auto text-[11px] font-bold px-2 py-0.5 rounded-full"
+                    style="background: #FEE2E2; color: #B91C1C; border: 1px solid #FECACA;">
+                −{{ revokeChips().length }}
               </span>
             </header>
 
-            <p *ngIf="!revokeChips().length"
-               class="text-[12px]"
-               style="color: #8A9DC0;">
-              Sin revokes manuales.
+            <p class="text-[11.5px] leading-snug" style="color: #4A6A9B;">
+              Permisos del rol que se le quitaron a este usuario en particular.
             </p>
 
-            <div *ngIf="revokeChips().length" class="flex flex-wrap gap-1.5">
+            <div class="flex flex-wrap gap-1.5">
               <span *ngFor="let chip of revokeChips()"
-                    class="px-2.5 py-1 text-[11px] font-semibold rounded-full"
+                    class="px-2.5 py-1 text-[11px] font-semibold rounded-full inline-flex items-center gap-1"
                     style="background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA;"
                     [title]="chip.tooltip"
                     data-testid="revoke-chip">
+                <lucide-icon name="minus" [size]="10" [strokeWidth]="2.5" color="#B91C1C"></lucide-icon>
                 {{ chip.code }}
               </span>
             </div>
           </section>
 
-          <!-- Efectivos -->
+          <!-- Lista completa de lo que PUEDE HACER (efectivos), con descripciones -->
           <section
-            class="rounded-xl border p-4 space-y-3"
-            style="background: white; border-color: #D6E0F0;">
+            class="rounded-xl border overflow-hidden"
+            style="background: white; border-color: #D6E0F0;"
+            data-testid="drawer-effective-section">
 
-            <header class="flex items-center gap-2">
-              <lucide-icon name="shield-check" [size]="14" [strokeWidth]="2" color="#1B3A6B"></lucide-icon>
-              <h3 class="text-[12px] font-bold uppercase tracking-[0.7px]" style="color: #1B3A6B;">
-                Permisos efectivos
-              </h3>
-              <span class="ml-auto text-[11px] font-bold px-2.5 py-1 rounded-full"
+            <header class="flex items-center gap-2 px-4 py-3 border-b"
+                    style="background: #F8FAFD; border-color: #D6E0F0;">
+              <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                   style="background: #D6E4F7;">
+                <lucide-icon name="shield-check" [size]="14" [strokeWidth]="2.2" color="#1B3A6B"></lucide-icon>
+              </div>
+              <div class="min-w-0">
+                <h3 class="text-[12px] font-bold uppercase tracking-[0.7px]" style="color: #1B3A6B;">
+                  Qué puede hacer este usuario
+                </h3>
+                <p class="text-[11px] leading-snug mt-0.5" style="color: #4A6A9B;">
+                  Acciones autorizadas en el sistema, agrupadas por módulo.
+                </p>
+              </div>
+              <span class="ml-auto text-[11px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap"
                     style="background: #D6E4F7; border: 1px solid #B3CCE8; color: #1B3A6B;"
                     data-testid="effective-counter">
-                {{ effectiveCount() }} de {{ catalogTotal }} permisos efectivos
+                {{ effectiveCount() }} / {{ catalogTotal }}
               </span>
             </header>
 
             <p *ngIf="!effectiveGrouped().length"
-               class="text-[12px]"
+               class="text-[12px] px-4 py-6 text-center"
                style="color: #8A9DC0;">
               Este usuario no tiene permisos efectivos.
             </p>
 
-            <div *ngFor="let group of effectiveGrouped()" class="space-y-1.5"
-                 data-testid="effective-group">
-              <p class="text-[10.5px] font-semibold uppercase tracking-wide"
-                 style="color: #4A6A9B;"
-                 data-testid="effective-group-label">
-                {{ group.moduleLabel }}
-              </p>
-              <div class="flex flex-wrap gap-1.5">
-                <span *ngFor="let code of group.codes"
-                      class="px-2.5 py-1 text-[11px] font-semibold rounded-full"
-                      style="background: #D6E4F7; color: #1B3A6B; border: 1px solid #B3CCE8;"
+            <div *ngIf="effectiveGrouped().length"
+                 class="divide-y" style="border-color: #E5EAF3;">
+              <div *ngFor="let group of effectiveGrouped()"
+                   class="px-4 py-3"
+                   data-testid="effective-group">
+
+                <div class="flex items-center gap-2 mb-2">
+                  <lucide-icon name="layers" [size]="11" [strokeWidth]="2.4" color="#4A6A9B"></lucide-icon>
+                  <p class="text-[10.5px] font-bold uppercase tracking-[1px]"
+                     style="color: #1B3A6B;"
+                     data-testid="effective-group-label">
+                    {{ group.moduleLabel }}
+                  </p>
+                  <span class="text-[10.5px]" style="color: #8A9DC0;">
+                    · {{ group.items.length }}
+                  </span>
+                </div>
+
+                <ul class="space-y-1">
+                  <li *ngFor="let item of group.items"
+                      class="flex items-start gap-2 text-[12px] leading-snug"
                       data-testid="effective-chip">
-                  {{ code }}
-                </span>
+                    <lucide-icon name="check" [size]="12" [strokeWidth]="2.8" color="#15803D"
+                                 class="mt-[3px] shrink-0"></lucide-icon>
+                    <div class="min-w-0 flex-1">
+                      <p style="color: #1B3A6B;">
+                        {{ item.description || item.code }}
+                      </p>
+                      <p *ngIf="item.description"
+                         class="text-[10.5px] font-mono mt-0.5"
+                         style="color: #8A9DC0;">
+                        {{ item.code }}
+                      </p>
+                    </div>
+                  </li>
+                </ul>
+
               </div>
             </div>
 
@@ -418,23 +474,24 @@
                        [attr.data-state]="row.state">
 
                     <div class="flex-1 min-w-0">
-                      <p class="text-[12px] font-semibold leading-snug inline-flex items-center gap-1.5"
+                      <p class="text-[12.5px] font-semibold leading-snug inline-flex items-start gap-1.5 flex-wrap"
                          style="color: #1B3A6B;">
-                        {{ row.perm.code }}
+                        <span>{{ row.perm.description || row.perm.code }}</span>
 
                         <!-- Badge "Privilegio elevado" -->
                         <span *ngIf="row.isElevation"
                               class="px-1.5 py-0.5 text-[9.5px] font-bold rounded uppercase tracking-wide inline-flex items-center gap-1"
                               style="background: #FFEDD5; color: #9A3412; border: 1px solid #FED7AA;"
-                              data-testid="drawer-elevation-badge">
+                              data-testid="drawer-elevation-badge"
+                              title="Estás otorgando un permiso crítico a un usuario sin rol admin">
                           <lucide-icon name="shield-alert" [size]="9" [strokeWidth]="2.5" color="#9A3412"></lucide-icon>
                           Privilegio elevado
                         </span>
                       </p>
                       <p *ngIf="row.perm.description"
-                         class="text-[11px] leading-snug mt-0.5"
+                         class="text-[10.5px] font-mono leading-snug mt-0.5"
                          style="color: #8A9DC0;">
-                        {{ row.perm.description }}
+                        {{ row.perm.code }}
                       </p>
                     </div>
 

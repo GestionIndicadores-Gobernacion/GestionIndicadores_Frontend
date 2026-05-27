@@ -44,8 +44,11 @@ export class ReportsListComponent implements OnInit {
   loading = true;
   loadError = false;
   currentUserId: number | null = null;
-  isAdmin = false;
   isViewer = false;
+  /** True si el user tiene PERM_REPORTS_UPDATE_ANY explícitamente. Override granular para editar reportes ajenos. */
+  canEditAny = false;
+  /** True si el user tiene PERM_REPORTS_DELETE_ANY explícitamente. Override granular para eliminar reportes ajenos. */
+  canDeleteAny = false;
 
   readonly PERMS = PERMS;
   readonly ROLE_IDS = ROLE_IDS;
@@ -85,15 +88,17 @@ export class ReportsListComponent implements OnInit {
     const user = this.authService.getUser();
     this.currentUserId = user?.id ?? null;
 
-    // Dual mode (Fase C): perm o rol; en C7 se quita el fallback.
+    // isViewer mantiene fallback de rol porque "puede crear" sigue siendo
+    // una capacidad de rol (no hay PERM_REPORTS_CREATE_ANY ni similar).
     const payload = this.authService.getTokenPayload();
     const roleId = payload?.role_id ?? null;
-    this.isAdmin = this.permissionService.hasPermissionOrRole(
-      PERMS.REPORTS_UPDATE_ANY, roleId, ROLE_IDS.ADMIN
-    );
     this.isViewer = !this.permissionService.hasPermissionOrRole(
       PERMS.REPORTS_CREATE, roleId, ROLE_IDS.ADMIN, ROLE_IDS.EDITOR, ROLE_IDS.MONITOR
     );
+    // Overrides granulares: cada operación consulta su propio permiso sin
+    // caer al rol admin. Admin sin el permiso pierde el override.
+    this.canEditAny = this.permissionService.hasPermission(PERMS.REPORTS_UPDATE_ANY);
+    this.canDeleteAny = this.permissionService.hasPermission(PERMS.REPORTS_DELETE_ANY);
 
     this.loadData();
 
