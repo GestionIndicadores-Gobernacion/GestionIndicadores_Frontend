@@ -88,6 +88,7 @@
             <app-action-plan-calendar-grid *ngIf="viewMode === 'calendar'" [calendarDays]="calendarDays"
                 [displayPlans]="displayPlans" [currentDate]="currentDate" [canInteract]="canInteractWithPlan.bind(this)"
                 [canEditPlan]="canEditPlanBound"
+                [isSuperAdmin]="isSuperAdmin"
                 [canOpen]="canOpenActivity"
                 (report)="openReportModal($event.plan, $event.objective, $event.activity, $event.event)"
                 (edit)="openEditPlanModal($event.plan, $event.event)"
