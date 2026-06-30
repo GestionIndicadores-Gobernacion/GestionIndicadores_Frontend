@@ -245,7 +245,15 @@
                 <span *ngIf="m.is_admin_reply">Administrador</span>
                 <span *ngIf="!m.is_admin_reply">{{ m.author?.first_name }} {{ m.author?.last_name }}</span>
               </div>
-              <div class="support-msg__body">{{ m.body }}</div>
+              <div class="support-msg__body" *ngIf="m.body">{{ m.body }}</div>
+              <div class="support-msg__images" *ngIf="m.images.length">
+                <img
+                  *ngFor="let img of m.images"
+                  [src]="img"
+                  class="support-msg__image"
+                  alt="Imagen adjunta"
+                  (click)="openLightbox(img)" />
+              </div>
               <div class="support-msg__time">{{ m.created_at | date:'short' }}</div>
             </div>
           </div>
@@ -253,23 +261,60 @@
       </div>
 
       <!-- Reply -->
-      <div class="support-chat__reply" *ngIf="activeTicket.status !== 'cerrado'">
-        <textarea
-          class="support-textarea support-textarea--reply"
-          [(ngModel)]="replyBody"
-          [disabled]="isReplying"
-          [maxlength]="maxLen"
-          rows="2"
-          placeholder="Escribe tu mensaje..."
-          (keydown.enter)="$event.preventDefault(); sendReply()"></textarea>
-        <button
-          type="button"
-          class="support-btn support-btn--primary support-btn--icon"
-          (click)="sendReply()"
-          [disabled]="isReplying || !replyBody.trim()">
-          <lucide-icon *ngIf="!isReplying" name="send" [size]="14" [strokeWidth]="2" color="#ffffff"></lucide-icon>
-          <span *ngIf="isReplying" class="support-btn__spinner"></span>
-        </button>
+      <div class="support-chat__reply-wrap" *ngIf="activeTicket.status !== 'cerrado'">
+
+        <!-- Previews de imágenes adjuntas a la respuesta -->
+        <div class="support-reply-thumbs" *ngIf="replyImages.length || isProcessingImages">
+          <div class="support-reply-thumb" *ngFor="let img of replyImages; let i = index">
+            <img [src]="img" alt="Adjunto" (click)="openLightbox(img)" />
+            <button type="button" class="support-reply-thumb__remove" (click)="removeReplyImage(i)" [disabled]="isReplying" aria-label="Quitar imagen">
+              <lucide-icon name="x" [size]="12" [strokeWidth]="2.5" color="#ffffff"></lucide-icon>
+            </button>
+          </div>
+          <div class="support-reply-thumb support-reply-thumb--loading" *ngIf="isProcessingImages">
+            <span class="support-btn__spinner"></span>
+          </div>
+        </div>
+        <div class="support-help support-help--error" *ngIf="replyImageError">
+          {{ replyImageError }}
+        </div>
+
+        <div class="support-chat__reply">
+          <input
+            #replyFileInput
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            multiple
+            (change)="onReplyFilesSelected($event)"
+            class="hidden"
+            [disabled]="isReplying" />
+          <button
+            type="button"
+            class="support-btn support-btn--ghost support-btn--icon"
+            (click)="replyFileInput.click()"
+            [disabled]="isReplying"
+            aria-label="Adjuntar imágenes"
+            title="Adjuntar imágenes">
+            <lucide-icon name="image-plus" [size]="16" [strokeWidth]="2" color="#2d5fa8"></lucide-icon>
+          </button>
+          <textarea
+            class="support-textarea support-textarea--reply"
+            [(ngModel)]="replyBody"
+            [disabled]="isReplying"
+            [maxlength]="maxLen"
+            rows="2"
+            placeholder="Escribe tu mensaje o pega una imagen..."
+            (paste)="onReplyPaste($event)"
+            (keydown.enter)="$event.preventDefault(); sendReply()"></textarea>
+          <button
+            type="button"
+            class="support-btn support-btn--primary support-btn--icon"
+            (click)="sendReply()"
+            [disabled]="!canSendReply">
+            <lucide-icon *ngIf="!isReplying" name="send" [size]="14" [strokeWidth]="2" color="#ffffff"></lucide-icon>
+            <span *ngIf="isReplying" class="support-btn__spinner"></span>
+          </button>
+        </div>
       </div>
 
       <div class="support-chat__closed" *ngIf="activeTicket.status === 'cerrado'">
@@ -280,4 +325,12 @@
     </ng-container>
   </ng-container>
 
+</div>
+
+<!-- LIGHTBOX: visor de imagen a pantalla completa -->
+<div class="support-lightbox" *ngIf="lightboxImage" (click)="closeLightbox()">
+  <button type="button" class="support-lightbox__close" (click)="closeLightbox()" aria-label="Cerrar">
+    <lucide-icon name="x" [size]="22" [strokeWidth]="2" color="#ffffff"></lucide-icon>
+  </button>
+  <img [src]="lightboxImage" alt="Imagen ampliada" (click)="$event.stopPropagation()" />
 </div>

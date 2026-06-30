@@ -490,6 +490,94 @@
   gap: 6px;
 }
 
+/* ───── Imágenes dentro de un mensaje ───── */
+.support-msg__images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.support-msg__image {
+  display: block;
+  width: 120px;
+  height: 120px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.08);
+  object-fit: cover;
+  cursor: zoom-in;
+}
+.support-msg--mine .support-msg__image { border-color: rgba(255,255,255,0.35); }
+
+/* ───── Adjuntos en el área de respuesta ───── */
+.support-chat__reply-wrap {
+  border-top: 1px solid #EDF2FA;
+  background: #ffffff;
+}
+.support-chat__reply-wrap .support-chat__reply { border-top: none; }
+
+.support-reply-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 12px 0;
+}
+.support-reply-thumb {
+  position: relative;
+  width: 54px; height: 54px;
+}
+.support-reply-thumb img {
+  width: 54px; height: 54px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--support-border);
+  cursor: zoom-in;
+}
+.support-reply-thumb__remove {
+  position: absolute; top: -6px; right: -6px;
+  width: 20px; height: 20px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: none; border-radius: 50%;
+  background: #dc2626;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.support-reply-thumb__remove:disabled { opacity: 0.5; cursor: default; }
+.support-reply-thumb--loading {
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px dashed var(--support-border);
+  border-radius: 8px;
+  background: var(--support-soft);
+}
+.support-reply-thumb--loading .support-btn__spinner {
+  border-color: rgba(45,95,168,0.3);
+  border-top-color: var(--support-primary-2);
+}
+
+/* ───── Lightbox (visor de imagen) ───── */
+.support-lightbox {
+  position: fixed; inset: 0;
+  z-index: 100000;
+  background: rgba(15, 23, 42, 0.85);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  cursor: zoom-out;
+}
+.support-lightbox img {
+  max-width: 92vw; max-height: 88vh;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  cursor: default;
+}
+.support-lightbox__close {
+  position: absolute; top: 18px; right: 18px;
+  width: 40px; height: 40px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: none; border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  cursor: pointer;
+}
+.support-lightbox__close:hover { background: rgba(255,255,255,0.28); }
+
 /* ───── Responsive ───── */
 @media (max-width: 540px) {
   .support-fab__label { display: none; }

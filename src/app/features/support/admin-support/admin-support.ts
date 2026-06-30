@@ -23,8 +23,11 @@ import {
   TicketSummary,
 } from '../../../core/services/support.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { compressImageFile } from '../../../core/utils/image-compress';
 
 const POLL_MS = 20_000;
+const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
+const MAX_REPLY_IMAGES = 8;
 
 @Component({
   selector: 'app-admin-support',
@@ -53,6 +56,11 @@ export class AdminSupportComponent implements OnInit, OnDestroy, AfterViewChecke
   replyBody = '';
   isReplying = false;
   isUpdatingStatus = false;
+  replyImages: string[] = [];
+  replyImageError: string | null = null;
+  isProcessingImages = false;
+  readonly maxReplyImages = MAX_REPLY_IMAGES;
+  lightboxImage: string | null = null;
   private chatPollSub: Subscription | null = null;
   private shouldScrollChat = false;
 
@@ -64,6 +72,7 @@ export class AdminSupportComponent implements OnInit, OnDestroy, AfterViewChecke
   ];
 
   @ViewChild('chatScroll') chatScroll?: ElementRef<HTMLDivElement>;
+  @ViewChild('replyFileInput') replyFileInput?: ElementRef<HTMLInputElement>;
 
   ngOnInit(): void {
     this.refreshList();
@@ -146,6 +155,8 @@ export class AdminSupportComponent implements OnInit, OnDestroy, AfterViewChecke
   closeDetail(): void {
     this.stopChatPolling();
     this.selected = null;
+    this.clearReplyImages();
+    this.replyBody = '';
     this.router.navigate([], {
       queryParams: { ticketId: null },
       queryParamsHandling: 'merge',
@@ -153,14 +164,99 @@ export class AdminSupportComponent implements OnInit, OnDestroy, AfterViewChecke
     });
   }
 
+  get canSendReply(): boolean {
+    return !this.isReplying && !this.isProcessingImages
+      && (!!this.replyBody.trim() || this.replyImages.length > 0);
+  }
+
+  onReplyFilesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.addImageFiles(input.files);
+    input.value = '';
+  }
+
+  onReplyPaste(event: ClipboardEvent): void {
+    const items = event.clipboardData?.items;
+    if (!items) return;
+    const files: File[] = [];
+    for (let i = 0; i < items.length; i++) {
+      const it = items[i];
+      if (it.kind === 'file' && it.type.startsWith('image/')) {
+        const f = it.getAsFile();
+        if (f) files.push(f);
+      }
+    }
+    if (files.length) {
+      event.preventDefault();
+      this.addImageFiles(files);
+    }
+  }
+
+  private addImageFiles(files: FileList | File[] | null): void {
+    if (!files) return;
+    this.replyImageError = null;
+    const list = Array.from(files as ArrayLike<File>);
+
+    for (const file of list) {
+      if (this.replyImages.length >= this.maxReplyImages) {
+        this.replyImageError = `Máximo ${this.maxReplyImages} imágenes por mensaje.`;
+        break;
+      }
+      if (!file.type.startsWith('image/')) {
+        this.replyImageError = 'Solo se pueden adjuntar imágenes.';
+        continue;
+      }
+      if (file.size > MAX_IMAGE_BYTES) {
+        this.replyImageError = 'Cada imagen debe pesar menos de 4 MB.';
+        continue;
+      }
+
+      this.isProcessingImages = true;
+      this.cdr.markForCheck();
+      compressImageFile(file)
+        .then(dataUrl => this.zone.run(() => {
+          if (this.replyImages.length < this.maxReplyImages) {
+            this.replyImages = [...this.replyImages, dataUrl];
+          }
+        }))
+        .catch(() => this.zone.run(() => {
+          this.replyImageError = 'No se pudo procesar una de las imágenes.';
+        }))
+        .finally(() => this.zone.run(() => {
+          this.isProcessingImages = false;
+          this.cdr.markForCheck();
+        }));
+    }
+  }
+
+  removeReplyImage(index: number): void {
+    this.replyImages = this.replyImages.filter((_, i) => i !== index);
+  }
+
+  private clearReplyImages(): void {
+    this.replyImages = [];
+    this.replyImageError = null;
+    if (this.replyFileInput?.nativeElement) {
+      this.replyFileInput.nativeElement.value = '';
+    }
+  }
+
+  openLightbox(src: string | null): void {
+    if (src) this.lightboxImage = src;
+  }
+
+  closeLightbox(): void {
+    this.lightboxImage = null;
+  }
+
   sendReply(): void {
-    if (!this.selected) return;
+    if (!this.selected || !this.canSendReply) return;
     const body = this.replyBody.trim();
-    if (!body || this.isReplying) return;
+    const images = [...this.replyImages];
 
     this.isReplying = true;
     this.cdr.markForCheck();
-    this.support.addMessage(this.selected.id, body).pipe(
+    this.support.addMessage(this.selected.id, body, images).pipe(
       finalize(() => this.zone.run(() => {
         this.isReplying = false;
         this.cdr.markForCheck();
@@ -175,6 +271,7 @@ export class AdminSupportComponent implements OnInit, OnDestroy, AfterViewChecke
             messages: [...this.selected.messages, msg],
           };
           this.replyBody = '';
+          this.clearReplyImages();
           this.shouldScrollChat = true;
           this.updateLocalTicketStatus(this.selected.id, this.selected.status);
         }
