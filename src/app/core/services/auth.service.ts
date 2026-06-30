@@ -161,6 +161,19 @@ export class AuthService {
     return this.http.get(`${this.api}/me`);
   }
 
+  /**
+   * Verificación de sesión contra el SERVIDOR (verdad absoluta).
+   *
+   * A diferencia de `isTokenExpired()` / `isAuthenticated()`, no depende del
+   * reloj local del dispositivo. Esencial en iOS, donde un reloj desfasado o
+   * el equipo suspendido hacen que el token parezca válido localmente aunque
+   * el backend ya lo rechazó. Pega a un endpoint liviano `jwt_required`; si
+   * responde 401/expirado, el authInterceptor dispara el flujo de logout.
+   */
+  pingSession(): Observable<unknown> {
+    return this.http.get(`${environment.apiUrl}/users/me/permissions`);
+  }
+
   // =====================================================
   // 6️⃣ REFRESH TOKEN
   // =====================================================
