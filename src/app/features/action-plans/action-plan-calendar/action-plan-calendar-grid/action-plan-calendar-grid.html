@@ -72,8 +72,9 @@
                     <lucide-icon name="pencil" [size]="12" [strokeWidth]="2" color="currentColor"></lucide-icon>
                 </button>
 
-                <button *ngIf="flat.activity.status !== 'Realizado' && flat.activity.status !== 'Pendiente de Evidencia' && canInteract(flat.plan)"
+                <button *ngIf="canDeleteActivity(flat.plan, flat.activity)"
                     (click)="delete.emit({ activityId: flat.activity.id!, event: $event }); $event.stopPropagation()"
+                    [title]="flat.activity.status === 'Pendiente de Evidencia' ? 'Eliminar (solo admin principal)' : 'Eliminar'"
                     class="opacity-0 group-hover:opacity-100 transition text-red-600">
                     <lucide-icon name="x" [size]="12" [strokeWidth]="2" color="currentColor"></lucide-icon>
                 </button>
