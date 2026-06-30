@@ -17,7 +17,7 @@ import { UserResponse } from '../../../features/user/models/user.model';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { PermissionService } from '../../../core/services/permission.service';
-import { PERMS, ROLE_IDS } from '../../../core/constants/permissions';
+import { PERMS, ROLE_IDS, isSuperAdminEmail } from '../../../core/constants/permissions';
 import { catchError, of } from 'rxjs';
 
 import { ActionPlanCreateModalComponent } from '../modals/action-plan-create-modal/action-plan-create-modal';
@@ -128,6 +128,11 @@ export class ActionPlanCalendarComponent implements OnInit {
   };
   /** Eliminar actividad: misma regla que editar plan (creador o admin). */
   canInteractWithPlan = (plan: ActionPlanModel): boolean => this.canEditPlanBound(plan);
+
+  /** El admin principal (único que borra actividades pendientes de evidencia). */
+  get isSuperAdmin(): boolean {
+    return isSuperAdminEmail(this.currentUser?.email);
+  }
 
   /**
    * Reportar una actividad: por defecto SOLO el responsable asignado al

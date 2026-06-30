@@ -187,8 +187,9 @@
                     Editar
                 </button>
 
-                <!-- DELETE: oculto si no puede o si ya fue reportada -->
-                <button *ngIf="canModify(item.plan) && item.activity.status !== 'Realizado' && item.activity.status !== 'Pendiente de Evidencia'" (click)="onDelete(item.activity.id!, $event)"
+                <!-- DELETE: 'Realizado' nunca; 'Pendiente de Evidencia' solo admin principal; resto reglas normales -->
+                <button *ngIf="canDeleteActivity(item.plan, item.activity)" (click)="onDelete(item.activity.id!, $event)"
+                    [title]="item.activity.status === 'Pendiente de Evidencia' ? 'Eliminar (solo admin principal)' : 'Eliminar'"
                     class="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition">
                     <lucide-icon name="trash-2" [size]="14" [strokeWidth]="2" color="currentColor"></lucide-icon>
                 </button>

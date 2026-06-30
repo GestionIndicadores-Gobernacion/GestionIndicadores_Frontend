@@ -84,3 +84,15 @@ export const ROLE_IDS = {
 } as const;
 
 export type RoleId = typeof ROLE_IDS[keyof typeof ROLE_IDS];
+
+/**
+ * Email del administrador principal — único autorizado a eliminar planes de
+ * acción / actividades en estado "Pendiente de Evidencia" (incluso vencida la
+ * ventana). Debe coincidir con `SUPER_ADMIN_EMAIL` del backend (config.py).
+ */
+export const SUPER_ADMIN_EMAIL = 'admin@gobernacion.gov.co';
+
+/** Compara el email de un usuario contra el admin principal (tolerante). */
+export function isSuperAdminEmail(email?: string | null): boolean {
+  return !!email && email.trim().toLowerCase() === SUPER_ADMIN_EMAIL;
+}
