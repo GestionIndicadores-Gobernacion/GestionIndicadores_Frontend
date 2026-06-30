@@ -26,6 +26,7 @@ export interface TicketMessage {
   is_admin_reply: boolean;
   read_by_owner: boolean;
   created_at: string;
+  images: string[];
   author: TicketAuthor | null;
 }
 
@@ -82,8 +83,15 @@ export class SupportService implements OnDestroy {
     return this.http.get<TicketDetail>(`${this.api}/tickets/${id}`);
   }
 
-  addMessage(ticketId: number, body: string): Observable<TicketMessage> {
-    return this.http.post<TicketMessage>(`${this.api}/tickets/${ticketId}/messages`, { body });
+  addMessage(
+    ticketId: number,
+    body: string,
+    images: string[] = [],
+  ): Observable<TicketMessage> {
+    return this.http.post<TicketMessage>(`${this.api}/tickets/${ticketId}/messages`, {
+      body,
+      images,
+    });
   }
 
   updateStatus(ticketId: number, status: TicketStatus): Observable<TicketDetail> {
