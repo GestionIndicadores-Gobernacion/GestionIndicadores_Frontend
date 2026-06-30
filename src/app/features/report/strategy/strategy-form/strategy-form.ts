@@ -140,7 +140,10 @@ export class StrategyFormComponent implements OnInit {
         data.annual_goals?.forEach(goal => {
           this.years.push(
             this.fb.group({
-              value: goal.value
+              value: new FormControl<number | null>(goal.value as number, {
+                nonNullable: true,
+                validators: [Validators.required, Validators.min(0)]
+              })
             })
           );
         });

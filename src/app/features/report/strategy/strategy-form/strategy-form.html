@@ -93,7 +93,11 @@
               focus:ring-2 focus:ring-[#2d5fa8]/20
               outline-none transition-all" placeholder="Ej: Estrategia de desarrollo comunitario" />
 
-            <p class="text-[10.5px] text-[#8A9DC0]">
+            <p *ngIf="showError('name')" class="text-[10.5px] font-semibold text-red-500">
+              Este campo está vacío
+            </p>
+
+            <p *ngIf="!showError('name')" class="text-[10.5px] text-[#8A9DC0]">
               Nombre con el que se identificará la estrategia
             </p>
 
@@ -113,7 +117,11 @@
               outline-none transition-all"
               placeholder="Describe el propósito general que se busca lograr..."></textarea>
 
-            <p class="text-[10.5px] text-[#8A9DC0]">
+            <p *ngIf="showError('objective')" class="text-[10.5px] font-semibold text-red-500">
+              Este campo está vacío
+            </p>
+
+            <p *ngIf="!showError('objective')" class="text-[10.5px] text-[#8A9DC0]">
               Describe el propósito general que se busca lograr
             </p>
 
@@ -134,7 +142,11 @@
               outline-none transition-all"
               placeholder="Define qué resultado medible representa esta estrategia..."></textarea>
 
-            <p class="text-[10.5px] text-[#8A9DC0]">
+            <p *ngIf="showError('product_goal_description')" class="text-[10.5px] font-semibold text-red-500">
+              Este campo está vacío
+            </p>
+
+            <p *ngIf="!showError('product_goal_description')" class="text-[10.5px] text-[#8A9DC0]">
               Define qué resultado medible representa esta estrategia
             </p>
 
@@ -206,11 +218,18 @@
 
                 <td class="px-6 py-3">
 
-                  <input type="number" formControlName="value" placeholder="Ingrese la meta del año" class="w-full text-[13px] rounded-xl px-3 py-2
+                  <input type="number" formControlName="value" placeholder="Ingrese la meta del año"
+                    [class.border-red-400]="y.get('value')?.invalid && (y.get('value')?.touched || y.get('value')?.dirty)"
+                    class="w-full text-[13px] rounded-xl px-3 py-2
                     bg-[#F0F4FA] border border-[#D6E0F0]
                     focus:bg-white focus:border-[#2d5fa8]
                     focus:ring-2 focus:ring-[#2d5fa8]/20
                     outline-none transition-all" />
+
+                  <p *ngIf="y.get('value')?.invalid && (y.get('value')?.touched || y.get('value')?.dirty)"
+                    class="mt-1 text-[10.5px] font-semibold text-red-500">
+                    Ingrese una meta válida (0 o mayor)
+                  </p>
 
                 </td>
 
@@ -256,6 +275,16 @@
 
       <app-strategy-metrics [metrics]="metrics" [components]="components">
       </app-strategy-metrics>
+
+      <!-- AVISO DE VALIDACIÓN -->
+      <div *ngIf="form.invalid && form.touched"
+        class="flex items-center gap-2 px-4 py-3 rounded-xl border border-red-200 bg-red-50">
+        <lucide-icon name="triangle-alert" [size]="15" [strokeWidth]="2" color="currentColor"
+          class="text-red-500"></lucide-icon>
+        <span class="text-[12px] font-medium text-red-600">
+          Hay campos sin completar. Revisa los campos marcados en rojo antes de guardar.
+        </span>
+      </div>
 
       <!-- ACTIONS -->
       <div class="flex justify-end gap-3 pt-3 pb-6">

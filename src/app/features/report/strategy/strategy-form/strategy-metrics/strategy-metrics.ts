@@ -74,7 +74,7 @@ export class StrategyMetricsComponent implements OnInit {
     this.metrics.push(
       this.fb.group({
         description: ['', Validators.required],
-        metric_type: ['report_count', Validators.required],
+        metric_type: ['manual', Validators.required],   // ← por defecto "Registro manual"
         component_id: [null],
         field_name: [''],
         dataset_id: [null],
