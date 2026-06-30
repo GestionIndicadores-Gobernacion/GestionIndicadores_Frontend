@@ -15,7 +15,7 @@ import { ActivityFormData, ActionPlanActivityFormComponent } from '../../action-
 import { MUNICIPIOS_VALLE } from '../../../../../../core/data/municipios';
 import { AuthService } from '../../../../../../core/services/auth.service';
 import { PermissionService } from '../../../../../../core/services/permission.service';
-import { PERMS, ROLE_IDS } from '../../../../../../core/constants/permissions';
+import { PERMS, ROLE_IDS, isSuperAdminEmail } from '../../../../../../core/constants/permissions';
 import { LucideAngularModule } from 'lucide-angular';
 
 
@@ -430,12 +430,58 @@ export class ActionPlanEditPlanModalComponent implements OnInit {
    * `PERM_ACTION_PLANS_DELETE_ANY` — el permiso es la única vía de override.
    * Admin sin el permiso NO puede eliminar planes ajenos. Viewer nunca.
    */
-  canDeletePlan(): boolean {
+  /** El admin principal: único que borra planes/actividades pendientes de evidencia. */
+  get isSuperAdmin(): boolean {
+    return isSuperAdminEmail(this.currentUser?.email);
+  }
+
+  /** True si el plan tiene al menos una actividad "Pendiente de Evidencia". */
+  get planHasPendingEvidence(): boolean {
+    return this.allActivities.some(x => x.activity.status === 'Pendiente de Evidencia');
+  }
+
+  /**
+   * Permiso base de borrado (creador o `DELETE_ANY`), SIN la regla especial de
+   * pendiente de evidencia. Viewer nunca.
+   */
+  private canDeleteBase(): boolean {
     if (!this.currentUser) return false;
     const roleId = this.authService.getTokenPayload()?.role_id ?? null;
     if (roleId === ROLE_IDS.VIEWER) return false;
     if (this.permissionService.hasPermission(PERMS.ACTION_PLANS_DELETE_ANY)) return true;
     return this.plan?.user_id != null && this.plan.user_id === this.currentUser.id;
+  }
+
+  /**
+   * ¿Mostrar el botón que abre el menú de borrado?
+   * - Quien tiene permiso base, sí.
+   * - El admin principal, además, en planes con pendientes de evidencia (para
+   *   poder limpiar planes atascados aunque no sea el creador).
+   */
+  canDeletePlan(): boolean {
+    if (this.canDeleteBase()) return true;
+    return this.planHasPendingEvidence && this.isSuperAdmin;
+  }
+
+  /**
+   * ¿Puede eliminar el PLAN COMPLETO? Si tiene actividades pendientes de
+   * evidencia, solo el admin principal. Si no, permiso base. Espeja backend.
+   */
+  canDeleteWholePlan(): boolean {
+    if (this.planHasPendingEvidence) return this.isSuperAdmin;
+    return this.canDeleteBase();
+  }
+
+  /**
+   * ¿Puede eliminar una actividad concreta?
+   * - "Realizado": nunca.
+   * - "Pendiente de Evidencia" (incluso vencida): solo el admin principal.
+   * - Resto: permiso base.
+   */
+  canDeleteActivityItem(activity: ActionPlanActivityModel): boolean {
+    if (activity.status === 'Realizado') return false;
+    if (activity.status === 'Pendiente de Evidencia') return this.isSuperAdmin;
+    return this.canDeleteBase();
   }
 
   /** Lista plana de todas las actividades del plan, con su objetivo asociado. */
@@ -485,6 +531,10 @@ export class ActionPlanEditPlanModalComponent implements OnInit {
   }
 
   toggleActivitySelection(id: number): void {
+    // No permitir seleccionar actividades que el usuario no puede eliminar
+    // (p. ej. "Pendiente de Evidencia" si no es el admin principal).
+    const item = this.allActivities.find(x => x.activity.id === id);
+    if (item && !this.canDeleteActivityItem(item.activity)) return;
     if (this.selectedActivityIds.has(id)) this.selectedActivityIds.delete(id);
     else this.selectedActivityIds.add(id);
   }

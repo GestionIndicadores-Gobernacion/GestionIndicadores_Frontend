@@ -11,7 +11,7 @@ import { FormsModule } from '@angular/forms';
 import { Pagination } from '../../../shared/components/pagination/pagination';
 import { AuthService } from '../../../core/services/auth.service';
 import { PermissionService } from '../../../core/services/permission.service';
-import { PERMS, ROLE_IDS } from '../../../core/constants/permissions';
+import { PERMS, ROLE_IDS, isSuperAdminEmail } from '../../../core/constants/permissions';
 
 interface AgendaItem {
   date: Date;
@@ -236,6 +236,24 @@ export class ActionPlanListComponent {
     if (roleId === ROLE_IDS.VIEWER) return false;
     if (this.permissionService.hasPermission(PERMS.ACTION_PLANS_UPDATE_ANY)) return true;
     return plan.user_id != null && plan.user_id === this.currentUser.id;
+  }
+
+  /** El admin principal (único que borra actividades pendientes de evidencia). */
+  get isSuperAdmin(): boolean {
+    return isSuperAdminEmail(this.currentUser?.email);
+  }
+
+  /**
+   * Mostrar/permitir eliminar una actividad:
+   *  - "Realizado": nunca (no se borra una actividad con evidencia).
+   *  - "Pendiente de Evidencia" (incluso vencida): SOLO el admin principal.
+   *  - Resto de estados: reglas normales (`canModify`).
+   * Espeja la autorización del backend.
+   */
+  canDeleteActivity(plan: ActionPlanModel, activity: ActionPlanActivityModel): boolean {
+    if (activity.status === 'Realizado') return false;
+    if (activity.status === 'Pendiente de Evidencia') return this.isSuperAdmin;
+    return this.canModify(plan);
   }
   
   onEdit(plan: ActionPlanModel, objective: ActionPlanObjectiveModel, activity: ActionPlanActivityModel, event: Event): void {

@@ -21,6 +21,8 @@ export class ActionPlanCalendarGridComponent {
   @Input() currentDate = new Date();
   @Input() canInteract: (plan: ActionPlanModel) => boolean = () => true;
   @Input() canEditPlan: (plan: ActionPlanModel) => boolean = () => false;
+  /** El admin principal puede eliminar actividades "Pendiente de Evidencia". */
+  @Input() isSuperAdmin = false;
   /**
    * Decide si un pillito del calendario es clickable. Recibe la
    * actividad además del plan para que el padre pueda combinar reglas
@@ -37,6 +39,18 @@ export class ActionPlanCalendarGridComponent {
   @Output() hover = new EventEmitter<(FlatActivity & { x: number; y: number }) | null>();
 
   readonly WEEKDAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+  /**
+   * Mostrar/permitir eliminar una actividad (espeja backend):
+   *  - "Realizado": nunca.
+   *  - "Pendiente de Evidencia" (incluso vencida): SOLO admin principal.
+   *  - Resto: reglas normales (`canInteract`).
+   */
+  canDeleteActivity(plan: ActionPlanModel, activity: ActionPlanActivityModel): boolean {
+    if (activity.status === 'Realizado') return false;
+    if (activity.status === 'Pendiente de Evidencia') return this.isSuperAdmin;
+    return this.canInteract(plan);
+  }
 
   getDisplayPlansForDay(day: CalendarDay): ActionPlanModel[] {
     return this.displayPlans.filter(plan =>
