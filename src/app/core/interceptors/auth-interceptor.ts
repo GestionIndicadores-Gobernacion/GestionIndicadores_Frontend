@@ -1,6 +1,6 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { Observable, catchError, switchMap, throwError, shareReplay } from 'rxjs';
+import { Observable, catchError, switchMap, throwError, shareReplay, timeout } from 'rxjs';
 
 import { AuthService, SessionExpiredReason } from '../services/auth.service';
 
@@ -22,6 +22,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const doRefresh = (): Observable<{ access_token: string }> => {
     if (!refreshInProgress$) {
       refreshInProgress$ = auth.refreshToken().pipe(
+        // Tope de seguridad: si el refresh se cuelga (red congelada tras
+        // suspender el equipo en iOS), aborta a los 20 s para que el flujo
+        // termine en "sesión expirada" en vez de quedar bloqueado para siempre.
+        timeout(20_000),
         shareReplay({ bufferSize: 1, refCount: true }),
       );
       refreshInProgress$.subscribe({
