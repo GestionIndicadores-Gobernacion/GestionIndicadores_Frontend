@@ -206,9 +206,9 @@
           {{ t.last_message_preview }}
         </div>
         <div class="support-ticket__footer">
-          <span *ngIf="t.unread_admin_replies > 0" class="support-ticket__unread">
+          <span *ngIf="unreadForMe(t) > 0" class="support-ticket__unread">
             <lucide-icon name="circle" [size]="6" [strokeWidth]="0" color="#dc2626"></lucide-icon>
-            {{ t.unread_admin_replies }} nueva{{ t.unread_admin_replies === 1 ? '' : 's' }}
+            {{ unreadForMe(t) }} nueva{{ unreadForMe(t) === 1 ? '' : 's' }}
           </span>
         </div>
       </button>
@@ -238,12 +238,12 @@
           <div
             *ngFor="let m of activeTicket.messages; trackBy: trackById"
             class="support-msg"
-            [class.support-msg--admin]="m.is_admin_reply"
-            [class.support-msg--mine]="!m.is_admin_reply">
+            [class.support-msg--mine]="isMine(m)"
+            [class.support-msg--admin]="!isMine(m)">
             <div class="support-msg__bubble">
               <div class="support-msg__author">
-                <span *ngIf="m.is_admin_reply">Administrador</span>
-                <span *ngIf="!m.is_admin_reply">{{ m.author?.first_name }} {{ m.author?.last_name }}</span>
+                <span *ngIf="isMine(m)">Tú</span>
+                <span *ngIf="!isMine(m)">{{ m.is_admin_reply ? 'Administrador' : (m.author?.first_name + ' ' + m.author?.last_name) }}</span>
               </div>
               <div class="support-msg__body" *ngIf="m.body">{{ m.body }}</div>
               <div class="support-msg__images" *ngIf="m.images.length">
