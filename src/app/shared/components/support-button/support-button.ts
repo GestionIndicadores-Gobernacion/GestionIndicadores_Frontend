@@ -2,11 +2,9 @@
 import { CommonModule } from '@angular/common';
 import {
   AfterViewChecked,
-  ChangeDetectorRef,
   Component,
   ElementRef,
   HostListener,
-  NgZone,
   OnDestroy,
   OnInit,
   ViewChild,
@@ -15,24 +13,18 @@ import {
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { Router } from '@angular/router';
-import { Subscription, finalize, interval, switchMap } from 'rxjs';
+import { Subscription, finalize } from 'rxjs';
 
-import { AuthService } from '../../../core/services/auth.service';
 import { SupportPanelService } from '../../../core/services/support-panel.service';
 import {
-  SupportService,
   TicketDetail,
-  TicketStatus,
   TicketSummary,
 } from '../../../core/services/support.service';
-import { ToastService } from '../../../core/services/toast.service';
-import { compressImageFile } from '../../../core/utils/image-compress';
+import { SupportChatBase } from '../support-chat/support-chat-base';
 
 const MAX_SCREENSHOT_BYTES = 4 * 1024 * 1024;
 const MAX_MESSAGE_LENGTH = 4000;
 const MIN_MESSAGE_LENGTH = 10;
-const CHAT_POLL_MS = 15_000;
-const MAX_REPLY_IMAGES = 8;
 
 type View = 'tabs' | 'chat';
 type Tab = 'new' | 'mine';
@@ -44,15 +36,12 @@ type Tab = 'new' | 'mine';
   templateUrl: './support-button.html',
   styleUrl: './support-button.css',
 })
-export class SupportButtonComponent implements OnInit, OnDestroy, AfterViewChecked {
+export class SupportButtonComponent extends SupportChatBase
+  implements OnInit, OnDestroy, AfterViewChecked {
 
-  private support = inject(SupportService);
-  private toast = inject(ToastService);
   private router = inject(Router);
-  private auth = inject(AuthService);
-  private cdr = inject(ChangeDetectorRef);
-  private zone = inject(NgZone);
   private panel = inject(SupportPanelService);
+  // `auth` viene de SupportChatBase (protected).
 
   private openTicketSub: Subscription | null = null;
 
@@ -78,32 +67,46 @@ export class SupportButtonComponent implements OnInit, OnDestroy, AfterViewCheck
   // ───── Chat ─────
   activeTicket: TicketDetail | null = null;
   isLoadingTicket = false;
-  replyBody = '';
-  isReplying = false;
-  replyImages: string[] = [];
-  replyImageError: string | null = null;
-  isProcessingImages = false;
-  readonly maxReplyImages = MAX_REPLY_IMAGES;
-  private chatPollSub: Subscription | null = null;
-  private shouldScrollChat = false;
-
-  // ───── Visor de imagen (lightbox) ─────
-  lightboxImage: string | null = null;
 
   // ───── Badge ─────
-  unreadCount = 0;
+  // Para admins el número rojo también incluye los tickets sin atender
+  // (mensajes nuevos de usuarios), no solo las respuestas a reportes propios.
+  readonly isAdminUser = this.auth.hasRole(3);
+  private ownerUnread = 0;
+  private adminUnread = 0;
+  get unreadCount(): number {
+    return this.ownerUnread + (this.isAdminUser ? this.adminUnread : 0);
+  }
   private unreadSub: Subscription | null = null;
+  private adminUnreadSub: Subscription | null = null;
 
   @ViewChild('fileInput') fileInput?: ElementRef<HTMLInputElement>;
   @ViewChild('replyFileInput') replyFileInput?: ElementRef<HTMLInputElement>;
   @ViewChild('chatScroll') chatScroll?: ElementRef<HTMLDivElement>;
 
+  // ───── Enlaces para la lógica compartida (SupportChatBase) ─────
+  protected get chatTicket(): TicketDetail | null { return this.activeTicket; }
+  protected set chatTicket(t: TicketDetail | null) { this.activeTicket = t; }
+  protected get chatVariantIsAdmin(): boolean { return false; }
+  protected get chatScrollEl() { return this.chatScroll; }
+  protected get replyFileInputEl() { return this.replyFileInput; }
+  protected override onChatTicketSynced(t: TicketDetail): void {
+    const idx = this.tickets.findIndex(x => x.id === t.id);
+    if (idx >= 0) {
+      this.tickets[idx] = { ...this.tickets[idx], status: t.status };
+    }
+  }
+
   ngOnInit(): void {
     if (this.auth.isAuthenticated()) {
-      this.support.startPolling();
+      this.support.startPolling(this.isAdminUser);
     }
     this.unreadSub = this.support.unreadCount.subscribe(n => {
-      this.unreadCount = n;
+      this.ownerUnread = n;
+      this.cdr.markForCheck();
+    });
+    this.adminUnreadSub = this.support.adminUnreadCount.subscribe(n => {
+      this.adminUnread = n;
       this.cdr.markForCheck();
     });
     this.openTicketSub = this.panel.openTicket$.subscribe(id => {
@@ -113,22 +116,25 @@ export class SupportButtonComponent implements OnInit, OnDestroy, AfterViewCheck
 
   ngOnDestroy(): void {
     this.unreadSub?.unsubscribe();
+    this.adminUnreadSub?.unsubscribe();
     this.openTicketSub?.unsubscribe();
     this.stopChatPolling();
   }
 
   ngAfterViewChecked(): void {
-    if (this.shouldScrollChat && this.chatScroll) {
-      const el = this.chatScroll.nativeElement;
-      el.scrollTop = el.scrollHeight;
-      this.shouldScrollChat = false;
-    }
+    this.maybeScrollChat();
   }
 
   // ─────────────────────────────────────────────────────────────
   // FAB
   // ─────────────────────────────────────────────────────────────
   toggle(): void {
+    // Admin con tickets sin atender: el número rojo lleva directo al panel de
+    // soporte, que es donde están esos mensajes nuevos (no en "Mis reportes").
+    if (this.isAdminUser && !this.isOpen && this.adminUnread > 0) {
+      this.router.navigate(['/support']);
+      return;
+    }
     this.isOpen = !this.isOpen;
     if (this.isOpen) {
       this.view = 'tabs';
@@ -273,7 +279,10 @@ export class SupportButtonComponent implements OnInit, OnDestroy, AfterViewCheck
     if (!force && this.tickets.length > 0) return;
 
     this.isLoadingTickets = true;
-    this.support.listTickets().subscribe({
+    // Sin `mine`: un usuario normal ve solo los suyos; un admin ve todos los
+    // tickets (los está gestionando). El badge "N nuevas" se calcula por
+    // perspectiva del que mira (unreadForMe), no del dueño.
+    this.support.listTickets(null).subscribe({
       next: (list) => {
         this.tickets = list;
         this.isLoadingTickets = false;
@@ -284,17 +293,6 @@ export class SupportButtonComponent implements OnInit, OnDestroy, AfterViewCheck
         this.toast.error('No se pudieron cargar tus reportes.');
       },
     });
-  }
-
-  trackById = (_: number, t: TicketSummary | { id: number }) => t.id;
-
-  statusLabel(s: TicketStatus): string {
-    return {
-      pendiente: 'Pendiente',
-      en_proceso: 'En proceso',
-      resuelto: 'Resuelto',
-      cerrado: 'Cerrado',
-    }[s];
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -311,12 +309,21 @@ export class SupportButtonComponent implements OnInit, OnDestroy, AfterViewCheck
         this.activeTicket = t;
         this.isLoadingTicket = false;
         this.shouldScrollChat = true;
-        // El detalle marca como leídas en backend; refrescamos badge.
+        // El detalle marca como leídas en backend (mensajes + notificaciones);
+        // refrescamos AMBOS contadores para que campana y badge queden iguales.
         this.support.refreshUnread();
+        this.notif.fetchCount();
         // Refrescar lista para que el unread count se actualice también.
         const idx = this.tickets.findIndex(x => x.id === t.id);
         if (idx >= 0) {
-          this.tickets[idx] = { ...this.tickets[idx], unread_admin_replies: 0, status: t.status };
+          // Abrir marca leído en backend; ponemos a cero ambos contadores
+          // (el badge de la lista usa el que aplique según perspectiva).
+          this.tickets[idx] = {
+            ...this.tickets[idx],
+            unread_admin_replies: 0,
+            unread_user_messages: 0,
+            status: t.status,
+          };
         }
         this.startChatPolling();
         this.cdr.markForCheck();
@@ -335,157 +342,6 @@ export class SupportButtonComponent implements OnInit, OnDestroy, AfterViewCheck
     this.replyBody = '';
     this.clearReplyImages();
     this.stopChatPolling();
-  }
-
-  get canSendReply(): boolean {
-    return !this.isReplying && !this.isProcessingImages
-      && (!!this.replyBody.trim() || this.replyImages.length > 0);
-  }
-
-  /** Archivos elegidos desde el selector (acepta varios). */
-  onReplyFilesSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    this.addImageFiles(input.files);
-    input.value = '';
-  }
-
-  /** Pegar imagen(es) desde el portapapeles (Ctrl/Cmd+V sobre el textarea). */
-  onReplyPaste(event: ClipboardEvent): void {
-    const items = event.clipboardData?.items;
-    if (!items) return;
-    const files: File[] = [];
-    for (let i = 0; i < items.length; i++) {
-      const it = items[i];
-      if (it.kind === 'file' && it.type.startsWith('image/')) {
-        const f = it.getAsFile();
-        if (f) files.push(f);
-      }
-    }
-    if (files.length) {
-      // Evita que se pegue además la ruta/binario como texto en el textarea.
-      event.preventDefault();
-      this.addImageFiles(files);
-    }
-  }
-
-  private addImageFiles(files: FileList | File[] | null): void {
-    if (!files) return;
-    this.replyImageError = null;
-    const list = Array.from(files as ArrayLike<File>);
-
-    for (const file of list) {
-      if (this.replyImages.length >= this.maxReplyImages) {
-        this.replyImageError = `Máximo ${this.maxReplyImages} imágenes por mensaje.`;
-        break;
-      }
-      if (!file.type.startsWith('image/')) {
-        this.replyImageError = 'Solo se pueden adjuntar imágenes.';
-        continue;
-      }
-      if (file.size > MAX_SCREENSHOT_BYTES) {
-        this.replyImageError = 'Cada imagen debe pesar menos de 4 MB.';
-        continue;
-      }
-
-      this.isProcessingImages = true;
-      this.cdr.markForCheck();
-      compressImageFile(file)
-        .then(dataUrl => this.zone.run(() => {
-          if (this.replyImages.length < this.maxReplyImages) {
-            this.replyImages = [...this.replyImages, dataUrl];
-          }
-        }))
-        .catch(() => this.zone.run(() => {
-          this.replyImageError = 'No se pudo procesar una de las imágenes.';
-        }))
-        .finally(() => this.zone.run(() => {
-          this.isProcessingImages = false;
-          this.cdr.markForCheck();
-        }));
-    }
-  }
-
-  removeReplyImage(index: number): void {
-    this.replyImages = this.replyImages.filter((_, i) => i !== index);
-  }
-
-  private clearReplyImages(): void {
-    this.replyImages = [];
-    this.replyImageError = null;
-    if (this.replyFileInput?.nativeElement) {
-      this.replyFileInput.nativeElement.value = '';
-    }
-  }
-
-  openLightbox(src: string | null): void {
-    if (src) this.lightboxImage = src;
-  }
-
-  closeLightbox(): void {
-    this.lightboxImage = null;
-  }
-
-  sendReply(): void {
-    if (!this.activeTicket || !this.canSendReply) return;
-    const body = this.replyBody.trim();
-    const images = [...this.replyImages];
-
-    this.isReplying = true;
-    this.cdr.markForCheck();
-
-    this.support.addMessage(this.activeTicket.id, body, images).pipe(
-      finalize(() => this.zone.run(() => {
-        this.isReplying = false;
-        this.cdr.markForCheck();
-      })),
-    ).subscribe({
-      next: (msg) => {
-        if (this.activeTicket) {
-          this.activeTicket = {
-            ...this.activeTicket,
-            messages: [...this.activeTicket.messages, msg],
-          };
-        }
-        this.replyBody = '';
-        this.clearReplyImages();
-        this.shouldScrollChat = true;
-      },
-      error: (err) => {
-        const m = err?.error?.error || 'No se pudo enviar la respuesta.';
-        this.toast.error(m);
-      },
-    });
-  }
-
-  private startChatPolling(): void {
-    this.stopChatPolling();
-    this.chatPollSub = interval(CHAT_POLL_MS).pipe(
-      switchMap(() => this.activeTicket
-        ? this.support.getTicket(this.activeTicket.id)
-        : []),
-    ).subscribe({
-      next: (t) => {
-        if (!t || !this.activeTicket || t.id !== this.activeTicket.id) return;
-        // Solo actualizamos si hay mensajes nuevos para evitar redibujar.
-        if (t.messages.length !== this.activeTicket.messages.length || t.status !== this.activeTicket.status) {
-          const wasAtBottom = this.isChatAtBottom();
-          this.activeTicket = t;
-          if (wasAtBottom) this.shouldScrollChat = true;
-          this.cdr.markForCheck();
-        }
-      },
-    });
-  }
-
-  private stopChatPolling(): void {
-    this.chatPollSub?.unsubscribe();
-    this.chatPollSub = null;
-  }
-
-  private isChatAtBottom(): boolean {
-    if (!this.chatScroll) return true;
-    const el = this.chatScroll.nativeElement;
-    return el.scrollHeight - el.scrollTop - el.clientHeight < 40;
   }
 
   // Permite abrir un ticket desde fuera (notification-bell, navegación).

@@ -10,6 +10,13 @@
       <p class="admin-support__subtitle">
         Atiende los reportes de los usuarios y gestiona el estado de cada caso.
       </p>
+      <span
+        *ngIf="adminUnread > 0"
+        style="display:inline-flex;align-items:center;gap:6px;margin-top:6px;padding:3px 10px;
+               border-radius:999px;background:#FEE2E2;color:#B91C1C;font-size:12px;font-weight:600;">
+        <lucide-icon name="bell" [size]="13" [strokeWidth]="2.2" color="#B91C1C"></lucide-icon>
+        {{ adminUnread }} {{ adminUnread === 1 ? 'ticket sin atender' : 'tickets sin atender' }}
+      </span>
     </div>
     <button class="admin-support__refresh" (click)="refreshList()" [disabled]="isLoading">
       <lucide-icon name="refresh-cw" [size]="14" [strokeWidth]="2" color="#1B3A6B"></lucide-icon>
@@ -59,6 +66,12 @@
         <div class="ticket-row__top">
           <span class="status-chip" [attr.data-status]="t.status">{{ statusLabel(t.status) }}</span>
           <span class="ticket-row__id">#{{ t.id }}</span>
+          <span
+            *ngIf="t.unread_user_messages > 0"
+            style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;
+                   padding:0 5px;border-radius:999px;background:#dc2626;color:#fff;font-size:11px;font-weight:700;">
+            {{ t.unread_user_messages > 9 ? '9+' : t.unread_user_messages }}
+          </span>
           <span class="ticket-row__date">{{ t.updated_at | date:'short' }}</span>
         </div>
         <div class="ticket-row__title">{{ t.title }}</div>
@@ -141,12 +154,12 @@
           <div
             *ngFor="let m of selected.messages; trackBy: trackById"
             class="chat-msg"
-            [class.chat-msg--mine]="m.is_admin_reply"
-            [class.chat-msg--theirs]="!m.is_admin_reply">
+            [class.chat-msg--mine]="isMine(m)"
+            [class.chat-msg--theirs]="!isMine(m)">
             <div class="chat-bubble">
               <div class="chat-bubble__author">
-                <span *ngIf="m.is_admin_reply">Tú (Administrador)</span>
-                <span *ngIf="!m.is_admin_reply">{{ m.author?.first_name }} {{ m.author?.last_name }}</span>
+                <span *ngIf="isMine(m)">Tú</span>
+                <span *ngIf="!isMine(m)">{{ m.author?.first_name }} {{ m.author?.last_name }}</span>
               </div>
               <div class="chat-bubble__body" *ngIf="m.body">{{ m.body }}</div>
               <div class="chat-bubble__images" *ngIf="m.images.length">
@@ -202,6 +215,7 @@
               [(ngModel)]="replyBody"
               [disabled]="isReplying"
               rows="2"
+              maxlength="4000"
               placeholder="Escribe una respuesta o pega una imagen..."
               (paste)="onReplyPaste($event)"
               (keydown.enter)="$event.preventDefault(); sendReply()"></textarea>
