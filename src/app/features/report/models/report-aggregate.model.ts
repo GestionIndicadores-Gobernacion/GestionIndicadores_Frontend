@@ -117,3 +117,52 @@ export interface LocationNested {
   location: string;
   indicators: LocationNestedIndicator[];
 }
+
+// ── Consolidado municipio × año ──────────────────────────────────────
+// GET /reports/aggregate/component/:id/location-year
+//
+// Los años son dinámicos: `years` viene de las fechas de los reportes
+// realmente registrados para el componente. Las claves de `by_year` son
+// esos mismos años en string (claves JSON).
+
+export interface LocationYearBreakdownKey {
+  key: string;
+  total: number;
+}
+
+export interface LocationYearRow {
+  location: string;
+  by_year: Record<string, number>;
+  total: number;
+  /** Desglose (métrica o categoría, según field_type) por año. */
+  breakdown_by_year: Record<string, Record<string, number>>;
+  breakdown_total: Record<string, number>;
+}
+
+export interface LocationYearReportRow {
+  location: string;
+  by_year: Record<string, number>;
+  total: number;
+}
+
+export interface LocationYearIndicator {
+  indicator_id: number;
+  indicator_name: string;
+  field_type: string;
+  rows: LocationYearRow[];
+  totals_by_year: Record<string, number>;
+  grand_total: number;
+  breakdown_keys: LocationYearBreakdownKey[];
+}
+
+export interface LocationYearConsolidated {
+  component_id: number;
+  component_name: string;
+  strategy_id: number;
+  strategy_name: string | null;
+  years: number[];
+  total_reports: number;
+  reports_by_location: LocationYearReportRow[];
+  reports_totals_by_year: Record<string, number>;
+  indicators: LocationYearIndicator[];
+}
