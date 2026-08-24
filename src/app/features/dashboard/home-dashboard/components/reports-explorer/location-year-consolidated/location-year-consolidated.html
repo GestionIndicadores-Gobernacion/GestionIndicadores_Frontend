@@ -1,0 +1,199 @@
+<!-- Vista alojada en `indicator-viewer`: la cabecera y el selector de modo
+     los pone el contenedor, aquí solo va el contenido del consolidado. -->
+<div class="space-y-4">
+
+    <!-- ═════════════════ ESTADOS ═════════════════ -->
+    <div *ngIf="loading" class="flex items-center gap-2.5 h-24 justify-center rounded-2xl bg-[#F4F7FB]">
+        <div class="w-3.5 h-3.5 border-2 border-t-transparent rounded-full animate-spin"
+            style="border-color: #D6E0F0; border-top-color: #1B3A6B;"></div>
+        <span class="text-[11px] font-medium" style="color: #8A9DC0;">Cargando consolidado...</span>
+    </div>
+
+    <div *ngIf="!loading && errored"
+        class="flex flex-col items-center justify-center gap-3 h-32 rounded-2xl border border-dashed bg-[#FDF6F6]"
+        style="border-color:#E9C6C6;">
+        <lucide-icon name="triangle-alert" [size]="20" color="#B4544B" [strokeWidth]="1.8"></lucide-icon>
+        <p class="text-sm font-medium" style="color:#B4544B;">No se pudo cargar el consolidado</p>
+        <button (click)="reload()" type="button"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold border"
+            style="border-color:#E9C6C6; color:#B4544B; background:#fff;">
+            <lucide-icon name="refresh-cw" [size]="12" [strokeWidth]="2"></lucide-icon>
+            Reintentar
+        </button>
+    </div>
+
+    <div *ngIf="!loading && !errored && !hasData"
+        class="flex flex-col items-center justify-center gap-3 h-32 rounded-2xl border border-dashed bg-[#F4F7FB]">
+        <lucide-icon name="info" [size]="20" color="#2D5FA8" [strokeWidth]="1.8"></lucide-icon>
+        <p class="text-sm font-medium text-[#6B87B2]">
+            Este componente aún no tiene reportes para consolidar
+        </p>
+    </div>
+
+    <!-- ═════════════════ CONTENIDO ═════════════════ -->
+    <ng-container *ngIf="!loading && !errored && hasData">
+
+        <!-- Controles -->
+        <div class="flex flex-wrap items-end gap-3">
+
+            <!-- Indicador -->
+            <div class="flex flex-col gap-1.5 min-w-[220px] flex-1">
+                <label class="text-[10px] font-bold uppercase tracking-[0.8px]" style="color: #4A6A9B;">
+                    Indicador a consolidar
+                </label>
+                <div class="relative">
+                    <select [ngModel]="viewIndicatorId" (ngModelChange)="onIndicatorChange($event)"
+                        class="w-full text-[13px] rounded-xl pl-3 pr-9 py-2.5 outline-none transition-all duration-150 appearance-none cursor-pointer"
+                        style="background: #F0F4FA; border: 1.5px solid #D6E0F0; color: #1B3A6B;">
+                        <option *ngFor="let opt of indicatorOptions; trackBy: trackByIndicatorOption" [ngValue]="opt.id">{{ opt.name }}</option>
+                    </select>
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none inline-flex">
+                        <lucide-icon name="chevron-down" [size]="11" color="#9CA3AF" [strokeWidth]="2.5"></lucide-icon>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Desglose -->
+            <div *ngIf="breakdownOptions.length" class="flex flex-col gap-1.5 min-w-[200px] flex-1">
+                <label class="text-[10px] font-bold uppercase tracking-[0.8px]" style="color: #4A6A9B;">
+                    Desglose
+                </label>
+                <div class="relative">
+                    <select [ngModel]="breakdownKey" (ngModelChange)="onBreakdownChange($event)"
+                        class="w-full text-[13px] rounded-xl pl-3 pr-9 py-2.5 outline-none transition-all duration-150 appearance-none cursor-pointer"
+                        style="background: #F0F4FA; border: 1.5px solid #D6E0F0; color: #1B3A6B;">
+                        <option value="">Total del indicador</option>
+                        <option *ngFor="let b of breakdownOptions; trackBy: trackByBreakdownOption" [value]="b.key">{{ b.label }}</option>
+                    </select>
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none inline-flex">
+                        <lucide-icon name="chevron-down" [size]="11" color="#9CA3AF" [strokeWidth]="2.5"></lucide-icon>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Buscar municipio -->
+            <div class="flex flex-col gap-1.5 min-w-[180px]">
+                <label class="text-[10px] font-bold uppercase tracking-[0.8px]" style="color: #4A6A9B;">
+                    Municipio
+                </label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none inline-flex">
+                        <lucide-icon name="search" [size]="13" color="#9CA3AF" [strokeWidth]="2"></lucide-icon>
+                    </span>
+                    <input type="text" [ngModel]="locationFilter" (ngModelChange)="onLocationFilterChange($event)"
+                        placeholder="Buscar..."
+                        class="w-full text-[13px] rounded-xl pl-9 pr-3 py-2.5 outline-none transition-all duration-150"
+                        style="background: #F0F4FA; border: 1.5px solid #D6E0F0; color: #1B3A6B;" />
+                </div>
+            </div>
+
+            <label class="flex items-center gap-2 text-[11px] font-medium pb-3 cursor-pointer"
+                style="color:#4A6A9B;">
+                <input type="checkbox" [ngModel]="showEmptyRows" (ngModelChange)="onShowEmptyRowsChange($event)"
+                    class="w-3.5 h-3.5 rounded cursor-pointer" style="accent-color:#1B3A6B;" />
+                Mostrar municipios sin datos
+            </label>
+
+            <button (click)="print()" type="button"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[12px] font-bold text-white transition hover:brightness-110 active:scale-[.98] ml-auto"
+                style="background: linear-gradient(135deg,#1B3A6B,#2d5fa8);">
+                <lucide-icon name="printer" [size]="14" [strokeWidth]="2"></lucide-icon>
+                Imprimir
+            </button>
+
+        </div>
+
+        <!-- Unidad de medida: evita leer "atenciones" como "animales únicos" -->
+        <div *ngIf="measurementWarning" class="flex items-start gap-2.5 px-4 py-3 rounded-xl border"
+            style="background:#FFFBEB; border-color:#FDE68A;">
+            <span class="mt-[1px] shrink-0 inline-flex">
+                <lucide-icon name="triangle-alert" [size]="14" color="#B45309" [strokeWidth]="2.2"></lucide-icon>
+            </span>
+            <p class="text-[11px] leading-relaxed" style="color:#8A5A00;">
+                <strong>Unidad: {{ measurementUnit }}.</strong> {{ measurementWarning }}
+            </p>
+        </div>
+
+        <!-- Tabla -->
+        <div class="rounded-xl border overflow-hidden" style="border-color:#D6E0F0;">
+            <div class="overflow-x-auto">
+                <table class="w-full text-[12px] border-collapse">
+
+                    <thead>
+                        <tr style="background:#EEF3FB;">
+                            <th class="text-left font-bold uppercase tracking-[0.6px] text-[10px] px-4 py-2.5 whitespace-nowrap"
+                                style="color:#1B3A6B; border-bottom:1.5px solid #1B3A6B;">
+                                Municipio
+                            </th>
+                            <th *ngFor="let y of years; trackBy: trackByYear"
+                                class="text-right font-bold uppercase tracking-[0.6px] text-[10px] px-4 py-2.5 whitespace-nowrap"
+                                style="color:#1B3A6B; border-bottom:1.5px solid #1B3A6B;">
+                                {{ y }}
+                            </th>
+                            <th class="text-right font-bold uppercase tracking-[0.6px] text-[10px] px-4 py-2.5 whitespace-nowrap"
+                                style="color:#1B3A6B; border-bottom:1.5px solid #1B3A6B; background:#E3ECF9;">
+                                Consolidado
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr *ngFor="let row of rows; trackBy: trackByLocation"
+                            class="transition-colors hover:bg-[#F7FAFE]">
+                            <td class="px-4 py-2 font-medium whitespace-nowrap"
+                                style="color:#1B3A6B; border-bottom:1px solid #EDF1F8;">
+                                {{ row.location }}
+                            </td>
+                            <td *ngFor="let v of row.values"
+                                class="px-4 py-2 text-right tabular-nums whitespace-nowrap"
+                                style="color:#4A6A9B; border-bottom:1px solid #EDF1F8;">
+                                {{ formatNumber(v) }}
+                            </td>
+                            <td class="px-4 py-2 text-right tabular-nums font-bold whitespace-nowrap"
+                                style="color:#1B3A6B; background:#F7FAFE; border-bottom:1px solid #EDF1F8;">
+                                {{ formatNumber(row.total) }}
+                            </td>
+                        </tr>
+
+                        <tr *ngIf="rows.length === 0">
+                            <td [attr.colspan]="years.length + 2" class="px-4 py-6 text-center text-[11px]"
+                                style="color:#8A9DC0;">
+                                No hay municipios que coincidan con el filtro.
+                            </td>
+                        </tr>
+                    </tbody>
+
+                    <tfoot *ngIf="rows.length > 0">
+                        <tr style="background:#E7EEF9;">
+                            <td class="px-4 py-2.5 font-bold uppercase tracking-[0.6px] text-[10px] whitespace-nowrap"
+                                style="color:#1B3A6B; border-top:1.5px solid #1B3A6B;">
+                                Total
+                            </td>
+                            <td *ngFor="let t of columnTotals"
+                                class="px-4 py-2.5 text-right tabular-nums font-bold whitespace-nowrap"
+                                style="color:#1B3A6B; border-top:1.5px solid #1B3A6B;">
+                                {{ formatNumber(t) }}
+                            </td>
+                            <td class="px-4 py-2.5 text-right tabular-nums font-bold whitespace-nowrap"
+                                style="color:#1B3A6B; background:#DCE7F7; border-top:1.5px solid #1B3A6B;">
+                                {{ formatNumber(grandTotal) }}
+                            </td>
+                        </tr>
+                    </tfoot>
+
+                </table>
+            </div>
+        </div>
+
+        <p class="text-[10.5px]" style="color:#8A9DC0;">
+            Mostrando <strong>{{ valueLabel }}</strong>
+            <ng-container *ngIf="measurementUnit && !measurementWarning">
+                · unidad: {{ measurementUnit.toLowerCase() }}
+            </ng-container>
+            · {{ rows.length }} municipios ·
+            años tomados de las fechas de los reportes registrados.
+        </p>
+
+    </ng-container>
+
+</div>

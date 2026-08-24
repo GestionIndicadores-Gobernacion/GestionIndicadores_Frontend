@@ -10,7 +10,7 @@ import { getIndicatorDisplayName } from "../../../../../core/data/indicator-disp
 import { AggregateByComponent, ComponentAggregate, ComponentIndicatorsAggregate, IndicatorDetail } from "../../../../../features/report/models/report-aggregate.model";
 import { ReportsService } from "../../../../../features/report/services/reports.service";
 import { BarClickEvent } from "./reports-explorer-chart/chart-builder.service";
-import { ReportsExplorerChartComponent } from "./reports-explorer-chart/reports-explorer-chart";
+import { IndicatorViewerComponent } from "./indicator-viewer/indicator-viewer";
 import { getCbaVirtuals, getUnidadMovilVirtuals, getAtencionVeterinariaVirtuals, getDejandoHuellaVirtuals, getAlianzasAcademicasVirtuals, getExperienciasCulturalesVirtuals, getMesaPybaVirtuals, getGenericVirtuals, getEscuadronBenjiVirtuals, getAutosostenibilidadVirtuals, getAlianzasEstrategicasVirtuals, getRedAnimaliaAcompanamientoVirtuals, getJuntasDefensorasVirtuals, getPromotoresVirtuals } from "./virtual-indicators";
 import { ReportModel } from "../../../../../features/report/models/report.model";
 const PILLS_VISIBLE = 6;
@@ -34,7 +34,7 @@ const COMPONENT_VIRTUAL_MAP: Record<number, (agg: ComponentIndicatorsAggregate |
 @Component({
   selector: 'app-reports-explorer',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReportsExplorerChartComponent, LucideAngularModule],
+  imports: [CommonModule, FormsModule, IndicatorViewerComponent, LucideAngularModule],
   templateUrl: './reports-explorer.html',
 })
 export class ReportsExplorerComponent implements OnChanges {
