@@ -1,0 +1,69 @@
+<div class="space-y-4">
+
+    <!-- ═════════════════ CABECERA ÚNICA + MODOS ═════════════════ -->
+    <div class="flex items-center justify-between gap-3 flex-wrap">
+
+        <div class="flex items-center gap-3">
+
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                style="background: linear-gradient(135deg,#2D5FA8,#1B3A6B);">
+                <lucide-icon name="trending-up" [size]="18" color="white" [strokeWidth]="1.8"></lucide-icon>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-semibold text-[#1B3A6B]">
+                    Visualización del indicador
+                </h3>
+                <p class="text-xs text-[#6B87B2]">
+                    Análisis estadístico del componente seleccionado
+                </p>
+            </div>
+
+        </div>
+
+        <!-- Segmented control: cambia la forma de analizar el MISMO
+             indicador, no navega ni recarga nada. -->
+        <div *ngIf="showModeSwitch" role="tablist" aria-label="Modo de visualización"
+            class="inline-flex items-center gap-1 rounded-xl p-1 w-full sm:w-auto overflow-x-auto"
+            style="background:#F0F4FA; border:1.5px solid #D6E0F0;">
+
+            <button *ngFor="let m of modes; trackBy: trackByMode" type="button" role="tab"
+                [id]="'viewer-tab-' + m.id" [attr.aria-controls]="'viewer-panel-' + m.id"
+                [attr.aria-selected]="isActive(m.id)" (click)="selectMode(m.id)"
+                class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer"
+                [style.background]="isActive(m.id) ? '#1B3A6B' : 'transparent'"
+                [style.color]="isActive(m.id) ? '#fff' : '#4A6A9B'"
+                [style.box-shadow]="isActive(m.id) ? '0 2px 8px rgba(27,58,107,0.25)' : 'none'">
+
+                <lucide-icon [name]="m.icon" [size]="13" [strokeWidth]="2.2"></lucide-icon>
+
+                <span class="hidden sm:inline">{{ m.label }}</span>
+                <span class="sm:hidden">{{ m.shortLabel ?? m.label }}</span>
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- ═════════════════ CUERPO CONMUTABLE ═════════════════ -->
+    <!-- Un bloque por modo. Los `keepAlive` permanecen montados y solo se
+         ocultan, para no repetir peticiones ni perder sus filtros. -->
+
+    <div *ngIf="view.charts.mounted" [style.display]="view.charts.display"
+        id="viewer-panel-charts" role="tabpanel" aria-labelledby="viewer-tab-charts">
+        <app-reports-explorer-chart [componentAggregate]="componentAggregate"
+            [selectedIndicator]="selectedIndicator" [indicatorDetail]="indicatorDetail"
+            [selectedYear]="selectedYear" [componentId]="componentId" [allReports]="allReports"
+            (yearChange)="yearChange.emit($event)" (barClick)="barClick.emit($event)">
+        </app-reports-explorer-chart>
+    </div>
+
+    <div *ngIf="view.consolidated.mounted" [style.display]="view.consolidated.display"
+        id="viewer-panel-consolidated" role="tabpanel" aria-labelledby="viewer-tab-consolidated">
+        <app-location-year-consolidated [componentId]="componentId"
+            [selectedIndicatorId]="selectedIndicator?.indicator_id ?? null">
+        </app-location-year-consolidated>
+    </div>
+
+</div>
