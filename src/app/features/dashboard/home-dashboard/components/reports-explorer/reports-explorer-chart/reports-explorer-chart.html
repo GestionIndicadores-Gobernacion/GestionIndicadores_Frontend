@@ -1,32 +1,6 @@
+<!-- La cabecera "Visualización del indicador" y el selector de modo viven
+     en `indicator-viewer`, el contenedor que aloja esta vista. -->
 <div class="space-y-4">
-
-    <!-- ═════════════════ HEADER DEL BLOQUE ═════════════════ -->
-    <div class="flex items-center justify-between">
-
-        <div class="flex items-center gap-3">
-
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center"
-                style="background: linear-gradient(135deg,#2D5FA8,#1B3A6B);">
-
-                <!-- icon -->
-                <lucide-icon name="trending-up" [size]="18" color="white" [strokeWidth]="1.8"></lucide-icon>
-
-            </div>
-
-            <div>
-                <h3 class="text-sm font-semibold text-[#1B3A6B]">
-                    Visualización del indicador
-                </h3>
-
-                <p class="text-xs text-[#6B87B2]">
-                    Análisis estadístico del componente seleccionado
-                </p>
-            </div>
-
-        </div>
-
-    </div>
-
 
     <!-- ═════════════════ SIN COMPONENTE ═════════════════ -->
     <div *ngIf="!componentAggregate"

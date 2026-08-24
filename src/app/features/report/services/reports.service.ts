@@ -11,7 +11,8 @@ import {
 import {
   StrategyAggregate,
   ComponentAggregate,
-  ComponentIndicatorsAggregate
+  ComponentIndicatorsAggregate,
+  LocationYearConsolidated
 } from '../models/report-aggregate.model';
 import { Observable } from 'rxjs';
 
@@ -106,6 +107,26 @@ export class ReportsService {
     }
     return this.http.get<ComponentIndicatorsAggregate>(
       `${this.api}/aggregate/component/${componentId}/indicators${params}`
+    );
+  }
+
+  /**
+   * Consolidado municipio x año de los indicadores del componente.
+   *
+   * A diferencia de los otros aggregates NO recibe año ni rango: la vista
+   * cruza todos los años que tengan reportes (dinamico). `indicatorId`
+   * solo acota la respuesta; el explorador la pide completa una sola vez
+   * y cambia de indicador en memoria.
+   */
+  consolidatedByLocationYear(
+    componentId: number,
+    indicatorId?: number
+  ): Observable<LocationYearConsolidated> {
+    let params = new HttpParams();
+    if (indicatorId != null) params = params.set('indicator_id', String(indicatorId));
+    return this.http.get<LocationYearConsolidated>(
+      `${this.api}/aggregate/component/${componentId}/location-year`,
+      { params }
     );
   }
 
