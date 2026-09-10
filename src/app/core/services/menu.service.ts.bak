@@ -23,7 +23,19 @@ export class MenuService {
 
   getMenu(): MenuItem[] {
     return [
-      
+      {
+        label: 'Sismo 2026',
+        icon: 'activity',
+        children: [
+          { label: 'Resumen General', route: '/dashboard/sismo/resumen' },
+          { label: 'Despachos y Logística', route: '/dashboard/sismo/despachos' },
+          { label: 'Buscador de Personas', route: '/dashboard/sismo/buscador' },
+          { label: 'Farmacología e Insumos', route: '/dashboard/sismo/farmacologia' },
+          { label: 'Albergues', route: '/dashboard/sismo/albergues' },
+          { label: 'Voluntarios', route: '/dashboard/sismo/voluntarios' }
+        ]
+      },
+
       { label: 'Dashboard', route: 'dashboard', icon: 'layout-dashboard' },
 
       {
@@ -63,19 +75,6 @@ export class MenuService {
           },
         ],
       },
-
-      {
-              label: 'Sismo 2026',
-              icon: 'activity',
-              children: [
-                { label: 'Resumen General', route: 'sismo/resumen' },
-                { label: 'Despachos y Logística', route: 'sismo/despachos' },
-                { label: 'Buscador de Personas', route: 'sismo/buscador' },
-                { label: 'Farmacología e Insumos', route: 'sismo/farmacologia' },
-                { label: 'Albergues', route: 'sismo/albergues' },
-                { label: 'Voluntarios', route: 'sismo/voluntarios' }
-              ]
-            },
 
       {
         label: 'Bases de datos',

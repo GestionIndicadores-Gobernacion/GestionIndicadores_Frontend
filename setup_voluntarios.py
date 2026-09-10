@@ -1,0 +1,625 @@
+﻿import sys
+from pathlib import Path
+
+# 1. Localizar directorio frontend
+candidates = [
+    Path.cwd(),
+    Path.cwd() / "frontend",
+    Path.cwd() / "GestionIndicadores_Frontend",
+    Path("C:/Users/ramon/Documents/pagina/frontend"),
+    Path("C:/Users/ramon/Documents/pagina/GestionIndicadores_Frontend")
+]
+
+FRONTEND_DIR = next((c for c in candidates if (c / "src" / "app").exists()), None)
+if not FRONTEND_DIR:
+    print("❌ No se encontró la carpeta del frontend.")
+    sys.exit(1)
+
+voluntarios_dir = FRONTEND_DIR / "src" / "app" / "features" / "sismo" / "pages" / "voluntarios"
+voluntarios_dir.mkdir(parents=True, exist_ok=True)
+service_file = FRONTEND_DIR / "src" / "app" / "core" / "services" / "sismo.service.ts"
+
+# 2. Asegurar que sismo.service.ts tenga getRedHumanaDatos y getHistorialPersona
+if service_file.exists():
+    srv_code = service_file.read_text(encoding="utf-8")
+    modificado = False
+
+    if "getRedHumanaDatos" not in srv_code:
+        idx = srv_code.rfind("}")
+        m_red = """
+  getRedHumanaDatos(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/red-humana/datos`);
+  }
+"""
+        srv_code = srv_code[:idx] + m_red + srv_code[idx:]
+        modificado = True
+
+    if "getHistorialPersona" not in srv_code:
+        idx = srv_code.rfind("}")
+        m_hist = """
+  getHistorialPersona(nombre: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/red-humana/historial/${encodeURIComponent(nombre)}`);
+  }
+"""
+        srv_code = srv_code[:idx] + m_hist + srv_code[idx:]
+        modificado = True
+
+    if modificado:
+        service_file.write_text(srv_code, encoding="utf-8")
+        print("✅ sismo.service.ts actualizado con soporte de Red Humana.")
+
+# 3. Componente TypeScript (voluntarios.component.ts) con tipado estricto
+ts_code = """import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { SismoService } from '../../../../core/services/sismo.service';
+
+@Component({
+  selector: 'app-sismo-voluntarios',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterModule],
+  templateUrl: './voluntarios.component.html',
+  styleUrls: ['./voluntarios.component.scss']
+})
+export class VoluntariosComponent implements OnInit {
+  sismoService = inject(SismoService);
+
+  rawRedData = {
+    donantes: [] as any[],
+    voluntarios: [] as any[],
+    transportistas: [] as any[]
+  };
+
+  tabActiva: 'donantes' | 'voluntarios' | 'transportistas' = 'donantes';
+  filtrados: any[] = [];
+  loading = false;
+
+  filtros = {
+    q: '',
+    mun: '',
+    desde: '',
+    hasta: ''
+  };
+
+  kpis = {
+    totalDonantes: 0,
+    totalVoluntarios: 0,
+    totalTransporte: 0,
+    trazabilidad: '100%'
+  };
+
+  // Panel de Auditoría Cruzada
+  auditoriaVisible = false;
+  auditoriaNombre = '';
+  historialOperaciones: any[] = [];
+  loadingHistorial = false;
+
+  private debounceTimer: any;
+
+  ngOnInit(): void {
+    this.cargarDatos();
+  }
+
+  cargarDatos(): void {
+    this.loading = true;
+    this.sismoService.getRedHumanaDatos().subscribe({
+      next: (data: any) => {
+        this.rawRedData = {
+          donantes: data?.donantes || [],
+          voluntarios: data?.voluntarios || [],
+          transportistas: data?.transportistas || []
+        };
+
+        this.kpis = {
+          totalDonantes: data?.kpis?.total_donantes || this.rawRedData.donantes.length,
+          totalVoluntarios: data?.kpis?.total_voluntarios || this.rawRedData.voluntarios.length,
+          totalTransporte: data?.kpis?.total_transporte || this.rawRedData.transportistas.length,
+          trazabilidad: data?.kpis?.trazabilidad || '100%'
+        };
+
+        this.filtrarUI();
+        this.loading = false;
+      },
+      error: (err: any) => {
+        console.error('Error al cargar Red Humana:', err);
+        this.loading = false;
+      }
+    });
+  }
+
+  cambiarTab(tab: 'donantes' | 'voluntarios' | 'transportistas'): void {
+    this.tabActiva = tab;
+    this.filtrarUI();
+  }
+
+  onFiltroChange(): void {
+    clearTimeout(this.debounceTimer);
+    this.debounceTimer = setTimeout(() => {
+      this.filtrarUI();
+    }, 200);
+  }
+
+  filtrarUI(): void {
+    const q = (this.filtros.q || '').toLowerCase().trim();
+    const mun = (this.filtros.mun || '').toLowerCase().trim();
+    const desde = this.filtros.desde;
+    const hasta = this.filtros.hasta;
+
+    const lista = this.rawRedData[this.tabActiva] || [];
+
+    this.filtrados = lista.filter((item: any) => {
+      const nom = (item.nombre_donante || item.nombre_voluntario || item.nombre_conductor || item.nombre || '').toLowerCase();
+      const doc = (item.cedula || item.documento || item.identificacion || '').toLowerCase();
+      const tel = (item.telefono || item.telefono_principal || item.contacto || '').toLowerCase();
+      const placa = (item.placa || item.placas || item.vehiculo || '').toLowerCase();
+      const municipio = (item.municipio || item.ciudad || item.zona || '').toLowerCase();
+      const fecha = item.fecha || item.fecha_registro || item.fecha_lote || '';
+
+      const matchQ = !q || nom.includes(q) || doc.includes(q) || tel.includes(q) || placa.includes(q);
+      const matchMun = !mun || municipio.includes(mun);
+      const matchDesde = !desde || (fecha >= desde);
+      const matchHasta = !hasta || (fecha <= hasta);
+
+      return matchQ && matchMun && matchDesde && matchHasta;
+    });
+  }
+
+  limpiarFiltros(): void {
+    this.filtros = {
+      q: '',
+      mun: '',
+      desde: '',
+      hasta: ''
+    };
+    this.filtrarUI();
+  }
+
+  getNombre(item: any): string {
+    return item.nombre_donante || item.nombre_voluntario || item.nombre_conductor || item.nombre || 'Persona Registrada';
+  }
+
+  getDocumento(item: any): string {
+    return item.cedula || item.documento || item.identificacion || 'No registrada';
+  }
+
+  getTelefono(item: any): string {
+    return item.telefono || item.telefono_principal || item.contacto || 'N/A';
+  }
+
+  getMunicipio(item: any): string {
+    return item.municipio || item.ciudad || item.zona || 'Valle del Cauca';
+  }
+
+  getFecha(item: any): string {
+    return item.fecha || item.fecha_registro || item.fecha_lote || '2026-08';
+  }
+
+  verAuditoriaCruzada(nombre: string): void {
+    this.auditoriaVisible = true;
+    this.auditoriaNombre = nombre;
+    this.loadingHistorial = true;
+    this.historialOperaciones = [];
+
+    const call$ = (this.sismoService as any).getHistorialPersona
+      ? (this.sismoService as any).getHistorialPersona(nombre)
+      : (this.sismoService as any).getRedHumanaHistorial(nombre);
+
+    call$.subscribe({
+      next: (data: any) => {
+        this.historialOperaciones = data || [];
+        this.loadingHistorial = false;
+      },
+      error: (err: any) => {
+        console.error('Error al consultar historial cruzado:', err);
+        this.loadingHistorial = false;
+      }
+    });
+  }
+
+  cerrarAuditoriaCruzada(): void {
+    this.auditoriaVisible = false;
+    this.auditoriaNombre = '';
+    this.historialOperaciones = [];
+  }
+
+  exportarPadronCSV(): void {
+    const lista = this.filtrados.length > 0 ? this.filtrados : (this.rawRedData[this.tabActiva] || []);
+    if (lista.length === 0) {
+      alert('No hay registros para exportar en esta pestaña.');
+      return;
+    }
+
+    const headers = [
+      'Categoria / Rol',
+      'Nombre Completo',
+      'Documento / Cedula',
+      'Telefono',
+      'Municipio / Sede',
+      'Fecha Registro',
+      'Detalle Especifico'
+    ];
+
+    const rows = lista.map((item: any) => {
+      let detalle = '';
+      if (this.tabActiva === 'donantes') {
+        detalle = item.descripcion_donacion || item.tipo_aporte || 'Concentrado e insumos en especie';
+      } else if (this.tabActiva === 'voluntarios') {
+        detalle = item.rol || item.cargo || 'Logística y clasificación en bodega';
+      } else {
+        detalle = `${item.vehiculo || 'Camioneta/Camión'} Placas: ${item.placa || item.placas || 'OFICIAL'} - Ruta: ${item.ruta || item.destino || 'Departamental'}`;
+      }
+
+      return [
+        this.tabActiva.toUpperCase(),
+        `\"${this.getNombre(item).replace(/\"/g, '\"\"')}\"`,
+        this.getDocumento(item),
+        this.getTelefono(item),
+        `\"${this.getMunicipio(item).replace(/\"/g, '\"\"')}\"`,
+        this.getFecha(item),
+        `\"${detalle.replace(/\"/g, '\"\"')}\"`
+      ];
+    });
+
+    const saltoLinea = String.fromCharCode(10);
+    const lineas = [headers.join(','), ...rows.map((e: any) => e.join(','))];
+    const csvContent = '\\uFEFF' + lineas.join(saltoLinea);
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `padron_${this.tabActiva}_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+}
+"""
+(voluntarios_dir / "voluntarios.component.ts").write_text(ts_code, encoding="utf-8")
+
+# 4. Plantilla HTML (voluntarios.component.html) con alto contraste institucional
+html_code = """<div class="space-y-6 pb-6">
+
+  <!-- ENCABEZADO INSTITUCIONAL -->
+  <div class="flex flex-wrap items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-300 shadow-sm">
+    <div class="flex items-center gap-3.5">
+      <div class="w-11 h-11 rounded-xl bg-rose-50 text-rose-800 border border-rose-300 flex items-center justify-center font-bold text-xl shadow-xs">
+        👥
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-lg font-bold text-slate-900 tracking-tight">
+            Red Humana, Voluntarios y CBA
+          </h1>
+          <span class="px-2.5 py-0.5 text-[11px] font-bold font-mono bg-rose-100 text-rose-800 border border-rose-300 rounded-md">
+            CAPITAL HUMANO
+          </span>
+        </div>
+        <p class="text-xs text-slate-600 mt-0.5 font-medium">
+          Padrón oficial verificado de donantes, cuadrillas operativas en bodega y flota de transporte
+        </p>
+      </div>
+    </div>
+    
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-rose-50 text-rose-900 border border-rose-300 text-xs font-bold font-mono shadow-2xs">
+        <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+        <span class="whitespace-nowrap">{{ filtrados.length }} Registros Activos</span>
+      </div>
+      <button (click)="exportarPadronCSV()" 
+              class="px-3.5 py-2 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-xs transition flex items-center gap-1.5 border border-rose-700 cursor-pointer">
+        <span>📥</span>
+        <span class="whitespace-nowrap">Exportar Padrón (CSV)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- CUADROS DE MANDO Y KPIS (4 TARJETAS DE ALTO CONTRASTE) -->
+  <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Card 1: Donantes -->
+    <div class="bg-white border-2 border-slate-200 p-4 rounded-2xl shadow-xs flex items-center justify-between">
+      <div class="min-w-0 pr-2">
+        <p class="text-[11px] uppercase font-bold text-slate-500 truncate">Donantes Registrados</p>
+        <h3 class="text-2xl font-extrabold text-rose-800 mt-1 whitespace-nowrap">
+          {{ kpis.totalDonantes }} 
+          <span class="text-xs font-semibold text-slate-600">Aportantes</span>
+        </h3>
+      </div>
+      <div class="w-11 h-11 rounded-xl bg-rose-50 text-rose-800 border border-rose-300 flex items-center justify-center text-xl font-bold shadow-2xs shrink-0">
+        🤝
+      </div>
+    </div>
+
+    <!-- Card 2: Voluntarios -->
+    <div class="bg-white border-2 border-slate-200 p-4 rounded-2xl shadow-xs flex items-center justify-between">
+      <div class="min-w-0 pr-2">
+        <p class="text-[11px] uppercase font-bold text-slate-500 truncate">Voluntarios Operativos</p>
+        <h3 class="text-2xl font-extrabold text-emerald-800 mt-1 whitespace-nowrap">
+          {{ kpis.totalVoluntarios }} 
+          <span class="text-xs font-semibold text-slate-600">En Bodega</span>
+        </h3>
+      </div>
+      <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center justify-center text-xl font-bold shadow-2xs shrink-0">
+        👤
+      </div>
+    </div>
+
+    <!-- Card 3: Transporte -->
+    <div class="bg-white border-2 border-slate-200 p-4 rounded-2xl shadow-xs flex items-center justify-between">
+      <div class="min-w-0 pr-2">
+        <p class="text-[11px] uppercase font-bold text-slate-500 truncate">Flota y Conductores</p>
+        <h3 class="text-2xl font-extrabold text-sky-800 mt-1 whitespace-nowrap">
+          {{ kpis.totalTransporte }} 
+          <span class="text-xs font-semibold text-slate-600">Vehículos</span>
+        </h3>
+      </div>
+      <div class="w-11 h-11 rounded-xl bg-sky-50 text-sky-800 border border-sky-300 flex items-center justify-center text-xl font-bold shadow-2xs shrink-0">
+        🚚
+      </div>
+    </div>
+
+    <!-- Card 4: Trazabilidad -->
+    <div class="bg-white border-2 border-slate-200 p-4 rounded-2xl shadow-xs flex items-center justify-between">
+      <div class="min-w-0 pr-2">
+        <p class="text-[11px] uppercase font-bold text-slate-500 truncate">Índice de Trazabilidad</p>
+        <h3 class="text-2xl font-extrabold text-amber-800 mt-1 whitespace-nowrap">
+          {{ kpis.trazabilidad }} 
+          <span class="text-xs font-semibold text-slate-600">Auditado</span>
+        </h3>
+      </div>
+      <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-800 border border-amber-300 flex items-center justify-center text-xl font-bold shadow-2xs shrink-0">
+        🛡️
+      </div>
+    </div>
+  </section>
+
+  <!-- CENTRO DE FILTROS CRUZADOS -->
+  <section class="bg-white border border-slate-300 rounded-2xl p-5 shadow-sm space-y-4">
+    <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+      <div class="flex items-center gap-2">
+        <span class="text-base">🎛️</span>
+        <h2 class="text-xs font-bold text-slate-800 uppercase tracking-wider">
+          Filtros de Selección y Búsqueda de Personal
+        </h2>
+      </div>
+      <button (click)="limpiarFiltros()" 
+              class="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-xl transition cursor-pointer">
+        Limpiar Filtros
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+      <div>
+        <label class="block text-[11px] font-bold text-slate-700 mb-1.5">Buscador Predictivo Universal</label>
+        <input type="text" [(ngModel)]="filtros.q" (ngModelChange)="onFiltroChange()" 
+               placeholder="Nombre, cédula, teléfono o placa..."
+               class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-rose-500 focus:bg-white font-medium transition shadow-2xs">
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold text-slate-700 mb-1.5">Municipio / Zona</label>
+        <input type="text" [(ngModel)]="filtros.mun" (ngModelChange)="onFiltroChange()" 
+               placeholder="Ej: Cali, Tuluá, Dagua..."
+               class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-rose-500 focus:bg-white font-medium transition shadow-2xs">
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold text-slate-700 mb-1.5">Fecha Desde</label>
+        <input type="date" [(ngModel)]="filtros.desde" (ngModelChange)="onFiltroChange()"
+               class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-rose-500 focus:bg-white font-medium transition shadow-2xs">
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold text-slate-700 mb-1.5">Fecha Hasta</label>
+        <input type="date" [(ngModel)]="filtros.hasta" (ngModelChange)="onFiltroChange()"
+               class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-rose-500 focus:bg-white font-medium transition shadow-2xs">
+      </div>
+    </div>
+  </section>
+
+  <!-- PESTAÑAS (TABS) DEL PADRÓN MAESTRO -->
+  <section class="space-y-4">
+    <div class="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
+      <!-- Tab A: Donantes -->
+      <button (click)="cambiarTab('donantes')" 
+              [ngClass]="tabActiva === 'donantes' 
+                ? 'bg-rose-700 text-white font-bold border-rose-800 shadow-xs' 
+                : 'bg-white hover:bg-slate-50 text-slate-700 font-semibold border-slate-300 shadow-2xs'"
+              class="px-4 py-2 text-xs rounded-xl border transition flex items-center gap-2 cursor-pointer">
+        <span>🤝</span>
+        <span>Pestaña A: Donantes</span>
+        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold font-mono" 
+              [ngClass]="tabActiva === 'donantes' ? 'bg-rose-800 text-rose-100' : 'bg-rose-50 text-rose-800 border border-rose-300'">
+          {{ rawRedData.donantes.length }}
+        </span>
+      </button>
+
+      <!-- Tab B: Voluntarios -->
+      <button (click)="cambiarTab('voluntarios')" 
+              [ngClass]="tabActiva === 'voluntarios' 
+                ? 'bg-emerald-700 text-white font-bold border-emerald-800 shadow-xs' 
+                : 'bg-white hover:bg-slate-50 text-slate-700 font-semibold border-slate-300 shadow-2xs'"
+              class="px-4 py-2 text-xs rounded-xl border transition flex items-center gap-2 cursor-pointer">
+        <span>👤</span>
+        <span>Pestaña B: Voluntarios Operativos</span>
+        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold font-mono" 
+              [ngClass]="tabActiva === 'voluntarios' ? 'bg-emerald-800 text-emerald-100' : 'bg-emerald-50 text-emerald-800 border border-emerald-300'">
+          {{ rawRedData.voluntarios.length }}
+        </span>
+      </button>
+
+      <!-- Tab C: Transporte -->
+      <button (click)="cambiarTab('transportistas')" 
+              [ngClass]="tabActiva === 'transportistas' 
+                ? 'bg-sky-700 text-white font-bold border-sky-800 shadow-xs' 
+                : 'bg-white hover:bg-slate-50 text-slate-700 font-semibold border-slate-300 shadow-2xs'"
+              class="px-4 py-2 text-xs rounded-xl border transition flex items-center gap-2 cursor-pointer">
+        <span>🚚</span>
+        <span>Pestaña C: Flota y Transporte</span>
+        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold font-mono" 
+              [ngClass]="tabActiva === 'transportistas' ? 'bg-sky-800 text-sky-100' : 'bg-sky-50 text-sky-800 border border-sky-300'">
+          {{ rawRedData.transportistas.length }}
+        </span>
+      </button>
+    </div>
+
+    <!-- TARJETAS DEL PADRÓN -->
+    <div *ngIf="loading" class="text-xs text-slate-500 py-12 text-center font-medium animate-pulse">
+      Cargando padrón oficial...
+    </div>
+
+    <div *ngIf="!loading && filtrados.length === 0" 
+         class="bg-white border border-slate-300 p-10 text-center text-slate-500 font-medium italic rounded-2xl shadow-sm">
+      No se encontraron registros con los filtros actuales.
+    </div>
+
+    <div *ngIf="!loading && filtrados.length > 0" 
+         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      
+      <div *ngFor="let item of filtrados" 
+           (click)="verAuditoriaCruzada(getNombre(item))"
+           class="bg-white border-2 border-slate-200 hover:border-rose-400 p-4 rounded-2xl flex flex-col justify-between shadow-xs hover:shadow-md transition cursor-pointer group">
+        
+        <div class="space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-200/80 pb-2">
+            <span *ngIf="tabActiva === 'donantes'" 
+                  class="px-2.5 py-0.5 text-[10px] font-extrabold font-mono bg-rose-50 text-rose-800 border border-rose-300 rounded-lg whitespace-nowrap shadow-2xs">
+              DONANTE
+            </span>
+            <span *ngIf="tabActiva === 'voluntarios'" 
+                  class="px-2.5 py-0.5 text-[10px] font-extrabold font-mono bg-emerald-50 text-emerald-800 border border-emerald-300 rounded-lg whitespace-nowrap shadow-2xs">
+              VOLUNTARIO OPERATIVO
+            </span>
+            <span *ngIf="tabActiva === 'transportistas'" 
+                  class="px-2.5 py-0.5 text-[10px] font-extrabold font-mono bg-sky-50 text-sky-800 border border-sky-300 rounded-lg whitespace-nowrap shadow-2xs">
+              FLOTA Y TRANSPORTE
+            </span>
+
+            <span class="text-xs font-mono text-slate-600 font-bold whitespace-nowrap">
+              📅 {{ getFecha(item) }}
+            </span>
+          </div>
+
+          <h4 class="text-sm font-extrabold text-slate-900 leading-snug group-hover:text-rose-700 transition">
+            {{ getNombre(item) }}
+          </h4>
+
+          <div class="text-[11px] text-slate-800 space-y-1 bg-slate-50 p-3 rounded-xl border border-slate-300 shadow-2xs">
+            <p>🪪 <b>Documento:</b> {{ getDocumento(item) }}</p>
+            <p>📞 <b>Teléfono:</b> {{ getTelefono(item) }}</p>
+            
+            <p *ngIf="tabActiva === 'donantes'">
+              📦 <b>Aporte:</b> {{ item.descripcion_donacion || item.tipo_aporte || 'Concentrado e insumos en especie' }}
+            </p>
+            
+            <p *ngIf="tabActiva === 'voluntarios'">
+              🛠️ <b>Rol en PMU:</b> {{ item.rol || item.cargo || 'Logística de Carga y Clasificación en Bodega' }}
+            </p>
+            
+            <div *ngIf="tabActiva === 'transportistas'" class="space-y-0.5">
+              <p>🚚 <b>Vehículo:</b> <span class="font-mono font-bold text-sky-800">{{ item.vehiculo || 'Camioneta/Camión' }} ({{ item.placa || item.placas || 'OFICIAL' }})</span></p>
+              <p>🗺️ <b>Ruta:</b> {{ item.ruta || item.destino || 'Rutas críticas departamentales' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-3.5 pt-2.5 border-t border-slate-200 flex items-center justify-between text-[11px] font-bold">
+          <span class="text-slate-700">📍 {{ getMunicipio(item) }}</span>
+          <span class="text-rose-700 flex items-center gap-1 group-hover:underline">
+            <span>🔍</span> Clic para auditar actas
+          </span>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- PANEL INFERIOR: AUDITORÍA CRUZADA DE OPERACIONES -->
+  <section *ngIf="auditoriaVisible" 
+           class="bg-white border-2 border-rose-300 rounded-2xl p-5 shadow-lg space-y-4">
+    <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+      <div>
+        <h3 class="text-sm font-bold text-rose-800 uppercase tracking-wide flex items-center gap-2">
+          <span>📋</span> Auditoría Cruzada de Operaciones: 
+          <span class="text-slate-900 font-extrabold">{{ auditoriaNombre }}</span>
+        </h3>
+        <p class="text-xs text-slate-500 mt-0.5 font-medium">
+          Historial verificado de misiones de despacho y actas oficiales en las que participó
+        </p>
+      </div>
+      <button (click)="cerrarAuditoriaCruzada()" 
+              class="text-slate-400 hover:text-slate-700 w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 text-sm font-bold transition cursor-pointer">
+        ✕
+      </button>
+    </div>
+
+    <div *ngIf="loadingHistorial" class="text-xs text-slate-500 py-6 text-center font-medium animate-pulse">
+      Cruzando operaciones en la base de datos de despachos...
+    </div>
+
+    <div *ngIf="!loadingHistorial && historialOperaciones.length === 0" 
+         class="p-6 text-center text-slate-500 italic text-xs bg-slate-50 rounded-xl border border-slate-200 font-medium">
+      No se registran actas de salida directas bajo este nombre en el sistema.
+    </div>
+
+    <div *ngIf="!loadingHistorial && historialOperaciones.length > 0" 
+         class="space-y-2 max-h-[350px] overflow-y-auto custom-scrollbar pr-1">
+      
+      <div *ngFor="let h of historialOperaciones" 
+           class="p-3.5 bg-slate-50 border border-slate-300 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs shadow-2xs">
+        <div>
+          <span class="font-mono font-bold text-sky-800 bg-sky-50 px-2.5 py-1 rounded-lg border border-sky-300 whitespace-nowrap">
+            {{ h.id_documento }}
+          </span>
+          <span class="text-slate-600 ml-2 font-mono font-medium">📅 {{ h.fecha_lote || 'N/A' }}</span>
+          <span class="text-slate-900 font-bold ml-2">
+            📍 {{ h.municipio }} 
+            <span *ngIf="h.barrio_corregimiento_refugio" class="text-slate-500 font-normal">({{ h.barrio_corregimiento_refugio }})</span>
+          </span>
+          <div class="text-[10px] text-slate-600 mt-1 font-medium">
+            Autorizó: <b>{{ h.autoriza_nombre || 'N/A' }}</b> &nbsp;|&nbsp; Recibió: <b>{{ h.recibe_nombre || 'N/A' }}</b>
+          </div>
+        </div>
+
+        <div class="text-right font-mono whitespace-nowrap">
+          <span class="text-emerald-800 font-extrabold text-sm block">
+            {{ (h.total_alimento_seco_kg || 0) | number }} Kg Concentrado
+          </span>
+          <span class="text-[10px] text-slate-500 block font-sans font-medium">
+            🐕 {{ (h.alimento_perro_kg || 0) | number }} Kg &nbsp;|&nbsp; 🐈 {{ (h.alimento_gato_kg || 0) | number }} Kg
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</div>
+"""
+(voluntarios_dir / "voluntarios.component.html").write_text(html_code, encoding="utf-8")
+
+# 5. Estilos SCSS (voluntarios.component.scss)
+scss_code = """:host {
+  display: block;
+  width: 100%;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #e11d48;
+}
+"""
+(voluntarios_dir / "voluntarios.component.scss").write_text(scss_code, encoding="utf-8")
+
+print(f"✅ Módulo Voluntarios generado exitosamente en: {voluntarios_dir}")

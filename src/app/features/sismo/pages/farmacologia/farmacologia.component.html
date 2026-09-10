@@ -1,0 +1,233 @@
+<div class="p-4 sm:p-6 lg:p-8 pb-12 space-y-6">
+
+  <!-- ENCABEZADO INSTITUCIONAL -->
+  <div class="flex flex-wrap items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-300 shadow-sm">
+    <div class="flex items-center gap-3.5">
+      <div class="w-11 h-11 rounded-xl bg-purple-50 text-purple-800 border border-purple-300 flex items-center justify-center font-bold text-xl shadow-xs">
+        💊
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-lg font-bold text-slate-900 tracking-tight">
+            Farmacología, Insumos y Cirugía
+          </h1>
+          <span class="px-2.5 py-0.5 text-[11px] font-bold font-mono bg-purple-100 text-purple-800 border border-purple-300 rounded-md">
+            SALUD PÚBLICA VETERINARIA
+          </span>
+        </div>
+        <p class="text-xs text-slate-600 mt-0.5 font-medium">
+          Control estricto de antibióticos, anestésicos, fluidoterapia y material de curación quirúrgica
+        </p>
+      </div>
+    </div>
+    
+    <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-purple-50 text-purple-900 border border-purple-300 text-xs font-bold font-mono shadow-2xs">
+      <span class="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
+      <span class="whitespace-nowrap">{{ totalUnidadesGlobal | number }} Unidades Despachadas</span>
+    </div>
+  </div>
+
+  <!-- CUADROS DE MANDO CLÍNICO (3 TARJETAS ALTO CONTRASTE) -->
+  <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <!-- Card 1 -->
+    <div class="bg-white border-2 border-slate-200 p-4 rounded-2xl shadow-xs flex items-center justify-between">
+      <div class="min-w-0 pr-2">
+        <p class="text-[11px] uppercase font-bold text-slate-500 truncate">Total Fármacos Despachados</p>
+        <h3 class="text-xl font-extrabold text-purple-800 mt-1 whitespace-nowrap">
+          {{ registrosTotales | number }} 
+          <span class="text-xs font-semibold text-slate-600">Líneas ({{ totalUnidadesGlobal | number }} Unds)</span>
+        </h3>
+      </div>
+      <div class="w-11 h-11 rounded-xl bg-purple-50 text-purple-800 border border-purple-300 flex items-center justify-center text-xl font-bold shadow-2xs shrink-0">
+        💉
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="bg-white border-2 border-slate-200 p-4 rounded-2xl shadow-xs flex items-center justify-between">
+      <div class="min-w-0 pr-2">
+        <p class="text-[11px] uppercase font-bold text-slate-500 truncate">Abastecimiento Inicial Bodega</p>
+        <h3 class="text-sm font-extrabold text-sky-800 mt-1">
+          Auditoría y Conciliación
+        </h3>
+      </div>
+      <div class="w-11 h-11 rounded-xl bg-sky-50 text-sky-800 border border-sky-300 flex items-center justify-center text-xl font-bold shadow-2xs shrink-0">
+        📦
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="bg-white border-2 border-slate-200 p-4 rounded-2xl shadow-xs flex items-center justify-between">
+      <div class="min-w-0 pr-2">
+        <p class="text-[11px] uppercase font-bold text-slate-500 truncate">Cobertura Quirúrgica y Curación</p>
+        <h3 class="text-xl font-extrabold text-emerald-800 mt-1 whitespace-nowrap">
+          66,9% 
+          <span class="text-xs font-semibold text-slate-600">(36.479 Unds)</span>
+        </h3>
+      </div>
+      <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center justify-center text-xl font-bold shadow-2xs shrink-0">
+        🩹
+      </div>
+    </div>
+  </section>
+
+  <!-- FILTROS PREDICTIVOS AVANZADOS -->
+  <section class="bg-white border border-slate-300 rounded-2xl p-5 shadow-sm space-y-4">
+    <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+      <div class="flex items-center gap-2">
+        <span class="text-base">🎛️</span>
+        <h2 class="text-xs font-bold text-slate-800 uppercase tracking-wider">
+          Filtro Predictivo, Temporal y Actores
+        </h2>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-mono bg-purple-50 text-purple-800 px-2.5 py-1 rounded-lg border border-purple-300 font-bold whitespace-nowrap">
+          {{ registrosTotales }} Movimientos
+        </span>
+        <button (click)="limpiarFiltros()" 
+                class="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-xl transition cursor-pointer">
+          Limpiar Filtros
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3.5">
+      <div>
+        <label class="block text-[11px] font-bold text-slate-700 mb-1.5">Fármaco / Insumo</label>
+        <input type="text" [(ngModel)]="filtros.q" (ngModelChange)="onFiltroChange()" placeholder="Ej: Meloxicam..."
+               class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-purple-500 focus:bg-white font-medium transition shadow-2xs">
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold text-slate-700 mb-1.5">Municipio Sede</label>
+        <input type="text" [(ngModel)]="filtros.municipio" (ngModelChange)="onFiltroChange()" placeholder="Ej: Cali, Tuluá..."
+               class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-purple-500 focus:bg-white font-medium transition shadow-2xs">
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold text-slate-700 mb-1.5">Quién Recibe</label>
+        <input type="text" [(ngModel)]="filtros.recibe" (ngModelChange)="onFiltroChange()" placeholder="Ej: Brenda Serrano..."
+               class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-purple-500 focus:bg-white font-medium transition shadow-2xs">
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold text-slate-700 mb-1.5">Quién Autoriza</label>
+        <input type="text" [(ngModel)]="filtros.autoriza" (ngModelChange)="onFiltroChange()" placeholder="Ej: Diego Calero..."
+               class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-purple-500 focus:bg-white font-medium transition shadow-2xs">
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold text-slate-700 mb-1.5">Fecha Desde</label>
+        <input type="date" [(ngModel)]="filtros.fecha_desde" (ngModelChange)="onFiltroChange()"
+               class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-purple-500 focus:bg-white font-medium transition shadow-2xs">
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold text-slate-700 mb-1.5">Fecha Hasta</label>
+        <input type="date" [(ngModel)]="filtros.fecha_hasta" (ngModelChange)="onFiltroChange()"
+               class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-purple-500 focus:bg-white font-medium transition shadow-2xs">
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 ESPECIALIDADES CLÍNICO-VETERINARIAS (PESTAÑAS) -->
+  <section class="space-y-3">
+    <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">
+      Especialidades Clínico-Veterinarias ({{ nombresCategorias.length }} Categorías)
+    </h3>
+
+    <div class="flex flex-wrap gap-2">
+      <button *ngFor="let catNom of nombresCategorias" 
+              (click)="seleccionarCategoria(catNom)"
+              [ngClass]="categoriaActiva === catNom 
+                ? 'bg-purple-700 text-white font-bold border-purple-800 shadow-xs' 
+                : 'bg-white hover:bg-slate-50 text-slate-700 font-semibold border-slate-300 shadow-2xs'"
+              class="px-3.5 py-2 text-xs rounded-xl border transition flex items-center gap-2 cursor-pointer">
+        <span>{{ catNom }}</span>
+        <span [ngClass]="categoriaActiva === catNom ? 'bg-purple-800 text-purple-100' : 'bg-purple-50 text-purple-800 border border-purple-300'"
+              class="px-1.5 py-0.5 rounded-md text-[10px] font-bold font-mono whitespace-nowrap">
+          {{ categorias[catNom].total_items }} ({{ categorias[catNom].total_unidades | number }} Unds)
+        </span>
+      </button>
+    </div>
+  </section>
+
+  <!-- FICHA TÉCNICA Y TRAZABILIDAD DE LA CATEGORÍA ACTIVA -->
+  <section class="bg-white border border-slate-300 rounded-2xl p-5 shadow-sm space-y-4">
+    <div class="border-b border-slate-200 pb-3 flex flex-wrap items-center justify-between gap-2">
+      <h2 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+        <span>📋</span> Desglose de Fármacos e Insumos: 
+        <span class="text-purple-800 font-extrabold">{{ categoriaActiva }}</span>
+      </h2>
+      <span class="text-xs text-slate-500 font-medium italic">
+        Movimientos agrupados por principio activo y presentación
+      </span>
+    </div>
+
+    <div *ngIf="loading" class="text-xs text-slate-500 py-10 text-center font-medium animate-pulse">
+      Consultando catálogo farmacológico...
+    </div>
+
+    <div *ngIf="!loading && getMedsKeys(categoriaActiva).length === 0" 
+         class="p-8 text-center text-slate-500 font-medium italic text-xs">
+      No hay registros en esta categoría con los filtros seleccionados.
+    </div>
+
+    <div *ngIf="!loading && getMedsKeys(categoriaActiva).length > 0" 
+         class="space-y-3.5 max-h-[550px] overflow-y-auto custom-scrollbar pr-1">
+      
+      <div *ngFor="let medNom of getMedsKeys(categoriaActiva)" 
+           class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 space-y-3 shadow-2xs">
+        
+        <div class="flex items-center justify-between border-b border-slate-200/80 pb-2">
+          <h5 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+            <span>💊</span> {{ medNom }}
+            <span *ngIf="categorias[categoriaActiva].meds[medNom].presentacion" class="text-[10px] text-slate-500 font-medium">
+              ({{ categorias[categoriaActiva].meds[medNom].presentacion }})
+            </span>
+          </h5>
+          <span class="text-xs font-mono font-extrabold text-purple-800 bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-300 whitespace-nowrap shadow-2xs">
+            {{ categorias[categoriaActiva].meds[medNom].cantidad_total | number }} {{ categorias[categoriaActiva].meds[medNom].unidad }}
+          </span>
+        </div>
+
+        <div class="bg-white border border-slate-300 rounded-xl p-3 space-y-2 text-[11px] text-slate-700 max-h-[160px] overflow-y-auto custom-scrollbar shadow-2xs">
+          <p class="font-bold text-slate-500 text-[10px] uppercase tracking-wider">
+            Destinos, Actas y Actores de Despacho:
+          </p>
+
+          <div *ngFor="let e of categorias[categoriaActiva].meds[medNom].entregas" 
+               class="flex flex-wrap items-center justify-between border-b border-slate-100 pb-1.5 gap-2">
+            <div>
+              📍 <b>{{ e.municipio }}</b> &nbsp;|&nbsp; 
+              Recibe: <b>{{ e.recibe }}</b> &nbsp;|&nbsp; 
+              Autoriza: {{ e.autoriza }} 
+              <span class="text-slate-500 ml-1 font-mono text-[10px]">(📅 {{ e.fecha }})</span>
+            </div>
+            <button (click)="abrirModalFoto(e.foto, 'Planilla Médica: ' + e.acta)"
+                    class="text-sky-800 hover:text-sky-900 text-[11px] font-bold flex items-center gap-1 bg-sky-50 px-2.5 py-1 rounded-lg border border-sky-300 shadow-2xs transition cursor-pointer">
+              <span>🖼️</span> Ver Planilla HD
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- MODAL VISOR HD DE PLANILLAS -->
+  <div *ngIf="modalFotoVisible" 
+       class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-300 rounded-2xl max-w-4xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      <div class="p-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+        <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wide">
+          {{ modalFotoTitulo }}
+        </h4>
+        <button (click)="cerrarModalFoto()" 
+                class="text-slate-400 hover:text-slate-700 w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-200 text-sm font-bold transition cursor-pointer">
+          ✕
+        </button>
+      </div>
+      <div class="p-3 flex-1 overflow-auto flex items-center justify-center bg-slate-100">
+        <img [src]="modalFotoUrl" alt="Planilla Escaneada" class="max-h-[80vh] w-auto object-contain rounded shadow-md">
+      </div>
+    </div>
+  </div>
+
+</div>

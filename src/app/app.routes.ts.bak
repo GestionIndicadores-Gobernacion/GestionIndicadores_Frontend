@@ -19,7 +19,10 @@ export const routes: Routes = [
     path: 'auth',
     component: AuthLayoutComponent,
     children: [
-        // SISMO 2026 (coincidencia para /dashboard/sismo y /sismo)
+      {
+        path: 'sismo',
+        loadChildren: () => import('./features/sismo/sismo.routes').then(m => m.SISMO_ROUTES)
+      },
 
       {
         path: 'login',
@@ -45,17 +48,6 @@ export const routes: Routes = [
     canActivate: [authGuard],
     canActivateChild: [authGuard],
     children: [
-        // SISMO 2026
-        {
-          path: 'sismo',
-          loadChildren: () =>
-            import('./features/sismo/sismo.routes').then(m => m.SISMO_ROUTES),
-        },
-        {
-          path: 'dashboard/sismo',
-          loadChildren: () =>
-            import('./features/sismo/sismo.routes').then(m => m.SISMO_ROUTES),
-        },
 
       // HOME / DASHBOARD
       {
