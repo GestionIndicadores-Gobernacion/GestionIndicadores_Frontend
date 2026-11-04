@@ -4,7 +4,9 @@
     <span class="ml-3 text-sm" style="color:#666;">Cargando datos...</span>
 </div>
 
-<div *ngIf="!loading()" class="max-w-[1440px] mx-auto px-4 sm:px-6 py-5 space-y-4">
+<app-red-animalia-unified *ngIf="!loading() && unified()" [data]="viewerData()!" />
+
+<div *ngIf="!loading() && !unified()" class="max-w-[1440px] mx-auto px-4 sm:px-6 py-5 space-y-4">
 
     <!-- ═══════ KPI CARDS ═══════ -->
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">

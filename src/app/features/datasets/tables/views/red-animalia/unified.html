@@ -1,0 +1,61 @@
+<section class="animalia" aria-label="Panel de integrantes de Red Animalia">
+    <header class="intro">
+        <div><p class="eyebrow">Red Animalia Valle</p><h2>Integrantes de la red</h2>
+        <p>Información de la base unificada · {{ total() | number }} registros cargados</p></div>
+        <span class="badge">{{ filtered().length | number }} registros en la selección</span>
+    </header>
+
+    <div class="filters">
+        <label>Año de ingreso<select [ngModel]="year()" (ngModelChange)="year.set($event); resetPage()"><option value="">Todos los años</option><option *ngFor="let item of years()" [value]="item">{{ item }}</option></select></label>
+        <label>Municipio<select [ngModel]="municipality()" (ngModelChange)="municipality.set($event); resetPage()"><option value="">Todos los municipios</option><option *ngFor="let item of municipalities()" [value]="item">{{ item }}</option></select></label>
+        <label>Tipo de voluntariado<select [ngModel]="volunteering()" (ngModelChange)="volunteering.set($event); resetPage()"><option value="">Todos los tipos</option><option *ngFor="let item of volunteerTypes()" [value]="item">{{ item }}</option></select></label>
+        <label>Sexo<select [ngModel]="sex()" (ngModelChange)="sex.set($event); resetPage()"><option value="">Todos</option><option *ngFor="let item of sexes()" [value]="item">{{ item }}</option></select></label>
+        <button class="secondary" (click)="clearFilters()">Limpiar filtros</button>
+        <label class="search">Buscar en la base<input type="search" placeholder="Nombre, cédula, municipio, observaciones…" [ngModel]="search()" (ngModelChange)="search.set($event); resetPage()" /></label>
+    </div>
+
+    <div class="kpis">
+        <article><span>Integrantes</span><strong>{{ filtered().length | number }}</strong><small>Registros en la selección</small></article>
+        <article><span>Municipios</span><strong>{{ municipalityCount() | number }}</strong><small>Con municipio informado</small></article>
+        <article><span>Perros reportados</span><strong>{{ dogs().total === null ? 'Sin dato' : (dogs().total | number) }}</strong><small>{{ dogs().reported }} registros con dato numérico</small></article>
+        <article><span>Gatos reportados</span><strong>{{ cats().total === null ? 'Sin dato' : (cats().total | number) }}</strong><small>{{ cats().reported }} registros con dato numérico</small></article>
+    </div>
+    <p class="note">Perros y gatos se suman desde sus columnas. «Cantidad de animales» se conserva como texto en cada ficha y no se suma nuevamente. Un campo vacío se muestra como «Sin dato».</p>
+    <p *ngIf="!filtered().length" class="empty" role="status">No hay integrantes que coincidan con los filtros.</p>
+
+    <div class="support-grid" *ngIf="filtered().length">
+        <article class="panel support" *ngFor="let support of supports()">
+            <h3>{{ support.title }}</h3><p class="support-total"><strong>{{ support.documented | number }}</strong> integrantes con año documentado</p>
+            <div class="year-tags"><span *ngFor="let item of support.years">{{ item.year }} <b>{{ item.count | number }}</b></span></div>
+            <p class="note">{{ support.unspecified }} sin dato · {{ support.other }} con otra respuesta u observación</p>
+            <p class="note">Un integrante puede aparecer en varios años. No representa cantidad de entregas ni de animales atendidos.</p>
+        </article>
+    </div>
+
+    <div class="charts" *ngIf="filtered().length">
+        <article class="panel" *ngFor="let panel of panels()">
+            <h3>{{ panel.title }}</h3><p class="note">Integrantes por categoría</p>
+            <div class="distribution">
+                <div class="bar-row" *ngFor="let row of panel.rows">
+                    <div><span>{{ row.label }}</span><b>{{ row.count | number }} <small>{{ row.percent | number:'1.0-1' }}%</small></b></div>
+                    <div class="track"><div [style.width.%]="row.percent"></div></div>
+                </div>
+            </div>
+        </article>
+        <article class="panel"><h3>Edad reportada</h3><p class="note">Rangos y edades tal como aparecen en el Excel</p>
+            <div class="distribution"><div class="bar-row" *ngFor="let row of ages()"><div><span>{{ row.label }}</span><b>{{ row.count | number }}</b></div><div class="track"><div [style.width.%]="row.percent"></div></div></div></div>
+        </article>
+    </div>
+
+    <article class="panel directory">
+        <div class="directory-title"><div><h3>Directorio de integrantes</h3><p class="note">Abre una ficha para consultar todos los campos del Excel, incluidos contacto y observaciones.</p></div><span class="badge">{{ filtered().length }} registros</span></div>
+        <div class="table-scroll"><table>
+            <thead><tr><th scope="col">Integrante</th><th scope="col">Ingreso</th><th scope="col">Municipio</th><th scope="col">Voluntariado</th><th scope="col">Perros</th><th scope="col">Gatos</th><th scope="col">Ficha</th></tr></thead>
+            <tbody><ng-container *ngFor="let member of paginated()">
+                <tr><td class="member-name">{{ display(member, 'nombres_y_apellidos') }}</td><td>{{ display(member, 'ano_de_ingreso_a_la_rav') }}</td><td>{{ display(member, 'municipio_de_residencia') }}</td><td>{{ display(member, 'tipo_de_voluntariado') }}</td><td>{{ display(member, 'perros') }}</td><td>{{ display(member, 'gatos') }}</td><td><button class="secondary" (click)="toggle(member.id)" [attr.aria-expanded]="expanded() === member.id" [attr.aria-label]="'Ver ficha de ' + display(member, 'nombres_y_apellidos')">{{ expanded() === member.id ? 'Cerrar' : 'Ver ficha' }}</button></td></tr>
+                <tr *ngIf="expanded() === member.id"><td colspan="7" class="expanded"><dl><div *ngFor="let field of details(member)"><dt>{{ field.label }}</dt><dd>{{ field.value }}</dd></div></dl></td></tr>
+            </ng-container></tbody>
+        </table></div>
+        <footer class="pagination"><span>Página {{ currentPage() }} de {{ pageCount() }}</span><div><button class="secondary" [disabled]="currentPage() === 1" (click)="changePage(-1)">Anterior</button><button class="secondary" [disabled]="currentPage() === pageCount()" (click)="changePage(1)">Siguiente</button></div></footer>
+    </article>
+</section>
