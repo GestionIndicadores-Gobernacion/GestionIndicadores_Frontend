@@ -96,6 +96,17 @@ export class RedAnimaliaViewComponent implements OnInit, OnDestroy {
     // ─── Field helpers ──────────────────────────────────────────────
 
     private f(row: Record<string, any>, ...keywords: string[]): any {
+        // New unified workbook aliases; keep the original schema supported.
+        const aliases: Record<string, string[]> = {
+            vinculacion: ['tipo_de_vinculacion_dentro_de_la_red_animalia_valle', 'tipo_de_voluntariado'],
+            jornadas: ['jornadas_de_esterilizacion', 'joranadas_de_esterilizacion'],
+            escolaridad: ['nivel_de_escolaridad'],
+        };
+        if (keywords.length === 1) {
+            for (const key of aliases[keywords[0]] || []) {
+                if (row[key] != null && String(row[key]).trim() !== '') return row[key];
+            }
+        }
         for (const key of Object.keys(row)) {
             const k = key.toLowerCase();
             if (keywords.every(kw => k.includes(kw))) return row[key];
@@ -107,6 +118,20 @@ export class RedAnimaliaViewComponent implements OnInit, OnDestroy {
         if (val == null) return 0;
         const n = Number(val);
         return isNaN(n) ? 0 : n;
+    }
+
+    private jornadas(row: Record<string, any>): number {
+        const value = this.f(row, 'jornadas');
+        if (value == null) return 0;
+        if (Number.isFinite(Number(value))) return Number(value);
+        // The unified workbook lists editions, e.g. "Jornada 2024-Jornada 2025"
+        // or "Jornada 2024-2025". Do not count years in free-text observations.
+        const years = new Set<string>();
+        for (const match of String(value).matchAll(/jornada\s*(20\d{2})(?:\s*-\s*(20\d{2}))?/gi)) {
+            years.add(match[1]);
+            if (match[2]) years.add(match[2]);
+        }
+        return years.size;
     }
 
     private str(val: any): string {
@@ -354,7 +379,7 @@ export class RedAnimaliaViewComponent implements OnInit, OnDestroy {
         let capRAV = 0, jornadas = 0;
         recs.forEach(r => {
             if (this.num(this.f(r.data, 'capacitaciones')) > 0) capRAV++;
-            if (this.num(this.f(r.data, 'jornadas')) > 0) jornadas++;
+            if (this.jornadas(r.data) > 0) jornadas++;
         });
         return [
             { label: 'Capacitaciones RAV', value: Math.round(capRAV / total * 100), pct: Math.round(capRAV / total * 100), color: '#2E7D32' },
@@ -482,7 +507,7 @@ export class RedAnimaliaViewComponent implements OnInit, OnDestroy {
             apoyoActividades: this.str(this.f(r.data, 'apoyar', 'actividades')),
             antecedentes: this.str(this.f(r.data, 'antecedente')),
             capacitaciones: this.num(this.f(r.data, 'capacitaciones')),
-            jornadas: this.num(this.f(r.data, 'jornadas')),
+            jornadas: this.jornadas(r.data),
             totalAnimales: perros + gatos + caballos,
         };
     }

@@ -86,6 +86,8 @@ export class UpdateDatasetModalComponent implements OnInit {
         const parts: string[] = [];
         if (result?.file_processed) {
           parts.push(`${result.records_inserted} registros importados`);
+          if (result.skipped_rows) parts.push(`${result.skipped_rows} filas omitidas (vacías, incompletas o resúmenes)`);
+          if (result.failed_rows) parts.push(`${result.failed_rows} registros fallidos`);
         }
         if (result?.name_changed) {
           parts.push('nombre actualizado');
@@ -93,7 +95,7 @@ export class UpdateDatasetModalComponent implements OnInit {
         Swal.fire(
           'Actualizado',
           parts.length ? `Dataset actualizado: ${parts.join(', ')}` : 'Dataset actualizado',
-          'success'
+          result?.failed_rows ? 'warning' : 'success'
         );
         this.updated.emit();
       },
