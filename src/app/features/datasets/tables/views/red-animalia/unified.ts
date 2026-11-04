@@ -1,6 +1,7 @@
 import { Component, Input, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
 import { ViewerData } from '../../../services/datasets.service';
 
 type Member = ViewerData['records'][number];
@@ -31,7 +32,7 @@ export function editions(value: unknown, kind: 'alimento' | 'jornada'): string[]
 @Component({
     selector: 'app-red-animalia-unified',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, LucideAngularModule],
     templateUrl: './unified.html',
     styleUrl: './unified.css',
 })
@@ -41,6 +42,37 @@ export class RedAnimaliaUnifiedComponent {
     readonly text = text;
     readonly animalCount = animalCount;
     readonly missing = 'Sin dato';
+    readonly colors = ['#2E7D32', '#F9A825', '#1565C0', '#7B1FA2', '#E65100', '#0891B2', '#94A3B8'];
+    donut(rows: Distribution[]): string {
+        const total = rows.reduce((sum, row) => sum + row.count, 0);
+        if (!total) return '#F1F5F9';
+        let position = 0;
+        return `conic-gradient(${rows.map((row, i) => {
+            const start = position;
+            position += row.count / total * 100;
+            return `${this.colors[i % this.colors.length]} ${start}% ${position}%`;
+        }).join(',')})`;
+    }
+    initials(member: Member): string {
+        return this.display(member, 'nombres_y_apellidos').split(/\s+/).filter(Boolean).slice(0, 2).map(word => word[0]).join('').toUpperCase();
+    }
+    detailGroups(member: Member) {
+        const fields = this.source()?.fields ?? [];
+        const groups = [
+            { title: 'Información personal', color: '#2E7D32', fields: [] as { label: string; value: string }[] },
+            { title: 'Contacto y ubicación', color: '#1565C0', fields: [] as { label: string; value: string }[] },
+            { title: 'Animales y voluntariado', color: '#E65100', fields: [] as { label: string; value: string }[] },
+            { title: 'Apoyos y observaciones', color: '#7B1FA2', fields: [] as { label: string; value: string }[] },
+        ];
+        this.details(member).forEach((field, i) => {
+            const name = fields[i].name;
+            const group = /municipio|barrio|telefono|correo/.test(name) ? 1
+                : /animales|perros|gatos|voluntariado/.test(name) ? 2
+                : /alimento|jornada|joranada|observacion/.test(name) ? 3 : 0;
+            groups[group].fields.push(field);
+        });
+        return groups.filter(group => group.fields.length);
+    }
     year = signal('');
     municipality = signal('');
     volunteering = signal('');
