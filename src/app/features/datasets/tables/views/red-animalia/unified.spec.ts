@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { LUCIDE_ICONS, LucideIconProvider } from 'lucide-angular';
 import { LUCIDE_ICON_SET } from '../../../../../shared/icons/lucide-icons';
 import { RedAnimaliaUnifiedComponent, editions } from './unified';
+import { AnimaliaChartComponent } from './animalia-chart';
 import { ViewerData } from '../../../services/datasets.service';
 
 export function dataset(rows: Record<string, unknown>[]): ViewerData {
@@ -15,6 +16,49 @@ export function dataset(rows: Record<string, unknown>[]): ViewerData {
 }
 
 describe('Panel for the unified Red Animalia workbook', () => {
+    it('combines chart categories, missing values and support editions without dropping rows on reset', () => {
+        const view = new RedAnimaliaUnifiedComponent();
+        view.data = dataset([
+            { municipio_de_residencia: 'CALI ', edad: '33-37 años', entregas_de_alimento: 'Alimento 2024-2025', perros: 3 },
+            { municipio_de_residencia: 'Cali', edad: '33-37 años', perros: 5 },
+            { municipio_de_residencia: 'Palmira', sexo: 'Mujer', perros: 9 },
+        ]);
+        view.selectCategory('municipio_de_residencia', 'cali');
+        view.selectCategory('edad', '33-37 años');
+        expect(view.filtered().length).toBe(2);
+        expect(view.dogs().total).toBe(8);
+        view.selectSupport(0, '2025');
+        expect(view.filtered().length).toBe(1);
+        view.selectSupport(0, '2025');
+        expect(view.filtered().length).toBe(2);
+        view.selectCategory('sexo', 'Sin dato');
+        expect(view.filtered().length).toBe(2);
+        view.clearFilters();
+        expect(view.filtered().length).toBe(3);
+        expect(view.activeCategories()).toEqual([]);
+    });
+
+    for (const mode of ['donut', 'columns', 'bars', 'rank'] as const) {
+        it(`shows hover details and emits selections for ${mode}`, async () => {
+            const fixture = TestBed.createComponent(AnimaliaChartComponent);
+            fixture.componentRef.setInput('mode', mode);
+            fixture.componentRef.setInput('rows', [{ label: 'Cali', count: 3, percent: 75 }, { label: 'Palmira', count: 1, percent: 25 }]);
+            fixture.detectChanges();
+            const element: HTMLElement = fixture.nativeElement;
+            const target = element.querySelector(mode === 'donut' ? 'circle' : 'button')!;
+            target.dispatchEvent(new MouseEvent('mouseenter'));
+            fixture.detectChanges();
+            expect(element.querySelector('[role=status]')?.textContent).toContain('Cali: 3 integrantes (75%)');
+            const chosen: string[] = [];
+            fixture.componentInstance.categorySelected.subscribe(value => chosen.push(value));
+            target.dispatchEvent(new MouseEvent('click'));
+            expect(chosen).toEqual(['Cali']);
+            if (mode === 'donut') {
+                target.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+                expect(chosen).toEqual(['Cali', 'Cali']);
+            }
+        });
+    }
     it('preserves age ranges without converting them to zero or guessing exact ages', () => {
         const view = new RedAnimaliaUnifiedComponent();
         view.data = dataset([{ edad: '33-37 años' }, { edad: '33-37 años ' }, { edad: '65 años' }, {}]);
