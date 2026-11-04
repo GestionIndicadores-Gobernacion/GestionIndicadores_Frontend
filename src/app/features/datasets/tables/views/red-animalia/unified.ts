@@ -2,6 +2,7 @@ import { Component, Input, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
+import { AnimaliaChartComponent } from './animalia-chart';
 import { ViewerData } from '../../../services/datasets.service';
 
 type Member = ViewerData['records'][number];
@@ -32,7 +33,7 @@ export function editions(value: unknown, kind: 'alimento' | 'jornada'): string[]
 @Component({
     selector: 'app-red-animalia-unified',
     standalone: true,
-    imports: [CommonModule, FormsModule, LucideAngularModule],
+    imports: [CommonModule, FormsModule, LucideAngularModule, AnimaliaChartComponent],
     templateUrl: './unified.html',
     styleUrl: './unified.css',
 })
@@ -42,17 +43,6 @@ export class RedAnimaliaUnifiedComponent {
     readonly text = text;
     readonly animalCount = animalCount;
     readonly missing = 'Sin dato';
-    readonly colors = ['#2E7D32', '#F9A825', '#1565C0', '#7B1FA2', '#E65100', '#0891B2', '#94A3B8'];
-    donut(rows: Distribution[]): string {
-        const total = rows.reduce((sum, row) => sum + row.count, 0);
-        if (!total) return '#F1F5F9';
-        let position = 0;
-        return `conic-gradient(${rows.map((row, i) => {
-            const start = position;
-            position += row.count / total * 100;
-            return `${this.colors[i % this.colors.length]} ${start}% ${position}%`;
-        }).join(',')})`;
-    }
     initials(member: Member): string {
         return this.display(member, 'nombres_y_apellidos').split(/\s+/).filter(Boolean).slice(0, 2).map(word => word[0]).join('').toUpperCase();
     }
@@ -77,7 +67,33 @@ export class RedAnimaliaUnifiedComponent {
     municipality = signal('');
     volunteering = signal('');
     sex = signal('');
+    age = signal('');
+    schooling = signal('');
+    supportSelection = signal<{ index: number; year: string } | null>(null);
     search = signal('');
+    readonly categoryFilters = {
+        ano_de_ingreso_a_la_rav: this.year,
+        municipio_de_residencia: this.municipality,
+        tipo_de_voluntariado: this.volunteering,
+        sexo: this.sex,
+        edad: this.age,
+        nivel_de_escolaridad: this.schooling,
+    };
+    readonly categoryLabels = ['Ingreso', 'Municipio', 'Voluntariado', 'Sexo', 'Edad', 'Escolaridad'];
+    activeCategories = computed(() => Object.entries(this.categoryFilters)
+        .map(([field, value], index) => ({ field, value: value(), label: this.categoryLabels[index] }))
+        .filter(item => item.value));
+    selectCategory(field: string, label: string) {
+        const filter = this.categoryFilters[field as keyof typeof this.categoryFilters];
+        if (!filter) return;
+        filter.set(key(filter()) === key(label) ? '' : this.options(field).find(value => key(value) === key(label)) ?? label);
+        this.resetPage();
+    }
+    selectSupport(index: number, year: string) {
+        const current = this.supportSelection();
+        this.supportSelection.set(current?.index === index && current.year === year ? null : { index, year });
+        this.resetPage();
+    }
     page = signal(1);
     expanded = signal<number | null>(null);
     readonly pageSize = 15;
@@ -92,7 +108,7 @@ export class RedAnimaliaUnifiedComponent {
     private options(name: string): string[] {
         const labels = new Map<string, string>();
         for (const r of this.records()) {
-            const value = text(this.value(r, name));
+            const value = this.display(r, name);
             if (value && !labels.has(key(value))) labels.set(key(value), value);
         }
         return [...labels.values()].sort((a, b) => a.localeCompare(b, 'es', { numeric: true }));
@@ -104,13 +120,9 @@ export class RedAnimaliaUnifiedComponent {
     filtered = computed(() => {
         const query = key(this.search());
         return this.records().filter(r => {
-            const filters = [
-                [this.year(), 'ano_de_ingreso_a_la_rav'],
-                [this.municipality(), 'municipio_de_residencia'],
-                [this.volunteering(), 'tipo_de_voluntariado'],
-                [this.sex(), 'sexo'],
-            ];
-            if (filters.some(([selected, name]) => selected && key(this.value(r, name)) !== key(selected))) return false;
+            if (Object.entries(this.categoryFilters).some(([name, selected]) => selected() && key(this.display(r, name)) !== key(selected()))) return false;
+            const support = this.supportSelection();
+            if (support && !editions(this.value(r, support.index ? 'jornadas' : 'entregas_de_alimento'), support.index ? 'jornada' : 'alimento').includes(support.year)) return false;
             return !query || Object.values(r.data).some(value => key(value).includes(query));
         });
     });
@@ -171,7 +183,7 @@ export class RedAnimaliaUnifiedComponent {
     paginated = computed(() => this.filtered().slice((this.currentPage() - 1) * this.pageSize, this.currentPage() * this.pageSize));
     resetPage() { this.page.set(1); this.expanded.set(null); }
     clearFilters() {
-        this.year.set(''); this.municipality.set(''); this.volunteering.set(''); this.sex.set(''); this.search.set(''); this.resetPage();
+        this.year.set(''); this.municipality.set(''); this.volunteering.set(''); this.sex.set(''); this.search.set(''); this.age.set(''); this.schooling.set(''); this.supportSelection.set(null); this.resetPage();
     }
     changePage(delta: number) { this.page.set(Math.max(1, Math.min(this.pageCount(), this.currentPage() + delta))); this.expanded.set(null); }
     toggle(id: number) { this.expanded.set(this.expanded() === id ? null : id); }
