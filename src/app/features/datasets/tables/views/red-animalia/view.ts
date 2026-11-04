@@ -6,6 +6,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import { ViewerData, DatasetService } from '../../../../../features/datasets/services/datasets.service';
 import { DashboardData } from '../../table-viewer/table-viewer';
 import { DashboardCompletenessComponent } from '../../visualizations/dashboard-completeness/dashboard-completeness';
+import { RedAnimaliaUnifiedComponent } from './unified';
 
 interface RecRow { id: number; data: Record<string, any>; }
 
@@ -52,7 +53,7 @@ interface MemberRow {
 @Component({
     selector: 'app-red-animalia-view',
     standalone: true,
-    imports: [CommonModule, FormsModule, LucideAngularModule, DashboardCompletenessComponent],
+    imports: [CommonModule, FormsModule, LucideAngularModule, DashboardCompletenessComponent, RedAnimaliaUnifiedComponent],
     templateUrl: './view.html',
 })
 export class RedAnimaliaViewComponent implements OnInit, OnDestroy {
@@ -60,6 +61,11 @@ export class RedAnimaliaViewComponent implements OnInit, OnDestroy {
 
     viewerData = signal<ViewerData | null>(null);
     loading = signal(true);
+    unified = computed(() => {
+        const data = this.viewerData();
+        return !!data && (data.fields?.some(f => f.name === 'ano_de_ingreso_a_la_rav')
+            || data.records.some(r => 'ano_de_ingreso_a_la_rav' in r.data || 'tipo_de_voluntariado' in r.data));
+    });
 
     filterMunicipio = signal('');
     filterVinculacion = signal('');
@@ -589,6 +595,7 @@ export class RedAnimaliaViewComponent implements OnInit, OnDestroy {
     }
 
     async renderAll(): Promise<void> {
+        if (this.unified()) return;
         const Chart = await this.loadChart();
         this.destroyAll();
         this.renderDonut('cvSexo', this.sexoData(), Chart);
