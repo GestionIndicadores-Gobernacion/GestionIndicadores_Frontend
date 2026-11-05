@@ -79,7 +79,7 @@ export class RedAnimaliaUnifiedComponent {
         edad: this.age,
         nivel_de_escolaridad: this.schooling,
     };
-    readonly categoryLabels = ['Ingreso', 'Municipio', 'Voluntariado', 'Sexo', 'Edad', 'Escolaridad'];
+    readonly categoryLabels = ['Ingreso', 'Municipio', 'Vinculación', 'Sexo', 'Edad', 'Escolaridad'];
     activeCategories = computed(() => Object.entries(this.categoryFilters)
         .map(([field, value], index) => ({ field, value: value(), label: this.categoryLabels[index] }))
         .filter(item => item.value));
