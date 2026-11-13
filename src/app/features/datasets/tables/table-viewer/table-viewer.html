@@ -96,6 +96,15 @@
     <!-- CONTENT -->
     <ng-container *ngIf="!loading() && !error() && data()">
 
+        <!-- AVISO: la tabla no tiene las columnas del dashboard asignado al dataset -->
+        <div *ngIf="data()!.dataset_type_warning" class="px-4 sm:px-6 pt-4">
+            <div class="flex items-start gap-2 px-4 py-3 rounded-xl text-[12px]"
+                style="background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;">
+                <lucide-icon name="triangle-alert" [size]="14" color="#B45309" [strokeWidth]="2" class="shrink-0 mt-0.5"></lucide-icon>
+                <span>{{ data()!.dataset_type_warning }}</span>
+            </div>
+        </div>
+
         <!-- TAB: DASHBOARD -->
         <ng-container *ngIf="activeTab() === 'dashboard'">
             <app-personas-capacitadas-view *ngIf="data()!.dataset_type === 'personas_capacitadas'" [data]="data()!" />

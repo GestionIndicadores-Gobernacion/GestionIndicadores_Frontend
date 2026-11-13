@@ -90,10 +90,17 @@ export class DatasetService {
     );
   }
 
-  updateFromExcel(datasetId: number, file: File | null, datasetName?: string): Observable<DatasetImportResult> {
+  updateFromExcel(
+    datasetId: number,
+    file: File | null,
+    datasetName?: string,
+    allowTypeChange = false,
+  ): Observable<DatasetImportResult> {
     const formData = new FormData();
     if (file) formData.append('file', file);
     if (datasetName) formData.append('dataset_name', datasetName);
+    // Solo tras confirmación explícita del usuario (respuesta 409 previa).
+    if (allowTypeChange) formData.append('allow_type_change', 'true');
     return this.http.put<DatasetImportResult>(
       `${this.baseUrl}/${datasetId}/update-excel`,
       formData
