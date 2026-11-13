@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -15,6 +15,7 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { ActionPlanService } from '../../../../features/action-plans/services/action-plan.service';
 import { PermissionService } from '../../../../core/services/permission.service';
 import { PERMS } from '../../../../core/constants/permissions';
+import { MUNICIPIOS_VALLE } from '../../../../core/data/municipios';
 
 @Component({
   selector: 'app-action-plan-report-modal',
@@ -49,7 +50,8 @@ export class ActionPlanReportModalComponent implements OnInit {
 
   // ── Corrección administrativa (actividad ya reportada) ─────────────
   adminEditMode = false;
-  adminForm = { name: '', deliverable: '', lugar: '', delivery_date: '', reason: '' };
+  adminForm: { name: string; deliverable: string; lugar: string | null; delivery_date: string; reason: string } =
+    { name: '', deliverable: '', lugar: null, delivery_date: '', reason: '' };
   adminErrors: Record<string, string> = {};
 
   // ── Historial de correcciones ─────────────────────────────────────
@@ -61,10 +63,14 @@ export class ActionPlanReportModalComponent implements OnInit {
     name: 'Nombre',
     deliverable: 'Entregable',
     delivery_date: 'Fecha de entrega',
-    lugar: 'Lugar',
+    lugar: 'Municipio',
   };
 
   private destroyRef = inject(DestroyRef);
+  // App zoneless: tras respuestas HTTP / promesas hay que pedir repintado.
+  private cdr = inject(ChangeDetectorRef);
+
+  private refresh(): void { this.cdr?.markForCheck(); }
 
   constructor(
     private actionPlanService: ActionPlanService,
@@ -259,12 +265,19 @@ export class ActionPlanReportModalComponent implements OnInit {
     return `${this.activity.delivery_date.slice(0, 4)}-01-01`;
   }
 
+  get lugarOptions(): string[] {
+    const current = this.activity?.lugar;
+    return current && !MUNICIPIOS_VALLE.includes(current)
+      ? [current, ...MUNICIPIOS_VALLE]
+      : MUNICIPIOS_VALLE;
+  }
+
   openAdminEdit(): void {
     if (!this.canAdminEdit || !this.isReported) return;
     this.adminForm = {
       name: this.activity.name ?? '',
       deliverable: this.activity.deliverable ?? '',
-      lugar: this.activity.lugar ?? '',
+      lugar: this.activity.lugar ?? null,
       delivery_date: this.activity.delivery_date,
       reason: '',
     };
@@ -285,7 +298,7 @@ export class ActionPlanReportModalComponent implements OnInit {
     const body: ActionPlanActivityAdminEditRequest = { reason: f.reason.trim() };
     if (f.name.trim() !== (this.activity.name ?? '')) body.name = f.name.trim();
     if (f.deliverable.trim() !== (this.activity.deliverable ?? '')) body.deliverable = f.deliverable.trim();
-    if ((f.lugar.trim() || null) !== (this.activity.lugar || null)) body.lugar = f.lugar.trim() || null;
+    if ((f.lugar || null) !== (this.activity.lugar || null)) body.lugar = f.lugar || null;
     if (f.delivery_date && f.delivery_date !== this.activity.delivery_date) body.delivery_date = f.delivery_date;
     return body;
   }
@@ -324,12 +337,14 @@ export class ActionPlanReportModalComponent implements OnInit {
     ).then(result => {
       if (!result.isConfirmed) return;
       this.saving = true;
+      this.refresh();
       this.actionPlanService.adminEditActivity(this.activity.id!, body)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: res => {
             this.saving = false;
             this.adminEditMode = false;
+            this.refresh();
             this.corrected.emit(res?.warnings ?? []);
           },
           error: err => {
@@ -349,6 +364,7 @@ export class ActionPlanReportModalComponent implements OnInit {
             } else {
               this.adminErrors['general'] = 'Error al guardar la corrección.';
             }
+            this.refresh();
           },
         });
     });
@@ -363,8 +379,8 @@ export class ActionPlanReportModalComponent implements OnInit {
     this.actionPlanService.getActivityChanges(this.activity.id!)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: rows => { this.history = rows ?? []; this.historyLoading = false; },
-        error: () => { this.history = []; this.historyLoading = false; },
+        next: rows => { this.history = rows ?? []; this.historyLoading = false; this.refresh(); },
+        error: () => { this.history = []; this.historyLoading = false; this.refresh(); },
       });
   }
 
