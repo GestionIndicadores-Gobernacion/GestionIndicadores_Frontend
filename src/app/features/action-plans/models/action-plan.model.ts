@@ -117,6 +117,37 @@ export interface ActionPlanActivityEditRequest {
   edit_all?: boolean;
 }
 
+/**
+ * Corrección administrativa de una actividad YA reportada (solo admin).
+ * Lista blanca: cualquier otro campo es rechazado por el backend (422).
+ */
+export interface ActionPlanActivityAdminEditRequest {
+  name?: string;
+  deliverable?: string;
+  delivery_date?: string;
+  lugar?: string | null;
+  /** Motivo obligatorio (10–1000 caracteres), queda en el historial. */
+  reason: string;
+}
+
+export interface ActionPlanActivityAdminEditResponse {
+  activity: ActionPlanActivityModel;
+  warnings: string[];
+}
+
+/** Fila del historial permanente de correcciones (una por campo). */
+export interface ActionPlanActivityChangeModel {
+  id: number;
+  activity_id: number | null;
+  change_group: string;
+  field: 'name' | 'deliverable' | 'delivery_date' | 'lugar' | string;
+  old_value: string | null;
+  new_value: string | null;
+  reason: string;
+  created_at: string;
+  user_name: string | null;
+}
+
 /* =========================
    Filtros
 ========================= */

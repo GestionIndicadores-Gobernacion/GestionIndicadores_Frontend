@@ -61,6 +61,8 @@ export const PERMS = {
   ACTION_PLANS_REPORT_ACTIVITY:   'action_plans.report_activity',
   ACTION_PLANS_ADD_EVIDENCE:      'action_plans.add_evidence',
   ACTION_PLANS_DASHBOARD:         'action_plans.dashboard',
+  /** Corrección administrativa de actividades ya reportadas. Además exige rol admin. */
+  ACTION_PLANS_EDIT_REPORTED:     'action_plans.edit_reported',
 } as const;
 
 export type PermCode = typeof PERMS[keyof typeof PERMS];

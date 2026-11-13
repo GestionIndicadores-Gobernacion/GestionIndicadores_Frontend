@@ -16,10 +16,10 @@
                 </div>
                 <div>
                     <h2 class="text-sm font-semibold tracking-wide">
-                        {{ isReadOnly ? 'Detalle de Actividad' : isPendingEvidence ? 'Pendiente de Evidencia' : 'Reportar Actividad' }}
+                        {{ adminEditMode ? 'Corregir Actividad' : isReadOnly ? 'Detalle de Actividad' : isPendingEvidence ? 'Pendiente de Evidencia' : 'Reportar Actividad' }}
                     </h2>
                     <p class="text-xs text-blue-100 mt-0.5">
-                        {{ isReadOnly ? 'Actividad completada' : isPendingEvidence ? 'Agrega el link de evidencia' : 'Registra lo realizado' }}
+                        {{ adminEditMode ? 'Corrección administrativa' : isReadOnly ? 'Actividad completada' : isPendingEvidence ? 'Agrega el link de evidencia' : 'Registra lo realizado' }}
                     </p>
                 </div>
             </div>
@@ -31,6 +31,90 @@
 
         <!-- BODY -->
         <div class="overflow-y-auto flex-1 px-5 py-4 space-y-4 bg-[#f7f9fc]">
+
+            <!-- ══ MODO: Corrección administrativa (solo admin, actividad reportada) ══ -->
+            <ng-container *ngIf="adminEditMode">
+
+                <div class="flex items-start gap-3 px-4 py-3 rounded-xl border border-amber-200 bg-amber-50">
+                    <span class="text-amber-600 shrink-0 mt-0.5 inline-flex">
+                        <lucide-icon name="triangle-alert" [size]="16" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                    </span>
+                    <div class="flex-1">
+                        <p class="text-[11px] font-semibold text-amber-800">Esta actividad ya fue reportada</p>
+                        <p class="text-[11px] text-amber-700 mt-0.5">
+                            Solo se corrigen los datos descriptivos. El reporte
+                            <ng-container *ngIf="hasLinkedReport">#{{ activity.linked_report_id }}</ng-container>,
+                            la evidencia, los indicadores y el puntaje no cambian.
+                            El cambio queda en el historial con tu usuario y el motivo.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-[#e6edf7] rounded-xl p-3 space-y-3 shadow-sm">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-semibold text-[#1B3A6B]">Nombre de la actividad <span class="text-red-500">*</span></label>
+                        <input type="text" [(ngModel)]="adminForm.name" maxlength="500"
+                            class="text-sm border rounded-xl px-3 py-2 bg-[#F0F4FA] border-[#d6e2f2] text-slate-800
+                                   focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 focus:border-[#2d5fa8] transition"
+                            [class.border-red-300]="adminErrors['name']" />
+                        <p *ngIf="adminErrors['name']" class="text-xs text-red-500">{{ adminErrors['name'] }}</p>
+                    </div>
+
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-semibold text-[#1B3A6B]">Entregable <span class="text-red-500">*</span></label>
+                        <textarea [(ngModel)]="adminForm.deliverable" rows="2"
+                            class="text-sm border rounded-xl px-3 py-2 bg-[#F0F4FA] border-[#d6e2f2] text-slate-800
+                                   focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 transition resize-none"
+                            [class.border-red-300]="adminErrors['deliverable']"></textarea>
+                        <p *ngIf="adminErrors['deliverable']" class="text-xs text-red-500">{{ adminErrors['deliverable'] }}</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="flex flex-col gap-1">
+                            <label class="text-xs font-semibold text-[#1B3A6B]">Fecha de entrega <span class="text-red-500">*</span></label>
+                            <input type="date" [(ngModel)]="adminForm.delivery_date"
+                                [min]="minCorrectionDate" [max]="maxCorrectionDate"
+                                class="text-sm border rounded-xl px-3 py-2 bg-[#F0F4FA] border-[#d6e2f2] text-slate-800
+                                       focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 transition"
+                                [class.border-red-300]="adminErrors['delivery_date']" />
+                            <p *ngIf="adminErrors['delivery_date']" class="text-xs text-red-500">{{ adminErrors['delivery_date'] }}</p>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <label class="text-xs font-semibold text-[#1B3A6B]">Lugar <span class="text-slate-400 font-normal">(opcional)</span></label>
+                            <input type="text" [(ngModel)]="adminForm.lugar" maxlength="255"
+                                class="text-sm border rounded-xl px-3 py-2 bg-[#F0F4FA] border-[#d6e2f2] text-slate-800
+                                       focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 transition"
+                                [class.border-red-300]="adminErrors['lugar']" />
+                            <p *ngIf="adminErrors['lugar']" class="text-xs text-red-500">{{ adminErrors['lugar'] }}</p>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-400 -mt-1">
+                        La fecha debe ser del mismo año y no posterior a la fecha de reporte.
+                    </p>
+
+                    <div class="flex flex-col gap-1 pt-2 border-t border-[#e6edf7]">
+                        <label class="text-xs font-semibold text-[#1B3A6B]">Motivo de la corrección <span class="text-red-500">*</span></label>
+                        <textarea [(ngModel)]="adminForm.reason" rows="2" maxlength="1000"
+                            placeholder="Ej.: Solicitud del responsable, nombre mal registrado"
+                            class="text-sm border rounded-xl px-3 py-2 bg-[#F0F4FA] border-[#d6e2f2] text-slate-800
+                                   focus:outline-none focus:ring-2 focus:ring-[#2d5fa8]/30 transition resize-none"
+                            [class.border-red-300]="adminErrors['reason']"></textarea>
+                        <p *ngIf="adminErrors['reason']" class="text-xs text-red-500">{{ adminErrors['reason'] }}</p>
+                    </div>
+
+                    <div class="pt-2 border-t border-[#e6edf7]">
+                        <p class="text-[11px] font-semibold text-slate-500">No editables en una actividad reportada</p>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            Evidencia, descripción del reporte, fecha de reporte, puntaje, “genera reporte”,
+                            personal de apoyo, responsables, objetivo, componente y estrategia.
+                        </p>
+                    </div>
+                </div>
+
+                <p *ngIf="adminErrors['general']" class="text-xs text-red-500">{{ adminErrors['general'] }}</p>
+            </ng-container>
+
+            <ng-container *ngIf="!adminEditMode">
 
             <!-- INFO -->
             <div class="bg-white border border-[#e6edf7] rounded-xl p-3 space-y-2 shadow-sm">
@@ -290,11 +374,71 @@
 
             </ng-container>
 
+            <!-- HISTORIAL DE CORRECCIONES (solo actividades reportadas) -->
+            <div *ngIf="isReported" class="pt-1">
+                <button (click)="toggleHistory()" type="button"
+                    class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#2d5fa8] hover:text-[#1B3A6B] transition">
+                    <lucide-icon name="history" [size]="13" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                    {{ showHistory ? 'Ocultar historial de correcciones' : 'Ver historial de correcciones' }}
+                </button>
+
+                <div *ngIf="showHistory" class="mt-2 space-y-2">
+                    <p *ngIf="historyLoading" class="text-xs text-slate-400">Cargando historial...</p>
+                    <p *ngIf="!historyLoading && history.length === 0"
+                        class="text-xs text-slate-500 bg-white border border-[#e6edf7] rounded-xl px-3 py-2">
+                        Esta actividad no tiene correcciones registradas.
+                    </p>
+                    <div *ngFor="let h of history"
+                        class="bg-white border border-[#e6edf7] rounded-xl px-3 py-2 space-y-0.5">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-[11px] font-semibold text-[#1B3A6B]">{{ fieldLabel(h.field) }}</span>
+                            <span class="text-[10.5px] text-slate-400">{{ h.created_at | date:'dd MMM yyyy, h:mm a' }}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 break-words">
+                            <span class="line-through">{{ h.old_value || '—' }}</span>
+                            <span class="mx-1">→</span>
+                            <span class="text-slate-800 font-medium">{{ h.new_value || '—' }}</span>
+                        </p>
+                        <p class="text-[10.5px] text-slate-400 break-words">
+                            {{ h.user_name || 'Usuario eliminado' }} · {{ h.reason }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            </ng-container>
+
         </div>
 
         <!-- FOOTER -->
         <div class="flex items-center justify-end gap-2 px-5 py-3
              border-t border-[#e6edf7] bg-white flex-shrink-0">
+
+            <!-- Footer en modo corrección administrativa -->
+            <ng-container *ngIf="adminEditMode">
+                <button (click)="cancelAdminEdit()" type="button" [disabled]="saving"
+                    class="px-3 py-1.5 text-sm font-medium text-slate-600
+                           border border-[#d6e2f2] rounded-lg hover:bg-slate-50 transition disabled:opacity-60">
+                    Volver
+                </button>
+                <button (click)="submitAdminEdit()" type="button" [disabled]="saving"
+                    class="px-3 py-1.5 text-sm font-medium text-white
+                           bg-gradient-to-r from-[#1B3A6B] to-[#2d5fa8]
+                           rounded-lg hover:opacity-90 transition disabled:opacity-60">
+                    {{ saving ? 'Guardando...' : 'Guardar corrección' }}
+                </button>
+            </ng-container>
+
+            <ng-container *ngIf="!adminEditMode">
+
+            <!-- Corrección administrativa: solo admin autorizado, solo actividades reportadas -->
+            <button *ngIf="canAdminEdit && isReported" (click)="openAdminEdit()" type="button"
+                title="Corregir datos de una actividad ya reportada (solo administrador)"
+                class="mr-auto inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-amber-700
+                       border border-amber-200 rounded-lg hover:bg-amber-50 transition">
+                <lucide-icon name="pencil" [size]="14" [strokeWidth]="2" color="currentColor"></lucide-icon>
+                Corregir
+            </button>
 
             <button (click)="onClose()" type="button" class="px-3 py-1.5 text-sm font-medium text-slate-600
                        border border-[#d6e2f2] rounded-lg hover:bg-slate-50 transition">
@@ -320,6 +464,8 @@
                        rounded-lg hover:opacity-90 transition disabled:opacity-60">
                 {{ saving ? 'Guardando...' : 'Confirmar reporte' }}
             </button>
+
+            </ng-container>
 
         </div>
 

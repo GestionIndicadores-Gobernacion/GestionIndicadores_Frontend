@@ -128,8 +128,12 @@ export class ActionPlanEditPlanModalComponent implements OnInit {
           objective_id: obj.objective_id ?? null,
           objective_text: obj.objective_text ?? '',
           isNew: !obj.objective_id,
+          // Solo actividades NO reportadas. Las reportadas (Realizado y
+          // también "Pendiente de Evidencia") el backend las conserva en
+          // `update_plan`; si se reenvían aquí se recrean como duplicados
+          // sin reportar. Su corrección va por la corrección administrativa.
           activities: (obj.activities ?? [])
-            .filter(a => a.status !== 'Realizado')
+            .filter(a => !a.reported_at)
             .map(a => ({
               name: a.name,
               deliverable: a.deliverable,
@@ -395,6 +399,8 @@ export class ActionPlanEditPlanModalComponent implements OnInit {
           delivery_date: a.delivery_date,
           lugar: a.lugar,
           requires_boss_assistance: a.requires_boss_assistance,
+          // Sin esto el backend recreaba la actividad con generates_report=false.
+          generates_report: a.generates_report,
           support_staff: a.support_staff.filter(s => s.name.trim()),
         })),
       })),

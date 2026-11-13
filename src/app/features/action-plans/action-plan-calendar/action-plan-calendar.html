@@ -166,7 +166,8 @@
 <app-action-plan-report-modal *ngIf="showReportModal && modal.activity && modal.objective" [plan]="modal.plan!"
     [objective]="modal.objective!" [activity]="modal.activity" [prefillEvidenceUrl]="prefillEvidenceUrl"
     [currentUserId]="currentUserId"
-    (close)="closeReportModal()" (reported)="onPlanReported()">
+    [canAdminEdit]="canAdminEditReported"
+    (close)="closeReportModal()" (reported)="onPlanReported()" (corrected)="onActivityCorrected($event)">
 </app-action-plan-report-modal>
 
 <app-action-plan-edit-modal *ngIf="showEditModal && modal.activity && modal.objective" [plan]="modal.plan!"

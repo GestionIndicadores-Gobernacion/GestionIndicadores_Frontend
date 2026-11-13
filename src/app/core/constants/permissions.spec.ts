@@ -39,6 +39,7 @@ const BACKEND_PERMISSION_CODES_SNAPSHOT: readonly string[] = [
   'action_plans.report_activity',
   'action_plans.add_evidence',
   'action_plans.dashboard',
+  'action_plans.edit_reported',
 ];
 
 describe('permissions catalog', () => {
@@ -47,8 +48,8 @@ describe('permissions catalog', () => {
       expect(new Set(ALL_PERMISSION_CODES).size).toBe(ALL_PERMISSION_CODES.length);
     });
 
-    it('tiene exactamente 31 permisos', () => {
-      expect(ALL_PERMISSION_CODES.length).toBe(31);
+    it('tiene exactamente 32 permisos', () => {
+      expect(ALL_PERMISSION_CODES.length).toBe(32);
     });
 
     it('cada code respeta el formato <modulo>.<accion> en minúsculas', () => {
@@ -85,8 +86,8 @@ describe('permissions catalog', () => {
   });
 
   describe('paridad con backend (catalog.py)', () => {
-    it('snapshot del backend tiene 31 codes', () => {
-      expect(BACKEND_PERMISSION_CODES_SNAPSHOT.length).toBe(31);
+    it('snapshot del backend tiene 32 codes', () => {
+      expect(BACKEND_PERMISSION_CODES_SNAPSHOT.length).toBe(32);
     });
 
     it('ALL_PERMISSION_CODES coincide exactamente con el snapshot del backend', () => {

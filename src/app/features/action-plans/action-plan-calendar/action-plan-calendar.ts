@@ -129,6 +129,18 @@ export class ActionPlanCalendarComponent implements OnInit {
   /** Eliminar actividad: misma regla que editar plan (creador o admin). */
   canInteractWithPlan = (plan: ActionPlanModel): boolean => this.canEditPlanBound(plan);
 
+  /**
+   * Corrección administrativa de actividades YA reportadas.
+   * Doble condición (paridad con backend `_can_admin_edit_reported`):
+   * rol admin + permiso `ACTION_PLANS_EDIT_REPORTED`. Monitor/editor/viewer
+   * nunca, aunque tengan el permiso. Es solo UX: el backend vuelve a validar.
+   */
+  get canAdminEditReported(): boolean {
+    const roleId = this.authService.getTokenPayload()?.role_id ?? null;
+    if (roleId !== ROLE_IDS.ADMIN) return false;
+    return this.permissionService.hasPermission(PERMS.ACTION_PLANS_EDIT_REPORTED);
+  }
+
   /** El admin principal (único que borra actividades pendientes de evidencia). */
   get isSuperAdmin(): boolean {
     return isSuperAdminEmail(this.currentUser?.email);
@@ -564,6 +576,13 @@ export class ActionPlanCalendarComponent implements OnInit {
   }
 
   onPlanReported(): void { this.closeReportModal(); this.loadPlans(); this.toast.success('Actividad reportada correctamente'); }
+
+  onActivityCorrected(warnings: string[]): void {
+    this.closeReportModal();
+    this.loadPlans();
+    this.toast.success('Actividad corregida. El cambio quedó registrado en el historial.');
+    if (warnings?.length) this.toast.warning(warnings.join(' '));
+  }
 
   openEditModal(p: ActionPlanModel, o: ActionPlanObjectiveModel, a: ActionPlanActivityModel, event: Event): void { event.stopPropagation(); this.setModal(p, o, a); this.showEditModal = true; }
   closeEditModal(): void { this.showEditModal = false; this.clearModal(); }

@@ -4,6 +4,9 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import {
   ActionPlanActivityModel,
+  ActionPlanActivityAdminEditRequest,
+  ActionPlanActivityAdminEditResponse,
+  ActionPlanActivityChangeModel,
   ActionPlanActivityEditRequest,
   ActionPlanAddEvidenceRequest,
   ActionPlanCreateRequest,
@@ -90,6 +93,22 @@ export class ActionPlanService {
 
   getAllForDashboard(): Observable<any[]> {
     return this.http.get<any[]>(`${environment.apiUrl}/reports/all`);
+  }
+
+  /** Corrección administrativa de una actividad ya reportada (solo admin). */
+  adminEditActivity(
+    activityId: number, body: ActionPlanActivityAdminEditRequest,
+  ): Observable<ActionPlanActivityAdminEditResponse> {
+    return this.http.put<ActionPlanActivityAdminEditResponse>(
+      `${this.api}/activities/${activityId}/admin-edit`, body,
+    );
+  }
+
+  /** Historial permanente de correcciones administrativas de una actividad. */
+  getActivityChanges(activityId: number): Observable<ActionPlanActivityChangeModel[]> {
+    return this.http.get<ActionPlanActivityChangeModel[]>(
+      `${this.api}/activities/${activityId}/changes`,
+    );
   }
 
   updatePlan(id: number, payload: any): Observable<ActionPlanModel> {

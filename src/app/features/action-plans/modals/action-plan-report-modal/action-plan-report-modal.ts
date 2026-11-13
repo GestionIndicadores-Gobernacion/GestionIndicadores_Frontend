@@ -5,10 +5,13 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import {
+  ActionPlanActivityAdminEditRequest,
+  ActionPlanActivityChangeModel,
   ActionPlanActivityModel,
   ActionPlanModel,
   ActionPlanObjectiveModel
 } from '../../../../features/action-plans/models/action-plan.model';
+import { ToastService } from '../../../../core/services/toast.service';
 import { ActionPlanService } from '../../../../features/action-plans/services/action-plan.service';
 import { PermissionService } from '../../../../core/services/permission.service';
 import { PERMS } from '../../../../core/constants/permissions';
@@ -28,14 +31,38 @@ export class ActionPlanReportModalComponent implements OnInit {
   @Input() prefillEvidenceUrl = '';
   /** ID del usuario actual para validar permisos de evidencia */
   @Input() currentUserId?: number | null;
+  /**
+   * El padre lo calcula: rol admin + permiso `ACTION_PLANS_EDIT_REPORTED`.
+   * Solo oculta/muestra la acción; el backend vuelve a validar ambas cosas.
+   */
+  @Input() canAdminEdit = false;
 
   @Output() close = new EventEmitter<void>();
   @Output() reported = new EventEmitter<void>();
+  /** Emitido tras una corrección administrativa exitosa (con avisos del backend). */
+  @Output() corrected = new EventEmitter<string[]>();
 
   evidenceUrl = '';
   description = '';
   saving = false;
   error = '';
+
+  // ── Corrección administrativa (actividad ya reportada) ─────────────
+  adminEditMode = false;
+  adminForm = { name: '', deliverable: '', lugar: '', delivery_date: '', reason: '' };
+  adminErrors: Record<string, string> = {};
+
+  // ── Historial de correcciones ─────────────────────────────────────
+  showHistory = false;
+  historyLoading = false;
+  history: ActionPlanActivityChangeModel[] = [];
+
+  readonly FIELD_LABELS: Record<string, string> = {
+    name: 'Nombre',
+    deliverable: 'Entregable',
+    delivery_date: 'Fecha de entrega',
+    lugar: 'Lugar',
+  };
 
   private destroyRef = inject(DestroyRef);
 
@@ -43,6 +70,7 @@ export class ActionPlanReportModalComponent implements OnInit {
     private actionPlanService: ActionPlanService,
     private router: Router,
     private permissionService: PermissionService,
+    private toast: ToastService,
   ) { }
 
   ngOnInit(): void {
@@ -212,6 +240,136 @@ export class ActionPlanReportModalComponent implements OnInit {
         }
       }
     });
+  }
+
+  // ── Corrección administrativa ─────────────────────────────────────
+
+  /** La actividad ya tiene reporte (Realizado o Pendiente de Evidencia). */
+  get isReported(): boolean {
+    return !!this.activity.reported_at;
+  }
+
+  /** Fecha máxima permitida: el día en que se reportó (espeja backend). */
+  get maxCorrectionDate(): string {
+    return (this.activity.reported_at ?? '').slice(0, 10);
+  }
+
+  /** Mismo año que la fecha actual (espeja backend). */
+  get minCorrectionDate(): string {
+    return `${this.activity.delivery_date.slice(0, 4)}-01-01`;
+  }
+
+  openAdminEdit(): void {
+    if (!this.canAdminEdit || !this.isReported) return;
+    this.adminForm = {
+      name: this.activity.name ?? '',
+      deliverable: this.activity.deliverable ?? '',
+      lugar: this.activity.lugar ?? '',
+      delivery_date: this.activity.delivery_date,
+      reason: '',
+    };
+    this.adminErrors = {};
+    this.error = '';
+    this.adminEditMode = true;
+  }
+
+  cancelAdminEdit(): void {
+    if (this.saving) return;
+    this.adminEditMode = false;
+    this.adminErrors = {};
+  }
+
+  /** Solo los campos que realmente cambian (el backend rechaza "sin cambios"). */
+  buildAdminPayload(): ActionPlanActivityAdminEditRequest {
+    const f = this.adminForm;
+    const body: ActionPlanActivityAdminEditRequest = { reason: f.reason.trim() };
+    if (f.name.trim() !== (this.activity.name ?? '')) body.name = f.name.trim();
+    if (f.deliverable.trim() !== (this.activity.deliverable ?? '')) body.deliverable = f.deliverable.trim();
+    if ((f.lugar.trim() || null) !== (this.activity.lugar || null)) body.lugar = f.lugar.trim() || null;
+    if (f.delivery_date && f.delivery_date !== this.activity.delivery_date) body.delivery_date = f.delivery_date;
+    return body;
+  }
+
+  private changedFieldLabels(body: ActionPlanActivityAdminEditRequest): string[] {
+    return (['name', 'deliverable', 'lugar', 'delivery_date'] as const)
+      .filter(k => k in body)
+      .map(k => this.FIELD_LABELS[k]);
+  }
+
+  submitAdminEdit(): void {
+    this.adminErrors = {};
+    const f = this.adminForm;
+    if (!f.name.trim()) this.adminErrors['name'] = 'El nombre es obligatorio.';
+    if (!f.deliverable.trim()) this.adminErrors['deliverable'] = 'El entregable es obligatorio.';
+    if (!f.delivery_date) this.adminErrors['delivery_date'] = 'La fecha es obligatoria.';
+    else if (f.delivery_date > this.maxCorrectionDate)
+      this.adminErrors['delivery_date'] = `No puede ser posterior a la fecha de reporte (${this.maxCorrectionDate}).`;
+    else if (f.delivery_date.slice(0, 4) !== this.activity.delivery_date.slice(0, 4))
+      this.adminErrors['delivery_date'] = 'Debe permanecer en el mismo año.';
+    if (f.reason.trim().length < 10) this.adminErrors['reason'] = 'Indica el motivo (mínimo 10 caracteres).';
+    if (Object.keys(this.adminErrors).length) return;
+
+    const body = this.buildAdminPayload();
+    const labels = this.changedFieldLabels(body);
+    if (!labels.length) {
+      this.adminErrors['general'] = 'No hay cambios para guardar.';
+      return;
+    }
+
+    this.toast.confirm(
+      '¿Confirmar corrección?',
+      `Se modificará: ${labels.join(', ')}. El reporte vinculado y sus indicadores no cambian. ` +
+      'El cambio quedará registrado en el historial con tu usuario y el motivo.',
+      'Sí, guardar corrección',
+    ).then(result => {
+      if (!result.isConfirmed) return;
+      this.saving = true;
+      this.actionPlanService.adminEditActivity(this.activity.id!, body)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: res => {
+            this.saving = false;
+            this.adminEditMode = false;
+            this.corrected.emit(res?.warnings ?? []);
+          },
+          error: err => {
+            this.saving = false;
+            const backendError = err?.error?.error;
+            const errors = err?.error?.errors;
+            if (backendError) {
+              this.adminErrors['general'] = backendError;
+            } else if (errors) {
+              // 422 de marshmallow: { json: { campo: [msg] } }; validador: { campo: msg }
+              const flat = errors.json ?? errors;
+              for (const [k, v] of Object.entries(flat)) {
+                const msg = Array.isArray(v) ? v.join(' ') : String(v);
+                if (k in this.adminForm) this.adminErrors[k] = msg;
+                else this.adminErrors['general'] = msg;
+              }
+            } else {
+              this.adminErrors['general'] = 'Error al guardar la corrección.';
+            }
+          },
+        });
+    });
+  }
+
+  // ── Historial ─────────────────────────────────────────────────────
+
+  toggleHistory(): void {
+    this.showHistory = !this.showHistory;
+    if (!this.showHistory || this.history.length || this.historyLoading) return;
+    this.historyLoading = true;
+    this.actionPlanService.getActivityChanges(this.activity.id!)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: rows => { this.history = rows ?? []; this.historyLoading = false; },
+        error: () => { this.history = []; this.historyLoading = false; },
+      });
+  }
+
+  fieldLabel(field: string): string {
+    return this.FIELD_LABELS[field] ?? field;
   }
 
   onClose(): void { this.close.emit(); }
