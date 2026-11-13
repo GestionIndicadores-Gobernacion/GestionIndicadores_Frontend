@@ -33,6 +33,9 @@ export interface DashboardData {
     sections: DashSection[];
     dataset_type: 'personas_capacitadas' | 'personas_capacitadas_consolidado' | 'animales' | 'presupuesto' | 'generico' | 'censo_animal' | 'red_animalia' | 'donaton' | 'denuncias';
     project_label?: string;  // ← agregar
+    /** stored = tipo guardado en el dataset; detected = por columnas; fallback = la tabla no tiene las columnas del tipo guardado. */
+    dataset_type_source?: 'stored' | 'detected' | 'fallback';
+    dataset_type_warning?: string;
 }
 
 @Component({
