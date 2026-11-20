@@ -27,6 +27,7 @@ import { AuthService } from '../../../../core/services/auth.service';
 import { PermissionService } from '../../../../core/services/permission.service';
 import { ReportIndicatorsFormComponent } from './report-indicators-form/report-indicators-form';
 import { ActionPlanService } from '../../../../features/action-plans/services/action-plan.service';
+import { extractApiErrors } from '../../../../core/utils/api-error';
 
 @Component({
   selector: 'app-report-form',
@@ -41,6 +42,9 @@ export class ReportFormComponent implements OnInit {
   reportIndicatorsForm?: ReportIndicatorsFormComponent;
 
   saving = false;
+  /** Motivos de rechazo devueltos por el backend en el último intento de guardado. */
+  serverErrors: string[] = [];
+  evidenceLinkError: string | null = null;
   isEdit = false;
   isFromActivity = false;
 
@@ -387,6 +391,8 @@ export class ReportFormComponent implements OnInit {
     }
 
     this.saving = true;
+    this.serverErrors = [];
+    this.evidenceLinkError = null;
 
     const payload: ReportCreateRequest = {
       strategy_id: this.form.strategy_id!,
@@ -420,9 +426,17 @@ export class ReportFormComponent implements OnInit {
           this.router.navigate(['reports']);
         }
       },
-      error: () => {
-        this.toast.error('Error al guardar');
+      error: (err) => {
+        // El errorInterceptor ya muestra un toast con el primer mensaje del
+        // backend; aquí se listan TODOS los motivos dentro del formulario
+        // (incluye 422 de Marshmallow, que el interceptor no notifica).
+        const detail = extractApiErrors(err);
+        this.serverErrors = detail.messages.length
+          ? detail.messages
+          : ['Error al guardar el reporte. Intenta de nuevo.'];
+        this.evidenceLinkError = detail.fields['evidence_link']?.[0] ?? null;
         this.saving = false;
+        this.cdr.detectChanges();
       }
     });
   }

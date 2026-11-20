@@ -277,11 +277,17 @@
                     </label>
 
                     <input type="url" [(ngModel)]="form.evidence_link" name="evidence_link"
+                        (ngModelChange)="evidenceLinkError = null"
+                        [class.!border-red-400]="evidenceLinkError"
                         placeholder="https://drive.google.com/..." class="w-full text-[13px] rounded-xl px-3 py-2.5
             bg-[#F0F4FA] border border-[#D6E0F0]
             focus:bg-white focus:border-[#7c3aed]
             focus:ring-2 focus:ring-[#7c3aed]/20
             outline-none transition-all" />
+
+                    <p *ngIf="evidenceLinkError" class="text-[12px] font-medium text-red-600">
+                        {{ evidenceLinkError }}
+                    </p>
 
                     <p class="text-[11px] text-[#8A9DC0] leading-relaxed">
                         Adjunta un enlace de Google Drive con evidencia como:
@@ -295,6 +301,15 @@
                 </div>
 
             </section>
+
+            <!-- ERRORES DEL SERVIDOR -->
+            <div *ngIf="serverErrors.length" role="alert"
+                class="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[12px] text-red-700">
+                <p class="font-bold mb-1">No se pudo guardar el reporte:</p>
+                <ul class="list-disc pl-5 space-y-0.5">
+                    <li *ngFor="let msg of serverErrors">{{ msg }}</li>
+                </ul>
+            </div>
 
             <!-- ACTIONS -->
             <div class="flex justify-end gap-3 pt-3 pb-6">

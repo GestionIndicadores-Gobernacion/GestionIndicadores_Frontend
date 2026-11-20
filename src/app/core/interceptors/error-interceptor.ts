@@ -3,6 +3,7 @@ import { catchError, throwError } from 'rxjs';
 import { inject } from '@angular/core';
 import { ToastService } from '../services/toast.service';
 import { AuthService } from '../services/auth.service';
+import { extractApiErrors } from '../utils/api-error';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const toast = inject(ToastService);
@@ -19,17 +20,14 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       }
 
       console.error('ERROR COMPLETO:', error);
+      // Antes, si `message` era un objeto (abort(400, message={campo: ...})
+      // de flask-smorest) caía en 'Error desconocido' y se perdía el
+      // motivo real del rechazo.
+      const backendMessage = extractApiErrors(error).messages[0];
       let message = 'Error desconocido';
 
-      if (typeof error.error?.msg === 'string') {
-        message = error.error.msg;
-      } else if (error.error?.errors) {
-        const errors = error.error.errors;
-        const firstKey = Object.keys(errors)[0];
-        const firstError = errors[firstKey];
-        message = Array.isArray(firstError) ? firstError[0] : firstError;
-      } else if (typeof error.error?.message === 'string') {
-        message = error.error.message;
+      if (backendMessage) {
+        message = backendMessage;
       } else if (error.status === 0) {
         message = 'No hay conexión con el servidor.';
       } else if (error.status === 403) {
